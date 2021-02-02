@@ -69,10 +69,10 @@
 
    nn=1                               !MAC BEZNAR
    Ifile = "nbofilei0    "
-       
+
    IF ( nn < 10 ) WRITE ( Ifile(10:12), FMT='(I1,"  ")' ) nn
    IF ( nn>= 10 ) WRITE ( Ifile( 9:12), FMT='(I2,"  ")' ) nn
-       
+
    OPEN(unit=iboid,file=Ifile,FORM='FORMATTED',IOSTAT=ios)
 
    !i = 0
@@ -81,7 +81,7 @@
    !  IF (.NOT. mask(l)  ) CYCLE
    !    i = i + 1
    !END DO
-   ALLOCATE( out_array ( lm1 * km1 , 10 ), STAT=istat )
+   ALLOCATE( out_array ( lm1 * km1 , 13 ), STAT=istat )
 
    !.....Output initial conditions.....
    IF (idbg == 1) PRINT *, " Before entry to SUB outt"
@@ -114,12 +114,12 @@
    p = 1
    nopenHH = 0
    iauxe(p) = lh_aux(1)
-   iauxs(p) = 1 
+   iauxs(p) = 1
    do p=1,num_threads
          do nn=1,nopen
                if(itype(nn) .NE. 3) THEN
                is = isbc(nn);
-               ie = iebc(nn); 
+               ie = iebc(nn);
                do i=is ,ie
                    if(i <= iauxe(p) .AND. i >= iauxs(p)) THEN
                         nnH(p,nn) = 1
@@ -143,14 +143,14 @@
                    if(la >= id_column(laaux) .AND. la <= id_column(lhf(p))) THEN
                         nnHH(p,nn) = 1
                    end if
-               end if               
+               end if
          end do
          if(p < num_threads)THEN
                 iauxs(p+1) = iauxe(p)
                 iauxe(p+1) = iauxe(p) + lh_aux(p+1)
                 !iauxs(p+1) = iauxs(p) + lh_aux(p) -1  + p - 1
                 !iauxe(p+1) = iauxe(p) + lh_aux(p+1)
-         end if        
+         end if
    end do
 
    iopssH = 0
@@ -167,7 +167,7 @@
                         iopssH(p) = iopssH(p) + 1
                         ioph2iop(iopssH(p),p) = nn
                    end if
-         end do       
+         end do
    end do
 
    do p=1,num_threads
@@ -231,17 +231,17 @@
                              iebcH(noH,ide_thread) = ieH
                              EXIT
                       end if
-                      
+
                       eiptNBI(noh,ide_thread)=eiptNBI(noh,ide_thread)-((kmz(ij2l(ieh,jsbc(noH)))-k1+1))
- 
+
                 end do
                 jsbcH(noH,ide_thread) = jsbc(noH)
                 jebcH(noH,ide_thread) = jebc(noH)
           end if
           if(nnHH(ide_thread,noH) .EQ. 1)THEN
  		nopenHH(ide_thread) = nopenHH(ide_thread) + 1
-                noh2noH(nopenHH(ide_thread),ide_thread) = noH                
-          end if  
+                noh2noH(nopenHH(ide_thread),ide_thread) = noH
+          end if
     end do
     !$omp barrier
     if(ide_thread > 1) iauxs(ide_thread) = iauxs(ide_thread) + 1
@@ -268,7 +268,7 @@
                       eiptNBIH(noH,ide_thread)=eiptNBIH(noH,ide_thread)-((kmz(ij2l(ieh,jsbc(noH)))-k1+1))
                       print *,"sumo final",eiptNBIH(noH,ide_thread),noh,"h:",ide_thread
                 end do
-          end if 
+          end if
     end do
 
         print *,"nopennn:",nopenH,":",ide_thread
@@ -320,15 +320,15 @@
    !.....Integrate over time.....
    IF (idbg == 1) PRINT *, "Before entering loop over time"
    DO n = 1, nts
-      
+
       its = its + idt
       thrs = its/3600.
       IF(omp_get_thread_num ( )==0)THEN
       TimeStart = TIMER(0.0)
       CALL compute_date (idt)
       END IF
-      
-      
+
+
       niter1 = niter
       lastiter = 0
       IF ( n == 1 ) THEN
@@ -358,7 +358,7 @@
 
       !.....Solve trapezoidal step.....
       CALL settrap
-      
+
       !$omp barrier
     1 istep = 2
       DO iter = 1, niter1
@@ -374,9 +374,9 @@
 
          !$omp barrier
          IF (idbg == 1) PRINT *, " After exit from SUB fd in trapezoidal step"
-         
+
          IF(iter < niter1) CALL settrap2
-         
+
          !$omp barrier
          IF(iter > 20) THEN
             PRINT *, " ERROR--Too many iterations requested"
@@ -406,8 +406,8 @@
 
          uflow = 0.0E0
 
-         ifrontera  = isbc(1)-5; 
-         js = jsbc(1)  ; 
+         ifrontera  = isbc(1)-5;
+         js = jsbc(1)  ;
          je = jebc(1)  ;
          DO j = js, je
             IF (.NOT. mask2d(ifrontera,j)) CYCLE
@@ -447,7 +447,7 @@
       TimeEnd = TIMER(0.0)
 
       PRINT *, 'Time spent in step ', n, ' = ', TimeEnd - TimeStart, ' seconds'
-      END IF     
+      END IF
 
    END DO
    CALL cputimes(t_exmom2,t_matmom2,t_matcon2)
@@ -468,5 +468,3 @@
    PRINT *, " *****PROGRAM TERMINATED NORMALLY"
 
 END PROGRAM si3d
-
-

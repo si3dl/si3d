@@ -3,7 +3,7 @@
 !************************************************************************
 !
 !  Purpose: Procedures that implement routines related to the modelling
-!           of ecological processees 
+!           of ecological processees
 !
 !-------------------------------------------------------------------------
 
@@ -12,7 +12,7 @@
 
    IMPLICIT NONE
    SAVE
-  
+
 CONTAINS
 
 
@@ -20,11 +20,11 @@ CONTAINS
 SUBROUTINE srcsnk00
 !***********************************************************************
 !
-!  Purpose: Set sources and sinks to zero - used when conservative 
+!  Purpose: Set sources and sinks to zero - used when conservative
 !           tracers (ecomod == 0) are modelled
 !
 !-----------------------------------------------------------------------
- 
+
   sourcesink = 0.0E0
 
 END SUBROUTINE srcsnk00
@@ -34,7 +34,7 @@ SUBROUTINE TRCinput
 !***********************************************************************
 !
 !  Purpose: To read in values of peak concentrations, location of peaks
-!           and dispersion of clouds - 
+!           and dispersion of clouds -
 !
 !-----------------------------------------------------------------------
 
@@ -49,14 +49,14 @@ SUBROUTINE TRCinput
   IF (ios /= 0) CALL open_error ( "Error opening "//trciofile, ios )
 
   ! ... Allocate space for arrays holding information on size groups
-  
-  ALLOCATE ( trct0(ntr), trcpk(ntr), trctn(ntr), & 
-             trcx0(ntr), trcy0(ntr), trcz0(ntr), & 
+
+  ALLOCATE ( trct0(ntr), trcpk(ntr), trctn(ntr), &
+             trcx0(ntr), trcy0(ntr), trcz0(ntr), &
              trcsx(ntr), trcsy(ntr), trcsz(ntr), STAT=istat)
-  
+
   IF (istat /= 0) CALL allocate_error ( istat, 121 )
 
-  ! Skip over first five header records in SIZE file  
+  ! Skip over first five header records in SIZE file
   READ (UNIT=i99, FMT='(/////)', IOSTAT=ios)
   IF (ios /= 0) CALL input_error ( ios, 90 )
 
@@ -70,7 +70,7 @@ SUBROUTINE TRCinput
          trcx0(itr), trcy0(itr), trcz0(itr),  &
          trcsx(itr), trcsy(itr), trcsz(itr)
     PRINT *, itr, trct0(itr), trcpk(itr), trctn(itr),trcx0(itr), trcy0(itr), trcz0(itr),trcsx(itr), trcsy(itr), trcsz(itr)
-    IF (ios /= 0) CALL input_error ( ios, 91 ) 
+    IF (ios /= 0) CALL input_error ( ios, 91 )
   END DO
 
   CLOSE (i99)
@@ -87,7 +87,7 @@ SUBROUTINE InitTracerCloud
   DO itr = 1, ntr
 
     DO l = 1, lm
-      i = l2i(l); 
+      i = l2i(l);
       j = l2j(l);
       DO k = k1,kmz(l)
         x = ( REAL ( i - i1 ) + 0.5 ) * dx - trcx0 (itr)
@@ -127,7 +127,7 @@ SUBROUTINE SDinput
   ALLOCATE ( sdenSED(ntr), diamSED(ntr), vdep(ntr), STAT=istat)
   IF (istat /= 0) CALL allocate_error ( istat, 99 )
 
-  ! ....Skip over first five header records in SEDIMENT file  
+  ! ....Skip over first five header records in SEDIMENT file
   READ (UNIT=i99, FMT='(/////)', IOSTAT=ios)
   IF (ios /= 0) CALL input_error ( ios, 90 )
 
@@ -139,7 +139,7 @@ SUBROUTINE SDinput
   READ (UNIT=i99, FMT='(10X,G11.2)', IOSTAT=ios) thrsWIBSS0
   IF (ios /= 0) CALL input_error ( ios, 90 )
 
-  ! ....Skip over one header records in SEDIMENT file  
+  ! ....Skip over one header records in SEDIMENT file
   READ (UNIT=i99, FMT='(//)', IOSTAT=ios)
   IF (ios /= 0) CALL input_error ( ios, 90 )
 
@@ -151,7 +151,7 @@ SUBROUTINE SDinput
     READ (UNIT=i99, FMT=iosdfmt, IOSTAT=ios) &
          diamSED(itr), sdenSED(itr), vdep(itr)
     PRINT *, itr, sdenSED(itr), diamSED(itr), vdep(itr)
-    IF (ios /= 0) CALL input_error ( ios, 91 ) 
+    IF (ios /= 0) CALL input_error ( ios, 91 )
   END DO
 
   CLOSE (i99)
@@ -172,7 +172,7 @@ SUBROUTINE srcsnkSD
 !           occur at the bottom cell due to resuspension E
 !
 !-----------------------------------------------------------------------
- 
+
    ! ... Local variables
    INTEGER :: i, j, k, l, k1s, kms, itr, kmyp, kmym, kmxp, kmxm
    REAL    :: Rep, fRep, Zu5, ubott, vbott, ustar, taubx, tauby, taub
@@ -180,19 +180,19 @@ SUBROUTINE srcsnkSD
    ! ... Initialize to zero on first call
    IF (n .LE. 1) sourcesink = 0.0E0
 
-   ! ... Calculate Wave-Induced Bottom Shear Stress WIBSS fields 
+   ! ... Calculate Wave-Induced Bottom Shear Stress WIBSS fields
    !     (computed with stwave in pre-process mode)
    CALL CalculateWIBSS
 
    ! ... Loop over tracers
    DO itr = 1, ntr
 
-     ! ... Calculate particle Reynolds number 
+     ! ... Calculate particle Reynolds number
      Rep  = sqrt(g*sdenSED(itr)*(diamSED(itr)**3.))/1.E-6;
      IF      ( Rep .GT. 1. ) THEN
-       fRep = 0.586*(Rep**1.23);   
+       fRep = 0.586*(Rep**1.23);
      ELSE IF ( Rep .LE. 1. ) THEN
-       fRep = Rep**3.75; 
+       fRep = Rep**3.75;
      ENDIF
      IF      ( Rep .GT. 3. ) THEN
        PRINT *, '!!!!!!!!!!!! WARNING !!!!!!!!!!!'
@@ -204,10 +204,10 @@ SUBROUTINE srcsnkSD
 
      ! ... Loop over wet columns
      DO l = 1, lm
-           
+
        ! ... 3D-(i,j) indexes for l ...........
        i = l2i(l); j = l2j(l);
-            
+
        !.....Compute bottom layer numbers  ....
        kms = kmz(l);
        kmyp= MIN(kmz(lNC(l)), kmz(l))
@@ -215,9 +215,9 @@ SUBROUTINE srcsnkSD
        kmxp= MIN(kmz(lEC(l)), kmz(l))
        kmxm= MIN(kmz(lWC(l)), kmz(l))
 
-       ! ....Compute Currend-Induced Bottom Shear Stress CIBSS (cd*rho*U^2) 
-       ubott = (uhp(kmxp,l)+uhp(kmxm,lWC(l)))/2./hp(kms,l)      
-       vbott = (vhp(kmyp,l)+vhp(kmym,lSC(l)))/2./hp(kms,l) 
+       ! ....Compute Currend-Induced Bottom Shear Stress CIBSS (cd*rho*U^2)
+       ubott = (uhp(kmxp,l)+uhp(kmxm,lWC(l)))/2./hp(kms,l)
+       vbott = (vhp(kmyp,l)+vhp(kmym,lSC(l)))/2./hp(kms,l)
        taubx = cd * (rhop(kms,l)+1000.) * ubott**2.
        tauby = cd * (rhop(kms,l)+1000.) * vbott**2.
 
@@ -228,7 +228,7 @@ SUBROUTINE srcsnkSD
        ustar = sqrt(taub/1000.)
 
        ! ... Compute Erosion flux E (kg/m2/s) at bottom cell
-       Zu5  = ( (ustar/vdep(itr)) * fRep )**5.; 
+       Zu5  = ( (ustar/vdep(itr)) * fRep )**5.;
        sourcesink(kms,l,itr)= Ased*(Zu5) / ( 1. + (Ased/0.3)*(Zu5))
 
      ENDDO ! End loop over wet columns
@@ -247,10 +247,10 @@ SUBROUTINE CalculateWIBSS
    REAL              :: weight
    CHARACTER(LEN=12) :: wibssfmt, wibssfile
 
-   ! ... Allocate space & initialize on first call 
-   IF ( nn .EQ. 0) THEN 
-     ALLOCATE ( wibssIOx(im1,jm1), wibssIOxp(im1,jm1),         & 
-              & wibssIOy(im1,jm1), wibssIOyp(im1,jm1),         & 
+   ! ... Allocate space & initialize on first call
+   IF ( nn .EQ. 0) THEN
+     ALLOCATE ( wibssIOx(im1,jm1), wibssIOxp(im1,jm1),         &
+              & wibssIOy(im1,jm1), wibssIOyp(im1,jm1),         &
               & wibssx  (im1,jm1), wibssy   (im1,jm1), STAT=istat)
      IF (istat /= 0) CALL allocate_error ( istat, 90 )
      wibssIOx = 0.0E0; wibssIOxp = 0.0E0
@@ -283,7 +283,7 @@ SUBROUTINE CalculateWIBSS
      OPEN (UNIT=i99, FILE=wibssfile, STATUS="OLD",  FORM="FORMATTED", IOSTAT=ios)
      IF (ios /= 0) CALL open_error ( "Error opening "//wibssfile, ios )
 
-     ! ... Read wibssIOx & wibssIOy 
+     ! ... Read wibssIOx & wibssIOy
      WRITE (UNIT=wibssfmt, FMT='("(", I4, "G9.0)")') im-i1+1
      DO j = jm, j1, -1
        READ (UNIT=i99, FMT=wibssfmt, IOSTAT=ios) (wibssIOx(i,j), i = i1, im)
@@ -295,17 +295,17 @@ SUBROUTINE CalculateWIBSS
      END DO
      CLOSE(i99)
 
-   ENDIF 
+   ENDIF
 
-   ! ... Estimate wibss at present time step by interpolation 
+   ! ... Estimate wibss at present time step by interpolation
    weight  = (thrs - thrsWIBSSp)/(thrsWIBSS-thrsWIBSSp)
    DO l = 1, lm
-     i = l2i(l); 
-	 j = l2j(l); 
-     wibssx (i,j) = wibssIOx (i,j)*(   weight) + & 
-                    wibssIOxp(i,j)*(1.-weight) 
-     wibssy (i,j) = wibssIOy (i,j)*(   weight) + & 
-                    wibssIOyp(i,j)*(1.-weight) 
+     i = l2i(l);
+	 j = l2j(l);
+     wibssx (i,j) = wibssIOx (i,j)*(   weight) + &
+                    wibssIOxp(i,j)*(1.-weight)
+     wibssy (i,j) = wibssIOy (i,j)*(   weight) + &
+                    wibssIOyp(i,j)*(1.-weight)
    ENDDO
 
 END SUBROUTINE CalculateWIBSS
@@ -333,7 +333,7 @@ SUBROUTINE SZinput
   ALLOCATE ( diamsz(ntr), rmaxsz(ntr), vdep(ntr), STAT=istat)
   IF (istat /= 0) CALL allocate_error ( istat, 99 )
 
-  ! Skip over first five header records in SIZE file  
+  ! Skip over first five header records in SIZE file
   READ (UNIT=i99, FMT='(/////)', IOSTAT=ios)
   IF (ios /= 0) CALL input_error ( ios, 90 )
 
@@ -345,7 +345,7 @@ SUBROUTINE SZinput
     READ (UNIT=i99, FMT=ioszfmt, IOSTAT=ios) &
          diamsz(itr), rmaxsz(itr), idep, vdep(itr)
     PRINT *, itr, diamsz(itr), rmaxsz(itr), idep, vdep(itr)
-    IF (ios /= 0) CALL input_error ( ios, 91 ) 
+    IF (ios /= 0) CALL input_error ( ios, 91 )
     IF (idep > 0) THEN ! Stokes Law
       vdep(itr) = 10. ** (1.112 * LOG(diamsz(itr))/LOG(10.) - 1.647); ! Speed in m/day
       vdep(itr) = vdep(itr) / 86400. ! Speed in m/s
@@ -364,7 +364,7 @@ SUBROUTINE srcsnkSZ
 !           equations, used in the analysis of size structures
 !
 !-----------------------------------------------------------------------
- 
+
    ! ... Local variables
    INTEGER :: i, j, k, l, k1s, kms, itr
    REAL    :: r, zt
@@ -374,16 +374,16 @@ SUBROUTINE srcsnkSZ
 
      ! ... Loop over wet columns
      DO l = 1, lm
-            
+
        ! ... 3D-(i,j) indexes for l
        i = l2i(l); j = l2j(l);
-            
+
        !.....Compute top & bottom layer numbers & No. of layers ....
        kms = kmz(l);
        k1s = k1z(l);
 
        ! ... Growth rate (express it in s^-1)
-       k = k1s; 
+       k = k1s;
        zt = hpp(k,l)/2.
        sourcesink(k,l,itr)= rmaxsz(itr)*tracerpp(k,l,itr)* &
                             EXP(-0.3*zt)*hpp(k,l) / 86400.
@@ -431,16 +431,16 @@ SUBROUTINE WQinput
   IF (ios /= 0) CALL input_error ( ios, 93)
 
   !. . . Read model rates
-  READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) k_a, k_arb, k_dn,   & 	
-  &    k_DOM, k_ex, k_gr, k_hc, k_hn, k_hp, k_mn, k_mor, k_mp, k_n ,   & 
-  &    k_ra, k_rs, k_set, k_setarb, k_vn, mu_max		
+  READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) k_a, k_arb, k_dn,   &
+  &    k_DOM, k_ex, k_gr, k_hc, k_hn, k_hp, k_mn, k_mor, k_mp, k_n ,   &
+  &    k_ra, k_rs, k_set, k_setarb, k_vn, mu_max
   IF (ios /= 0) CALL input_error ( ios, 94)
-  
+
   print*, k_a, k_arb, k_dn, k_DOM, k_ex
   print*, k_gr, k_hc, k_hn, k_hp, k_mn
   print*, k_mor, k_mp, k_n, k_ra, k_rs
   print*, k_set, k_setarb, k_vn, mu_max
-  
+
   !... Convert model rates to time of [1/sec]
   k_a   = k_a/3600.0
   k_arb = k_arb/3600.0
@@ -461,26 +461,26 @@ SUBROUTINE WQinput
   k_setarb = k_setarb/3600.0
   k_vn   = k_vn/3600.0
   mu_max = mu_max/3600.0
-  
+
 
   !. . . Read model temperature rates
   READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) Theta_a, Theta_dn , &
-  &    Theta_DOM, Theta_gr, Theta_hc , Theta_hn, Theta_hp , Theta_mn, Theta_mor, & 
+  &    Theta_DOM, Theta_gr, Theta_hc , Theta_hn, Theta_hp , Theta_mn, Theta_mor, &
   &    Theta_mp , Theta_mu, Theta_n  , Theta_PON, Theta_ra, Theta_SOD, &
-  &    Theta_vn					
+  &    Theta_vn
   IF (ios /= 0) CALL input_error ( ios, 95)
 
   !. . . Read miscillaneous rates
   READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) ATM_DON, ATM_NH4,    &
   &    ATM_NO3, ATM_PO4, ATM_POP, GW_NH4, GW_NO3, GW_PO4, J_NH4, J_NO3, &
-  &    J_PO4					
+  &    J_PO4
   IF (ios /= 0) CALL input_error ( ios, 96)
 
   IF (idbg == 1) THEN
     PRINT*, "iARB = ", iARB, "iDO  = ", iDO , "iPON = ", iPON
     PRINT*, "iDON = ", iDON, "iNH4 = ", iNH4, "iNO3 = ", iNO3
     PRINT*, "iPOP = ", iPOP, "iDOP = ", iDOP, "iALG = ", iALG
-  END IF 
+  END IF
 
 END SUBROUTINE WQinput
 
@@ -493,14 +493,14 @@ SUBROUTINE WQinit
 !-----------------------------------------------------------------------
 
   !. . . Local Variables
-  INTEGER, DIMENSION(ntrmax):: tracerpplocal		
+  INTEGER, DIMENSION(ntrmax):: tracerpplocal
   INTEGER:: i,j, sumtr
 
   ! ... Initialize tracerpp local
-  tracerpplocal = 0		
+  tracerpplocal = 0
 
   !. . Initialize constituent locations
-  LARB=0; LDO =0; LPON=0; LDON=0; 
+  LARB=0; LDO =0; LPON=0; LDON=0;
   LNH4=0; LNO3=0; LPOP=0; LDOP=0; LPO4=0
   LALG=0; LDOM=0; LPOM=0; LSOD= 0
 
@@ -590,7 +590,7 @@ IF (idbg == 1) THEN
   PRINT*, "ntr = ", ntr
   PRINT*, "sumtr = ", sumtr
 END IF
- 
+
   !. . Next define Lxx
   DO i = 1, ntr
 	IF (tracerpplocal(i) == 1) THEN
@@ -626,9 +626,9 @@ END IF
     PRINT*, "LARB = ", LARB, "LDO  = ", LDO , "LPON = ", LPON
     PRINT*, "LDON = ", LDON, "LNH4 = ", LNH4, "LNO3 = ", LNO3
     PRINT*, "LPOP = ", LPOP, "LDOP = ", LDOP, "LALG = ", LALG
-  END IF 
+  END IF
 END SUBROUTINE WQinit
-   
+
 !************************************************************
 SUBROUTINE srcsnkWQ
 !***********************************************************
@@ -643,15 +643,15 @@ SUBROUTINE srcsnkWQ
   ! reset soursesink = 0
   sourcesink = 0;
 
-  DO l = 1, lm; 
+  DO l = 1, lm;
 
     ! ... Map l- into (i,j)-indexes .........................
     i = l2i(l); j = l2j(l);
-	 
+
     ! ... Retrieve top & bottom wet sal-pts .................
     kms = kmz(l)
     k1s = k1z(l)
- 
+
     DO k = k1s, kms;
 
       IF (iARB == 1) THEN
@@ -668,7 +668,7 @@ SUBROUTINE srcsnkWQ
       END IF
       IF (iNH4 == 1) THEN
         CALL sourceNH4(k,l)
-      END IF 
+      END IF
       IF (iNO3 == 1) THEN
         CALL sourceNO3(k,l)
       END IF
@@ -690,7 +690,7 @@ SUBROUTINE srcsnkWQ
       IF (iPOM == 1) THEN
         CALL sourcePOM(k,l)
       END IF
-      
+
     END DO
   END DO
 
@@ -711,7 +711,7 @@ SUBROUTINE sourceARB(kwq,lwq)
   INTEGER, INTENT (IN) :: kwq,lwq
 
 
-  sourcesink(kwq,lwq,LARB) = -k_arb   *tracerpp(kwq,lwq,LARB) & 
+  sourcesink(kwq,lwq,LARB) = -k_arb   *tracerpp(kwq,lwq,LARB) &
                              -k_setarb*tracerpp(kwq,lwq,LARB)
 
 
@@ -735,7 +735,7 @@ SUBROUTINE sourceDO(kwq,lwq)
 
   ! Calculate DO saturation
   Tk = salp(kwq,lwq) + 273
-  lnos = -139.34410 + 1.575701*1E5 /(Tk    ) & 
+  lnos = -139.34410 + 1.575701*1E5 /(Tk    ) &
   &                 - 6.642308*1E7 /(Tk**2.) &
   &	                + 1.243800*1E10/(Tk**3.) &
   &                 - 8.621949*1E11/(Tk**4.)
@@ -751,7 +751,7 @@ SUBROUTINE sourceDO(kwq,lwq)
   &           /((1-Pwv)*(1-theta2) )
 
   ! Calculate reaertaion
-  ! for now using constant rearation defined in wq_inp, but in future, can have 
+  ! for now using constant rearation defined in wq_inp, but in future, can have
   ! alternatives for calcualting reaeration.
 
   IF (kwq .eq. k1z(ij2l(l2i(lwq),l2j(lwq)))) THEN
@@ -785,7 +785,7 @@ SUBROUTINE sourceDON(kwq,lwq)
   minrl = k_mn * theta_mn**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LDON)
 
   sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)	-				&
-  &                          minrl	                        
+  &                          minrl
 ! + hydrolysis	- only if IPON = 1; caluclated in sourcePON
 ! + Resp/excr	- only if IAlG = 1; calculated in sourceALG
 
@@ -794,7 +794,7 @@ IF (kwq .eq. k1z(ij2l(l2i(lwq), l2j(lwq)))) THEN
 	sourcesink(kwq,lwq, LDON) = sourcesink(kwq, lwq, LDON) + &
 								& hpp(kwq,lwq)*ATM_DON		! Atmoshperic deposition
 END IF
-	
+
   IF (INH4 == 1) THEN		! add mineralization of DON to NH4
     sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) + minrl
   END IF
@@ -841,7 +841,7 @@ SUBROUTINE sourceNH4(kwq,lwq)
 ! ... Arguments
    INTEGER, INTENT (IN) :: kwq,lwq
 
-!. . . Local Variables 
+!. . . Local Variables
 REAL:: nitrif, f_DO
 
 !. . . Calculate nitrification
@@ -864,7 +864,7 @@ sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4)		-	&
 IF (kwq .eq. kmz(ij2l(l2i(lwq), l2j(lwq)))) THEN
  sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) +   &
 							& hpp(kwq,lwq)*J_NH4     +	 &	! sediment release
-							& hpp(kwq,lwq)*GW_NH4	     	! GW flux 
+							& hpp(kwq,lwq)*GW_NH4	     	! GW flux
 END IF
 
 !. . Add contribution from atmoshperic deposition into top cells
@@ -905,7 +905,7 @@ sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3)		-	&
 IF (kwq .eq. kmz(ij2l(l2i(lwq), l2j(lwq)))) THEN
  sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3) +   &
 							& hpp(kwq,lwq)*J_NO3     +	 &	! sediment release
-							& hpp(kwq,lwq)*GW_NO3	     	! GW flux 
+							& hpp(kwq,lwq)*GW_NO3	     	! GW flux
 END IF
 
 !. . Add contribution from atmoshperic deposition into top cells
@@ -946,8 +946,8 @@ END IF
 ! Caclulate hydrolysis contribution to DOP
 IF (IDOP == 1) THEN
 	sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) + hydrol
-END IF		
-						
+END IF
+
 END SUBROUTINE sourcePOP
 
 !************************************************************************
@@ -975,9 +975,9 @@ sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP)		-	&
 
 ! Caclulate mineralization contribution to PO4
 IF (IPO4 == 1) THEN
-	sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) + minrl	
+	sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) + minrl
 END IF
-						
+
 END SUBROUTINE sourceDOP
 
 !************************************************************************
@@ -990,7 +990,7 @@ SUBROUTINE sourcePO4(kwq, lwq)
 
    ! ... Arguments
    INTEGER, INTENT (IN) :: kwq,lwq
- 
+
    sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4)		+	&
    &                          h(kwq,lwq)*J_PO4			+	&	! Sediment Release
    &                          h(kwq,lwq)*GW_PO4			+	&	! GW flux
@@ -1003,7 +1003,7 @@ SUBROUTINE sourcePO4(kwq, lwq)
 IF (kwq .eq. kmz(ij2l(l2i(lwq), l2j(lwq)))) THEN
  sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) +   &
 							& hpp(kwq,lwq)*J_PO4     +	 &	! sediment release
-							& hpp(kwq,lwq)*GW_PO4	     	! GW flux 
+							& hpp(kwq,lwq)*GW_PO4	     	! GW flux
 END IF
 
 !. . Add contribution from atmoshperic deposition into top cells
@@ -1012,7 +1012,7 @@ IF (kwq .eq. k1z(ij2l(l2i(lwq), l2j(lwq)))) THEN
 								& hpp(kwq, lwq) * ATM_PO4	 ! ATM deposition
 END IF
 
-						
+
 END SUBROUTINE sourcePO4
 
 !************************************************************************
@@ -1038,9 +1038,9 @@ SUBROUTINE sourcePOM (kwq, lwq)
 
   ! Caclulate hydrolysis contribution to DOM
   IF (IDOM == 1) THEN
-    sourcesink(kwq,lwq,LDOM) = sourcesink(kwq,lwq,LDOM) + hydrol	
-   END IF	
-						
+    sourcesink(kwq,lwq,LDOM) = sourcesink(kwq,lwq,LDOM) + hydrol
+   END IF
+
 END SUBROUTINE sourcePOM
 
 !************************************************************************
@@ -1071,7 +1071,7 @@ SUBROUTINE sourceDOM(kwq, lwq)
   IF (IDO == 1) THEN
     sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) - roc*oxid
   END IF
-											
+
 END SUBROUTINE sourceDOM
 
 !************************************************************************
@@ -1086,10 +1086,10 @@ SUBROUTINE sourceALG(kwq, lwq)
 
   !. . .Local Variables
   REAL::	mu, f_L, f_T, f_N, f_P, N_conc
-  REAL::	resp, excr, mort, growth 
+  REAL::	resp, excr, mort, growth
 
   ! Calculate mu, growth rate
-	
+
   !. .  Calculate growth limiting factors
   ! light limitation
   !		f_L = SolarFR(depth)*0.47/light_sat *e**(-SolarFR(depth)*0.47/light_sat +1)
@@ -1138,7 +1138,7 @@ sourcesink(kwq,lwq,LALG) = sourcesink(kwq,lwq,LALG)	+									&
 						&  k_gr*theta_gr**(salp(kwq,lwq)-20) * tracerpp(kwq,lwq,LALG) -	& ! grazing
 						&  k_set*tracerpp(kwq,lwq,LALG)								 ! settling
 
-! If dissolved oxygen is modeled, alter sourcesink(kwq,lwq,LDO) to reflect growth and resp 
+! If dissolved oxygen is modeled, alter sourcesink(kwq,lwq,LDO) to reflect growth and resp
 ! of algae population
 IF (IDO ==1) THEN
 	sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) + acc*roc*(growth-resp)
@@ -1276,4 +1276,3 @@ SUBROUTINE input_error ( ios, ierror_code )
 END SUBROUTINE input_error
 
 END MODULE si3d_ecomod
-

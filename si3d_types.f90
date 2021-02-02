@@ -297,26 +297,26 @@
                                             trcsx, trcsy, trcsz, trcpk
 
    !          ----- Point Sources & Sinks Eqs. Vars. & Arrays *********************
-   ! ... Variables used specificallly to model plumes - 
+   ! ... Variables used specificallly to model plumes -
    REAL    :: k4sod      ! 5.7870E-6 ! g/m2/s
    REAL(8) :: salamb     ! Vars. for generalized version of plume model
    REAL(8) :: patm       ! Vars. for generalized version of plume model
    REAL   , ALLOCATABLE, DIMENSION(:    )  :: lambda ! Plume width
    REAL   , ALLOCATABLE, DIMENSION(:    )  :: diammb ! Initial diammeter of bubbles
    INTEGER, ALLOCATABLE, DIMENSION(:    )  :: kdetr          ! k for detrainment cell
-   INTEGER, ALLOCATABLE, DIMENSION(:    )  :: idetr          ! How detrainment is modelled in diffuser devices 
+   INTEGER, ALLOCATABLE, DIMENSION(:    )  :: idetr          ! How detrainment is modelled in diffuser devices
    REAL   , ALLOCATABLE, DIMENSION(:    )  :: dfL            ! Diffuser length (device)
 
    ! ... Variables for boundary conditions as point sources and sinks BCasPSS
    INTEGER :: npssdev    ! No. of devices producing point sinks and sources (i.e. diffusers)
    INTEGER :: iopss      ! No. of colums with sources/sinks
-   REAL    :: dtsecpss   ! Time in seconds between consecutive records in io files  
+   REAL    :: dtsecpss   ! Time in seconds between consecutive records in io files
    INTEGER, ALLOCATABLE, DIMENSION(:    )  :: iopssH
    INTEGER, ALLOCATABLE, DIMENSION(:,:  )  :: ioph2iop
    INTEGER, ALLOCATABLE, DIMENSION(:    )  :: ptype          ! Type of PSS simulated (device)
    REAL   , ALLOCATABLE, DIMENSION(:,:,:)  :: varspss        ! flows, temps. & tracers = f(time,dev)
-   INTEGER, ALLOCATABLE, DIMENSION(:    )  :: pdt            ! Frequency of update (device) 
-   INTEGER, ALLOCATABLE, DIMENSION(:    )  :: iodev          ! Device No. for each pss (column) 
+   INTEGER, ALLOCATABLE, DIMENSION(:    )  :: pdt            ! Frequency of update (device)
+   INTEGER, ALLOCATABLE, DIMENSION(:    )  :: iodev          ! Device No. for each pss (column)
    INTEGER, ALLOCATABLE, DIMENSION(:    )  :: ipss,jpss      ! Grid location of pss (column)
    REAL   , ALLOCATABLE, DIMENSION(:,:  )  :: Qpss	         ! Inflow/outflow rate at n+1 (column)
    REAL   , ALLOCATABLE, DIMENSION(:,:  )  :: Tpss           ! Temp. for pss at n+1 - (column)
@@ -344,15 +344,15 @@
    REAL :: gammaB, delNfactor  ! Changed 12/2010 SWA
 
    !        -------- ECOMOD - Size Structure ******************************************
-   INTEGER :: ecomod ! Type of behaviour assigned to tracers 
+   INTEGER :: ecomod ! Type of behaviour assigned to tracers
    REAL, ALLOCATABLE, DIMENSION (:) :: diamSZ  ! Diameter (m)
    REAL, ALLOCATABLE, DIMENSION (:) :: rmaxSZ  ! Maximum growth rate (s-1)
    REAL, ALLOCATABLE, DIMENSION (:) :: vdep    ! Settling velocity (m/s)
 
    !        -------- ECOMOD - Sediment Transport **************************************
-   REAL, ALLOCATABLE, DIMENSION (:) :: sdenSED  ! Submerged specific density (adimensional) 
-   REAL, ALLOCATABLE, DIMENSION (:) :: diamSED  ! Particle diameter (m) 
-   REAL, PARAMETER :: Ased = 1.3e7; 
+   REAL, ALLOCATABLE, DIMENSION (:) :: sdenSED  ! Submerged specific density (adimensional)
+   REAL, ALLOCATABLE, DIMENSION (:) :: diamSED  ! Particle diameter (m)
+   REAL, PARAMETER :: Ased = 1.3e7;
    !                                   vdep (uses the same array as ECOMOD = 1)
    REAL :: dthrsWIBSS, &                      ! Hours between WIBSS fields (input)
            thrsWIBSS , &                      ! Hours from start to current WIBSS field
@@ -375,20 +375,20 @@
    ! ... Model Constants - read from input file and many used for calibration
    ! - Stochiometeric constants
    REAL   :: acc, anc, apc, roc, ron
- 	
-   ! - Half-saturation values and algal prefernce for NH4	
-   REAL   :: KDOM, KNIT, KSN, KSP, FNH4	
+
+   ! - Half-saturation values and algal prefernce for NH4
+   REAL   :: KDOM, KNIT, KSN, KSP, FNH4
 
    ! - Model rates
    REAL   :: k_a, k_arb, k_dn, k_DOM, k_ex, k_gr, k_hc
    REAL	  :: k_hn, k_hp, k_mn, k_mor, k_mp, k_n, k_ra
-   REAL	  :: k_rs, k_set, k_setarb, k_vn, mu_max		
+   REAL	  :: k_rs, k_set, k_setarb, k_vn, mu_max
 
    ! - Temperature depependence factors
    REAL	  :: Theta_a  , Theta_arb, Theta_dn, Theta_DOM, Theta_ex
    REAL	  :: Theta_gr , Theta_hc , Theta_hn, Theta_hp , Theta_mn
    REAL	  :: Theta_mor, Theta_mp , Theta_mu, Theta_n  , Theta_PON
-   REAL	  :: Theta_ra , Theta_SOD, Theta_vn						
+   REAL	  :: Theta_ra , Theta_SOD, Theta_vn
 
    ! - Atmoshperic deposition rates
    REAL	  :: ATM_DON, ATM_NH4, ATM_NO3, ATM_PO4, ATM_POP
@@ -404,4 +404,3 @@
 !                        -----Data Dictionary-----
 
 END MODULE si3d_types
-
