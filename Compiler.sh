@@ -1,8 +1,8 @@
 #!/bin/bash
 
 export FORTRAN_COMPILER=IFORT
-export SI3DDIR=/home/ccalicia/Codes/psi3d_oct11_ECOMOD
-export GOTMDIR=/home/ccalicia/Codes/gotm
+export SI3DDIR=/home/sv/GitHub/psi3D
+export GOTMDIR=/home/sv/GitHub/gotm
 export MODDIR=$GOTMDIR/modules
 export INCDIR=$GOTMDIR/include
 export BINDIR=$GOTMDIR/bin
@@ -27,7 +27,7 @@ if $IFSI3D
 then
 	cd $SI3DDIR
 	make omp
-	#rm *.o
+	rm *.o
 	cd $MODDIR
 	#rm si3d*
 else
