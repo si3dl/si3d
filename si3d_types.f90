@@ -169,7 +169,7 @@
    REAL, ALLOCATABLE, DIMENSION(:,:) :: th, th1,haypp2,th2,th12
 
    !         -----Surface Temperature Boundary Conditions Vars. & Arrays ---------
-
+   INTEGER, PARAMETER :: nvSurfbcW = 3;  ! No. of variables read on only wind conditions
    INTEGER, PARAMETER :: nvSurfbcP = 6; ! No. of variables read on pre-process mode
    INTEGER, PARAMETER :: nvSurfbcR = 9; ! No. of variables read on run-time mode
    INTEGER :: ifSurfbc          ! Flag that specifies whether surf.BC. are used

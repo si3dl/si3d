@@ -4459,6 +4459,44 @@ SUBROUTINE surfbc0
      print *,"hola61"
      CALL DistributeMomentumHeatSources
      print *,"hola7"
+   CASE (20)
+     !               ----- Open files with wind velocity bc data-----
+     OPEN (UNIT=i53, FILE='surfbcW.txt', STATUS="OLD", IOSTAT=ios)
+     IF (ios /= 0) CALL open_error ( "Error opening surfbc.txt", ios )
+
+     !               -----Read files with heatflux surface bc data-----
+     ! Skip over first six header records in salinity boundary condition file
+     READ (UNIT=i53, FMT='(/////)', IOSTAT=ios)
+     IF (ios /= 0) CALL input_error ( ios, 101 )
+
+     ! Read number of points in file from seventh header record
+     READ (UNIT=i53, FMT='(10X,I7)', IOSTAT=ios) npsurfbc
+     IF (ios /= 0) CALL input_error ( ios, 102 )
+
+     ! Allocate space for the array of data
+     ALLOCATE ( surfbc1(nvSurfbcW,npSurfbc), STAT=istat )
+     IF (istat /= 0) CALL allocate_error ( istat, 103 )
+
+     ! Write the format of the data records into an internal file
+     WRITE (UNIT=surfbcfmt, FMT='("(10X,",I3,"G11.2)")') nvSurfbcW
+
+     ! Read data array and store it in memory
+     DO j = 1, npSurfbc
+       READ (UNIT=i53, FMT=surfbcfmt, IOSTAT=ios) &
+            (surfbc1(nn,j), nn = 1, nvSurfbcW)
+       IF (ios /= 0) CALL input_error ( ios, 104 )
+     END DO
+
+     cdw = surfbc1(1,1)
+     uair= surfbc1(2,1)
+     vair= surfbc1(3,1)
+
+     PRINT *, "Wind Vectors"
+     PRINT *, uair
+     PRINT *, vair
+
+     ! ... Set heat sources for each cell
+     CALL DistributeMomentumHeatSources
    END SELECT
 
 END SUBROUTINE surfbc0
@@ -4491,7 +4529,7 @@ SUBROUTINE surfbc(n,istep,thrs)
       uair(l) = -wa * SIN(pi*phi/180.);
       vair(l) = -wa * COS(pi*phi/180.);
       cdw(l)  =  cw
-      END DO
+    END DO
 
    !               ----- Use surface bc data from file ----
    CASE(1) ! Heat budget on preprocess mode - shortwave radiative and
@@ -4605,6 +4643,18 @@ SUBROUTINE surfbc(n,istep,thrs)
 
      ! ... Distribute heat and momentum sources entering through free surface
      CALL DistributeQswH
+     CALL DistributeMomentumHeatSourcesH(n,istep)
+
+   CASE (20)
+     !.....Return from subroutine on trapezoidal steps (except if n=1).....
+     IF (n > 1) THEN; IF (istep == 2) RETURN; END IF
+     !.....Interpolate heat & momentum flux vars. to time n .....
+     dthrs_surfbc = dtSurfbc/3600.
+     cdw = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
+     uair = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
+     vair = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
+
+     ! ... Calculate 3D-spatially variable sources
      CALL DistributeMomentumHeatSourcesH(n,istep)
 
    END SELECT
