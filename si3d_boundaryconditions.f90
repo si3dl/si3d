@@ -4491,11 +4491,8 @@ SUBROUTINE surfbc0
      uair= surfbc1(2,1)
      vair= surfbc1(3,1)
 
-     PRINT *, "Wind Vectors"
-     PRINT *, uair
-     PRINT *, vair
-
      ! ... Set heat sources for each cell
+     CALL DistributeQsw
      CALL DistributeMomentumHeatSources
    END SELECT
 
@@ -4655,6 +4652,7 @@ SUBROUTINE surfbc(n,istep,thrs)
      vair = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
 
      ! ... Calculate 3D-spatially variable sources
+     CALL DistributeQswH
      CALL DistributeMomentumHeatSourcesH(n,istep)
 
    END SELECT
