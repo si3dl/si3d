@@ -42,7 +42,7 @@ SUBROUTINE input
    IF (ios /= 0) CALL input_error ( ios, 1)
 
    !.....Read & define start date of the run.............................
-   READ (UNIT=i5,FMT='(///(14X,G20.2))',IOSTAT=ios) iyr0,imon0,iday0,ihr0 
+   READ (UNIT=i5,FMT='(///(14X,G20.2))',IOSTAT=ios) iyr0,imon0,iday0,ihr0
    IF (ios /= 0) CALL input_error ( ios, 2 )
    CALL compute_date (0.0)
 
@@ -76,9 +76,9 @@ SUBROUTINE input
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) n_planes
      IF (ios /= 0) CALL input_error ( ios, 6 )
      IF (n_planes > max_planes) THEN
-       PRINT *,'ERROR: # of planes requested > maximum allowed' 
+       PRINT *,'ERROR: # of planes requested > maximum allowed'
        STOP
-     END IF    
+     END IF
      DO j = 1, n_planes
        ! ... Read number of cells in X-section j
        READ (UNIT=i5, FMT='(14X,I20)' , IOSTAT=ios) p_out(j)
@@ -92,9 +92,9 @@ SUBROUTINE input
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) n_sections
      IF (ios /= 0) CALL input_error ( ios, 7 )
      IF (n_sections > max_sections) THEN
-       PRINT *,'ERROR: # of sections requested > maximum allowed' 
+       PRINT *,'ERROR: # of sections requested > maximum allowed'
        STOP
-     END IF    
+     END IF
      DO j = 1, n_sections
        ! ... Read number of cells in X-section j
        READ (UNIT=i5, FMT='(/14X,I20)' , IOSTAT=ios) n_section_cells(j)
@@ -137,7 +137,7 @@ SUBROUTINE input
          IF (ios /= 0) CALL input_error ( ios, 8 )
       END DO
    END IF
- 
+
    !.....Read info to output nested grid boundaries ......................
    IF (ioNBTOGGLE > 0 ) THEN
      READ (UNIT=i5,  FMT='(///14X,I20)', IOSTAT=ios) nxNBO
@@ -190,13 +190,13 @@ SUBROUTINE input
      ! Read time in seconds between consecutive records from time files
      READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) dtsecpss
 
-     ! ... Allocate space for arrays holding location 
+     ! ... Allocate space for arrays holding location
      !     of point sources and sinks and devices
      ALLOCATE ( ipss  (iopss), jpss   (iopss), &
                 iodev (iopss), STAT=istat)
      IF (istat /= 0) CALL allocate_error ( istat, 100 )
 
-     ! ... Read in locations & characteristics of diffusers 
+     ! ... Read in locations & characteristics of diffusers
      !     At this point, they are pressumed constants in time
      READ (UNIT=i5, FMT='(A)', IOSTAT=ios) commentline
      i = 0;
@@ -213,33 +213,33 @@ SUBROUTINE input
        STOP
      ENDIF
 
-     ! ... Read sources & sinks specifications - 
-     CALL PointSourceSinkInput 
+     ! ... Read sources & sinks specifications -
+     CALL PointSourceSinkInput
 
    ENDIF
    print *,"antes interp"
- 
-   ! ... Input instructions & parameters controlling the solution of 
-   !     the tracer transport equations. 
+
+   ! ... Input instructions & parameters controlling the solution of
+   !     the tracer transport equations.
    IF (ntr > 0) THEN
 
      ! ... Allocate space for some arrays - they are initialized
 	 !     only if ecomod < 0, but used allways in determining
-	 !     if the tracer transport equation is used or not in subroutine fd.  
-     !ALLOCATE ( trct0(ntr), trcpk(ntr), trctn(ntr), & 
-     !          trcx0(ntr), trcy0(ntr), trcz0(ntr), & 
+	 !     if the tracer transport equation is used or not in subroutine fd.
+     !ALLOCATE ( trct0(ntr), trcpk(ntr), trctn(ntr), &
+     !          trcx0(ntr), trcy0(ntr), trcz0(ntr), &
      !           trcsx(ntr), trcsy(ntr), trcsz(ntr), STAT=istat)
      !IF (istat /= 0) CALL allocate_error ( istat, 121 )
 
-     ! .... Initialize trct0 and trctn to default values 
-	 trct0 = 1E7; 
-	 trctn =   0; 
+     ! .... Initialize trct0 and trctn to default values
+	 trct0 = 1E7;
+	 trctn =   0;
 
      ! .... Define other input variables
      SELECT CASE (ecomod)
-     CASE (-1) ! Tracer Cloud Releases 
+     CASE (-1) ! Tracer Cloud Releases
         PRINT *, 'Tracer Cloud Modelling activated'
-        CALL trcinput 
+        CALL trcinput
      CASE (1) ! Water quality routines
         PRINT *, 'Water Quality Model activated'
         CALL wqinput
@@ -272,7 +272,7 @@ SUBROUTINE input
    dt=idt; dx=idx; dy=idy; ddz=idz; twodt=2.*dt; dtdx=dt/dx; dtdy=dt/dy
    gdtdx=g*dtdx; gdtdy=g*dtdy; gdt2dx2=gdtdx*dtdx; gdt2dy2=gdtdy*dtdy
    !gthx=gdtdx*theta; gthy=gdtdy*theta; gth1x=gdtdx*2.*(1.-theta)
-   !gth1y=gdtdy*2.*(1.-theta); 
+   !gth1y=gdtdy*2.*(1.-theta);
    cwind=2.*dt*cw*rhoair*wa*wa; alp4=(1.-alp)/4.
    twodx=2.*dx; twody=2.*dy; fourdx=2.*twodx; fourdy=2.*twody
    dxdx=dx*dx; dydy=dy*dy; twodxdx=2.*dxdx; twodydy=2.*dydy; dxdy=dx*dy ! Changed 12/2010 SWA
@@ -282,7 +282,7 @@ SUBROUTINE input
    nts=tl/dt+.5; apxml = ABS(ipxml)
    isec0=REAL(ihr0)/100.*3600.; !dt_min=idt/60.
 
-   ! ... Generate grid dimensions in Z-direction 
+   ! ... Generate grid dimensions in Z-direction
    CALL ZGridDimensions
 
 END SUBROUTINE input
@@ -524,7 +524,7 @@ SUBROUTINE AllocateSpace2
    IF (istat /=0) CALL allocate_error ( istat, 17 )
 
    !.... Allocate space for Higher-Order turbulence models......
-   IF (iturb > 0) THEN   
+   IF (iturb > 0) THEN
      ALLOCATE ( q2 (km1,lm1), q2p (km1,lm1 ), q2pp (km1,lm1),   &
                 q2l(km1,lm1), q2lp(km1,lm1 ), q2lpp(km1,lm1),   &
                 dsT(km1)    , aaT (3, km1+1), sal1T(ndz+1), STAT = istat )
@@ -552,11 +552,11 @@ SUBROUTINE AllocateSpace2
    ENDIF
 
    ! .... Allocate arrays used in oxygenation simulations ...............
-   
+
    ALLOCATE(Qpss(km1,iopss), Tpss(km1,iopss), iopssH(num_threads), &
             Rpss(km1,iopss,ntr), ioph2iop(iopss,num_threads),STAT=istat)
    IF (istat /= 0) CALL allocate_error ( istat, 21 )
-    
+
 
 END SUBROUTINE AllocateSpace2
 
@@ -588,11 +588,11 @@ SUBROUTINE bathy
    !.....Open bathymetry file.....
    OPEN (UNIT=i5, FILE=bathymetry_file, STATUS="OLD", IOSTAT=ios)
    IF(ios /= 0) CALL open_error ( "Error opening "//bathymetry_file, ios )
-   
+
    !.....Read header information.....
    READ (UNIT=i5, FMT='(37X,I5,6X,I5,8X,I5//)', IOSTAT=ios) imm, jmm, ncols  ! Changed to I5 12/2010 SWA
    IF (ios /= 0) CALL input_error ( ios, 11 )
-   
+
    !.....Check grid dimensions against input parameters.....
    IF ((im /= imm+1) .OR. (jm /= jmm+1)) THEN
       PRINT *, " ****ERROR -- Grid size computed from input file does not"
@@ -638,7 +638,7 @@ SUBROUTINE bathy
          IF (ios /= 0) CALL input_error ( ios, 12 )
       END DO
    END DO
-   
+
    !.....Close bathymetry file.....
    CLOSE (UNIT=i5)
 
@@ -658,7 +658,7 @@ SUBROUTINE bathy
         mask2d(i,j) = .FALSE.
      END IF
    END DO; END DO
-   
+
    !.....Define mask array.....
    cm1=0.0
    DO i = 1, im1; DO j = 1, jm1
@@ -669,7 +669,7 @@ SUBROUTINE bathy
         mask(cm1) = .FALSE.
      END IF
    END DO; END DO
-   
+
 
    !.....Add fictitious row/column of depths around grid.....
    h4(1,j1:jm  ) = h4(2,j1:jm )         ! west side
@@ -690,7 +690,7 @@ SUBROUTINE bathy
      IF ( j < jfirst ) jfirst = j
      IF ( j > jlast  ) jlast  = j
    END DO; END DO
-   
+
    !.....Compute the first and last column and row of grid
    !     with wet points. Variables used in subr. solver
    lfirst = cm1; llast = 1;
@@ -749,7 +749,7 @@ SUBROUTINE bathy
      END IF
    END DO; END DO;
 
-   
+
 
    ! ... Assign E,W,N,S colums for each l-column in the 2D-l space
    l = 0
@@ -763,7 +763,7 @@ SUBROUTINE bathy
    END DO; END DO;
 !.....Allocate space for arrays.....
    CALL AllocateSpace
-   
+
    !.....Define layer No. for bottom cell (kmz) &
    !     bottom depth from datum at zeta-points (hhs).....
    hhs = ZERO;
@@ -828,26 +828,26 @@ SUBROUTINE bathy
    !.....Define bottom depths from datum at u- and v- points
    hhu = ZERO;
    hhv = ZERO;
-   
-   DO j = 1,jm; DO i = 1,im;   
-      IF(mask2d(i+1,j) .AND. mask2d(i,j)) THEN   
+
+   DO j = 1,jm; DO i = 1,im;
+      IF(mask2d(i+1,j) .AND. mask2d(i,j)) THEN
         l=ij2l(i,j)
         hhu(l) = MIN(hhs(lEC(l)), hhs(l))
       ENDIF
-      IF(mask2d(i,j+1) .AND. mask2d(i,j)) THEN     
+      IF(mask2d(i,j+1) .AND. mask2d(i,j)) THEN
         l=ij2l(i,j)
         hhv(l) = MIN(hhs(lNC(l)), hhs(l))
       ENDIF
 
    END DO;END DO
-   
+
    !.....Process and output the bathymetry needed for
    !     graphics and particle tracking if ioutg=1.....
    IF ( ipxml > 0 ) CALL outg ( h4 )
 
    !.....Deallocate h4 pointer array.....
    DEALLOCATE ( h4 )
-   
+
 END SUBROUTINE bathy
 
 !***********************************************************************
@@ -1054,7 +1054,7 @@ SUBROUTINE outt(n,thrs)
                   & "ismooth =", I2, "  beta =", F6.3," niter =", I2/         &
                   & "iextrp =",  I2, "  f =", F7.4, "  tramp=", F9.1, 2X,     &
                   & "iupwind =", I2 )
-         WRITE (UNIT=i60, FMT=2)     
+         WRITE (UNIT=i60, FMT=2)
        2 FORMAT( 1X,"   time     ","  step     ","  zeta ","   depth   " &
                     "    u       ","  v      "," w       ",              &
                     "   Av       ","        Dv      ","  scalar    "," Tracers-> " )
@@ -1062,7 +1062,7 @@ SUBROUTINE outt(n,thrs)
        3 FORMAT( 1X,"    hrs     ","   no      ","   cm       "," m    " &
                     "   cm/s   "  ,"   cm/s   " ,"  cm/s      " ,      &
                     " cm2/s      ","     cm2/s     ","  oC        ","  g/l   -> " )
-         
+
       END DO
    END IF
 
@@ -1301,14 +1301,14 @@ SUBROUTINE outv(n)
    mon_out  = imon
    day_out  = iday
    hour_out = ihr
-   
-   
+
+
    ! ... Output sections
    DO k = 1, n_sections
      ipoints = interior_section_points (k)
-     
+
 !     ALLOCATE( out_array ( ipoints, 10 ), STAT=istat )
-     
+
 !     IF (istat /= 0) THEN
 !       PRINT *, 'ERROR in out_V_plane allocating space for out_array'
 !     STOP
@@ -1340,20 +1340,20 @@ SUBROUTINE outv(n)
          ENDIF
          out_array(k_out,10) = 0.5 * (Dv (m2,l) + Dv (m2+1,l))
        END DO
-       
+
      END DO
-     
+
      ! ... Id # for plane file
      section_id = section_id0 + k
-     
+
      ! ... Print time stamp followed by the records
      WRITE(section_id) n,year_out,mon_out,day_out,hour_out,        &
     &            ((out_array(m1,m2),m2=1,10),m1=1,ipoints)
-     
+
 !     DEALLOCATE (out_array)
-     
+
    END DO
-   
+
 !   DEALLOCATE (out_array)
    ELSE
 
@@ -1462,10 +1462,10 @@ SUBROUTINE outNB(n,thrs)
    !.....Local variables.....
    CHARACTER (LEN = 12) :: xfile, Ifile
    INTEGER :: nboid, m1, m2, ios, istat, ipts, ko, iboid
-   INTEGER :: i , j , k , l, kmx, kmy, js, je, is, ie, icl, lv 
+   INTEGER :: i , j , k , l, kmx, kmy, js, je, is, ie, icl, lv
    INTEGER :: ii, jj, kk, iis, iie, jjs, jje, kks, kke, nn
    REAL    :: dzi, uflow, uflowi, vflow, vflowi, dflow,dzi2
-   REAL, ALLOCATABLE, DIMENSION(:,:) :: outvar 
+   REAL, ALLOCATABLE, DIMENSION(:,:) :: outvar
    INTEGER, PARAMETER:: iboid0 = 20
 
    ! ... Return if interior boundaries are not requested
@@ -1492,10 +1492,10 @@ SUBROUTINE outNB(n,thrs)
        OPEN(unit=iboid,file=Ifile,FORM='FORMATTED'  ,IOSTAT=ios)
        IF(ios /= 0) THEN
          PRINT *, "Error opening xfile = ", nn, ios; STOP
-       ENDIF 
+       ENDIF
        !... Write side of nested boundary (i.e. N, S, E or W)
        WRITE(nboid) isdNBO(nn)
-       !... Write time information (no. of frames and time between frames) 
+       !... Write time information (no. of frames and time between frames)
        WRITE(nboid) nfrNBO(nn)
        !... Write spatial information (no. of cells) & no. of tracers
        WRITE(nboid) iptNBO(nn), ntrNBO(nn)
@@ -1509,47 +1509,47 @@ SUBROUTINE outNB(n,thrs)
      ipts = iptNBO(nn)
      ALLOCATE( outvar ( ipts, 5+ntr ), STAT=istat )
      IF (istat /= 0) CALL allocate_error (istat,30)
-   
+
      SELECT CASE (isdNBO(nn))
 
        ! East or West boundary
        CASE (1,3)
 
          ! Get i-, j- indexes for bdry. point
-         i  = isbcNBO(nn); 
-         js = jsbcNBO(nn); 
+         i  = isbcNBO(nn);
+         js = jsbcNBO(nn);
          je = jebcNBO(nn)
 
-         ! ... Assign variable values to cells within nested grid 
+         ! ... Assign variable values to cells within nested grid
          uflow = 0.0E0
          icl = 0
          DO j = js,je
            ! ... Get l- from (i,j)
            l   = ij2l(i,j)
-           lv  = l; IF (isdNBO(nn)== 1) THEN; lv = ij2l(i-1,j); ENDIF 
+           lv  = l; IF (isdNBO(nn)== 1) THEN; lv = ij2l(i-1,j); ENDIF
            ! ... Indexes for fine-grid cells in coarse-grid grid cell
-           ii  = ((i-i1)+1)*xxNBO+i1-1 
+           ii  = ((i-i1)+1)*xxNBO+i1-1
            jjs = ((j-j1)  )*xxNBO+j1
            jje = ((j-j1)+1)*xxNBO+j1-1
            kmx = kmz(l)
-           DO jj = jjs, jje 
+           DO jj = jjs, jje
              DO k = k1, kmx
                icl = icl + 1
                IF (icl > ipts) THEN
                  PRINT *, ' STOP - Counters in SUBROUTINE outNB do not agree'
                  STOP
-               ENDIF 
+               ENDIF
                outvar(icl,1) = FLOAT(ii)
-               outvar(icl,2) = FLOAT(jj) 
+               outvar(icl,2) = FLOAT(jj)
                outvar(icl,3) = FLOAT(k )
-               outvar(icl,4) = uh (k,lv) 
-               outvar(icl,5) = sal(k,l ) 
+               outvar(icl,4) = uh (k,lv)
+               outvar(icl,5) = sal(k,l )
                IF (ntr > 0) THEN
                  outvar(icl,6:5+ntr) = tracer(k,l,1:ntr)
                ENDIF
                uflow = uflow + uh(k,lv)
              ENDDO
-           ENDDO         
+           ENDDO
          ENDDO
          dzi = 0.0E0
          DO i = i1,isbcNBO(nn);
@@ -1564,20 +1564,20 @@ SUBROUTINE outNB(n,thrs)
 
        ! North or South boundaries
        CASE (2,4)
-    
+
          ! Get i-, j- indexes for bdry. point
-         j  = jsbcNBO(nn); 
-         is = isbcNBO(nn); 
+         j  = jsbcNBO(nn);
+         is = isbcNBO(nn);
          ie = iebcNBO(nn)
-    
-         ! ... Assign variable values to cells within nested grid 
+
+         ! ... Assign variable values to cells within nested grid
          icl = 0; uflow = 0.0E0
          DO i = is,ie
            ! ... Get l- from (i,j)
            l   = ij2l(i,j)
-           lv  = l; IF (isdNBO(nn)== 4) THEN; lv = ij2l(i,j-1); ENDIF 
-           ! ... Indexes for fine-grid cells within coarse-grid grid cell 
-           jj  = ((j-j1)+1)*xxNBO+j1-1 
+           lv  = l; IF (isdNBO(nn)== 4) THEN; lv = ij2l(i,j-1); ENDIF
+           ! ... Indexes for fine-grid cells within coarse-grid grid cell
+           jj  = ((j-j1)+1)*xxNBO+j1-1
            iis = ((i-i1)  )*xxNBO+i1
            iie = ((i-i1)+1)*xxNBO+i1-1
            kmy = kmz(l)
@@ -1587,18 +1587,18 @@ SUBROUTINE outNB(n,thrs)
                IF (icl > ipts) THEN
                  PRINT *, ' STOP - Counters in SUBROUTINE outNB do not agree'
                  STOP
-               ENDIF 
+               ENDIF
                outvar(icl,1) = FLOAT(ii)
-               outvar(icl,2) = FLOAT(jj) 
+               outvar(icl,2) = FLOAT(jj)
                outvar(icl,3) = FLOAT(k )
-               outvar(icl,4) = vh (k,lv) 
-               outvar(icl,5) = sal(k,l ) 
+               outvar(icl,4) = vh (k,lv)
+               outvar(icl,5) = sal(k,l )
                IF (ntr > 0) THEN
                  outvar(icl,6:5+ntr) = tracer(k,l,1:ntr)
                ENDIF
                uflow = uflow + vh(k,lv)
              ENDDO
-           ENDDO         
+           ENDDO
          ENDDO
 
          ! ... Water Surface Elevation --> mass             MAC BEZNAR
@@ -1627,8 +1627,8 @@ SUBROUTINE outNB(n,thrs)
      iboid = iboid0 + nn
 
      ! ... Write variables to nesting boundary files
-     IF((MOD(n,MAX(ioNBO,1)) == 0)) THEN 
-       IF (n == 0 ) THEN     
+     IF((MOD(n,MAX(ioNBO,1)) == 0)) THEN
+       IF (n == 0 ) THEN
          WRITE(nboid) thrs,((outvar(m1,m2),m2=1,5+ntr),m1=1,ipts)
        ELSE
          WRITE(nboid) thrs,((outvar(m1,m2),m2=4,5+ntr),m1=1,ipts)
@@ -1663,10 +1663,10 @@ SUBROUTINE outNBold(n,thrs)
    !.....Local variables.....
    CHARACTER (LEN = 12) :: xfile, Ifile
    INTEGER :: nboid, m1, m2, ios, istat, ipts, ko, iboid
-   INTEGER :: i , j , k , l, kmx, kmy, js, je, is, ie, icl 
+   INTEGER :: i , j , k , l, kmx, kmy, js, je, is, ie, icl
    INTEGER :: ii, jj, kk, iis, iie, jjs, jje, kks, kke, nn
    REAL    :: dzi, uflow, uflowi, vflow, vflowi, dflow,dzi2
-   REAL, ALLOCATABLE, DIMENSION(:,:) :: outvar 
+   REAL, ALLOCATABLE, DIMENSION(:,:) :: outvar
    INTEGER, PARAMETER:: iboid0 = 20
 
    ! ... Return if interior boundaries are not requested
@@ -1694,10 +1694,10 @@ SUBROUTINE outNBold(n,thrs)
 
        IF(ios /= 0) THEN
          PRINT *, "Error opening xfile = ", nn, ios; STOP
-       ENDIF 
+       ENDIF
        !... Write side of nested boundary (i.e. N, S, E or W)
        WRITE(nboid) isdNBO(nn)
-       !... Write time information (no. of frames and time between frames) 
+       !... Write time information (no. of frames and time between frames)
        WRITE(nboid) nfrNBO(nn)
        !... Write spatial information (no. of cells) & no. of tracers
        WRITE(nboid) iptNBO(nn), ntrNBO(nn)
@@ -1711,46 +1711,46 @@ SUBROUTINE outNBold(n,thrs)
      ipts = iptNBO(nn)
      ALLOCATE( outvar ( ipts, 5+ntr ), STAT=istat )
      IF (istat /= 0) CALL allocate_error (istat,30)
-   
+
      SELECT CASE (isdNBO(nn))
 
        ! East or West boundary
        CASE (1,3)
 
          ! Get i-, j- indexes for bdry. point
-         i  = isbcNBO(nn); 
-         js = jsbcNBO(nn); 
+         i  = isbcNBO(nn);
+         js = jsbcNBO(nn);
          je = jebcNBO(nn)
 
-         ! ... Assign variable values to cells within nested grid 
+         ! ... Assign variable values to cells within nested grid
          uflow = 0.0E0
          icl = 0
          DO j = js,je
            ! ... Get l- from (i,j)
            l   = ij2l(i,j)
            ! ... Indexes for fine-grid cells in coarse-grid grid cell
-           ii  = ((i-i1)+1)*xxNBO+i1-1 
+           ii  = ((i-i1)+1)*xxNBO+i1-1
            jjs = ((j-j1)  )*xxNBO+j1
            jje = ((j-j1)+1)*xxNBO+j1-1
            kmx = kmz(l)
-           DO jj = jjs, jje 
+           DO jj = jjs, jje
              DO k = k1, kmx
                icl = icl + 1
                IF (icl > ipts) THEN
                  PRINT *, ' STOP - Counters in SUBROUTINE outNB do not agree'
                  STOP
-               ENDIF 
+               ENDIF
                outvar(icl,1) = FLOAT(ii)
-               outvar(icl,2) = FLOAT(jj) 
+               outvar(icl,2) = FLOAT(jj)
                outvar(icl,3) = FLOAT(k )
-               outvar(icl,4) = uh (k,l ) 
-               outvar(icl,5) = sal(k,l ) 
+               outvar(icl,4) = uh (k,l )
+               outvar(icl,5) = sal(k,l )
                IF (ntr > 0) THEN
                  outvar(icl,6:5+ntr) = tracer(k,l,1:ntr)
                ENDIF
                uflow = uflow + uh(k,l)
              ENDDO
-           ENDDO         
+           ENDDO
          ENDDO
          dzi = 0.0E0
          DO i = i1,isbcNBO(nn);
@@ -1762,23 +1762,23 @@ SUBROUTINE outNBold(n,thrs)
              dzi = dzi + s(l)
            ENDDO
          ENDDO
-         
+
 
        ! North or South boundaries
        CASE (2,4)
-    
+
          ! Get i-, j- indexes for bdry. point
-         j  = jsbcNBO(nn); 
-         is = isbcNBO(nn); 
+         j  = jsbcNBO(nn);
+         is = isbcNBO(nn);
          ie = iebcNBO(nn)
-    
-         ! ... Assign variable values to cells within nested grid 
+
+         ! ... Assign variable values to cells within nested grid
          icl = 0; uflow = 0.0E0
          DO i = is,ie
            ! ... Get l- from (i,j)
            l   = ij2l(i,j)
-           ! ... Indexes for fine-grid cells within coarse-grid grid cell 
-           jj  = ((j-j1)+1)*xxNBO+j1-1 
+           ! ... Indexes for fine-grid cells within coarse-grid grid cell
+           jj  = ((j-j1)+1)*xxNBO+j1-1
            iis = ((i-i1)  )*xxNBO+i1
            iie = ((i-i1)+1)*xxNBO+i1-1
            kmy = kmz(l)
@@ -1788,18 +1788,18 @@ SUBROUTINE outNBold(n,thrs)
                IF (icl > ipts) THEN
                  PRINT *, ' STOP - Counters in SUBROUTINE outNB do not agree'
                  STOP
-               ENDIF 
+               ENDIF
                outvar(icl,1) = FLOAT(ii)
-               outvar(icl,2) = FLOAT(jj) 
+               outvar(icl,2) = FLOAT(jj)
                outvar(icl,3) = FLOAT(k )
-               outvar(icl,4) = vh (k,l ) 
-               outvar(icl,5) = sal(k,l ) 
+               outvar(icl,4) = vh (k,l )
+               outvar(icl,5) = sal(k,l )
                IF (ntr > 0) THEN
                  outvar(icl,6:5+ntr) = tracer(k,l,1:ntr)
                ENDIF
                uflow = uflow + vh(k,l)
              ENDDO
-           ENDDO         
+           ENDDO
          ENDDO
 
          ! ... Water Surface Elevation --> mass
@@ -1826,7 +1826,7 @@ SUBROUTINE outNBold(n,thrs)
              dzi2 = dzi2 + s(l)
            ENDDO
          ENDDO
- 
+
      ! ... Double check whether icl = ipts
      IF ( icl .NE. ipts) THEN
        PRINT *, ' STOP - Counters in SUBROUTINE outNB do not agree'
@@ -1838,8 +1838,8 @@ SUBROUTINE outNBold(n,thrs)
      iboid = iboid0 + nn
 
      ! ... Write variables to nesting boundary files
-     IF((MOD(n,MAX(ioNBO,1)) == 0)) THEN 
-       IF (n == 0 ) THEN     
+     IF((MOD(n,MAX(ioNBO,1)) == 0)) THEN
+       IF (n == 0 ) THEN
          WRITE(nboid) thrs,((outvar(m1,m2),m2=1,5+ntr),m1=1,ipts)
        ELSE
          WRITE(nboid) thrs,((outvar(m1,m2),m2=4,5+ntr),m1=1,ipts)
@@ -1849,7 +1849,7 @@ SUBROUTINE outNBold(n,thrs)
      DEALLOCATE (outvar)
 
      ! ... Mass Balance Check
-     WRITE (UNIT=iboid, FMT='(5E20.11)') thrs, uflow, dzi*dx*dy, dzi2*dx*dy 
+     WRITE (UNIT=iboid, FMT='(5E20.11)') thrs, uflow, dzi*dx*dy, dzi2*dx*dy
 
 
    ENDDO
@@ -1873,10 +1873,10 @@ SUBROUTINE outcheckMass(n,thrs)
    !.....Local variables.....
    CHARACTER (LEN = 12) :: xfile, Ifile
    INTEGER :: nboid, m1, m2, ios, istat, ipts, ko, iboid
-   INTEGER :: i , j , k , l, kmx, kmy, js, je, is, ie, icl 
+   INTEGER :: i , j , k , l, kmx, kmy, js, je, is, ie, icl
    INTEGER :: ii, jj, kk, iis, iie, jjs, jje, kks, kke, nn
    REAL    :: dzi, uflow, uflowi, vflow, vflowi, dflow
-   REAL, ALLOCATABLE, DIMENSION(:,:) :: outvar 
+   REAL, ALLOCATABLE, DIMENSION(:,:) :: outvar
    INTEGER, PARAMETER:: iboid0 = 20
 
    ! ... Return if interior boundaries are not requested
@@ -1884,17 +1884,17 @@ SUBROUTINE outcheckMass(n,thrs)
 
    !.....Open files on first entry & write dims. of the problem
    IF( n == 0 ) THEN
-     
+
      DO nn = 1, nopen
-      
-       
-       
+
+
+
        ! ... Open files
-       
+
        iboid = iboid0 + nn
-       
+
        Ifile = "nbofilei0    "
-       
+
        IF ( nn < 10 ) WRITE ( Ifile(10:12), FMT='(I1,"  ")' ) nn
        IF ( nn>= 10 ) WRITE ( Ifile( 9:12), FMT='(I2,"  ")' ) nn
        !print *,"antes de formatear"
@@ -1902,12 +1902,12 @@ SUBROUTINE outcheckMass(n,thrs)
        !print *,"despues formt"
        IF(ios /= 0) THEN
          PRINT *, "Error opening xfile = ", nn, ios; STOP
-       ENDIF 
+       ENDIF
        !print *,"despues formt2"
        !... Write side of nested boundary (i.e. N, S, E or W)
        !WRITE(iboid) isdNBI(nn)
        !print *,"despues formt3"
-       !... Write time information (no. of frames and time between frames) 
+       !... Write time information (no. of frames and time between frames)
        !WRITE(iboid) nfrNBI(nn)
        !... Write spatial information (no. of cells) & no. of tracers
        !WRITE(iboid) iptNBI(nn), ntrNBI(nn)
@@ -1916,39 +1916,39 @@ SUBROUTINE outcheckMass(n,thrs)
    !print *,"despues de formatear iboid"
    ! ... Assing output variables and write to output files
    DO nn = 1, nopen
-      
+
 
 
      ! ... Allocate space for output variables
      ipts = iptNBI(nn)
      ALLOCATE( outvar ( ipts, 5+ntr ), STAT=istat )
      IF (istat /= 0) CALL allocate_error (istat,30)
-   
+
      SELECT CASE (isdNBI(nn))
 
        ! East or West boundary
        CASE (1,3)
 
          ! Get i-, j- indexes for bdry. point
-         i  = isbc(nn); 
-         js = jsbc(nn); 
+         i  = isbc(nn);
+         js = jsbc(nn);
          je = jebc(nn)
 
-         ! ... Assign variable values to cells within nested grid 
+         ! ... Assign variable values to cells within nested grid
          uflow = 0.0E0
          icl = 0
          DO j = js,je
            ! ... Get l- from (i,j)
            l   = ij2l(i,j)
            ! ... Indexes for fine-grid cells in coarse-grid grid cell
-           
+
            kmx = kmz(l)
-           
+
              DO k = k1, kmx
-              
+
                uflow = uflow + uh(k,l)
              ENDDO
-                 
+
          ENDDO
          dzi = 0.0E0
          DO i = i1,im;
@@ -1963,27 +1963,27 @@ SUBROUTINE outcheckMass(n,thrs)
 
        ! North or South boundaries
        CASE (2,4)
-    
+
          ! Get i-, j- indexes for bdry. point
-         j  = jsbc(nn); 
-         is = isbc(nn); 
+         j  = jsbc(nn);
+         is = isbc(nn);
          ie = iebc(nn)
-    
-         ! ... Assign variable values to cells within nested grid 
+
+         ! ... Assign variable values to cells within nested grid
          icl = 0; uflow = 0.0E0
          DO i = is,ie
 
            ! ... Get l- from (i,j)
            l   = ij2l(i,j)
-           ! ... Indexes for fine-grid cells within coarse-grid grid cell 
-           
+           ! ... Indexes for fine-grid cells within coarse-grid grid cell
+
            kmy = kmz(l)
-           
+
              DO k = k1, kmy
-               
+
                uflow = uflow + vh(k,l)
              ENDDO
-               
+
          ENDDO
 
          ! ... Water Surface Elevation --> mass
@@ -2000,19 +2000,19 @@ SUBROUTINE outcheckMass(n,thrs)
          ENDDO
 
      END SELECT
- 
-     
+
+
 
      ! ... Id # for nesting boundary file
-     
+
      iboid = iboid0 + nn
 
-     
+
 
      DEALLOCATE (outvar)
 
      ! ... Mass Balance Check
-     WRITE (UNIT=iboid, FMT='(3E20.11)') thrs, uflow, dzi*dx*dy 
+     WRITE (UNIT=iboid, FMT='(3E20.11)') thrs, uflow, dzi*dx*dy
 
 
    ENDDO
@@ -2213,7 +2213,7 @@ SUBROUTINE outh(n)
            !out_array(k_out,8) = hhs(i,j)
          END DO
        END IF
-      
+
        ! ... Id # for plane file
        plane_id = plane_id0 + k
         print *,"bh,"
@@ -2517,7 +2517,7 @@ SUBROUTINE outp(n)
      day_out  = iday
      hour_out = ihr
 
-!     ALLOCATE( out_array ( ipoints, 8 ), STAT=istat )
+!     ALLOCATE( out_array ( ipoints, 9 ), STAT=istat )
 !     IF (istat /= 0) THEN;
 !       PRINT *, 'ERROR allocating space in output routine for PTRACK'
 !       STOP
@@ -2540,14 +2540,18 @@ SUBROUTINE outp(n)
          out_array(kout,5) = up (k,l)
          out_array(kout,6) = vp (k,l)
          out_array(kout,7) = wp (k,l)
-         !out_array(kout,8) = Dv (k,l) 
-         out_array(kout,8) = Dvm (k,l) !Andrea Ptrack.Cambio Dv por Dvm
-         out_array(kout,9) = sal (k,l)!Andrea PT
+         out_array(kout,8) = Dv (k,l)
+         !out_array(kout,8) = Dvm (k,l) !Andrea Ptrack.Cambio Dv por Dvm
+         out_array(kout,9) = sal (k,l)
+         out_array(kout,10) = q2p (k,l)
+         out_array(kout,11) = q2lp (k,l)
+         out_array(kout,12) = kh (k,l)
+         out_array(kout,13) = Av (k,l)
        END DO;
      END DO
      ! ... Print time stamp followed by the records
      WRITE(ptrack_id) n,year_out,mon_out, day_out,hour_out,  &
-     &              ((out_array(m1,m2),m2=1,9),m1=1,ipoints)
+     &              ((out_array(m1,m2),m2=1,13),m1=1,ipoints)
 !     DEALLOCATE (out_array)
 
  ELSE
@@ -2558,7 +2562,7 @@ SUBROUTINE outp(n)
      day_out  = iday
      hour_out = ihr
 
-!     ALLOCATE( out_array ( ipoints, 5 ), STAT=istat )
+!     ALLOCATE( out_array ( ipoints, 10 ), STAT=istat )
 !     IF (istat /= 0) THEN;
 !       PRINT *, 'ERROR allocating space in output routine for PTRACK'
 !       STOP
@@ -2576,16 +2580,20 @@ SUBROUTINE outp(n)
          out_array(kout,2) = up(k,l)
          out_array(kout,3) = vp(k,l)
          out_array(kout,4) = wp(k,l)
-         !out_array(kout,5) = Dv(k,l)
-         out_array(kout,5) = Dvm(k,l) !Andrea Ptrack
+         out_array(kout,5) = Dv(k,l)
+         !out_array(kout,5) = Dvm(k,l) !Andrea Ptrack
          out_array(kout,6) = sal (k,l)
+         out_array(kout,7) = q2p (k,l)
+         out_array(kout,8) = q2lp (k,l)
+         out_array(kout,9) = kh (k,l)
+         out_array(kout,10) = Av (k,l)
        END DO;
      END DO
      ! ... Print time stamp followed by the records
      WRITE(ptrack_id) n,year_out,mon_out, day_out,hour_out,  &
-     &              ((out_array(m1,m2),m2=1,6),m1=1,ipoints)
-!     DEALLOCATE (out_array)
-      Dvm = 0.0   !Andrea Ptrack
+     &              ((out_array(m1,m2),m2=1,10),m1=1,ipoints)
+     !DEALLOCATE (out_array)
+     !Dvm = 0.0   !Andrea Ptrack
  END IF
 
 END SUBROUTINE outp
@@ -2606,12 +2614,12 @@ SUBROUTINE AverageOutp(n)   ! subroutine  added by ABH   marked 4 CINTIA
 !-----------------------------------------------------------------------
 
    INTEGER, INTENT(IN) :: n
-   
+
    Dvm = Dvm + Dv/100
 
   ! PRINT*,'Dvm',Dvm(20,10000)
 
- 
+
 
 END SUBROUTINE AverageOutp
 
@@ -2634,7 +2642,7 @@ SUBROUTINE outs(n,its)
 
    INTEGER, INTENT(IN) :: n
    REAL, INTENT(IN) :: its
-   
+
 
    !.....Local variables.....
    INTEGER :: i, j, k, ios, numdim_2d, numdim_3d, idt2, ihr2, imin2, isec2
@@ -2666,7 +2674,7 @@ SUBROUTINE outs(n,its)
       first_entry = .FALSE.
       OPEN ( UNIT=i96, FILE=output_file_xml, IOSTAT=ios )
       IF(ios /= 0) CALL open_error ( "Error opening "//output_file_xml, ios )
-      
+
       !.....Open the binary spacefiles.....
       OPEN ( UNIT=i97, FILE=output_file2d_bin, FORM='UNFORMATTED',        &
 	      &   ACCESS='SEQUENTIAL', IOSTAT=ios )
@@ -2676,10 +2684,10 @@ SUBROUTINE outs(n,its)
 	      &   ACCESS='SEQUENTIAL', IOSTAT=ios )
       IF(ios /= 0) CALL open_error ( "Error opening "//output_file3d_bin, &
          & ios )
-      
+
       !.....Get date and time of run for insertion into spacefile.xml.....
       CALL date_and_time ( date, time, zone, values )
-                  
+
       !.....Output titles and run parameters into header records of the xml spacefile.....
       WRITE (UNIT=i96, FMT='("<?xml version=""1.0""?>")' )
       WRITE (UNIT=i96, FMT='(1X)' )
@@ -2723,7 +2731,7 @@ SUBROUTINE outs(n,its)
          &  ihr2, imin2, isec2, TRIM(ch_idt)
       CALL compute_date ( 0.0 )     ! reset date to start time of run - idt real
       !CALL compute_date ( 0 )     ! reset date to start time of run ! idt real
-         
+
       !.....Output header records for 2-D variables into the xml spacefile.....
       WRITE (UNIT=i96, FMT='(1X)' )
       WRITE (UNIT=i96, FMT='("      <obj class=""gov.usgs.gr.GrObjectContainer""", &
@@ -2737,11 +2745,11 @@ SUBROUTINE outs(n,its)
          &                                " numDimensions=", A, ">")' )            &
          &                                TRIM(ch_numdim_2d)
       WRITE (UNIT=i96, FMT='("            <dim num=""0"" title=""Zeta"" units=""met&
-         &ers"" unitScale=""0.0001""/>")' )      
+         &ers"" unitScale=""0.0001""/>")' )
       WRITE (UNIT=i96, FMT='(1X)' )
       WRITE (UNIT=i96, FMT='("         </dataseries>")' )
-      WRITE (UNIT=i96, FMT='("      </obj>")' )    
-           
+      WRITE (UNIT=i96, FMT='("      </obj>")' )
+
       !.....Output header records for 3-D variables into the xml spacefile.....
       WRITE (UNIT=i96, FMT='(1X)' )
       WRITE (UNIT=i96, FMT='("      <obj class=""gov.usgs.gr.GrObjectContainer""", &
@@ -2757,20 +2765,20 @@ SUBROUTINE outs(n,its)
       WRITE(UNIT=i96, FMT='("            <dim num=""0"" title=""u"" ",  &
          & "units=""m/s"" unitScale=""0.0001""/>"    )' )
       WRITE(UNIT=i96, FMT='("            <dim num=""1"" title=""v"" ",  &
-         & "units=""m/s"" unitScale=""0.0001""/>"    )' )   
+         & "units=""m/s"" unitScale=""0.0001""/>"    )' )
       WRITE (UNIT=i96, FMT='("            <dim num=""2"" title=""w"" ",  &
          & "units=""m/s"" unitScale=""0.00001""/>"  )' )
       WRITE (UNIT=i96, FMT='("            <dim num=""3"" title=""dz"" ", &
          & "units=""m**2/s"" unitScale=""0.0001""/>" )' )
       WRITE (UNIT=i96, FMT='(1X)' )
-      
+
       !.....Output closing xml element end tags to spacefile.xml.....
       WRITE (UNIT=i96, FMT='("         </dataseries>")' )
       WRITE (UNIT=i96, FMT='("      </obj>")' )
       WRITE (UNIT=i96, FMT='("   </obj>")' )
       WRITE (UNIT=i96, FMT='("</gov.usgs.gr>")' )
       WRITE (UNIT=i96, FMT='(1X)' )
-      
+
    END IF
 
 END SUBROUTINE outs
@@ -3632,9 +3640,9 @@ SUBROUTINE compute_date ( itime_sec )
    !.....Compute new date.....
    isecp = isecp + itime_sec
    IF (isecp < 86400) THEN
-      isec = isecp; 
-      hrs  = isec/3600.; 
-      ihrp = NINT(hrs*100.); 
+      isec = isecp;
+      hrs  = isec/3600.;
+      ihrp = NINT(hrs*100.);
       ihr  = ihrp
       !doy  = doyp + FLOAT(itime_sec)/86400. ! idt real
       doy  = doyp +       (itime_sec)/86400. ! idt real
@@ -3644,7 +3652,7 @@ SUBROUTINE compute_date ( itime_sec )
    !isecp = MOD(isecp,86400); isec = isecp  ! idt real
    isecp = MOD(isecp,86400.); isec = isecp  ! idt real
    hrs   = isec/3600.
-   ihrp  = NINT(hrs*100.); 
+   ihrp  = NINT(hrs*100.);
    ihr = ihrp
    ! Take care of leap year
    IF (imonp == 2) THEN
@@ -3899,7 +3907,7 @@ END FUNCTION densty_s
 SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
 !***********************************************************************
 !
-!  Purpose: Interface between si3d and other models requiring 
+!  Purpose: Interface between si3d and other models requiring
 !           sources and sinks (including VT-plume model).
 !
 !  Revisions:
@@ -3921,10 +3929,10 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
    REAL(8) :: elevt, qwt, tplumt, comgpt, tplum0, comgp0, qscfm, frconot
    REAL(8), DIMENSION (1:km1) :: zamb, Tamb, DOamb ! B.C. for plume model
    REAL(8), DIMENSION (1:km1) :: qwd               ! Outflow rate for plume
-   LOGICAL, SAVE :: DiffON 
+   LOGICAL, SAVE :: DiffON
 
    ! ... Return if no points sources/sinks are specified
-   IF (iopss <= 0) RETURN 
+   IF (iopss <= 0) RETURN
 
    ! ... Define Qpss, Tpss, & Rpss for columns in each device
    DO nn = 1, npssdev
@@ -3932,7 +3940,7 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
      SELECT CASE (ptype(nn))
 
      ! ************ Section Boundary Conditions ***********************
-     CASE (-2) 
+     CASE (-2)
 
        ! ... Only do computations when there is flow
        IF (ABS(flpss(nn)) < qthrs(nn)) CYCLE
@@ -3940,38 +3948,38 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
        ! ... Only determine boundary conditions on leapfrog iterations
        IF( (n > 1) .AND. (istep > 1)) CYCLE
 
-       ! ... Interpolate forcing variables (flpss, scpss, trpss) 
-       !     to present time using time series input - 
+       ! ... Interpolate forcing variables (flpss, scpss, trpss)
+       !     to present time using time series input -
        CALL PointSourceSinkForcing (nn,thrs)
 
        ! ... Find total volume of cells holding boundary conditions
        areatot = 0.0
        DO innH = 1, iopssH(omp_get_thread_num ( )+1)
-            inn = ioph2iop(innH,omp_get_thread_num ( )+1) 
-         IF (iodev(inn) .NE. nn) CYCLE  
+            inn = ioph2iop(innH,omp_get_thread_num ( )+1)
+         IF (iodev(inn) .NE. nn) CYCLE
          ! ... Define i,j,l indexes
-         i = ipss(inn); 
-         j = jpss(inn); 
+         i = ipss(inn);
+         j = jpss(inn);
          l = ij2l(i,j);
-         ! ... Define top and bottom cells & no. of layers 	
+         ! ... Define top and bottom cells & no. of layers
          !     The diffuser is set to be one cell above the bottom
          k1s = k1z(l) ;
          kms = kmz(l) ;
          DO k = k1s, kms
-           areatot = areatot + hp(k,l) 
+           areatot = areatot + hp(k,l)
          ENDDO
        ENDDO
-     
+
 	   ! ... Determine flow rate, temp. and tracer for each cell
 	   !     Inflow rate is pressumed uniform in space
        DO innH = 1, iopssH(omp_get_thread_num ( )+1)
-            inn = ioph2iop(innH,omp_get_thread_num ( )+1) 
+            inn = ioph2iop(innH,omp_get_thread_num ( )+1)
 
-         IF (iodev(inn) .NE. nn) CYCLE 
+         IF (iodev(inn) .NE. nn) CYCLE
 
          ! ... Define i,j,l indexes
-         i = ipss(inn); 
-         j = jpss(inn); 
+         i = ipss(inn);
+         j = jpss(inn);
          l = ij2l(i,j);
 
          ! ... Define k- indexes
@@ -3980,19 +3988,19 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
 
          ! ... Loop over cells in the water column
          DO k = k1s, kms
-           Qpss(k,inn) = flpss(nn) * hp(k,l) / areatot 
+           Qpss(k,inn) = flpss(nn) * hp(k,l) / areatot
            IF (scpss(nn)<0.0 .OR. flpss(nn)<=0.0) THEN
              Tpss(k,inn) = salp (k,l)
-           ELSE 
+           ELSE
              Tpss(k,inn) = scpss(nn )
            ENDIF
            IF (ntr > 0) THEN
-             DO itr = 1, ntr 
-               IF (trpss(nn,itr)<0.0 .OR. flpss(nn)<=0.0) THEN 
+             DO itr = 1, ntr
+               IF (trpss(nn,itr)<0.0 .OR. flpss(nn)<=0.0) THEN
                  Rpss(k,inn,itr) = tracerpp(k,l,itr)
                ELSE
                  Rpss(k,inn,itr) = trpss(nn,itr)
-               ENDIF 
+               ENDIF
              ENDDO
            ENDIF
          ENDDO
@@ -4000,7 +4008,7 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
 
 
      ! ************ Bottom cell Boundary Conditions  ********************
-     CASE (-1) 
+     CASE (-1)
 
        ! ... Only do computations when there is flow
        IF (ABS(flpss(nn)) < qthrs(nn)) CYCLE
@@ -4009,127 +4017,127 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
        IF( (n > 1) .AND. (istep > 1)) CYCLE
 
        ! ... Interpolate forcing variables (flpss, scpss, trpss) for each device
-       !     to present time,  using time series input - 
+       !     to present time,  using time series input -
        CALL PointSourceSinkForcing (nn,thrs)
-      
-       DO innH = 1, iopssH(omp_get_thread_num ( )+1)
-            inn = ioph2iop(innH,omp_get_thread_num ( )+1) 
 
-         IF (iodev(inn) .NE. nn) CYCLE 
+       DO innH = 1, iopssH(omp_get_thread_num ( )+1)
+            inn = ioph2iop(innH,omp_get_thread_num ( )+1)
+
+         IF (iodev(inn) .NE. nn) CYCLE
 
          ! ... Define i,j,l indexes
-         i = ipss(inn); 
-         j = jpss(inn); 
+         i = ipss(inn);
+         j = jpss(inn);
          l = ij2l(i,j);
 
          ! ... Define k- indexes
          kms = kmz(l) ;
 
          ! ... Loop over cells in the water column
-		 Qpss(:,inn)   = 0.0; 
-		 Tpss(:,inn)   = 0.0; 
-		 Rpss(:,inn,:) = 0.0; 
+		 Qpss(:,inn)   = 0.0;
+		 Tpss(:,inn)   = 0.0;
+		 Rpss(:,inn,:) = 0.0;
 	     Qpss(kms,inn  ) = flpss(nn)
 		 !PRINT *, Qpss(kms,inn), flpss(nn)
 	     IF (scpss(nn)<0.0 .OR. flpss(nn)<=0.0) THEN
   	       Tpss(kms,inn) = salp (kms,l)
-	     ELSE 
+	     ELSE
   	       Tpss(kms,inn) = scpss(nn   )
 		 !PRINT *, scpss(nn)
          ENDIF
 	     IF (ntr > 0) THEN
-	       DO itr = 1, ntr 
-             IF (trpss(nn,itr)<0.0 .OR. flpss(nn) <= 0.0) THEN 
+	       DO itr = 1, ntr
+             IF (trpss(nn,itr)<0.0 .OR. flpss(nn) <= 0.0) THEN
   	           Rpss(kms,inn,itr) = tracerpp(kms,l,itr)
              ELSE
                Rpss(kms,inn,itr) = trpss(nn,itr)
-	         ENDIF 
+	         ENDIF
            ENDDO
          ENDIF
        ENDDO ! Loop over columns in device
-   
+
 
      ! ************ Water pumped inflow ****************************
-     CASE (0) 
+     CASE (0)
 
         PRINT *, '***************** ERROR *****************'
         PRINT *, 'Water pumped inflow still NOT incorporated'
         PRINT *, '***************** ERROR *****************'
 	    STOP
 
-      
+
      ! ************ Oxygen-gas diffuser ****************************
      CASE (1:)
 
 
        ! ... Calculate en-detrainment flows induced by diffuser
        IF (ABS(flpss(nn)) < qthrs(nn)) THEN  ! Diffuser OFF
-         DiffON = .FALSE.  
-         DO inn = 1, iopss  
-           IF (iodev(inn) .NE. nn) CYCLE 
+         DiffON = .FALSE.
+         DO inn = 1, iopss
+           IF (iodev(inn) .NE. nn) CYCLE
            Qpss (inn,:) = 0.0E0
 		   kdetr(inn  ) = km1
          ENDDO
-       ELSE                                  ! Update diffuser FLOWS          
-         IF & 
+       ELSE                                  ! Update diffuser FLOWS
+         IF &
          ( (DiffON == .FALSE.)       .OR.  & ! Diffuser is TURNED ON
          (  istep  ==  1            .AND.  & ! Update on first iterations
          (MOD(n,MAX(pdt(nn),1))==0))) THEN   ! Update every pdt time steps
 
            DiffON = .TRUE.                     ! Diffuser remains ON
            DO innH = 1, iopssH(omp_get_thread_num ( )+1)
-            inn = ioph2iop(innH,omp_get_thread_num ( )+1)       
-             IF (iodev(inn) .NE. nn) CYCLE 
-          
+            inn = ioph2iop(innH,omp_get_thread_num ( )+1)
+             IF (iodev(inn) .NE. nn) CYCLE
+
              ! ... Define i,j,l indexes
-             i = ipss(inn); 
-             j = jpss(inn); 
+             i = ipss(inn);
+             j = jpss(inn);
              l = ij2l(i,j);
 
              ! ... Define k- indexes
              k1s = k1z(l) ;
              kms = kmz(l) ;
              nwl = kms-k1s+1;
-                                         
+
              ! ... Interpolate forcing variables (flpss, scpss, trpss) for each device
-             !     to present time,  using time series input - 
+             !     to present time,  using time series input -
              CALL PointSourceSinkForcing (nn,thrs)
-         
+
              ! ... Define ambient temperatures
              Tamb(k1s:kms) = salpp(k1s:kms,l)
              Tamb(kms+1  ) = Tamb(kms);
              Tamb(1      ) = Tamb(k1s);
-          
+
              ! ... Define DO concentrations
              DOamb(k1s:kms) = tracerpp(k1s:kms,l,ntr)
              DOamb(kms+1  ) = DOamb(kms);
              DOamb(1      ) = DOamb(k1s);
-          
+
              ! ... Depths for cells in plume column from datum
              zamb(k1s  ) = hp(k1s,l)/2.
              DO k = k1s+1, kms
                zamb(k) = zamb(k-1) + (hp(k-1,l)+hp(k,l))/2.
              END DO
              zamb(kms+1) =  zamb(kms)+hp(kms,l)
-             zamb(1    ) = -zamb(k1s) 
+             zamb(1    ) = -zamb(k1s)
 
              ! ... Inputs for plume model
              dfLgth  = dfL(nn)         ;       ! Length of diffuser
-             rjulday = doy             ;       ! Julian day (arbitrary) 
+             rjulday = doy             ;       ! Julian day (arbitrary)
              wselev  = 0.0000          ;       ! Elevation of free surface
              ksrc    = kms-1           ;       ! Layer No. where diffuser is located
-             dfelev  = -zamb(ksrc)     ;       ! Elevation of diffuser  
+             dfelev  = -zamb(ksrc)     ;       ! Elevation of diffuser
              hcell   = ddz             ;       ! Pressumed constant - thickess of cells
              qwd     = 0.0E0           ;       ! Initialize qwd
-             qscfm   = flpss(nn)       ;       ! Air flow rate 
+             qscfm   = flpss(nn)       ;       ! Air flow rate
              frconot = 0.21            ;       ! Fraction of O2 in air (not used?)
-			 lambnot = lambda(nn)      ;       ! Half-width 
+			 lambnot = lambda(nn)      ;       ! Half-width
 			 diamm   = diammb(nn)      ;       ! Initial bubble diameter
              IF (ptype(nn) <= 2) THEN
                plmdim = 1 ! Linear Plume
-             ELSE 
+             ELSE
                plmdim = 2 ! Circular Plume
-             ENDIF 
+             ENDIF
 
              ! ... Run plume model
              CALL lineplu_v1(iyr,rjulday,wselev,dfelev,kms,dfLgth, &
@@ -4140,42 +4148,42 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
                                Tamb (1:kms),                       &
                                DOamb(1:kms),                       &
                                elevt, qwt , tplumt, comgpt,        &
-                               qwd(1:ksrc), ktop) 
+                               qwd(1:ksrc), ktop)
 
-             ! ....Detrainment cell - save it for later 
+             ! ....Detrainment cell - save it for later
              kdetr(inn) = ktop
 
              ! ... Define flow at cells
-             Qpss(:,inn)   = 0.0; 
+             Qpss(:,inn)   = 0.0;
 
-             ! ... Define flow at entrainment cells 
-             DO k = ktop+1,ksrc  
-                Qpss(k,inn) = -qwd(k)*dy/dfLgth 
+             ! ... Define flow at entrainment cells
+             DO k = ktop+1,ksrc
+                Qpss(k,inn) = -qwd(k)*dy/dfLgth
              ENDDO
-    
+
              ! ... Define flow at detrainment cell to force volume conservation
-             Qpss(ktop,inn) = -SUM(Qpss(ktop+1:ksrc,inn)); 
+             Qpss(ktop,inn) = -SUM(Qpss(ktop+1:ksrc,inn));
 
              PRINT *, '****************************************************'
-             PRINT *, '----OUTPUT FROM PLUME ROUTINES----------------------' 
-             PRINT *, '****************************************************'  
+             PRINT *, '----OUTPUT FROM PLUME ROUTINES----------------------'
+             PRINT *, '****************************************************'
              PRINT *, 'Results of Plume Model elev', elevt, ktop
              PRINT *, 'Resutls of Plume Model qwt ', qwt
              PRINT *, 'Results of Plume Model T&O ', tplumt, comgpt
              PRINT *, '****************************************************'
            ENDDO
-         ENDIF 
+         ENDIF
        ENDIF
 
-       ! ... Define temperature of entrained and detrained water in plume 
-       !     based on existing values of Qpss & temperatures  
+       ! ... Define temperature of entrained and detrained water in plume
+       !     based on existing values of Qpss & temperatures
        DO innH = 1, iopssH(omp_get_thread_num ( )+1)
-            inn = ioph2iop(innH,omp_get_thread_num ( )+1)    
-         IF (iodev(inn) .NE. nn) CYCLE 
-         
+            inn = ioph2iop(innH,omp_get_thread_num ( )+1)
+         IF (iodev(inn) .NE. nn) CYCLE
+
          ! ... Define i,j,l indexes
-         i = ipss(inn); 
-         j = jpss(inn); 
+         i = ipss(inn);
+         j = jpss(inn);
          l = ij2l(i,j);
 
          ! ... Define k- indexes
@@ -4183,7 +4191,7 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
          kms = kmz(l) ;
          nwl = kms-k1s+1;
          Tpss(:,inn) = salpp(:,l)
-         k = kdetr(inn); 
+         k = kdetr(inn);
          IF (k < kms) THEN
            DO kk = k+1,kms
              Tsource  = Tsource + salpp(kk,l)*Qpss(kk,inn)
@@ -4194,28 +4202,28 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
          ENDIF
          Tpss(k,inn) = Tsource
 
-         ! ... Define tracer concentrations in entrained & detrained water 
-         !     in the plume (assumes dx = dy) based on existing values of 
+         ! ... Define tracer concentrations in entrained & detrained water
+         !     in the plume (assumes dx = dy) based on existing values of
          !     Qpss, tracer concs. and location of detrainment cell
          IF (ntr > 0) THEN
            DO itr = 1, ntr
-             Rpss(:,inn,itr) = tracerpp(:,l,itr) 
-             k = kdetr(inn); 
+             Rpss(:,inn,itr) = tracerpp(:,l,itr)
+             k = kdetr(inn);
              IF (k < kms) THEN
-               Rsource = 0.0 
-               DO kk = k+1,kms  
+               Rsource = 0.0
+               DO kk = k+1,kms
                  Rsource  = Rsource + tracerpp(kk,l,itr) * Qpss(kk,inn)
-               ENDDO  
+               ENDDO
                Rsource = Rsource/SUM(Qpss(k+1:kms,inn))+  &
                          trpss(nn,itr)*dy/dfL(nn)/Qpss(k,inn)
              ELSE
                Rsource = trpss(nn,itr)*dy/dfL(nn)/Qpss(k,inn)
-             ENDIF  
-             Rpss(k,inn,itr) = Rsource  
+             ENDIF
+             Rpss(k,inn,itr) = Rsource
            ENDDO
          ENDIF
        ENDDO
-          
+
      END SELECT
 
    ENDDO
@@ -4228,7 +4236,7 @@ SUBROUTINE PointSourceSinkInput
 !
 !  Purpose: This routine is called at the beginning of the program
 !           to open any files with data for point sources/sinks - it will
-!           read the time series data and assign the initial values at time t=0.  
+!           read the time series data and assign the initial values at time t=0.
 !
 !------------------------------------------------------------------------
 
@@ -4236,34 +4244,34 @@ SUBROUTINE PointSourceSinkInput
    INTEGER :: i, j, k, l, nn, itr, ios, istat, nptspss, ncdev
    CHARACTER(LEN=14) :: pssfmt, pssfile
 
-   ! ... Allocate space for device characteristics           
+   ! ... Allocate space for device characteristics
    ALLOCATE (  ptype (npssdev), &               ! Type of device simulated
                dfL   (npssdev), &               ! Length of diffuser (not allways used)
 			   pdt   (npssdev), &               ! Update frequency of forcing variables
                diammb(npssdev), &               ! Initial diameter of bubbles
 			   lambda(npssdev), &			    ! Half-width of the plume
-               idetr (npssdev), & 
-			   STAT = istat)   
+               idetr (npssdev), &
+			   STAT = istat)
    IF (istat /= 0) CALL allocate_error ( istat, 22 )
 
-   ! ... Allocate space for input information on forcing variables pss - 
+   ! ... Allocate space for input information on forcing variables pss -
    ALLOCATE (  flpss (npssdev), scpss (npssdev), &
-               uEpss (npssdev), uWpss (npssdev), & 
-               vNpss (npssdev), vSpss (npssdev), & 
+               uEpss (npssdev), uWpss (npssdev), &
+               vNpss (npssdev), vSpss (npssdev), &
                qthrs (npssdev), STAT = istat)
    IF (istat /= 0) CALL allocate_error ( istat, 22 )
    IF (ntr > 0) THEN
-      ALLOCATE (trpss (npssdev,ntr), STAT=istat) 
+      ALLOCATE (trpss (npssdev,ntr), STAT=istat)
       IF (istat /= 0) CALL allocate_error ( istat, 23 )
    ENDIF
 
    ! ... Allocate space for variables holding column information
    ALLOCATE (  kdetr (iopss), STAT = istat)
    IF (istat /= 0) CALL allocate_error ( istat, 24 )
-    
+
    !               -----Read files with pss data-----
 
-   ! ----Loop over npssdev to Open & read files with pss data-----  
+   ! ----Loop over npssdev to Open & read files with pss data-----
    DO nn = 1, npssdev
 
       ! ... Construct file name (beware that nopen cannot be > 99)
@@ -4299,7 +4307,7 @@ SUBROUTINE PointSourceSinkInput
       SELECT CASE (ptype(nn))
 
       ! ************** Section boundary inflows **************
-      CASE (-2)     
+      CASE (-2)
 
         ! Read how water is detrained at east face
         READ (UNIT=i52, FMT='(A)', IOSTAT=ios) commentline
@@ -4313,7 +4321,7 @@ SUBROUTINE PointSourceSinkInput
         ! Read how water is detrained at north face
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) vNpss(nn)
         IF (ios /= 0) CALL input_error ( ios, 49 )
- 
+
         ! Read how water is detrained at south face
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) vSpss(nn)
         IF (ios /= 0) CALL input_error ( ios, 49 )
@@ -4331,20 +4339,20 @@ SUBROUTINE PointSourceSinkInput
         END DO
 
         ! ... Assign initial values to forcing variables
-        flpss (nn) = varspss(nn,1,1) ! Flow rate 
+        flpss (nn) = varspss(nn,1,1) ! Flow rate
         scpss (nn) = varspss(nn,2,1) ! Active scalar concentration (temp.)
         IF (ntr > 0) THEN
           DO itr = 1, ntr
-            trpss(nn,itr) = varspss(nn,2+itr,1) ! Tracer load 
+            trpss(nn,itr) = varspss(nn,2+itr,1) ! Tracer load
           ENDDO
         ENDIF
 
-        ! ... Set idetr to 1 - (default value) 
-		idetr(nn) = 1; 
+        ! ... Set idetr to 1 - (default value)
+		idetr(nn) = 1;
 
         ! *************** Cell inflows ***********************
-        CASE (-1)   
-        
+        CASE (-1)
+
         ! Read how water is detrained at east face
         READ (UNIT=i52, FMT='(A)', IOSTAT=ios) commentline
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) uEpss(nn)
@@ -4357,7 +4365,7 @@ SUBROUTINE PointSourceSinkInput
         ! Read how water is detrained at north face
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) vNpss(nn)
         IF (ios /= 0) CALL input_error ( ios, 50 )
- 
+
         ! Read how water is detrained at south face
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) vSpss(nn)
         IF (ios /= 0) CALL input_error ( ios, 50 )
@@ -4375,36 +4383,36 @@ SUBROUTINE PointSourceSinkInput
         END DO
 
         ! ... Assign initial values to forcing variables
-        flpss (nn) = varspss(nn,1,1) ! Flow rate 
+        flpss (nn) = varspss(nn,1,1) ! Flow rate
         scpss (nn) = varspss(nn,2,1) ! Active scalar concentration (temp.)
         IF (ntr > 0) THEN
           DO itr = 1, ntr
-            trpss(nn,itr) = varspss(nn,2+itr,1) ! Tracer load 
+            trpss(nn,itr) = varspss(nn,2+itr,1) ! Tracer load
           ENDDO
         ENDIF
 
-        ! ... Set idetr to 1 - (default value) 
-        idetr(nn) = 1; 
+        ! ... Set idetr to 1 - (default value)
+        idetr(nn) = 1;
 
-      ! ************* Water Pumped inflows ***************** 
-      CASE (0) 
-	  
+      ! ************* Water Pumped inflows *****************
+      CASE (0)
+
         PRINT *, '***************** ERROR *****************'
         PRINT *, 'Water pumped inflow still NOT incorporated'
         PRINT *, '***************** ERROR *****************'
         STOP
 
       ! ******** Plume oxygenation models *******************
-      CASE (1:) 
-	    
-        ! Make sure that, at least, one tracer is simulated 
-        ! which corresponds to oxygen 
+      CASE (1:)
+
+        ! Make sure that, at least, one tracer is simulated
+        ! which corresponds to oxygen
         IF (ntr < 1) THEN
           PRINT *, '***************** ERROR *****************'
           PRINT *, 'No. of tracers should be > 1 to simulate '
           PRINT *, 'the addition of oxygen through the plumes'
           PRINT *, '***************** ERROR *****************'
-          STOP         
+          STOP
         ENDIF
 
         ! Read how water is detrained at west face
@@ -4419,7 +4427,7 @@ SUBROUTINE PointSourceSinkInput
         ! Read how water is detrained at east face
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) uEpss(nn)
         IF (ios /= 0) CALL input_error ( ios, 51 )
- 
+
         ! Read how water is detrained at south face
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) vSpss(nn)
         IF (ios /= 0) CALL input_error ( ios, 51 )
@@ -4427,7 +4435,7 @@ SUBROUTINE PointSourceSinkInput
         ! Read flow threshold - to determine when it works and when not
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) qthrs(nn)
         IF (ios /= 0) CALL input_error ( ios, 51 )
-      
+
         ! Read how water velocity at detrainment cell is calculated
         READ (UNIT=i52, FMT='(A)', IOSTAT=ios) commentline
         READ (UNIT=i52, FMT='(10X,I11)', IOSTAT=ios) idetr(nn)
@@ -4448,15 +4456,15 @@ SUBROUTINE PointSourceSinkInput
         ! Read atmospheric pressure (Pascals)
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) patm
         IF (ios /= 0) CALL input_error ( ios, 51 )
-  
+
         ! Read constant sediment oxygen demand
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) k4sod
         IF (ios /= 0) CALL input_error ( ios, 51 )
 
-        ! Read frequency of update 
+        ! Read frequency of update
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) pdt(nn)
         IF (ios /= 0) CALL input_error ( ios, 51 )
-        
+
         ! Read data array
         READ (UNIT=i52, FMT='(A)', IOSTAT=ios) commentline
         DO j = 1, nptspss
@@ -4465,12 +4473,12 @@ SUBROUTINE PointSourceSinkInput
            IF (ios /= 0) CALL input_error ( ios, 51 )
         END DO
 
-        ! ... Assign values to forcing variables 
+        ! ... Assign values to forcing variables
         !     (ntr should be >= 1 otherwise the model issues an error message)
-        flpss (nn) = varspss(nn,1,1) ! Flow rate 
+        flpss (nn) = varspss(nn,1,1) ! Flow rate
         scpss (nn) = varspss(nn,2,1) ! Active scalar concentration (temp.) - Not used here
-        DO itr = 1, ntr              ! Tracer loads - 
-          trpss(nn,itr) = varspss(nn,2+itr,1) ! Tracer load 
+        DO itr = 1, ntr              ! Tracer loads -
+          trpss(nn,itr) = varspss(nn,2+itr,1) ! Tracer load
         ENDDO
 
         ! ... Calculate diffuser length & set kdetr to default values
@@ -4481,7 +4489,7 @@ SUBROUTINE PointSourceSinkInput
             ncdev    = ncdev + 1
           ENDIF
         ENDDO
-        dfL(nn) = ncdev * idx 
+        dfL(nn) = ncdev * idx
 
      END SELECT
 
@@ -4496,7 +4504,7 @@ END SUBROUTINE PointSourceSinkInput
 SUBROUTINE PointSourceSinkForcing (nn,thrs)
 !************************************************************************
 !
-!  Purpose: To assign values of flow, temperature and tracer loads 
+!  Purpose: To assign values of flow, temperature and tracer loads
 !           in sources and sinks devices
 !
 !------------------------------------------------------------------------
@@ -4506,7 +4514,7 @@ SUBROUTINE PointSourceSinkForcing (nn,thrs)
    REAL, INTENT(IN) :: thrs
    REAL    :: dthrs_pss
    INTEGER :: i, j, k, l, itr
- 
+
    ! ... Time (hrs) between consecutive records in files
    dthrs_pss = dtsecpss/3600.
 
@@ -4522,4 +4530,3 @@ SUBROUTINE PointSourceSinkForcing (nn,thrs)
 END SUBROUTINE PointSourceSinkForcing
 
 END MODULE si3d_utils
-

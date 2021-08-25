@@ -9,7 +9,7 @@
 !
 !-------------------------------------------------------------------------
 
-  
+
   USE si3d_Types
   USE turbulence,  only: turb_method
   USE turbulence,  only: init_turbulence, do_turbulence
@@ -83,7 +83,7 @@ SUBROUTINE UpdateMixingCoefficients(Bstart,Bend,istep,uairB,vairB,cdwB, &
    SELECT CASE (iturb)
 
    !          ----- Inteface with GOTM -------
-   CASE(-1) 
+   CASE(-1)
 
 
      ! ... Solve only on the last iteration in each time step
@@ -99,7 +99,7 @@ SUBROUTINE UpdateMixingCoefficients(Bstart,Bend,istep,uairB,vairB,cdwB, &
        !i = l2i(ll); j = l2j(ll);
 
        !.....Compute the number of wet layers.....
-       kms = kmz(ll); k1s = k1z(ll) 
+       kms = kmz(ll); k1s = k1z(ll)
        nwlayers = (kms-k1s) + 1
 
        ! ... Ignore 1-layer colums
@@ -109,8 +109,8 @@ SUBROUTINE UpdateMixingCoefficients(Bstart,Bend,istep,uairB,vairB,cdwB, &
        ! Note that MM, NN, and hl are ordered from bottom to top
        ! i.e. bottom layer (km) = 1 and top layer = nwlayers
        ! following Gotm convention
-       MM = 0.0; NN = 0.0; m = 0; depth = 0; hl = 0.0; 
-       DO k = kms, k1s+1,-1 
+       MM = 0.0; NN = 0.0; m = 0; depth = 0; hl = 0.0;
+       DO k = kms, k1s+1,-1
 
          ! ... Update counter
          m = m + 1
@@ -123,15 +123,15 @@ SUBROUTINE UpdateMixingCoefficients(Bstart,Bend,istep,uairB,vairB,cdwB, &
          deltaz(k) = 0.5 * (hp  (k-1,ll) + hp  (k,ll))
          rhoavg(k) = 0.5 * (rhop(k-1,ll) + rhop(k,ll)) + 1000.
          drhodz(k) = (rhop(k-1,ll) - rhop(k,ll))/deltaz(k)
-         NN    (m) = - g * drhodz(k) / rhoavg(k) 
-         
-         ! ... Evaluate shear frequency MM          
+         NN    (m) = - g * drhodz(k) / rhoavg(k)
+
+         ! ... Evaluate shear frequency MM
          !dudz  (k) = 0.5*(up(k-1,ll)+up(k-1,lWC(ll))-   &
          !&                up(k  ,ll)-up(k  ,lWC(ll)))/deltaz(k)
          !dvdz  (k) = 0.5*(vp(k-1,ll)+vp(k-1,lSC(ll))-   &
          !&                vp(k  ,ll)-vp(k  ,lSC(ll)))/deltaz(k)
-         !MM    (m) =  dudz(k) **2. + dvdz(k)**2. 
-         
+         !MM    (m) =  dudz(k) **2. + dvdz(k)**2.
+
          ! ... The following lines follow GOTM meanflow routines
          uup  = 0.5*(u  (k-1,ll)+u  (k-1,lWC(ll)))
          udn  = 0.5*(u  (k  ,ll)+u  (k  ,lWC(ll)))
@@ -164,9 +164,9 @@ SUBROUTINE UpdateMixingCoefficients(Bstart,Bend,istep,uairB,vairB,cdwB, &
        depth   = depth + hp(k1s,ll)
 
        ! ... Bottom friction velocity .......................
-       taub  = cd  * ( (0.5*(u(kms,ll) + u(kms,lWC(ll))))**2.&          
+       taub  = cd  * ( (0.5*(u(kms,ll) + u(kms,lWC(ll))))**2.&
        &            +  (0.5*(v(kms,ll) + v(kms,lSC(ll))))**2.)
-       
+
        !  compute the friction velocity at the bottom (from gotm code friction.F90)
        !  compute the factor r (version 1, with log-law)
        !rr=kappa/(log((z0b+dz(kms)/2)/z0b))
@@ -177,46 +177,46 @@ SUBROUTINE UpdateMixingCoefficients(Bstart,Bend,istep,uairB,vairB,cdwB, &
 
 
        ! ... Surface friction velocity ......................
-       usurf = 0.5*(up(k1u(ll),ll) + up(k1u(lWC(ll)),lWC(ll)) )           
-       vsurf = 0.5*(vp(k1v(ll),ll) + vp(k1v(lSC(ll)),lSC(ll)) ) 
+       usurf = 0.5*(up(k1u(ll),ll) + up(k1u(lWC(ll)),lWC(ll)) )
+       vsurf = 0.5*(vp(k1v(ll),ll) + vp(k1v(lSC(ll)),lSC(ll)) )
        taus  = cdw(ll)*rhoair * ((uair(ll)-usurf)**2.+     &
        &                          (vair(ll)-vsurf)**2.)
        ustars = sqrt(taus/1000.)
 
        ! ... Calculate bottom roughness z0b
-       z0b = 0.03*h0b 
+       z0b = 0.03*h0b
 
        ! ... Calculate surface roughness z0s
        z0s = MAX(charnock_val * (ustars**2.)/g, z0s_min)
 
        ! ... Set tke, eps, L & diff. to stored values in si3d
        m = 0
-       DO k = kms, k1s+1,-1 
+       DO k = kms, k1s+1,-1
          m = m + 1
          L   (m) = si3dlen(k,ll)
          eps (m) = si3deps(k,ll)
          tke (m) = si3dtke(k,ll)
-         tkeo(m) = si3dtke(k,ll) 
+         tkeo(m) = si3dtke(k,ll)
          num (m) = Av     (k,ll) - AvMolecular
          nuh (m) = Dv     (k,ll) - DvMolecular
        ENDDO
 
        ! ... Udate tke, eps, L & diff.
-       CALL do_turbulence(nwlayers,copydt,depth,ustars,ustarb,z0s,z0b,  & 
+       CALL do_turbulence(nwlayers,copydt,depth,ustars,ustarb,z0s,z0b,  &
                           hl(0:nwlayers),NN(0:nwlayers),MM(0:nwlayers))
- 
+
        ! ... Save updated tke, eps, L & diff. in si3d variables
        m = 0
-       DO k = kms, k1s+1,-1 
+       DO k = kms, k1s+1,-1
          m = m + 1
          si3dlen(k,ll) = L   (m)
-         si3deps(k,ll) = eps (m) 
-         si3dtke(k,ll) = tke (m) 
+         si3deps(k,ll) = eps (m)
+         si3dtke(k,ll) = tke (m)
          Av     (k,ll) = num (m) + AvMolecular
          Dv     (k,ll) = nuh (m) + DvMolecular
        ENDDO
 
-       ! ... Assign transfer coefficients at top & bottom surfaces 
+       ! ... Assign transfer coefficients at top & bottom surfaces
        Av(1:k1s,ll) = 0.0; Av(kms+1:km1,ll) = 0.0
        Dv(1:k1s,ll) = 0.0; Dv(kms+1:km1,ll) = 0.0
 
@@ -631,12 +631,12 @@ END SUBROUTINE tridT
 
    SELECT CASE (iturb)
 
-   ! ... GOTM 
+   ! ... GOTM
    CASE(-1)
 
      CALL init_turbulence(namlst,'gotmturb.nml',km)
      CALL init_tridiagonal(km)
-     ! Note - if we do not use KPP methods we do not have to initializeq 
+     ! Note - if we do not use KPP methods we do not have to initializeq
      ! equation of state or kpp -
      DO m = 1, lm
        si3dtke(k1:km1,m) = tke
@@ -673,12 +673,12 @@ END SUBROUTINE tridT
    ! ... Original si3D implementation
    CASE (1)
 
-     ! ... Fundamental parameters & combinations for the quasi-equilibrium 
-     !     stability functions of Kantha & Clayson (1994). 
+     ! ... Fundamental parameters & combinations for the quasi-equilibrium
+     !     stability functions of Kantha & Clayson (1994).
      t_1 = A_2 * (1.-6.*A_1/B_1)
      t_2 = 3.*A_2*(6.*A_1+B_2*(1.- C_3))
      t_3 = B_1**(-1./3.)
-     t_4 = 9.*A_1*(2.*A_1+A_2*(1.-C_2)) 
+     t_4 = 9.*A_1*(2.*A_1+A_2*(1.-C_2))
      t_5 = 9.*A_1*A_2
 
      q2   = q2_min;
@@ -890,14 +890,14 @@ END SUBROUTINE save_2EqTvars
 
 
 
-!************************************************************************ 
+!************************************************************************
  SUBROUTINE UpdateHorizontalMixingCoefficients
 !************************************************************************
 !
-!  Purpose: Calculate horizontal turbulence coefficients following 
-!  Alan Blumberg ( Turbulent Mixing Processes in Lakes, Reservours and 
+!  Purpose: Calculate horizontal turbulence coefficients following
+!  Alan Blumberg ( Turbulent Mixing Processes in Lakes, Reservours and
 !  Impoundments, Ch.4 in Physics based Modeling of Lakes ASCE). Based
-!  on Smagorinsky Model. 
+!  on Smagorinsky Model.
 !
 !  Revisions:
 !    Date            Programmer        Description of revision
@@ -913,11 +913,11 @@ END SUBROUTINE save_2EqTvars
 
   ! ... Return is fixed values of eddy viscosity are set
   SELECT CASE (ihd)
-  
+
   CASE (0,1)   ! ... Fixed horizontal eddy viscosity values entered in input file
-  
+
     !Nothing
-  
+
   CASE DEFAULT  ! ... Smagorinsky-type closure
 
     ! ... Loop over centers of cells computin kh
@@ -930,14 +930,9 @@ END SUBROUTINE save_2EqTvars
      if(liter==0) CYCLE
 
      l = id_column(liter)
-           
-      ! ... Map 3D-(i,j) from 2D-l indexes
-      i = l2i(l); j = l2j(l);
 
-      IF ( (j > jm1 - 20) .OR. (i < 571+40 .AND. j < 50)) THEN 
-         kh(:,l) = Ax0
-         CYCLE 
-      ENDIF
+      ! ... Map 3D-(i,j) from 2D-l indexes
+      !i = l2i(l); j = l2j(l);
 
       ! ... Define top & bottom layers
       kms = kmz(l); k1s = k1z(l)
@@ -953,10 +948,10 @@ END SUBROUTINE save_2EqTvars
           ! HORCON*DX*DY*SQRT((DU/DX)**2+(DV/DY)**2+.5*(DU/DY+DV/DX)**2)
           dudx = ( upp(k,l) - upp(k,lWC(l)) )/dx
           dvdy = ( vpp(k,l) - vpp(k,lSC(l)) )/dy
-          dudy = ((upp(k,lNC(l)) + upp(k,lNC(lWC(l)))) -      & 
+          dudy = ((upp(k,lNC(l)) + upp(k,lNC(lWC(l)))) -      &
               &   (upp(k,lSC(l)) + upp(k,lSC(lWC(l))))) / fourdy
-          dvdx = ((vpp(k,lEC(l)) + vpp(k,lEC(lSC(l)))) -      & 
-              &   (vpp(k,lWC(l)) + vpp(k,lWC(lSC(l))))) / fourdx 
+          dvdx = ((vpp(k,lEC(l)) + vpp(k,lEC(lSC(l)))) -      &
+              &   (vpp(k,lWC(l)) + vpp(k,lWC(lSC(l))))) / fourdx
           kh(k,l) = MAX(Ax0, horcon*dx*dy* &
                     SQRT(dudx**2.+dvdy**2.+.5*(dudy+dvdx)**2.))
         ENDIF
