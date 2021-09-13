@@ -3741,7 +3741,7 @@ END FUNCTION leap_year
    CHARACTER(LEN=25):: flux_file="ScalarBalance.txt"
    INTEGER, SAVE  :: i899 = 899
    INTEGER              :: ios, i,j,k,l,k1s, kms
-   REAL                 :: elev, uijk, vijk, wijk, rijk
+   REAL                 :: elev, uijk, vijk, wijk, rijk, z
    REAL(real_G1)  :: HeatB, OxygB, PotE, KinE
    REAL, PARAMETER  :: SpecificHeat = 4181.6
 
@@ -3775,12 +3775,14 @@ END FUNCTION leap_year
      kms = kmz(l)
      k1s = k1z(l)
      elev = hhs(l)-h(kms,l)/2.
-     rijk = densty_s(salp(kms,l),0.0,20.0)+1000.
+     z = zlevel(kms+1) - 0.5 * hp(kms,l)
+     rijk = densty_s(salp(kms,l),0.0,z)+1000.
      PotE = PotE + rijk*g*elev*h(kms,l)
      IF (k1s == kms) CYCLE
      DO k = kms-1, k1s, -1
+       z = zlevel(k+1) - 0.5 * hp(k,l)
        elev = elev + (hp(k+1,l)+hp(k,l))/2.
-       rijk = densty_s(salp(k,l),0.0,20.0)+1000.
+       rijk = densty_s(salp(k,l),0.0,z)+1000.
        PotE = PotE + rijk*g*elev*hp(k,l)
      END DO
    END DO;
@@ -3796,14 +3798,16 @@ END FUNCTION leap_year
      uijk = (up(kms,l) + up(kms  ,lWC(l)))/2.
      vijk = (vp(kms,l) + vp(kms  ,lSC(l)))/2.
      wijk = (wp(kms,l) + wp(kms+1,    l ))/2.
-     rijk = densty_s(salp(kms,l),0.0,20.0)+1000.
+     z = zlevel(kms+1) - 0.5 * hp(kms,l)
+     rijk = densty_s(salp(kms,l),0.0,z)+1000.
      KinE = KinE + 0.5*rijk*(uijk**2.+vijk**2.+wijk**2.)*h(kms,l)
      IF (k1s == kms) CYCLE
      DO k = kms-1, k1s, -1
        uijk = (up(k,l) + up(k  ,lWC(l)))/2.
        vijk = (vp(k,l) + vp(k  ,lSC(l)))/2.
        wijk = (wp(k,l) + wp(k+1,    l ))/2.
-       rijk = densty_s(salp(k,l),0.0,20.0)+1000.
+       z = zlevel(k+1) - 0.5 * hp(k,l)
+       rijk = densty_s(salp(k,l),0.0,z)+1000.
        KinE = KinE + 0.5*rijk*(uijk**2.+vijk**2.+wijk**2.)*h(k,l)
      END DO
    END DO;
@@ -3940,7 +3944,6 @@ PURE FUNCTION densty_s ( temperature, salinity, elevation )
           + 2.0816e-8*temperature + 9.1697e-10*temperature**2)
 
       densty_s = densws/(1-pressure/k)
-      ! densty_s = densw
       delta = abs(densty_s - rhoguess)
       rhoguess = densty_s
     END DO
