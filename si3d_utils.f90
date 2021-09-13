@@ -224,16 +224,16 @@ SUBROUTINE input
    IF (ntr > 0) THEN
 
      ! ... Allocate space for some arrays - they are initialized
-	 !     only if ecomod < 0, but used allways in determining
-	 !     if the tracer transport equation is used or not in subroutine fd.
+   !     only if ecomod < 0, but used allways in determining
+   !     if the tracer transport equation is used or not in subroutine fd.
      !ALLOCATE ( trct0(ntr), trcpk(ntr), trctn(ntr), &
      !          trcx0(ntr), trcy0(ntr), trcz0(ntr), &
      !           trcsx(ntr), trcsy(ntr), trcsz(ntr), STAT=istat)
      !IF (istat /= 0) CALL allocate_error ( istat, 121 )
 
      ! .... Initialize trct0 and trctn to default values
-	 trct0 = 1E7;
-	 trctn =   0;
+   trct0 = 1E7;
+   trctn =   0;
 
      ! .... Define other input variables
      SELECT CASE (ecomod)
@@ -461,7 +461,7 @@ SUBROUTINE AllocateSpace2
    ALLOCATE ( lh(num_threads), lh_aux(num_threads), &
    &          lhi(num_threads), lhf(num_threads), &
    &          id_column(lm1+((jm*num_threads*2)-(jm*2)) ),   &
-   &		  lhiE(num_threads), lhfE(num_threads), &
+   &      lhiE(num_threads), lhfE(num_threads), &
    &          lhiW(num_threads), lhfW(num_threads), &
    &          iauxs(num_threads), iauxe(num_threads), &
    &          ph(num_threads))
@@ -470,7 +470,7 @@ SUBROUTINE AllocateSpace2
    &          lhiCN(num_threads), lhfCN(num_threads), &
    &          id_columnCE(lm1+((jm*num_threads*2)-(jm*2)) ),   &
    &          id_columnCN(lm1+((jm*num_threads*2)-(jm*2)) ),   &
-   &		  lhiECE(num_threads), lhfECE(num_threads), &
+   &      lhiECE(num_threads), lhfECE(num_threads), &
    &          lhiWCE(num_threads), lhfWCE(num_threads), &
    &          lhiWCN(num_threads), lhfWCN(num_threads), &
    &          lhiECN(num_threads), lhfECN(num_threads))
@@ -1133,9 +1133,9 @@ SUBROUTINE outt(n,thrs)
      ENDIF
 
    4 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PE15.7 / &
-	                & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PE15.7 ))
+                  & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PE15.7 ))
    5 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),16(0PF15.7)/ &
-	                & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),16(0PF15.7)))
+                  & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),16(0PF15.7)))
    END DO
 
    !.....Compute CPU time spent in subroutine.....
@@ -2677,11 +2677,11 @@ SUBROUTINE outs(n,its)
 
       !.....Open the binary spacefiles.....
       OPEN ( UNIT=i97, FILE=output_file2d_bin, FORM='UNFORMATTED',        &
-	      &   ACCESS='SEQUENTIAL', IOSTAT=ios )
+        &   ACCESS='SEQUENTIAL', IOSTAT=ios )
       IF(ios /= 0) CALL open_error ( "Error opening "//output_file2d_bin, &
          & ios )
       OPEN ( UNIT=i98, FILE=output_file3d_bin, FORM='UNFORMATTED',        &
-	      &   ACCESS='SEQUENTIAL', IOSTAT=ios )
+        &   ACCESS='SEQUENTIAL', IOSTAT=ios )
       IF(ios /= 0) CALL open_error ( "Error opening "//output_file3d_bin, &
          & ios )
 
@@ -3739,11 +3739,11 @@ END FUNCTION leap_year
 
    ! ... Local Variables
    CHARACTER(LEN=25):: flux_file="ScalarBalance.txt"
-   INTEGER, SAVE	:: i899 = 899
+   INTEGER, SAVE  :: i899 = 899
    INTEGER              :: ios, i,j,k,l,k1s, kms
    REAL                 :: elev, uijk, vijk, wijk, rijk
-   REAL(real_G1)	:: HeatB, OxygB, PotE, KinE
-   REAL, PARAMETER	:: SpecificHeat = 4181.6
+   REAL(real_G1)  :: HeatB, OxygB, PotE, KinE
+   REAL, PARAMETER  :: SpecificHeat = 4181.6
 
    ! ... Open output file on first call
    IF ( n == 0 ) THEN
@@ -3775,12 +3775,12 @@ END FUNCTION leap_year
      kms = kmz(l)
      k1s = k1z(l)
      elev = hhs(l)-h(kms,l)/2.
-     rijk = densty_s(salp(kms,l),0.0)+1000.
+     rijk = densty_s(salp(kms,l),0.0,20.0)+1000.
      PotE = PotE + rijk*g*elev*h(kms,l)
      IF (k1s == kms) CYCLE
      DO k = kms-1, k1s, -1
        elev = elev + (hp(k+1,l)+hp(k,l))/2.
-       rijk = densty_s(salp(k,l),0.0)+1000.
+       rijk = densty_s(salp(k,l),0.0,20.0)+1000.
        PotE = PotE + rijk*g*elev*hp(k,l)
      END DO
    END DO;
@@ -3796,14 +3796,14 @@ END FUNCTION leap_year
      uijk = (up(kms,l) + up(kms  ,lWC(l)))/2.
      vijk = (vp(kms,l) + vp(kms  ,lSC(l)))/2.
      wijk = (wp(kms,l) + wp(kms+1,    l ))/2.
-     rijk = densty_s(salp(kms,l),0.0)+1000.
+     rijk = densty_s(salp(kms,l),0.0,20.0)+1000.
      KinE = KinE + 0.5*rijk*(uijk**2.+vijk**2.+wijk**2.)*h(kms,l)
      IF (k1s == kms) CYCLE
      DO k = kms-1, k1s, -1
        uijk = (up(k,l) + up(k  ,lWC(l)))/2.
        vijk = (vp(k,l) + vp(k  ,lSC(l)))/2.
        wijk = (wp(k,l) + wp(k+1,    l ))/2.
-       rijk = densty_s(salp(k,l),0.0)+1000.
+       rijk = densty_s(salp(k,l),0.0,20.0)+1000.
        KinE = KinE + 0.5*rijk*(uijk**2.+vijk**2.+wijk**2.)*h(k,l)
      END DO
    END DO;
@@ -3869,7 +3869,7 @@ END SUBROUTINE cputimes
 
 
 !***********************************************************************
-PURE FUNCTION densty_s ( temperature, salinity )
+PURE FUNCTION densty_s ( temperature, salinity, elevation )
 !***********************************************************************
 !
 !  Purpose: To compute density (in kg/m**3) from active scalars
@@ -3890,15 +3890,68 @@ PURE FUNCTION densty_s ( temperature, salinity )
 !-----------------------------------------------------------------------
 
     ! ... Io variables
-	REAL, INTENT(IN) :: temperature, salinity
-	REAL             :: densty_s
+  REAL, INTENT(IN) :: temperature, salinity, elevation
+  REAL             :: densty_s, rhoguess, delta, densw,   &
+                      pressureh, pressure, densws, kw, k
+    rhoguess = 1000
+    delta = 1
+    DO WHILE (delta > 1e-6)
+      pressureh = rhoguess*9.806*elevation
+      pressure = 1e-5*pressureh
 
-    densty_s =999.842594                &
-      +6.793952e-2*temperature          &
-      -9.095290e-3*temperature**2.      &
-      +1.001685e-4*temperature**3.      &
-      -1.120083e-6*temperature**4.      &
-      +6.536332e-9*temperature**5.
+      densw = 999.842594                    &
+            + 6.793952e-2*temperature       &
+            - 9.095290e-3*temperature**2    &
+            + 1.001685e-4*temperature**3    &
+            - 1.120083e-6*temperature**4    &
+            + 6.536332e-9*temperature**5
+
+      densws = densw + salinity*(0.824493 - 4.0899e-3*temperature   &
+              + 7.6438e-5*temperature**2                            &
+              - 8.2467e-7*temperature**3                            &
+              +5.3875e-9*temperature**4)                            &
+              + salinity**(3/2)*(-5.72466e-3                        &
+              + 1.0227e-4*temperature                               &
+              - 1.6546e-6*temperature**2) + 4.8314e-4*salinity**2
+
+      kw = 19652.21 + 148.4206*temperature                          &
+          - 2.327105*temperature**2                                 &
+          + 1.360477e-2*temperature**3                              &
+          - 5.155288e-5*temperature**4;
+
+      k = kw + salinity*(54.6746 - 0.603459*temperature             &
+          + 1.09987e-2*temperature**2                               &
+          - 6.1670e-5*temperature**3)                               &
+          + salinity**(3/2)*(7.944e-2                               &
+          + 1.6483e-2*temperature                                   &
+          - 5.3009e-4*temperature**2)
+
+      k = k + pressure*(3.239908                                    &
+          + 1.43713e-3*temperature + 1.16092e-4*temperature**2      &
+          - 5.77905e-7*temperature**3)                              &
+          + pressure*salinity*(2.2838e-3                            &
+          - 1.0981e-5*temperature                                   &
+          - 1.6078e-6*temperature**2)                               &
+          + 1.91075e-4*pressure*salinity**(3/2)                     &
+          + pressure**2*(8.50935e-5                                 &
+          - 6.12293e-6*temperature                                  &
+          + 5.2787e-8*temperature**2)                               &
+          + pressure**2*salinity*(-9.9348e-7                        &
+          + 2.0816e-8*temperature + 9.1697e-10*temperature**2)
+
+      densty_s = densws/(1-pressure/k)
+      ! densty_s = densw
+      delta = abs(densty_s - rhoguess)
+      rhoguess = densty_s
+    END DO
+
+
+    ! densty_s =999.842594                &
+    !   +6.793952e-2*temperature          &
+    !   -9.095290e-3*temperature**2.      &
+    !   +1.001685e-4*temperature**3.      &
+    !   -1.120083e-6*temperature**4.      &
+    !   +6.536332e-9*temperature**5.
 
 END FUNCTION densty_s
 
@@ -3970,8 +4023,8 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
          ENDDO
        ENDDO
 
-	   ! ... Determine flow rate, temp. and tracer for each cell
-	   !     Inflow rate is pressumed uniform in space
+     ! ... Determine flow rate, temp. and tracer for each cell
+     !     Inflow rate is pressumed uniform in space
        DO innH = 1, iopssH(omp_get_thread_num ( )+1)
             inn = ioph2iop(innH,omp_get_thread_num ( )+1)
 
@@ -4034,24 +4087,24 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
          kms = kmz(l) ;
 
          ! ... Loop over cells in the water column
-		 Qpss(:,inn)   = 0.0;
-		 Tpss(:,inn)   = 0.0;
-		 Rpss(:,inn,:) = 0.0;
-	     Qpss(kms,inn  ) = flpss(nn)
-		 !PRINT *, Qpss(kms,inn), flpss(nn)
-	     IF (scpss(nn)<0.0 .OR. flpss(nn)<=0.0) THEN
-  	       Tpss(kms,inn) = salp (kms,l)
-	     ELSE
-  	       Tpss(kms,inn) = scpss(nn   )
-		 !PRINT *, scpss(nn)
+     Qpss(:,inn)   = 0.0;
+     Tpss(:,inn)   = 0.0;
+     Rpss(:,inn,:) = 0.0;
+       Qpss(kms,inn  ) = flpss(nn)
+     !PRINT *, Qpss(kms,inn), flpss(nn)
+       IF (scpss(nn)<0.0 .OR. flpss(nn)<=0.0) THEN
+           Tpss(kms,inn) = salp (kms,l)
+       ELSE
+           Tpss(kms,inn) = scpss(nn   )
+     !PRINT *, scpss(nn)
          ENDIF
-	     IF (ntr > 0) THEN
-	       DO itr = 1, ntr
+       IF (ntr > 0) THEN
+         DO itr = 1, ntr
              IF (trpss(nn,itr)<0.0 .OR. flpss(nn) <= 0.0) THEN
-  	           Rpss(kms,inn,itr) = tracerpp(kms,l,itr)
+               Rpss(kms,inn,itr) = tracerpp(kms,l,itr)
              ELSE
                Rpss(kms,inn,itr) = trpss(nn,itr)
-	         ENDIF
+           ENDIF
            ENDDO
          ENDIF
        ENDDO ! Loop over columns in device
@@ -4063,7 +4116,7 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
         PRINT *, '***************** ERROR *****************'
         PRINT *, 'Water pumped inflow still NOT incorporated'
         PRINT *, '***************** ERROR *****************'
-	    STOP
+      STOP
 
 
      ! ************ Oxygen-gas diffuser ****************************
@@ -4076,7 +4129,7 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
          DO inn = 1, iopss
            IF (iodev(inn) .NE. nn) CYCLE
            Qpss (inn,:) = 0.0E0
-		   kdetr(inn  ) = km1
+       kdetr(inn  ) = km1
          ENDDO
        ELSE                                  ! Update diffuser FLOWS
          IF &
@@ -4131,8 +4184,8 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
              qwd     = 0.0E0           ;       ! Initialize qwd
              qscfm   = flpss(nn)       ;       ! Air flow rate
              frconot = 0.21            ;       ! Fraction of O2 in air (not used?)
-			 lambnot = lambda(nn)      ;       ! Half-width
-			 diamm   = diammb(nn)      ;       ! Initial bubble diameter
+       lambnot = lambda(nn)      ;       ! Half-width
+       diamm   = diammb(nn)      ;       ! Initial bubble diameter
              IF (ptype(nn) <= 2) THEN
                plmdim = 1 ! Linear Plume
              ELSE
@@ -4247,11 +4300,11 @@ SUBROUTINE PointSourceSinkInput
    ! ... Allocate space for device characteristics
    ALLOCATE (  ptype (npssdev), &               ! Type of device simulated
                dfL   (npssdev), &               ! Length of diffuser (not allways used)
-			   pdt   (npssdev), &               ! Update frequency of forcing variables
+         pdt   (npssdev), &               ! Update frequency of forcing variables
                diammb(npssdev), &               ! Initial diameter of bubbles
-			   lambda(npssdev), &			    ! Half-width of the plume
+         lambda(npssdev), &         ! Half-width of the plume
                idetr (npssdev), &
-			   STAT = istat)
+         STAT = istat)
    IF (istat /= 0) CALL allocate_error ( istat, 22 )
 
    ! ... Allocate space for input information on forcing variables pss -
@@ -4348,7 +4401,7 @@ SUBROUTINE PointSourceSinkInput
         ENDIF
 
         ! ... Set idetr to 1 - (default value)
-		idetr(nn) = 1;
+    idetr(nn) = 1;
 
         ! *************** Cell inflows ***********************
         CASE (-1)
@@ -4485,7 +4538,7 @@ SUBROUTINE PointSourceSinkInput
         ncdev = 0
         DO j = 1, iopss
           IF (iodev(j) == nn) THEN
-		    kdetr(j) = km1
+        kdetr(j) = km1
             ncdev    = ncdev + 1
           ENDIF
         ENDDO
