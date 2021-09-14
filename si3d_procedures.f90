@@ -353,7 +353,7 @@ SUBROUTINE InitializeScalarFields
    DO l = 1, lm1;
      DO k = k1, km1;
        z = zlevel(k+1) - 0.5 * hp(k,l)
-       rhop(k,l) = densty_s ( salp(k,l), t0 ,z) - 1000.
+       rhop(k,l) = densty_s ( salp(k,l), 0.04 ,z) - 1000.
        ! PRINT *, "k=",k,"k1=",k1,"km1=",km1,"Tp =",salp(k,l),"rhop=",rhop(k,l)+1000
      END DO
    END DO
@@ -3565,7 +3565,7 @@ SUBROUTINE settrap
        z = zlevel(k+1) - 0.5 * hp(k,l)
        salpp(k,l) = salp(k,l);
        salp (k,l)=(sal(k,l)+salpp(k,l))/2.
-       rhop (k,l)=densty_s(salp(k,l),t0,z)-1000.
+       rhop (k,l)=densty_s(salp(k,l),0.04,z)-1000.
        ! PRINT *, "k=",k,"kms=",kms,"k1=",k1,"Tpp =",salpp(k,l),"Tp",salp(k,l),"rhop=",rhop(k,l)
      ENDDO
 
@@ -3763,7 +3763,7 @@ SUBROUTINE save(istep)
          ! ... At s-points
          z = zlevel(k+1) - 0.5 * hp(k,l)
          salp (k,l) = sal(k,l)
-         rhop (k,l) = densty_s ( salp(k,l), t0, z) - 1000.
+         rhop (k,l) = densty_s ( salp(k,l), 0.04, z) - 1000.
        ENDDO
 
        DO k = k1, km;
@@ -3898,7 +3898,7 @@ end if
          z = zlevel(k+1) - 0.5 * hp(k,l)
          salpp(k,l) = salp(k,l)
          salp (k,l) = sal (k,l);
-         rhop (k,l) = densty_s ( salp(k,l), t0, z) - 1000.
+         rhop (k,l) = densty_s ( salp(k,l), 0.04, z) - 1000.
        ENDDO
 
        DO k = k1, km;
@@ -4068,7 +4068,7 @@ SUBROUTINE settrap2
      DO k = k1, kms
        z = zlevel(k+1) - 0.5 * hp(k,l)
        salp (k,l)= (sal(k,l)+salpp(k,l))/2.
-       rhop (k,l)=densty_s(salp(k,l),t0, z)-1000.
+       rhop (k,l)=densty_s(salp(k,l),0.04, z)-1000.
      ENDDO
 
 
