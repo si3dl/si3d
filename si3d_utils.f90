@@ -3912,10 +3912,12 @@ PURE FUNCTION densty_s ( temperature, salinity, elevation )
     ! ... Io variables
   REAL, INTENT(IN) :: temperature, salinity, elevation
   REAL             :: densty_s, rhoguess, delta, densw,   &
-                      pressureh, pressure, densws, kw, k
+                      pressureh, pressure, densws, kw, k, maxiter, iter
     rhoguess = 1000
     delta = 1
-    DO WHILE (delta > 1e-6)
+    iter = 0
+    maxiter = 5
+    DO WHILE (delta > 1e-6 .AND. iter < maxiter)
       pressureh = rhoguess*9.806*elevation
       pressure = 1e-5*pressureh
 
@@ -3959,11 +3961,13 @@ PURE FUNCTION densty_s ( temperature, salinity, elevation )
           + pressure**2*salinity*(-9.9348e-7                        &
           + 2.0816e-8*temperature + 9.1697e-10*temperature**2)
 
+
       densty_s = densws/(1-pressure/k)
       delta = abs(densty_s - rhoguess)
       rhoguess = densty_s
-    END DO
+      iter = iter + 1
 
+    END DO
 
     ! densty_s =999.842594                &
     !   +6.793952e-2*temperature          &
