@@ -3775,12 +3775,20 @@ END FUNCTION leap_year
      kms = kmz(l)
      k1s = k1z(l)
      elev = hhs(l)-h(kms,l)/2.
-     z = zlevel(kms+1) - 0.5 * hp(kms,l)
+     IF (zlevel(kms) == -100) THEN
+       z = 0.5*hp(kms,l)
+     ELSE
+       z = zlevel(kms) + 0.5 * hp(kms,l)
+     ENDIF
      rijk = densty_s(salp(kms,l),0.04,z)+1000.
      PotE = PotE + rijk*g*elev*h(kms,l)
      IF (k1s == kms) CYCLE
      DO k = kms-1, k1s, -1
-       z = zlevel(k+1) - 0.5 * hp(k,l)
+       IF (zlevel(k) == -100) THEN
+         z = 0.5*hp(k,l)
+       ELSE
+         z = zlevel(k) + 0.5 * hp(k,l)
+       ENDIF
        elev = elev + (hp(k+1,l)+hp(k,l))/2.
        rijk = densty_s(salp(k,l),0.04,z)+1000.
        PotE = PotE + rijk*g*elev*hp(k,l)
@@ -3798,7 +3806,11 @@ END FUNCTION leap_year
      uijk = (up(kms,l) + up(kms  ,lWC(l)))/2.
      vijk = (vp(kms,l) + vp(kms  ,lSC(l)))/2.
      wijk = (wp(kms,l) + wp(kms+1,    l ))/2.
-     z = zlevel(kms+1) - 0.5 * hp(kms,l)
+     IF (zlevel(kms) == -100) THEN
+       z = 0.5*hp(kms,l)
+     ELSE
+       z = zlevel(kms) + 0.5 * hp(kms,l)
+     ENDIF
      rijk = densty_s(salp(kms,l),0.04,z)+1000.
      KinE = KinE + 0.5*rijk*(uijk**2.+vijk**2.+wijk**2.)*h(kms,l)
      IF (k1s == kms) CYCLE
@@ -3806,7 +3818,11 @@ END FUNCTION leap_year
        uijk = (up(k,l) + up(k  ,lWC(l)))/2.
        vijk = (vp(k,l) + vp(k  ,lSC(l)))/2.
        wijk = (wp(k,l) + wp(k+1,    l ))/2.
-       z = zlevel(k+1) - 0.5 * hp(k,l)
+       IF (zlevel(k) == -100) THEN
+         z = 0.5*hp(k,l)
+       ELSE
+         z = zlevel(k) + 0.5 * hp(k,l)
+       ENDIF
        rijk = densty_s(salp(k,l),0.04,z)+1000.
        KinE = KinE + 0.5*rijk*(uijk**2.+vijk**2.+wijk**2.)*h(k,l)
      END DO

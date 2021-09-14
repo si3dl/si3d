@@ -352,9 +352,12 @@ SUBROUTINE InitializeScalarFields
    ! ... Initialize density field at time n-1 & n
    DO l = 1, lm1;
      DO k = k1, km1;
-       z = zlevel(k+1) - 0.5 * hp(k,l)
+       IF (zlevel(k) == -100) THEN
+         z = 0.5*hp(k,l)
+       ELSE
+         z = zlevel(k) + 0.5 * hp(k,l)
+       ENDIF
        rhop(k,l) = densty_s ( salp(k,l), 0.04 ,z) - 1000.
-       ! PRINT *, "k=",k,"k1=",k1,"km1=",km1,"Tp =",salp(k,l),"rhop=",rhop(k,l)+1000
      END DO
    END DO
 
@@ -3561,12 +3564,16 @@ SUBROUTINE settrap
 
      ! ... At s-points
      kms = kmz(l)
+     ! PRINT *, "KMS", kms,"k1",k1
      DO k = k1, kms
-       z = zlevel(k+1) - 0.5 * hp(k,l)
+       IF (zlevel(k) == -100) THEN
+         z = 0.5*hp(k,l)
+       ELSE
+         z = zlevel(k) + 0.5 * hp(k,l)
+       ENDIF
        salpp(k,l) = salp(k,l);
        salp (k,l)=(sal(k,l)+salpp(k,l))/2.
        rhop (k,l)=densty_s(salp(k,l),0.04,z)-1000.
-       ! PRINT *, "k=",k,"kms=",kms,"k1=",k1,"Tpp =",salpp(k,l),"Tp",salp(k,l),"rhop=",rhop(k,l)
      ENDDO
 
      ! ... At u-points
@@ -3761,7 +3768,11 @@ SUBROUTINE save(istep)
 
        DO k = k1, km;
          ! ... At s-points
-         z = zlevel(k+1) - 0.5 * hp(k,l)
+         IF (zlevel(k) == -100) THEN
+           z = 0.5*hp(k,l)
+         ELSE
+           z = zlevel(k) + 0.5 * hp(k,l)
+         ENDIF
          salp (k,l) = sal(k,l)
          rhop (k,l) = densty_s ( salp(k,l), 0.04, z) - 1000.
        ENDDO
@@ -3895,7 +3906,11 @@ end if
 
        DO k = k1, km;
          ! ... At s-points
-         z = zlevel(k+1) - 0.5 * hp(k,l)
+         IF (zlevel(k) == -100) THEN
+           z = 0.5*hp(k,l)
+         ELSE
+           z = zlevel(k) + 0.5 * hp(k,l)
+         ENDIF
          salpp(k,l) = salp(k,l)
          salp (k,l) = sal (k,l);
          rhop (k,l) = densty_s ( salp(k,l), 0.04, z) - 1000.
@@ -4066,7 +4081,11 @@ SUBROUTINE settrap2
      kms = kmz(l)
 
      DO k = k1, kms
-       z = zlevel(k+1) - 0.5 * hp(k,l)
+       IF (zlevel(k) == -100) THEN
+         z = 0.5*hp(k,l)
+       ELSE
+         z = zlevel(k) + 0.5 * hp(k,l)
+       ENDIF
        salp (k,l)= (sal(k,l)+salpp(k,l))/2.
        rhop (k,l)=densty_s(salp(k,l),0.04, z)-1000.
      ENDDO
