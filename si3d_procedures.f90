@@ -3565,7 +3565,6 @@ SUBROUTINE settrap
 
      ! ... At s-points
      kms = kmz(l)
-     ! PRINT *, "KMS", kms,"k1",k1
      DO k = k1, kms
        IF (zlevel(k) == -100) THEN
          z = 0.5*hp(k,l)
@@ -3777,7 +3776,7 @@ SUBROUTINE save(istep)
          ENDIF
          salp (k,l) = sal(k,l)
          rhop (k,l) = densty_s ( salp(k,l), 0.04, z) - 1000.
-         !PRINT *, "z=",z,"rho=",rhop(k,l)+1000
+         ! PRINT *, "z=",z,"rho=",rhop(k,l)+1000
        ENDDO
 
        DO k = k1, km;
