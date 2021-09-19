@@ -3914,11 +3914,12 @@ PURE FUNCTION densty_s ( temperature, salinity, elevation )
   REAL             :: densty_s, rhoguess,rhomin,rhomax,delta, densw,   &
                       pressureh, pressure, densws, kw, k, maxiter,     &
                       iter, of, ofmin, pressuremin, kmin
+    ! Fixed Method root finding for density equation with Pressure. SV
     rhoguess = 999
     delta = 1
     iter = 0
-    maxiter = 100
-    DO WHILE (delta > 1e-4 .AND. iter < maxiter)
+    maxiter = 500
+    DO WHILE (delta > 1e-5 .AND. iter < maxiter)
       pressureh = rhoguess*9.806*elevation
       pressure = 1e-5*pressureh
 
