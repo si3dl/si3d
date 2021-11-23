@@ -3780,7 +3780,7 @@ END FUNCTION leap_year
      ELSE
        z = zlevel(kms) + 0.5 * hp(kms,l)
      ENDIF
-     rijk = densty_s(salp(kms,l),0.0,z)+1000.
+     rijk = densty_s(salp(kms,l),0.00004,z)+1000.
      PotE = PotE + rijk*g*elev*h(kms,l)
      IF (k1s == kms) CYCLE
      DO k = kms-1, k1s, -1
@@ -3790,7 +3790,7 @@ END FUNCTION leap_year
          z = zlevel(k) + 0.5 * hp(k,l)
        ENDIF
        elev = elev + (hp(k+1,l)+hp(k,l))/2.
-       rijk = densty_s(salp(k,l),0.0,z)+1000.
+       rijk = densty_s(salp(k,l),0.00004,z)+1000.
        PotE = PotE + rijk*g*elev*hp(k,l)
      END DO
    END DO;
@@ -3811,7 +3811,7 @@ END FUNCTION leap_year
      ELSE
        z = zlevel(kms) + 0.5 * hp(kms,l)
      ENDIF
-     rijk = densty_s(salp(kms,l),0.0,z)+1000.
+     rijk = densty_s(salp(kms,l),0.00004,z)+1000.
      KinE = KinE + 0.5*rijk*(uijk**2.+vijk**2.+wijk**2.)*h(kms,l)
      IF (k1s == kms) CYCLE
      DO k = kms-1, k1s, -1
@@ -3823,7 +3823,7 @@ END FUNCTION leap_year
        ELSE
          z = zlevel(k) + 0.5 * hp(k,l)
        ENDIF
-       rijk = densty_s(salp(k,l),0.0,z)+1000.
+       rijk = densty_s(salp(k,l),0.00004,z)+1000.
        KinE = KinE + 0.5*rijk*(uijk**2.+vijk**2.+wijk**2.)*h(k,l)
      END DO
    END DO;
@@ -3914,60 +3914,77 @@ PURE FUNCTION densty_s ( temperature, salinity, elevation )
   REAL             :: densty_s, rhoguess,rhomin,rhomax,delta, densw,   &
                       pressureh, pressure, densws, kw, k, maxiter,     &
                       iter, of, ofmin, pressuremin, kmin
-    ! Fixed Method root finding for density equation with Pressure. SV
-    rhoguess = 999
-    delta = 1
-    iter = 0
-    maxiter = 500
-    DO WHILE (delta > 1e-5 .AND. iter < maxiter)
-      pressureh = rhoguess*9.806*elevation
-      pressure = 1e-5*pressureh
 
-      densw = 999.842594                    &
-            + 6.793952e-2*temperature       &
-            - 9.095290e-3*temperature**2    &
-            + 1.001685e-4*temperature**3    &
-            - 1.120083e-6*temperature**4    &
-            + 6.536332e-9*temperature**5
+    ! IF (elevantion < 10.01) THEN
+    !   densw = 999.842594                    &
+    !         + 6.793952e-2*temperature       &
+    !         - 9.095290e-3*temperature**2    &
+    !         + 1.001685e-4*temperature**3    &
+    !         - 1.120083e-6*temperature**4    &
+    !         + 6.536332e-9*temperature**5
+    !   densty_s = densw + salinity*(0.824493 - 4.0899e-3*temperature &
+    !         + 7.6438e-5*temperature**2                              &
+    !         - 8.2467e-7*temperature**3                              &
+    !         + 5.3875e-9*temperature**4)                             &
+    !         + salinity**(3/2)*(-5.72466e-3                          &
+    !         + 1.0227e-4*temperature                                 &
+    !         - 1.6546e-6*temperature**2) + 4.8314e-4*salinity**2
+    ! ELSE
+      ! Fixed Method root finding for density equation with Pressure. SV
+      rhoguess = 999
+      delta = 1
+      iter = 0
+      maxiter = 500
+      DO WHILE (delta > 1e-6 .AND. iter < maxiter)
+        pressureh = rhoguess*9.806*elevation
+        pressure = 1e-5*pressureh
 
-      densws = densw + salinity*(0.824493 - 4.0899e-3*temperature   &
-              + 7.6438e-5*temperature**2                            &
-              - 8.2467e-7*temperature**3                            &
-              +5.3875e-9*temperature**4)                            &
-              + salinity**(3/2)*(-5.72466e-3                        &
-              + 1.0227e-4*temperature                               &
-              - 1.6546e-6*temperature**2) + 4.8314e-4*salinity**2
+        densw = 999.842594                    &
+              + 6.793952e-2*temperature       &
+              - 9.095290e-3*temperature**2    &
+              + 1.001685e-4*temperature**3    &
+              - 1.120083e-6*temperature**4    &
+              + 6.536332e-9*temperature**5
 
-      kw = 19652.21 + 148.4206*temperature                          &
-          - 2.327105*temperature**2                                 &
-          + 1.360477e-2*temperature**3                              &
-          - 5.155288e-5*temperature**4;
+        densws = densw + salinity*(0.824493 - 4.0899e-3*temperature   &
+                + 7.6438e-5*temperature**2                            &
+                - 8.2467e-7*temperature**3                            &
+                + 5.3875e-9*temperature**4)                           &
+                + salinity**(3/2)*(-5.72466e-3                        &
+                + 1.0227e-4*temperature                               &
+                - 1.6546e-6*temperature**2) + 4.8314e-4*salinity**2
 
-      k = kw + salinity*(54.6746 - 0.603459*temperature             &
-          + 1.09987e-2*temperature**2                               &
-          - 6.1670e-5*temperature**3)                               &
-          + salinity**(3/2)*(7.944e-2                               &
-          + 1.6483e-2*temperature                                   &
-          - 5.3009e-4*temperature**2)
+        kw = 19652.21 + 148.4206*temperature                          &
+            - 2.327105*temperature**2                                 &
+            + 1.360477e-2*temperature**3                              &
+            - 5.155288e-5*temperature**4;
 
-      k = k + pressure*(3.239908                                    &
-          + 1.43713e-3*temperature + 1.16092e-4*temperature**2      &
-          - 5.77905e-7*temperature**3)                              &
-          + pressure*salinity*(2.2838e-3                            &
-          - 1.0981e-5*temperature                                   &
-          - 1.6078e-6*temperature**2)                               &
-          + 1.91075e-4*pressure*salinity**(3/2)                     &
-          + pressure**2*(8.50935e-5                                 &
-          - 6.12293e-6*temperature                                  &
-          + 5.2787e-8*temperature**2)                               &
-          + pressure**2*salinity*(-9.9348e-7                        &
-          + 2.0816e-8*temperature + 9.1697e-10*temperature**2)
+        k = kw + salinity*(54.6746 - 0.603459*temperature             &
+            + 1.09987e-2*temperature**2                               &
+            - 6.1670e-5*temperature**3)                               &
+            + salinity**(3/2)*(7.944e-2                               &
+            + 1.6483e-2*temperature                                   &
+            - 5.3009e-4*temperature**2)
 
-      densty_s = densws/(1-pressure/k)
-      delta = abs(densty_s - rhoguess)
-      rhoguess = densty_s
-      iter = iter + 1
-    END DO
+        k = k + pressure*(3.239908                                    &
+            + 1.43713e-3*temperature + 1.16092e-4*temperature**2      &
+            - 5.77905e-7*temperature**3)                              &
+            + pressure*salinity*(2.2838e-3                            &
+            - 1.0981e-5*temperature                                   &
+            - 1.6078e-6*temperature**2)                               &
+            + 1.91075e-4*pressure*salinity**(3/2)                     &
+            + pressure**2*(8.50935e-5                                 &
+            - 6.12293e-6*temperature                                  &
+            + 5.2787e-8*temperature**2)                               &
+            + pressure**2*salinity*(-9.9348e-7                        &
+            + 2.0816e-8*temperature + 9.1697e-10*temperature**2)
+
+        densty_s = densws/(1-pressure/k)
+        delta = abs(densty_s - rhoguess)
+        rhoguess = densty_s
+        iter = iter + 1
+      END DO
+    ! ENDIF
 
     ! rhomin = 990
     ! rhomax = 1020

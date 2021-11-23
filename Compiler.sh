@@ -1,8 +1,8 @@
 #!/bin/bash
 
 export FORTRAN_COMPILER=IFORT
-export SI3DDIR=/home/sv/GitHub/psi3d
-export GOTMDIR=/home/sv/GitHub/gotm
+export SI3DDIR=/mnt/c/Users/SV/Documents/GitHub/psi3d
+export GOTMDIR=/mnt/c/Users/SV/Documents/GitHub/gotm
 export MODDIR=$GOTMDIR/modules
 export INCDIR=$GOTMDIR/include
 export BINDIR=$GOTMDIR/bin
