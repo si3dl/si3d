@@ -3915,44 +3915,31 @@ PURE FUNCTION densty_s ( temperature, salinity, elevation )
                       pressureh, pressure, densws, kw, k, maxiter,     &
                       iter, of, ofmin, pressuremin, kmin
 
-    ! IF (elevantion < 10.01) THEN
-    !   densw = 999.842594                    &
-    !         + 6.793952e-2*temperature       &
-    !         - 9.095290e-3*temperature**2    &
-    !         + 1.001685e-4*temperature**3    &
-    !         - 1.120083e-6*temperature**4    &
-    !         + 6.536332e-9*temperature**5
-    !   densty_s = densw + salinity*(0.824493 - 4.0899e-3*temperature &
-    !         + 7.6438e-5*temperature**2                              &
-    !         - 8.2467e-7*temperature**3                              &
-    !         + 5.3875e-9*temperature**4)                             &
-    !         + salinity**(3/2)*(-5.72466e-3                          &
-    !         + 1.0227e-4*temperature                                 &
-    !         - 1.6546e-6*temperature**2) + 4.8314e-4*salinity**2
-    ! ELSE
+    densw = 999.842594                    &
+          + 6.793952e-2*temperature       &
+          - 9.095290e-3*temperature**2    &
+          + 1.001685e-4*temperature**3    &
+          - 1.120083e-6*temperature**4    &
+          + 6.536332e-9*temperature**5
+
+    densws = densw + salinity*(0.824493 - 4.0899e-3*temperature   &
+            + 7.6438e-5*temperature**2                            &
+            - 8.2467e-7*temperature**3                            &
+            + 5.3875e-9*temperature**4)                           &
+            + salinity**(3/2)*(-5.72466e-3                        &
+            + 1.0227e-4*temperature                               &
+            - 1.6546e-6*temperature**2) + 4.8314e-4*salinity**2
+    IF (elevation < 10.01) THEN
+      densty_s = densws
+    ELSE
       ! Fixed Method root finding for density equation with Pressure. SV
       rhoguess = 999
       delta = 1
       iter = 0
-      maxiter = 500
+      maxiter = 1000
       DO WHILE (delta > 1e-6 .AND. iter < maxiter)
         pressureh = rhoguess*9.806*elevation
         pressure = 1e-5*pressureh
-
-        densw = 999.842594                    &
-              + 6.793952e-2*temperature       &
-              - 9.095290e-3*temperature**2    &
-              + 1.001685e-4*temperature**3    &
-              - 1.120083e-6*temperature**4    &
-              + 6.536332e-9*temperature**5
-
-        densws = densw + salinity*(0.824493 - 4.0899e-3*temperature   &
-                + 7.6438e-5*temperature**2                            &
-                - 8.2467e-7*temperature**3                            &
-                + 5.3875e-9*temperature**4)                           &
-                + salinity**(3/2)*(-5.72466e-3                        &
-                + 1.0227e-4*temperature                               &
-                - 1.6546e-6*temperature**2) + 4.8314e-4*salinity**2
 
         kw = 19652.21 + 148.4206*temperature                          &
             - 2.327105*temperature**2                                 &
@@ -3984,7 +3971,7 @@ PURE FUNCTION densty_s ( temperature, salinity, elevation )
         rhoguess = densty_s
         iter = iter + 1
       END DO
-    ! ENDIF
+    END IF
 
     ! rhomin = 990
     ! rhomax = 1020
