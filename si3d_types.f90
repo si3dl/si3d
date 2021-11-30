@@ -365,39 +365,42 @@
    !         ------- ECOMOD - Water Quality   ******************************************
 
    ! ... Integer switches to deterimine if constituent is modeled
-   INTEGER:: iARB, iDO , iPON, iDON, iNH4, iNO3, iPOP, iDOP, iPO4
-   INTEGER:: iALG, iDOM, iPOM, iSOD
+   INTEGER:: iDO , iPON, iDON, iNH4, iNO3, iPOP, iDOP, iPO4
+   INTEGER:: iALG, iDOC, iPOC, iSOD
 
    ! ... Integer to determine constituent location
-   INTEGER:: LARB, LDO , LPON, LDON, LNH4, LNO3, LPOP, LDOP, LPO4
-   INTEGER:: LALG, LDOM, LPOM, LSOD
+   INTEGER:: LDO , LPON, LDON, LNH4, LNO3, LPOP, LDOP, LPO4
+   INTEGER:: LALG, LDOC, LPOC, LSOD
 
    ! ... Model Constants - read from input file and many used for calibration
    ! - Stochiometeric constants
    REAL   :: acc, anc, apc, roc, ron
+ 	
+   ! - Half-saturation values and algal prefernce for NH4	
+   REAL   :: KDOC, KNIT, KSN, KSP, FNH4, light_sat
 
-   ! - Half-saturation values and algal prefernce for NH4
-   REAL   :: KDOM, KNIT, KSN, KSP, FNH4
+														 
+									   
 
    ! - Model rates
-   REAL   :: k_a, k_arb, k_dn, k_DOM, k_ex, k_gr, k_hc
-   REAL	  :: k_hn, k_hp, k_mn, k_mor, k_mp, k_n, k_ra
-   REAL	  :: k_rs, k_set, k_setarb, k_vn, mu_max
+   REAL   :: k_a, k_dn, k_ex, k_gr, k_dcc
+   REAL	  :: k_dcn, k_dcp, k_mn, k_mor, k_mp, k_n, k_res
+   REAL	  :: k_rs, k_set, k_vn, mu_max		
 
    ! - Temperature depependence factors
-   REAL	  :: Theta_a  , Theta_arb, Theta_dn, Theta_DOM, Theta_ex
-   REAL	  :: Theta_gr , Theta_hc , Theta_hn, Theta_hp , Theta_mn
-   REAL	  :: Theta_mor, Theta_mp , Theta_mu, Theta_n  , Theta_PON
-   REAL	  :: Theta_ra , Theta_SOD, Theta_vn
+   REAL	  :: Theta_a  , Theta_dn, Theta_DOC, Theta_ex
+   REAL	  :: Theta_gr , Theta_dcc , Theta_dcn, Theta_dcp , Theta_mn
+   REAL	  :: Theta_mor, Theta_mp , Theta_mu, Theta_n 
+   REAL	  :: Theta_res , Theta_SOD						
 
    ! - Atmoshperic deposition rates
-   REAL	  :: ATM_DON, ATM_NH4, ATM_NO3, ATM_PO4, ATM_POP
+   REAL	  :: ATM_DON, ATM_NH4, ATM_NO3, ATM_PO4, ATM_DOP, ATM_DOC
 
    ! Groundwater flux rates
-   REAL	  :: GW_NH4, GW_NO3, GW_PO4
+   REAL	  :: GW_NH4, GW_NO3, GW_PO4, GW_DOC
 
    ! Sediment release rates
-   REAL	  :: J_NH4, J_NO3, J_PO4
+   REAL	  :: J_NH4, J_NO3, J_PO4, J_DOC
 
 
 

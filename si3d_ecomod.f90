@@ -8,6 +8,7 @@
 !-------------------------------------------------------------------------
 
    !USE si3d_ecomod
+   !USE si3d_BoundaryConditions
    USE si3d_types
 
    IMPLICIT NONE
@@ -407,7 +408,7 @@ SUBROUTINE WQinput
 !
 !------------------------------------------------------------
 
-
+  
   !. . . .Local Variables
   CHARACTER(LEN=12):: wq_input_file="si3d_wq.txt"
   INTEGER::		ios
@@ -421,66 +422,62 @@ SUBROUTINE WQinput
   IF (ios /= 0) CALL input_error ( ios, 91)
 
   !. . Read list of tracerpps modeled
-  READ (UNIT=i99,FMT='(///(14X,I20))',IOSTAT=ios) iARB, iDO, iPON, iDON, &
-  &    iNH4, iNO3, iPOP, iDOP, iPO4, iALG, iDOM, iPOM, iSOD
+  READ (UNIT=i99,FMT='(///(14X,I20))',IOSTAT=ios) iDO, iPON, iDON, &
+  &    iNH4, iNO3, iPOP, iDOP, iPO4, iALG, iDOC, iPOC, iSOD
   IF (ios /= 0) CALL input_error ( ios, 92)
 
   !. . . Read model stochiometeric constants
-  READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) acc, anc, apc, roc, &
-  &    ron, KDOM, KNIT, KSN, KSP, FNH4
+  READ (UNIT=i99,FMT='(///(14X,G20.3))',IOSTAT=ios) anc, apc, roc, &
+  &    ron, KNIT, KSN, KSP, FNH4, light_sat, KDOC
   IF (ios /= 0) CALL input_error ( ios, 93)
 
   !. . . Read model rates
-  READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) k_a, k_arb, k_dn,   &
-  &    k_DOM, k_ex, k_gr, k_hc, k_hn, k_hp, k_mn, k_mor, k_mp, k_n ,   &
-  &    k_ra, k_rs, k_set, k_setarb, k_vn, mu_max
+  READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) k_a, mu_max, &
+  &    k_mor, k_ex, k_res, k_gr, k_set, k_rs, &
+  &    k_dcn, k_mn, k_n, k_dn, k_dcp, k_mp, k_dcc 	
   IF (ios /= 0) CALL input_error ( ios, 94)
-
-  print*, k_a, k_arb, k_dn, k_DOM, k_ex
-  print*, k_gr, k_hc, k_hn, k_hp, k_mn
-  print*, k_mor, k_mp, k_n, k_ra, k_rs
-  print*, k_set, k_setarb, k_vn, mu_max
-
-  !... Convert model rates to time of [1/sec]
-  k_a   = k_a/3600.0
-  k_arb = k_arb/3600.0
-  k_dn  = k_dn/3600.0
-  k_DOM = k_DOM/3600.0
-  k_ex  = k_ex/3600.0
-  k_gr  = k_gr/3600.0
-  k_hc  = k_hc/3600.0
-  k_hn  = k_hn/3600.0
-  k_hp  = k_hp/3600.0
-  k_mn  = k_mn/3600.0
-  k_mor = k_mor/3600.0
-  k_mp  = k_mp/3600.0
-  k_n   = k_n/3600.0
-  k_ra  = k_ra/3600.0
-  k_rs  = k_rs/3600.0
-  k_set = k_set/3600.0
-  k_setarb = k_setarb/3600.0
-  k_vn   = k_vn/3600.0
-  mu_max = mu_max/3600.0
-
-
+  
+  print*, k_a, k_dn, k_ex
+  print*, k_gr, k_dcc, k_dcn, k_dcp, k_mn
+  print*, k_mor, k_mp, k_n, k_res, k_rs
+  print*, k_set, mu_max
+  
+  !... Convert model rates to time of [1/timestep]. Input file has 1/day values
+  k_a   = idt * k_a/86400.0
+  k_dn  = idt * k_dn/86400.0
+  k_ex  = idt * k_ex/86400.0
+  k_gr  = idt * k_gr/86400.0
+  k_dcc  = idt * k_dcc/86400.0
+  k_dcn  = idt * k_dcn/86400.0
+  k_dcp  = idt * k_dcp/86400.0
+  k_mn  = idt * k_mn/86400.0
+  k_mor = idt * k_mor/86400.0
+  k_mp  = idt * k_mp/86400.0
+  k_n   = idt * k_n/86400.0
+  k_res  = idt * k_res/86400.0
+  k_rs  = idt * k_rs/86400.0
+  mu_max = idt * mu_max/86400.0  
+  
   !. . . Read model temperature rates
-  READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) Theta_a, Theta_dn , &
-  &    Theta_DOM, Theta_gr, Theta_hc , Theta_hn, Theta_hp , Theta_mn, Theta_mor, &
-  &    Theta_mp , Theta_mu, Theta_n  , Theta_PON, Theta_ra, Theta_SOD, &
-  &    Theta_vn
+  READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) Theta_a, Theta_mu, Theta_mor, Theta_res, Theta_gr, &
+  &     Theta_dcn, Theta_mn, Theta_n  ,  Theta_dn , &
+  &     Theta_dcp , Theta_mp , Theta_dcc , Theta_DOC, Theta_SOD
+  				
   IF (ios /= 0) CALL input_error ( ios, 95)
 
   !. . . Read miscillaneous rates
   READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) ATM_DON, ATM_NH4,    &
-  &    ATM_NO3, ATM_PO4, ATM_POP, GW_NH4, GW_NO3, GW_PO4, J_NH4, J_NO3, &
-  &    J_PO4
+  &    ATM_NO3, ATM_PO4, ATM_DOP, ATM_DOC, GW_NH4, GW_NO3,  GW_PO4, GW_DOC, J_NH4, J_NO3, &
+  &    J_PO4, J_DOC					
   IF (ios /= 0) CALL input_error ( ios, 96)
 
   IF (idbg == 1) THEN
-    PRINT*, "iARB = ", iARB, "iDO  = ", iDO , "iPON = ", iPON
+    PRINT*, "iDO  = ", iDO , "iPON = ", iPON
     PRINT*, "iDON = ", iDON, "iNH4 = ", iNH4, "iNO3 = ", iNO3
     PRINT*, "iPOP = ", iPOP, "iDOP = ", iDOP, "iALG = ", iALG
-  END IF
+  END IF 
+  
+  CALL WQinit !ACortes 09/24/2021			 
 
 END SUBROUTINE WQinput
 
@@ -493,84 +490,81 @@ SUBROUTINE WQinit
 !-----------------------------------------------------------------------
 
   !. . . Local Variables
-  INTEGER, DIMENSION(ntrmax):: tracerpplocal
+  INTEGER, DIMENSION(ntrmax):: tracerpplocal		
   INTEGER:: i,j, sumtr
 
   ! ... Initialize tracerpp local
-  tracerpplocal = 0
+  tracerpplocal = 0		
 
   !. . Initialize constituent locations
-  LARB=0; LDO =0; LPON=0; LDON=0;
+  LDO =0; LPON=0; LDON=0; 
   LNH4=0; LNO3=0; LPOP=0; LDOP=0; LPO4=0
-  LALG=0; LDOM=0; LPOM=0; LSOD= 0
+  LALG=0; LDOC=0; LPOC=0; LSOD= 0
 
   !. . Assign Lxx to each constituent modeled
   !. . .. first need to define intermediate array tracerpplocal
   i=1
-  IF (iARB==1) THEN
-
-    tracerpplocal(i) = 1		! always for arbitrary constituent
-    i = i+1
-  END IF
+				   
 
   IF (iDO == 1) THEN
-    tracerpplocal(i) = 2
+    tracerpplocal(i) = 1
     i = i+1
   END IF
 
   IF (iPON == 1) THEN
-    tracerpplocal(i) = 3
+    tracerpplocal(i) = 2
     i = i+1
   END IF
 
   IF (iDON == 1) THEN
-    tracerpplocal(i) = 4
+    tracerpplocal(i) = 3
     i = i+1
   END IF
 
   IF (iNH4 == 1) THEN
-    tracerpplocal(i) = 5
+    tracerpplocal(i) = 4
     i = i+1
   END IF
 
   IF (iNO3 == 1) THEN
-    tracerpplocal(i) = 6
+    tracerpplocal(i) = 5
     i = i+1
   END IF
 
   IF (iPOP == 1) THEN
-    tracerpplocal(i) = 7
+    tracerpplocal(i) = 6
     i = i+1
   END IF
 
   IF (iDOP == 1) THEN
-    tracerpplocal(i) = 8
+    tracerpplocal(i) = 7
     i = i+1
   END IF
 
   IF (iPO4 == 1) THEN
-    tracerpplocal(i) = 9
+    tracerpplocal(i) = 8
     i = i+1
   END IF
 
   IF (iALG == 1) THEN
+    tracerpplocal(i) = 9
+    i = i+1
+  END IF
+
+  IF (iDOC == 1) THEN
     tracerpplocal(i) = 10
     i = i+1
   END IF
 
-  IF (iDOM == 1) THEN
+  IF (iPOC == 1) THEN
     tracerpplocal(i) = 11
     i = i+1
   END IF
 
-  IF (iPOM == 1) THEN
-    tracerpplocal(i) = 12
-    i = i+1
-  END IF
-
   IF (iSOD ==1) THEN
-    tracerpplocal(i) = 13
-  END IF
+    tracerpplocal(i) = 12
+		   
+  END IF			
 
   sumtr = 0
   DO j = 1, ntrmax
@@ -590,43 +584,42 @@ IF (idbg == 1) THEN
   PRINT*, "ntr = ", ntr
   PRINT*, "sumtr = ", sumtr
 END IF
-
+ 
   !. . Next define Lxx
   DO i = 1, ntr
 	IF (tracerpplocal(i) == 1) THEN
-		LARB = i
-	ELSEIF (tracerpplocal(i) == 2) THEN
 		LDO  = i
-	ELSEIF (tracerpplocal(i) == 3) THEN
+	ELSEIF (tracerpplocal(i) == 2) THEN
 		LPON = i
-	ELSEIF (tracerpplocal(i) == 4) THEN
+	ELSEIF (tracerpplocal(i) == 3) THEN
 		LDON = i
-	ELSEIF (tracerpplocal(i) == 5) THEN
+	ELSEIF (tracerpplocal(i) == 4) THEN
 		LNH4 = i
-	ELSEIF (tracerpplocal(i) == 6) THEN
+	ELSEIF (tracerpplocal(i) == 5) THEN
 		LNO3 = i
-	ELSEIF (tracerpplocal(i) == 7) THEN
+	ELSEIF (tracerpplocal(i) == 6) THEN
 		LPOP = i
-	ELSEIF (tracerpplocal(i) == 8) THEN
+	ELSEIF (tracerpplocal(i) == 7) THEN
 		LDOP = i
-	ELSEIF (tracerpplocal(i) == 9) THEN
+	ELSEIF (tracerpplocal(i) == 8) THEN
 		LPO4 = i
-	ELSEIF (tracerpplocal(i) == 10) THEN
+	ELSEIF (tracerpplocal(i) == 9) THEN
 		LALG = i
+	ELSEIF (tracerpplocal(i) == 10) THEN
+		LDOC = i
 	ELSEIF (tracerpplocal(i) == 11) THEN
-		LDOM = i
-	ELSEIF (tracerpplocal(i) == 12) THEN
-		LPOM = i
-	ELSEIF (tracerpplocal(i) == 13) THEN
+		LPOC = i
+	ELSEIF (tracerpplocal(i) == 12) THEN	  									 
 		LSOD = i
 	END IF
   END DO
 
   IF (idbg == 1) THEN
-    PRINT*, "LARB = ", LARB, "LDO  = ", LDO , "LPON = ", LPON
+    PRINT*, "LDO  = ", LDO , "LPON = ", LPON
     PRINT*, "LDON = ", LDON, "LNH4 = ", LNH4, "LNO3 = ", LNO3
     PRINT*, "LPOP = ", LPOP, "LDOP = ", LDOP, "LALG = ", LALG
-  END IF
+  END IF 
+  
 END SUBROUTINE WQinit
 
 !************************************************************
@@ -637,31 +630,31 @@ SUBROUTINE srcsnkWQ
 !
 !------------------------------------------------------------
 
+  
   !... Local variables
   INTEGER:: i,j,k,l, k1s, kms,itr
 
   ! reset soursesink = 0
-  sourcesink = 0;
+  !sourcesink = 0;
 
   DO l = 1, lm;
 
     ! ... Map l- into (i,j)-indexes .........................
-    i = l2i(l); j = l2j(l);
+    !i = l2i(l); j = l2j(l);
 
     ! ... Retrieve top & bottom wet sal-pts .................
-    kms = kmz(l)
-    k1s = k1z(l)
+    kms = kmz(j)
+    k1s = k1z(j)
 
     DO k = k1s, kms;
 
-      IF (iARB == 1) THEN
-        CALL sourceARB(k,l)
-      END IF
-      IF (iDO == 1) THEN
+      IF (iDO == 1) THEN	    
         CALL sourceDO(k,l)
       END IF
       IF (iPON == 1) THEN
+	    !IF (idbg == 1) PRINT *, " Before PON"
         CALL sourcePON(k,l)
+		 !IF (idbg == 1) PRINT *, " After PON"
       END IF
       IF (iDON == 1) THEN
         CALL sourceDON(k,l)
@@ -684,38 +677,17 @@ SUBROUTINE srcsnkWQ
       IF (iALG == 1) THEN
         CALL sourceALG(k,l)
       END IF
-      IF (iDOM == 1) THEN
-        CALL sourceDOM(k,l)
+      IF (iDOC == 1) THEN
+        CALL sourceDOC(k,l)
       END IF
-      IF (iPOM == 1) THEN
-        CALL sourcePOM(k,l)
+      IF (iPOC == 1) THEN
+        CALL sourcePOC(k,l)
       END IF
 
     END DO
   END DO
 
 END SUBROUTINE srcsnkWQ
-
-!*********************************************************************
-SUBROUTINE sourceARB(kwq,lwq)
-!********************************************************************
-!
-! Purpose: if arbitrary constituent is modeled, this subroutine
-!  calculates source and sink terms that depend on arbitrary
-!  constituent concentrations
-!
-!  for arbitrary constitucent, sink terms include decay and settling
-!-----------------------------------------------------------------------
-
-  ! ... Arguments
-  INTEGER, INTENT (IN) :: kwq,lwq
-
-
-  sourcesink(kwq,lwq,LARB) = -k_arb   *tracerpp(kwq,lwq,LARB) &
-                             -k_setarb*tracerpp(kwq,lwq,LARB)
-
-
-END SUBROUTINE sourceARB
 
 !*********************************************************************
 SUBROUTINE sourceDO(kwq,lwq)
@@ -727,7 +699,7 @@ SUBROUTINE sourceDO(kwq,lwq)
 !
 !-----------------------------------------------------------------------
 
-  ! ... Arguments
+! ... Arguments
   INTEGER, INTENT (IN) :: kwq,lwq
 
   !. . . Local Variables
@@ -735,7 +707,7 @@ SUBROUTINE sourceDO(kwq,lwq)
 
   ! Calculate DO saturation
   Tk = salp(kwq,lwq) + 273
-  lnos = -139.34410 + 1.575701*1E5 /(Tk    ) &
+  lnos = -139.34410 + 1.575701*1E5 /(Tk    ) & 
   &                 - 6.642308*1E7 /(Tk**2.) &
   &	                + 1.243800*1E10/(Tk**3.) &
   &                 - 8.621949*1E11/(Tk**4.)
@@ -750,22 +722,57 @@ SUBROUTINE sourceDO(kwq,lwq)
   os = os*Pa*((1-Pwv/Pa) *(1-theta2*Pa))&
   &           /((1-Pwv)*(1-theta2) )
 
+   os = 10
+   
   ! Calculate reaertaion
-  ! for now using constant rearation defined in wq_inp, but in future, can have
+  ! for now using constant rearation defined in wq_inp, but in future, can have 
   ! alternatives for calcualting reaeration.
 
   IF (kwq .eq. k1z(ij2l(l2i(lwq),l2j(lwq)))) THEN
-  sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDON)               +		&
-  &                         k_a*(tracerpp(kwq,lwq,LDO) - OS) 		!reaeration
+  sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO)               +		&
+  &                         k_a*(OS - tracerpp(kwq,lwq,LDO)) 		!reaeration
 					! + photosynthesis	- only if IALG = 1; calculated in sourceALG
 					! - Respiration		- only if IALG = 1; calculated in sourceALG
 					! - Nitrification	- only if INH4 = 1; calculated in sourceNH4
 					! - SOD				- only if ISOD = 1; calculated in sourceSOD
-					! - Oxidation of OM	- only if IDOM = 1; calculated in sourceDOm
+	IF (idbg == 1) PRINT *, " kwq=", kwq, " lwq=",lwq," sourcesink=",sourcesink																
  END IF
 
 
 END SUBROUTINE sourceDO
+!************************************************************************
+SUBROUTINE sourcePON(kwq,lwq)
+!*********************************************************************
+!
+! Purpose: To calculate sourcesink terms that depend on PON
+!
+!--------------------------------------------------------------------------
+
+! ... Arguments
+  INTEGER, INTENT (IN) :: kwq,lwq
+
+  !... Local variables
+  REAL:: decomposition
+  
+  !. Calculate hydrolysis
+  decomposition = k_dcn *Theta_dcn**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LPON)
+   !IF (idbg == 1) PRINT *, " kwq=", kwq, " lwq=",lwq," LPON=",LPON
+  !IF (idbg == 1) PRINT *, " sourcesink=",sourcesink(kwq,lwq,LPON)
+  
+  sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON)       -	&
+  &                          decomposition			                ! decomposition
+  !&                          k_set* tracerpp(kwq,lwq,LPON)	+	&	! settling
+  !&                          k_rs * tracerpp(kwq,lwq,LPON)			! resusupension
+						     ! + mortality	- only if IALG = 1; calcualted in sourceALG
+! IF (idbg == 1) PRINT *, " sourcesink(kwq,lwq,LPON)=", sourcesink(kwq,lwq,LPON)," decomposition=", decomposition
+ 
+  ! Add contribution of mineralization to DON concentration
+  IF (iDON == 1) THEN
+    sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)	+  decomposition
+  END IF
+
+END SUBROUTINE sourcePON
+
 
 !************************************************************************
 SUBROUTINE sourceDON(kwq,lwq)
@@ -782,54 +789,23 @@ SUBROUTINE sourceDON(kwq,lwq)
   REAL:: minrl
 
   !. . mineralization
-  minrl = k_mn * theta_mn**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LDON)
-
+  minrl = k_mn * Theta_mn**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LDON)
   sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)	-				&
-  &                          minrl
-! + hydrolysis	- only if IPON = 1; caluclated in sourcePON
-! + Resp/excr	- only if IAlG = 1; calculated in sourceALG
+  &                          minrl	                        
+							! + decomposition	- only if IPON = 1; caluclated in sourcePON
+							! + Resp/excr	    - only if IAlG = 1; calculated in sourceALG
 
 !. . .Add contribution from atmospheric deposition to top layer
-IF (kwq .eq. k1z(ij2l(l2i(lwq), l2j(lwq)))) THEN
+IF (kwq .eq. k1z(ij2l(l2i(lwq),l2j(lwq)))) THEN
 	sourcesink(kwq,lwq, LDON) = sourcesink(kwq, lwq, LDON) + &
 								& hpp(kwq,lwq)*ATM_DON		! Atmoshperic deposition
 END IF
-
+	
   IF (INH4 == 1) THEN		! add mineralization of DON to NH4
     sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) + minrl
   END IF
 
 END SUBROUTINE sourceDON
-
-!************************************************************************
-SUBROUTINE sourcePON(kwq,lwq)
-!*********************************************************************
-!
-! Purpose: To calculate sourcesink terms that depend on PON
-!
-!--------------------------------------------------------------------------
-
-  ! ... Arguments
-  INTEGER, INTENT (IN) :: kwq,lwq
-
-  !... Local variables
-  REAL:: hydrol
-
-
-  !. Calculate hydrolysis
-  hydrol = k_hn *theta_hn**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LPON)
-  sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON)       -	&
-  &                          hydrol					        -	&	! hydrolysis
-  &                          k_set*tracerpp(kwq,lwq,LPON)	-	&	! settling
-  &                          k_rs * tracerpp(kwq,lwq,LPON)			! resusupension
-						! + mortality	- only if IALG = 1; calcualted in sourceALG
-
-  ! Add contribution of mineralization to DON concentration
-  IF (IDON == 1) THEN
-    sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)	+  hydrol
-  END IF
-
-END SUBROUTINE sourcePON
 
 !************************************************************************
 SUBROUTINE sourceNH4(kwq,lwq)
@@ -838,10 +814,11 @@ SUBROUTINE sourceNH4(kwq,lwq)
 ! Purpose: To calculate sourcesink terms that depend on NH4
 !
 !--------------------------------------------------------------------------
+
 ! ... Arguments
    INTEGER, INTENT (IN) :: kwq,lwq
 
-!. . . Local Variables
+!. . . Local Variables 
 REAL:: nitrif, f_DO
 
 !. . . Calculate nitrification
@@ -852,23 +829,23 @@ REAL:: nitrif, f_DO
 		f_DO = 1.0
 	END IF
 
-	nitrif = k_n*theta_n**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LNH4) * f_DO
+	nitrif = k_n*Theta_n**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LNH4) * f_DO
 
 sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4)		-	&
-						&  nitrif			-	&	! nitrificatin
-						&  k_vn * theta_vn**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LNH4) ! volitilization
+						&  nitrif			          ! nitrificatin
+																						
 						! - Algal Uptake		- if IALG = 1; calculated in sourceALG
 						! + mineralization		- if IDON = 1; calculated in sourceDON
 
 !. . Add contribution from sediment release and GW flux into bottom cells
-IF (kwq .eq. kmz(ij2l(l2i(lwq), l2j(lwq)))) THEN
+IF (kwq .eq. kmz(ij2l(l2i(lwq),l2j(lwq)))) THEN
  sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) +   &
 							& hpp(kwq,lwq)*J_NH4     +	 &	! sediment release
-							& hpp(kwq,lwq)*GW_NH4	     	! GW flux
+							& hpp(kwq,lwq)*GW_NH4	     	! GW flux 
 END IF
 
 !. . Add contribution from atmoshperic deposition into top cells
-IF (kwq .eq. k1z(ij2l(l2i(lwq), l2j(lwq)))) THEN
+IF (kwq .eq. k1z(ij2l(l2i(lwq),l2j(lwq)))) THEN
 	sourcesink(kwq, lwq, LNH4) = sourcesink(kwq, lwq, LNH4) + &
 								& hpp(kwq, lwq) * ATM_NH4	 ! ATM deposition
 END IF
@@ -880,7 +857,9 @@ IF (INO3 == 1) THEN
 	sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3) + nitrif
 END IF
 
-
+IF (IDO == 1) THEN
+	sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) - ron*nitrif
+END IF
 
 END SUBROUTINE sourceNH4
 
@@ -897,19 +876,19 @@ SUBROUTINE sourceNO3(kwq,lwq)
 
 
 sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3)		-	&
-						&  k_dn*theta_dn**(salp(kwq,lwq) - 20)* tracerpp(kwq,lwq,LNO3)	! denitrification
+						&  k_dn*Theta_dn**(salp(kwq,lwq) - 20)* tracerpp(kwq,lwq,LNO3)	! denitrification
 						! + nitrification		- if INH4 = 1; calculated in sourceNH4
 						! - algal uptake		- if IALG = 1; calculated in sourceALG
 
 !. . Add contribution from sediment release and GW flux into bottom cells
-IF (kwq .eq. kmz(ij2l(l2i(lwq), l2j(lwq)))) THEN
+IF (kwq .eq. kmz(ij2l(l2i(lwq),l2j(lwq)))) THEN
  sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3) +   &
 							& hpp(kwq,lwq)*J_NO3     +	 &	! sediment release
-							& hpp(kwq,lwq)*GW_NO3	     	! GW flux
+							& hpp(kwq,lwq)*GW_NO3	     	! GW flux 
 END IF
 
 !. . Add contribution from atmoshperic deposition into top cells
-IF (kwq .eq. k1z(ij2l(l2i(lwq), l2j(lwq)))) THEN
+IF (kwq .eq. k1z(ij2l(l2i(lwq),l2j(lwq)))) THEN
 	sourcesink(kwq, lwq, LNO3) = sourcesink(kwq, lwq, LNO3) + &
 								& hpp(kwq, lwq) * ATM_NO3	 ! ATM deposition
 END IF
@@ -923,31 +902,28 @@ SUBROUTINE sourcePOP(kwq,lwq)
 ! Purpose: To calculate sourcesink terms that depend on POP
 !
 !--------------------------------------------------------------------------
+
 ! ... Arguments
    INTEGER, INTENT (IN) :: kwq,lwq
 
 !. . . Local Variables
-REAL:: hydrol
+REAL:: decomposition
 
-! Calculate hydrolysis
+! Calculate decomposition
 
-hydrol = k_hp*theta_hp**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LPOP)
+decomposition = k_dcp*Theta_dcp**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LPOP)
 
-sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP)				+	&
-						&  k_rs*tracerpp(kwq,lwq,LPOP)	-	&	! Resuspension
-						&  hydrol						! hydrolysis
-
-!... Add atmoshperic deposition to top layer
-IF (kwq == k1z(ij2l(l2i(lwq), l2j(kwq)))) THEN
-	sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP)				+	&
-						&  h(kwq,lwq)*ATM_POP					! Atmospheric deposition
-END IF
-
-! Caclulate hydrolysis contribution to DOP
+sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP)		    -	&
+						&  decomposition                    ! decomposition
+						!&  k_set * tracerpp(kwq, lwq, LPOP) +   &   ! settling
+						!&  k_rs*tracerpp(kwq,lwq,LPOP)			! Resuspension
+						! + mortality	- only if IALG = 1; calcualted in sourceALG			     
+							
+! Caclulate decomposition contribution to DOP
 IF (IDOP == 1) THEN
-	sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) + hydrol
-END IF
-
+	sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) + decomposition
+END IF		
+						
 END SUBROUTINE sourcePOP
 
 !************************************************************************
@@ -966,18 +942,24 @@ REAL:: minrl
 
 ! Calculate mineralization
 
-minrl = k_mp*theta_mp**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LDOP)
+minrl = k_mp*Theta_mp**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LDOP)
 
 sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP)		-	&
-						&  minrl				! hydrolysis
+						&  minrl				! decomposition
 						! + resp/excretion	- if IAlG = 1; calculated in sourceALG
-						! + hydrolysis		- if iPOP = 1; calculated in sourcePOP
+						! + decomposition		- if iPOP = 1; calculated in sourcePOP
+
+!... Add atmoshperic deposition to top layer
+IF (kwq == k1z(ij2l(l2i(lwq),l2j(lwq)))) THEN
+	sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP)				+	&
+						&  h(kwq,lwq)*ATM_DOP					! Atmospheric deposition
+END IF
 
 ! Caclulate mineralization contribution to PO4
 IF (IPO4 == 1) THEN
-	sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) + minrl
+	sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) + minrl	
 END IF
-
+						
 END SUBROUTINE sourceDOP
 
 !************************************************************************
@@ -990,36 +972,32 @@ SUBROUTINE sourcePO4(kwq, lwq)
 
    ! ... Arguments
    INTEGER, INTENT (IN) :: kwq,lwq
-
-   sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4)		+	&
-   &                          h(kwq,lwq)*J_PO4			+	&	! Sediment Release
-   &                          h(kwq,lwq)*GW_PO4			+	&	! GW flux
-   &                          h(kwq,lwq)*ATM_PO4				! Atmospheric deposition
-   ! + mineralization		- if IDOP = 1; calculated in sourceDOP
+ 
+   sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4)
+ ! + mineralization		- if IDOP = 1; calculated in sourceDOP
    ! + algal resp			- if IALG = 1; calculated in sourceALG
    ! - algal uptake		- if IALG = 1; calculated in sourceALG
 
 !. . Add contribution from sediment release and GW flux into bottom cells
-IF (kwq .eq. kmz(ij2l(l2i(lwq), l2j(lwq)))) THEN
+IF (kwq .eq. kmz(ij2l(l2i(lwq),l2j(lwq)))) THEN
  sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) +   &
 							& hpp(kwq,lwq)*J_PO4     +	 &	! sediment release
-							& hpp(kwq,lwq)*GW_PO4	     	! GW flux
+							& hpp(kwq,lwq)*GW_PO4	     	! GW flux 
 END IF
 
 !. . Add contribution from atmoshperic deposition into top cells
-IF (kwq .eq. k1z(ij2l(l2i(lwq), l2j(lwq)))) THEN
+IF (kwq .eq. k1z(ij2l(l2i(lwq),l2j(lwq)))) THEN
 	sourcesink(kwq, lwq, LPO4) = sourcesink(kwq, lwq, LPO4) + &
 								& hpp(kwq, lwq) * ATM_PO4	 ! ATM deposition
 END IF
 
-
 END SUBROUTINE sourcePO4
 
 !************************************************************************
-SUBROUTINE sourcePOM (kwq, lwq)
+SUBROUTINE sourcePOC (kwq, lwq)
 !*********************************************************************
 !
-! Purpose: To calculate sourcesink terms that depend on POM
+! Purpose: To calculate sourcesink terms that depend on POC
 !
 !--------------------------------------------------------------------------
 
@@ -1027,27 +1005,28 @@ SUBROUTINE sourcePOM (kwq, lwq)
   INTEGER, INTENT (IN) :: kwq,lwq
 
   !. . Local Variables
-  REAL:: hydrol
+  REAL:: decomposition
 
-  ! Calculate hydrolysis
-  hydrol = k_hc*theta_hc**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LPOM)
-  sourcesink(kwq,lwq,LPOM) = sourcesink(kwq,lwq,LPOM)				-	&
-						&  k_set * tracerpp(kwq,lwq,LPOM) 	-	&	! settling
-						&  hydrol							! hydrolysis
-						! + mortality		- if IALG = 1; calculated in sourceALG
+  ! Calculate decomposition
+  decomposition = k_dcc*Theta_dcc**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LPOC)
+  sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC)		-	&
+						& decomposition						        ! decomposition
+						!&  k_set * tracerpp(kwq,lwq,LPOC) 	+	&	! settling
+						!&  k_rs*tracerpp(kwq,lwq,LPOC)			    ! Resuspension
+						! + mortality		                        - if IALG = 1; calculated in sourceALG
 
-  ! Caclulate hydrolysis contribution to DOM
-  IF (IDOM == 1) THEN
-    sourcesink(kwq,lwq,LDOM) = sourcesink(kwq,lwq,LDOM) + hydrol
-   END IF
-
-END SUBROUTINE sourcePOM
+  ! Caclulate decomposition contribution to DOC
+  IF (IDOC == 1) THEN
+    sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + decomposition	
+   END IF	
+						
+END SUBROUTINE sourcePOC
 
 !************************************************************************
-SUBROUTINE sourceDOM(kwq, lwq)
+SUBROUTINE sourceDOC(kwq, lwq)
 !*********************************************************************
 !
-! Purpose: To calculate sourcesink terms that depend on DOM
+! Purpose: To calculate sourcesink terms that depend on DOC
 !
 !--------------------------------------------------------------------------
 
@@ -1059,20 +1038,36 @@ SUBROUTINE sourceDOM(kwq, lwq)
 
   !. . Calculate how DO concn impedes oxidation of DOM
   IF (IDO ==1) THEN
-    F_DO = (tracerpp(kwq,lwq,LDO))/(kDOM + tracerpp(kwq,lwq,LDO) )
+    F_DO = (tracerpp(kwq,lwq,LDO))/(KDOC + tracerpp(kwq,lwq,LDO) )
   END IF
 
-  ! Calculate oxidation
-  oxid = K_DOM*theta_DOM**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LDOM)*F_DO
+  ! Calculate Microbial Uptake (oxidation)
+  oxid = KDOC * Theta_DOC**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LDOC) * F_DO
 
-  sourcesink(kwq,lwq,LDOM) = sourcesink(kwq,lwq,LDOM) - oxid
-						! + hydrolysis	-if IPOM = 1; calculated in sourcePOM
+  sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC)  & 
+                     &    - oxid                         ! microbial uptake (oxidation)
+						! + decomposition	                -if IPOC = 1; calculated in sourcePOC
+						! + algal excretion             - if IALG = 1; calculated in sourceALG
+
+
+!. . Add contribution from sediment release and GW flux into bottom cells
+IF (kwq .eq. kmz(ij2l(l2i(lwq),l2j(lwq)))) THEN
+ sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) +   &
+							& hpp(kwq,lwq)*J_DOC     +	 &	! sediment release
+							& hpp(kwq,lwq)*GW_DOC	     	! GW flux 
+END IF
+
+!. . Add contribution from atmoshperic deposition into top cells
+IF (kwq .eq. k1z(ij2l(l2i(lwq),l2j(lwq)))) THEN
+	sourcesink(kwq, lwq, LDOC) = sourcesink(kwq, lwq, LDOC) + &
+								& hpp(kwq, lwq) * ATM_DOC	 ! ATM deposition
+END IF
 
   IF (IDO == 1) THEN
     sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) - roc*oxid
   END IF
-
-END SUBROUTINE sourceDOM
+											
+END SUBROUTINE sourceDOC
 
 !************************************************************************
 SUBROUTINE sourceALG(kwq, lwq)
@@ -1086,18 +1081,25 @@ SUBROUTINE sourceALG(kwq, lwq)
 
   !. . .Local Variables
   REAL::	mu, f_L, f_T, f_N, f_P, N_conc
-  REAL::	resp, excr, mort, growth
+  REAL::	resp, excr, mort, growth, graz, sett
 
   ! Calculate mu, growth rate
-
+	
   !. .  Calculate growth limiting factors
-  ! light limitation
-  !		f_L = SolarFR(depth)*0.47/light_sat *e**(-SolarFR(depth)*0.47/light_sat +1)
-  ! f_L construct needs to be fixed, need more information.  for now, use f_L = 1
-   f_L = 1.0
+
+!PRINT *, 'before fL '
+    ! Light Limitation - by Steele equation (Jassby and Platt, 1976)
+   		f_L = ((QswFr(kwq,lwq)*0.47)/light_sat) *EXP(1 -((QswFr(kwq,lwq)*0.47)/light_sat))
+		IF (f_L == 0) THEN
+		   f_L = 1
+		END IF
+        !	f_L = SolarFR(depth)*0.45/light_sat *e**(-SolarFR(depth)*0.45/light_sat +1) - A.Cortes: This is not functional
+        ! f_L construct needs to be fixed, need more information.  for now, use f_L = 1 - Previous assumptions
+        ! f_L = 1.0
+!PRINT*, "f_L  = ", f_L
 
 	! temperature limitaton
-		f_T = theta_mu**(salp(kwq,lwq -20))
+		f_T = Theta_mu**(salp(kwq,lwq) -20)
 
 	! nutrient limitation - but only if the nutrients are modeled
 	IF ((INH4 ==1) .AND. (INO3 ==1)) THEN
@@ -1113,35 +1115,41 @@ SUBROUTINE sourceALG(kwq, lwq)
 		f_N = 1.0
 	END IF
 
+
 	IF (IPO4 ==1) THEN
 		f_P = tracerpp(kwq,lwq,LPO4) /(KSP + tracerpp(kwq,lwq,LPO4) )
 	ELSE
 		f_P = 1.0
 	END IF
 
-mu = mu_max*f_L*f_T*f_N*f_P
+! Growth rate considering limiting factors (light and nutrients)
+
+mu = mu_max * MIN(f_L,f_N,f_P)
+!mu = mu_max					   
 
 !. . Calculate growth
-		growth = mu_max * tracerpp(kwq,lwq,LALG)
+		growth = mu * f_T * tracerpp(kwq,lwq,LALG)
 !. . Calculate respiration
-		resp   = k_ra*theta_ra**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG)
+		resp   = k_res * Theta_res**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG)
 !. . Calculate excretion
-		excr   = k_ex*theta_ra**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG)
+		excr   = k_ex * Theta_res**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG)
 !. . Calculate mortality
-		mort   = k_mor*theta_mor**(salp(kwq,lwq) - 20)*tracerpp(kwq,lwq,LALG)
+		mort   = k_mor * Theta_mor**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG)
+!. . Calculate grazing
+		graz   = k_gr * Theta_gr**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG)		
+!. . Calculate settling
+		sett   = k_set * tracerpp(kwq,lwq,LALG)
 
+!PRINT*, "mu = ", mu, "growth = ", growth, "resp = ", resp, "excr = ", excr, "mort = ", mort, "graz = ", graz, "sett = ", sett
 
-sourcesink(kwq,lwq,LALG) = sourcesink(kwq,lwq,LALG)	+									&
-						&  growth		-										& ! growth
-						&  resp		-										& ! respiration
-						&  excr		-										& ! excretion
-						&  k_gr*theta_gr**(salp(kwq,lwq)-20) * tracerpp(kwq,lwq,LALG) -	& ! grazing
-						&  k_set*tracerpp(kwq,lwq,LALG)								 ! settling
+sourcesink(kwq,lwq,LALG) = sourcesink(kwq,lwq,LALG)	+ growth - resp	- excr	- mort  - graz - sett												
 
-! If dissolved oxygen is modeled, alter sourcesink(kwq,lwq,LDO) to reflect growth and resp
+!  A. Cortes - NEEDS to review equations below to take into account new nutrient forms
+!
+! If dissolved oxygen is modeled, alter sourcesink(kwq,lwq,LDO) to reflect growth and resp 
 ! of algae population
 IF (IDO ==1) THEN
-	sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) + acc*roc*(growth-resp)
+	sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) + roc*(growth-resp)
 END IF
 
 ! IF PON is modeled, alter sourcesink(kwq,lwq,LPON) to reflect mortality of algae
@@ -1169,14 +1177,24 @@ IF (IPOP == 1) THEN
 	sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + apc*mort
 END IF
 
-! If PO4 is modeled, alter sourcesink(kwq,lwq,LPO4) to include resp and uptake
-IF (IPO4 == 1) THEN
-	sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) + apc*(resp - growth)
+! If DOP is modeled, alter sourcesink(kwq,lwq,LDOP) to include excretion
+IF (IDOP == 1) THEN
+	sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) + (resp + excr)
 END IF
 
-! If DOM is modeled, alter sourcesink(kwq,lwq,LDOM) to include respiration
-IF (IDOM == 1) THEN
-	sourcesink(kwq,lwq,LDOM) = sourcesink(kwq,lwq,LDOM) + resp + excr
+! If PO4 is modeled, alter sourcesink(kwq,lwq,LPO4) to include resp and uptake
+IF (IPO4 == 1) THEN
+	sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) + apc*(resp + excr - growth)
+END IF
+
+! If POC is modeled, alter sourcesink(kwq,lwq,LPOC) to include mortality
+IF (IPOC == 1) THEN
+	sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + mort
+END IF
+	
+! If DOM is modeled, alter sourcesink(kwq,lwq,LDOC) to include excretion
+IF (IDOC == 1) THEN
+	sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + (resp + excr)
 END IF
 
 END SUBROUTINE sourceALG

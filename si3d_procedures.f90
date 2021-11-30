@@ -350,9 +350,17 @@ SUBROUTINE InitializeScalarFields
    END SELECT
 
    ! ... Initialize density field at time n-1 & n
-   DO l = 1, lm1; DO k = k1, km1;
-      rhop(k,l) = densty_s ( salp(k,l), t0 ) - 1000.
-   END DO; END DO
+   DO l = 1, lm1;
+     DO k = k1, km1;
+       IF (zlevel(k) == -100) THEN
+         z = 0.5*hp(k,l)
+       ELSE
+         z = zlevel(k) + 0.5 * hp(k,l)
+       ENDIF
+       rhop(k,l) = densty_s ( salp(k,l), 0.00004 ,z) - 1000.
+       ! PRINT *, "z=",z,"rho=",rhop(k,l)+1000
+     END DO
+   END DO
 
 END SUBROUTINE InitializeScalarFields
 
@@ -3515,7 +3523,7 @@ SUBROUTINE settrap
 
    !.....Local variables.....
    INTEGER :: i, j, k, l, kmx, kmy, kms, k1x, k1y, k1s,liter,no,ide_t,is,ie,js,je,nn
-   REAL    :: uutemp, vvtemp, wght, wghtpp, scC, scCpp
+   REAL    :: uutemp, vvtemp, wght, wghtpp, scC, scCpp, z
 
    !.....Timing.....
    REAL, EXTERNAL :: TIMER
@@ -3558,9 +3566,15 @@ SUBROUTINE settrap
      ! ... At s-points
      kms = kmz(l)
      DO k = k1, kms
+       IF (zlevel(k) == -100) THEN
+         z = 0.5*hp(k,l)
+       ELSE
+         z = zlevel(k) + 0.5 * hp(k,l)
+       ENDIF
        salpp(k,l) = salp(k,l);
        salp (k,l)=(sal(k,l)+salpp(k,l))/2.
-       rhop (k,l)=densty_s(salp(k,l),t0)-1000.
+       rhop (k,l)=densty_s(salp(k,l),0.00004,z)-1000.
+       ! PRINT *, "z=",z,"rho=",rhop(k,l)+1000
      ENDDO
 
      ! ... At u-points
@@ -3712,7 +3726,7 @@ SUBROUTINE save(istep)
 
    !.....Local variables.....
    INTEGER :: i, j, k, l, kms, k1s,liter,nn,no,js,je,is,ie,ide_t
-   REAL    :: uutemp, vvtemp
+   REAL    :: uutemp, vvtemp, z
 
    !.....Timing.....
    REAL, EXTERNAL :: TIMER
@@ -3755,8 +3769,14 @@ SUBROUTINE save(istep)
 
        DO k = k1, km;
          ! ... At s-points
+         IF (zlevel(k) == -100) THEN
+           z = 0.5*hp(k,l)
+         ELSE
+           z = zlevel(k) + 0.5 * hp(k,l)
+         ENDIF
          salp (k,l) = sal(k,l)
-         rhop (k,l) = densty_s ( salp(k,l), t0 ) - 1000.
+         rhop (k,l) = densty_s ( salp(k,l), 0.00004, z) - 1000.
+         ! PRINT *, "z=",z,"rho=",rhop(k,l)+1000
        ENDDO
 
        DO k = k1, km;
@@ -3888,9 +3908,15 @@ end if
 
        DO k = k1, km;
          ! ... At s-points
+         IF (zlevel(k) == -100) THEN
+           z = 0.5*hp(k,l)
+         ELSE
+           z = zlevel(k) + 0.5 * hp(k,l)
+         ENDIF
          salpp(k,l) = salp(k,l)
          salp (k,l) = sal (k,l);
-         rhop (k,l) = densty_s ( salp(k,l), t0 ) - 1000.
+         rhop (k,l) = densty_s ( salp(k,l), 0.00004, z) - 1000.
+         ! PRINT *, "z=",z,"rho=",rhop(k,l)+1000
        ENDDO
 
        DO k = k1, km;
@@ -4026,7 +4052,7 @@ SUBROUTINE settrap2
 
    !.....Local variables.....
    INTEGER :: i,j,k,l,kms,kmy,kmx,lol,liter,aux_indice
-   REAL    :: wght, wghtpp
+   REAL    :: wght, wghtpp, z
 
    !....Zeta array.....
    sp(lm1)=0.5*(s(lm1)+spp(lm1))
@@ -4058,8 +4084,14 @@ SUBROUTINE settrap2
      kms = kmz(l)
 
      DO k = k1, kms
+       IF (zlevel(k) == -100) THEN
+         z = 0.5*hp(k,l)
+       ELSE
+         z = zlevel(k) + 0.5 * hp(k,l)
+       ENDIF
        salp (k,l)= (sal(k,l)+salpp(k,l))/2.
-       rhop (k,l)=densty_s(salp(k,l),t0)-1000.
+       rhop (k,l)=densty_s(salp(k,l),0.00004, z)-1000.
+       ! PRINT *, "z=",z,"rho=",rhop(k,l)+1000
      ENDDO
 
 
@@ -4434,7 +4466,7 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
       CASE (1)
 
         aa( 2,k1s) = hn(k1s)/twodt1
-        ds(   k1s) = Bex(k1s,l)
+        ds(   k1s) = Bex(k1s,l) + sourcesink(k1s,l,nt)
         tracer(k1s,l,nt) = ds(k1s  )/aa(2,k1s)
 
       !.....Calculate active scalar for case of two or more layers.....
@@ -4452,7 +4484,7 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
 
          !.....form r.h.s. matrix [ds].....
          DO k = k1s, kms
-            ds(k) = Bex(k,l)
+            ds(k) = Bex(k,l) + sourcesink(k,l,nt)
          ENDDO
 
          ! ... Modify transport eqs. to accont for sources & sinks.
