@@ -1089,7 +1089,7 @@ SUBROUTINE sourceALG(kwq, lwq)
 
 !PRINT *, 'before fL '
     ! Light Limitation - by Steele equation (Jassby and Platt, 1976)
-   		f_L = ((QswFr(kwq,lwq)*0.47)/light_sat) *EXP(1 -((QswFr(kwq,lwq)*0.47)/light_sat))
+   		f_L = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat))
 		IF (f_L == 0) THEN
 		   f_L = 1
 		END IF
