@@ -421,42 +421,94 @@ SUBROUTINE WQinput
   READ (UNIT=i99, FMT='(/(A))', IOSTAT=ios) title
   IF (ios /= 0) CALL input_error ( ios, 91)
 
-  !. . Read list of tracerpps modeled
-  READ (UNIT=i99,FMT='(///(14X,I20))',IOSTAT=ios) iDO, iPON, iDON, &
-  &    iNH4, iNO3, iPOP, iDOP, iPO4, iALG, iDOC, iPOC, iSOD
+  !. . Read list of tracerpps modeled: Dissolved oxygen, N forms, P forms, C forms and 5 algae groups
+  ! ...... Representative Taxon and size range (or group)
+  ! ...... 1) Picoplankton: < 2 um
+  ! ...... 2) Cyclotella sp: 2-6 um
+  ! ...... 3) Cryptomonas: 6-30 um
+  ! ...... 4) Synedra: >30 um
+  ! ...... 5) Mycrocystis (cyanobacteria)
+  
+  READ (UNIT=i99,FMT='(///(14X,I20))',IOSTAT=ios) iDO,  &
+  &    iPON, iDON, iNH4, iNO3, &
+  &    iPOP, iDOP, iPO4, &
+  &    iDOC, iPOC, &
+  &    iALG1, iALG2, iALG3, iALG4, iALG5
   IF (ios /= 0) CALL input_error ( ios, 92)
 
-  !. . . Read model stochiometeric constants
-  READ (UNIT=i99,FMT='(///(14X,G20.3))',IOSTAT=ios) anc, apc, roc, &
-  &    ron, KNIT, KSN, KSP, FNH4, light_sat, KDOC
+  !. . . Read model stochiometeric constants and other constants
+  READ (UNIT=i99,FMT='(///(14X,G20.3))',IOSTAT=ios) anc, apc, roc, ron, &
+  &     KNIT, KSN, KSP, FNH4, KDOC, &
+  &     light_sat1, light_sat2, light_sat3, light_sat4, light_sat5 
   IF (ios /= 0) CALL input_error ( ios, 93)
 
   !. . . Read model rates
-  READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) k_a, mu_max, &
-  &    k_mor, k_ex, k_res, k_gr, k_set, k_rs, &
-  &    k_dcn, k_mn, k_n, k_dn, k_dcp, k_mp, k_dcc 	
+  READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) k_a,  &
+  &    mu_max1, k_mor1, k_ex1, k_res1, k_gr1, k_set1, k_rs1, &
+  &    mu_max2, k_mor2, k_ex2, k_res2, k_gr2, k_set2, k_rs2, &  
+  &    mu_max3, k_mor3, k_ex3, k_res3, k_gr3, k_set3, k_rs3, &
+  &    mu_max4, k_mor4, k_ex4, k_res4, k_gr4, k_set4, k_rs4, &
+  &    mu_max5, k_mor5, k_ex5, k_res5, k_gr5, k_set5, k_rs5, &  
+  &    k_dcn, k_mn, k_n, k_dn, &
+  &    k_dcp, k_mp, &
+  &    k_set, k_rs, k_dcc 	
   IF (ios /= 0) CALL input_error ( ios, 94)
   
-  print*, k_a, k_dn, k_ex
-  print*, k_gr, k_dcc, k_dcn, k_dcp, k_mn
-  print*, k_mor, k_mp, k_n, k_res, k_rs
-  print*, k_set, mu_max
   
   !... Convert model rates to time of [1/timestep]. Input file has 1/day values
+  ! DO
   k_a   = idt * k_a/86400.0
-  k_dn  = idt * k_dn/86400.0
-  k_ex  = idt * k_ex/86400.0
-  k_gr  = idt * k_gr/86400.0
-  k_dcc  = idt * k_dcc/86400.0
-  k_dcn  = idt * k_dcn/86400.0
-  k_dcp  = idt * k_dcp/86400.0
-  k_mn  = idt * k_mn/86400.0
-  k_mor = idt * k_mor/86400.0
-  k_mp  = idt * k_mp/86400.0
-  k_n   = idt * k_n/86400.0
-  k_res  = idt * k_res/86400.0
-  k_rs  = idt * k_rs/86400.0
-  mu_max = idt * mu_max/86400.0  
+  ! ALG1 : Pycoplankton
+  mu_max1 = idt * mu_max1/86400.0
+  k_mor1 = idt * k_mor1/86400.0
+  k_ex1 = idt * k_ex1/86400.0
+  k_res1 = idt * k_res1/86400.0
+  k_gr1 = idt * k_gr1/86400.0
+  k_set1 = idt * k_set1/86400.0
+  k_rs1 = idt * k_rs1/86400.0
+  ! ALG2 : Cyclotella
+  mu_max2 = idt * mu_max2/86400.0
+  k_mor2 = idt * k_mor2/86400.0
+  k_ex2 = idt * k_ex2/86400.0
+  k_res2 = idt * k_res2/86400.0
+  k_gr2 = idt * k_gr2/86400.0
+  k_set2 = idt * k_set2/86400.0
+  k_rs2 = idt * k_rs2/86400.0
+  ! ALG3: Cryptomonas
+  mu_max3 = idt * mu_max3/86400.0
+  k_mor3 = idt * k_mor3/86400.0
+  k_ex3 = idt * k_ex3/86400.0
+  k_res3 = idt * k_res3/86400.0
+  k_gr3 = idt * k_gr3/86400.0
+  k_set3 = idt * k_set3/86400.0
+  k_rs3 = idt * k_rs3/86400.0
+  ! ALG4: Synedra
+  mu_max4 = idt * mu_max4/86400.0
+  k_mor4 = idt * k_mor4/86400.0
+  k_ex4 = idt * k_ex4/86400.0
+  k_res4 = idt * k_res4/86400.0
+  k_gr4 = idt * k_gr4/86400.0
+  k_set4 = idt * k_set4/86400.0
+  k_rs4 = idt * k_rs4/86400.0
+  ! ALG5: Microcystis
+  mu_max5 = idt * mu_max5/86400.0
+  k_mor5 = idt * k_mor5/86400.0
+  k_ex5 = idt * k_ex5/86400.0
+  k_res5 = idt * k_res5/86400.0
+  k_gr5 = idt * k_gr5/86400.0
+  k_set5 = idt * k_set5/86400.0
+  k_rs5 = idt * k_rs5/86400.0
+  ! Nutrients
+  k_dcn = idt * k_dcn/86400.0
+  k_mn = idt * k_mn/86400.0
+  k_n = idt * k_n/86400.0
+  k_dn = idt * k_dn/86400.0
+  k_dcp = idt * k_dcp/86400.0
+  k_mp = idt * k_mp/86400.0
+  k_set = idt * k_set/86400.0
+  k_rs = idt * k_rs/86400.0
+  k_dcc = idt * k_dcc/86400.0	
+
   
   !. . . Read model temperature rates
   READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) Theta_a, Theta_mu, Theta_mor, Theta_res, Theta_gr, &
@@ -468,13 +520,14 @@ SUBROUTINE WQinput
   !. . . Read miscillaneous rates
   READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) ATM_DON, ATM_NH4,    &
   &    ATM_NO3, ATM_PO4, ATM_DOP, ATM_DOC, GW_NH4, GW_NO3,  GW_PO4, GW_DOC, J_NH4, J_NO3, &
-  &    J_PO4, J_DOC					
+  &    J_PO4, J_DOC, SOD					
   IF (ios /= 0) CALL input_error ( ios, 96)
 
   IF (idbg == 1) THEN
-    PRINT*, "iDO  = ", iDO , "iPON = ", iPON
-    PRINT*, "iDON = ", iDON, "iNH4 = ", iNH4, "iNO3 = ", iNO3
-    PRINT*, "iPOP = ", iPOP, "iDOP = ", iDOP, "iALG = ", iALG
+    PRINT*, "iDO  = ", iDO , "iPOC = ", iPOC, "iDOC = ", iDOC
+    PRINT*, "iPON = ", iPON, "iDON = ", iDON, "iNH4 = ", iNH4, "iNO3 = ", iNO3
+    PRINT*, "iPOP = ", iPOP, "iDOP = ", iDOP, "iPO4 = ", iPO4  
+	PRINT*, "iALG1 = ", iALG1, "iALG2 = ", iALG2, "iALG3 = ", iALG3, "iALG4 = ", iALG4, "iALG5 = ", iALG5
   END IF 
   
   CALL WQinit !ACortes 09/24/2021			 
@@ -561,10 +614,10 @@ SUBROUTINE WQinit
     i = i+1
   END IF
 
-  IF (iSOD ==1) THEN
-    tracerpplocal(i) = 12
-		   
-  END IF			
+  !IF (iSOD ==1) THEN
+  !  tracerpplocal(i) = 12
+  !		   
+  !END IF			
 
   sumtr = 0
   DO j = 1, ntrmax
@@ -759,10 +812,10 @@ SUBROUTINE sourcePON(kwq,lwq)
    !IF (idbg == 1) PRINT *, " kwq=", kwq, " lwq=",lwq," LPON=",LPON
   !IF (idbg == 1) PRINT *, " sourcesink=",sourcesink(kwq,lwq,LPON)
   
-  sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON)       -	&
-  &                          decomposition			                ! decomposition
-  !&                          k_set* tracerpp(kwq,lwq,LPON)	+	&	! settling
-  !&                          k_rs * tracerpp(kwq,lwq,LPON)			! resusupension
+  sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON)               &
+  &                          - decomposition			            &   ! decomposition
+  &                          - k_set* tracerpp(kwq,lwq,LPON)	    &	! settling
+  &                          + k_rs * tracerpp(kwq,lwq,LPON)			! resusupension
 						     ! + mortality	- only if IALG = 1; calcualted in sourceALG
 ! IF (idbg == 1) PRINT *, " sourcesink(kwq,lwq,LPON)=", sourcesink(kwq,lwq,LPON)," decomposition=", decomposition
  
@@ -790,15 +843,15 @@ SUBROUTINE sourceDON(kwq,lwq)
 
   !. . mineralization
   minrl = k_mn * Theta_mn**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LDON)
-  sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)	-				&
-  &                          minrl	                        
+  sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)					&
+  &                         -  minrl	                        
 							! + decomposition	- only if IPON = 1; caluclated in sourcePON
 							! + Resp/excr	    - only if IAlG = 1; calculated in sourceALG
 
 !. . .Add contribution from atmospheric deposition to top layer
 IF (kwq .eq. k1z(ij2l(l2i(lwq),l2j(lwq)))) THEN
 	sourcesink(kwq,lwq, LDON) = sourcesink(kwq, lwq, LDON) + &
-								& hpp(kwq,lwq)*ATM_DON		! Atmoshperic deposition
+								& (hpp(kwq,lwq)+2)*ATM_DON		! Atmoshperic deposition
 END IF
 	
   IF (INH4 == 1) THEN		! add mineralization of DON to NH4
@@ -831,8 +884,8 @@ REAL:: nitrif, f_DO
 
 	nitrif = k_n*Theta_n**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LNH4) * f_DO
 
-sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4)		-	&
-						&  nitrif			          ! nitrificatin
+sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4)			&
+						&  -  nitrif			          ! nitrificatin
 																						
 						! - Algal Uptake		- if IALG = 1; calculated in sourceALG
 						! + mineralization		- if IDON = 1; calculated in sourceDON
@@ -840,14 +893,14 @@ sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4)		-	&
 !. . Add contribution from sediment release and GW flux into bottom cells
 IF (kwq .eq. kmz(ij2l(l2i(lwq),l2j(lwq)))) THEN
  sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) +   &
-							& hpp(kwq,lwq)*J_NH4     +	 &	! sediment release
-							& hpp(kwq,lwq)*GW_NH4	     	! GW flux 
+							& (hpp(kwq,lwq)-1)*J_NH4     +	 &	! sediment release
+							& (hpp(kwq,lwq)-1)*GW_NH4	     	! GW flux 
 END IF
 
 !. . Add contribution from atmoshperic deposition into top cells
 IF (kwq .eq. k1z(ij2l(l2i(lwq),l2j(lwq)))) THEN
 	sourcesink(kwq, lwq, LNH4) = sourcesink(kwq, lwq, LNH4) + &
-								& hpp(kwq, lwq) * ATM_NH4	 ! ATM deposition
+								& (hpp(kwq, lwq)+2) * ATM_NH4	 ! ATM deposition
 END IF
 
 
@@ -1132,7 +1185,7 @@ mu = mu_max * MIN(f_L,f_N,f_P)
 !. . Calculate respiration
 		resp   = k_res * Theta_res**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG)
 !. . Calculate excretion
-		excr   = k_ex * Theta_res**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG)
+		excr   = k_ex * Theta_ex**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG)
 !. . Calculate mortality
 		mort   = k_mor * Theta_mor**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG)
 !. . Calculate grazing

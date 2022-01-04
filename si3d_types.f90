@@ -366,32 +366,35 @@
 
    ! ... Integer switches to deterimine if constituent is modeled
    INTEGER:: iDO , iPON, iDON, iNH4, iNO3, iPOP, iDOP, iPO4
-   INTEGER:: iALG, iDOC, iPOC, iSOD
+   INTEGER:: iDOC, iPOC, iALG1, iALG2, iALG3, iALG4, iALG5
+
 
    ! ... Integer to determine constituent location
    INTEGER:: LDO , LPON, LDON, LNH4, LNO3, LPOP, LDOP, LPO4
-   INTEGER:: LALG, LDOC, LPOC, LSOD
+   INTEGER:: LDOC, LPOC, LALG1, LALG2, LALG3, LALG4, LALG5
 
    ! ... Model Constants - read from input file and many used for calibration
    ! - Stochiometeric constants
-   REAL   :: acc, anc, apc, roc, ron
- 	
-   ! - Half-saturation values and algal prefernce for NH4	
-   REAL   :: KDOC, KNIT, KSN, KSP, FNH4, light_sat
+   REAL   :: anc, apc, roc, ron
 
-														 
-									   
+   ! - Half-saturation values and algal prefernce for NH4	
+   REAL   :: KDOC, KNIT, KSN, KSP, FNH4, light_sat1, light_sat2, light_sat3, light_sat4, light_sat5
 
    ! - Model rates
-   REAL   :: k_a, k_dn, k_ex, k_gr, k_dcc
-   REAL	  :: k_dcn, k_dcp, k_mn, k_mor, k_mp, k_n, k_res
-   REAL	  :: k_rs, k_set, k_vn, mu_max		
-
+   REAL   :: mu_max1, k_mor1, k_ex1, k_res1, k_gr1, k_set1, k_rs1
+   REAL   :: mu_max2, k_mor2, k_ex2, k_res2, k_gr2, k_set2, k_rs2  
+   REAL   :: mu_max3, k_mor3, k_ex3, k_res3, k_gr3, k_set3, k_rs3
+   REAL   :: mu_max4, k_mor4, k_ex4, k_res4, k_gr4, k_set4, k_rs4
+   REAL   :: mu_max5, k_mor5, k_ex5, k_res5, k_gr5, k_set5, k_rs5  
+   REAL   :: k_a, k_dcn, k_mn, k_n, k_dn
+   REAL   :: k_dcp, k_mp
+   REAL   :: k_set, k_rs, k_dcc 	
+  
    ! - Temperature depependence factors
-   REAL	  :: Theta_a  , Theta_dn, Theta_DOC, Theta_ex
-   REAL	  :: Theta_gr , Theta_dcc , Theta_dcn, Theta_dcp , Theta_mn
-   REAL	  :: Theta_mor, Theta_mp , Theta_mu, Theta_n 
-   REAL	  :: Theta_res , Theta_SOD						
+   REAL	  :: Theta_a, Theta_mu, Theta_mor, Theta_res, Theta_gr
+   REAL	  :: Theta_dcn, Theta_mn, Theta_n  ,  Theta_dn
+   REAL	  :: Theta_dcp , Theta_mp , Theta_dcc , Theta_DOC, Theta_SOD				
+
 
    ! - Atmoshperic deposition rates
    REAL	  :: ATM_DON, ATM_NH4, ATM_NO3, ATM_PO4, ATM_DOP, ATM_DOC
@@ -400,7 +403,7 @@
    REAL	  :: GW_NH4, GW_NO3, GW_PO4, GW_DOC
 
    ! Sediment release rates
-   REAL	  :: J_NH4, J_NO3, J_PO4, J_DOC
+   REAL	  :: J_NH4, J_NO3, J_PO4, J_DOC, SOD
 
 
 
