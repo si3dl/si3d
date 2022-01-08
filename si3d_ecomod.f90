@@ -432,7 +432,7 @@ SUBROUTINE WQinput
   READ (UNIT=i99,FMT='(///(14X,I20))',IOSTAT=ios) iDO,  &
   &    iPON, iDON, iNH4, iNO3, &
   &    iPOP, iDOP, iPO4, &
-  &    iDOC, iPOC, &
+  &    iPOC, iDOC, &
   &    iALG1, iALG2, iALG3, iALG4, iALG5, &
   &    iZOO
   IF (ios /= 0) CALL input_error ( ios, 92)
@@ -524,7 +524,7 @@ SUBROUTINE WQinput
     PRINT*, "iDO  = ", iDO , "iPOC = ", iPOC, "iDOC = ", iDOC
     PRINT*, "iPON = ", iPON, "iDON = ", iDON, "iNH4 = ", iNH4, "iNO3 = ", iNO3
     PRINT*, "iPOP = ", iPOP, "iDOP = ", iDOP, "iPO4 = ", iPO4
-	  PRINT*, "iALG1 = ", iALG1, "iALG2 = ", iALG2, "iALG3 = ", iALG3, "iALG4 = ", iALG4, "iALG5 = ", iALG5
+	PRINT*, "iALG1 = ", iALG1, "iALG2 = ", iALG2, "iALG3 = ", iALG3, "iALG4 = ", iALG4, "iALG5 = ", iALG5
     PRINT*, "iZOO = ", iZOO
   END IF
 
@@ -600,37 +600,37 @@ SUBROUTINE WQinit
     i = i+1
   END IF
 
-  IF (iALG1 == 1) THEN
+  IF (iPOC == 1) THEN
     tracerpplocal(i) = 9
     i = i+1
   END IF
 
-  IF (iALG2 == 1) THEN
+  IF (iDOC == 1) THEN
     tracerpplocal(i) = 10
     i = i+1
   END IF
 
-  IF (iALG3 == 1) THEN
+  IF (iALG1 == 1) THEN
     tracerpplocal(i) = 11
     i = i+1
   END IF
 
-  IF (iALG4 == 1) THEN
+  IF (iALG2 == 1) THEN
     tracerpplocal(i) = 12
     i = i+1
   END IF
 
-  IF (iALG5 == 1) THEN
+  IF (iALG3 == 1) THEN
     tracerpplocal(i) = 13
     i = i+1
   END IF
 
-  IF (iDOC == 1) THEN
+  IF (iALG4 == 1) THEN
     tracerpplocal(i) = 14
     i = i+1
   END IF
 
-  IF (iPOC == 1) THEN
+  IF (iALG5 == 1) THEN
     tracerpplocal(i) = 15
     i = i+1
   END IF
@@ -678,20 +678,20 @@ END IF
 	ELSEIF (tracerpplocal(i) == 8) THEN
 		LPO4 = i
 	ELSEIF (tracerpplocal(i) == 9) THEN
-		LALG1 = i
-  ELSEIF (tracerpplocal(i) == 10) THEN
-    LALG2 = i
-  ELSEIF (tracerpplocal(i) == 11) THEN
-    LALG3 = i
-  ELSEIF (tracerpplocal(i) == 12) THEN
- 		LALG4 = i
-  ELSEIF (tracerpplocal(i) == 13) THEN
-    LALG5 = i
-	ELSEIF (tracerpplocal(i) == 14) THEN
-		LDOC = i
-	ELSEIF (tracerpplocal(i) == 15) THEN
 		LPOC = i
-  ELSEIF (tracerpplocal(i) == 16) THEN
+	ELSEIF (tracerpplocal(i) == 10) THEN
+		LDOC = i
+	ELSEIF (tracerpplocal(i) == 11) THEN
+		LALG1 = i
+    ELSEIF (tracerpplocal(i) == 12) THEN
+        LALG2 = i
+    ELSEIF (tracerpplocal(i) == 13) THEN
+        LALG3 = i
+    ELSEIF (tracerpplocal(i) == 14) THEN
+ 		LALG4 = i
+    ELSEIF (tracerpplocal(i) == 15) THEN
+        LALG5 = i
+	ELSEIF (tracerpplocal(i) == 16) THEN
 		LZOO = i
 	END IF
   END DO
@@ -1103,38 +1103,21 @@ SUBROUTINE sourcePOC (kwq, lwq)
   INTEGER, INTENT (IN) :: kwq,lwq
 
   !. . Local Variables
-  REAL:: decomposition, grazingdet
+  REAL:: decomposition
 
   ! Calculate decomposition
   decomposition = k_dcc*Theta_dcc**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LPOC)
-  ! Calculate grazing detritus
-  grazingdet = k_grdet * Theta_gr**(salp(kwq,lwq) - 20) *tracerpp(kwq,lwq,LPOC)
 
   sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC)	&
 						&  -   decomposition						          &              ! decomposition
-            &  -   grazingdet                         &              ! grazing of detritus
 						&  -   k_set * tracerpp(kwq,lwq,LPOC) 	  &	             ! settling
 						&  +   k_rs * tracerpp(kwq,lwq,LPOC)			                 ! Resuspension
 						! + mortality		                        - if IALG = 1; calculated in sourceALG
+            ! - grazing detritus - if IZOO = 1; calculated in sourceZOO
 
   ! Caclulate decomposition contribution to DOC
   IF (IDOC == 1) THEN
     sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + decomposition
-   END IF
-
-   ! Calculate ZOO change due to detritus grazing
-   IF (IZOO == 1) THEN
-     sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO) + grazingdet
-   END IF
-
-   ! Calculate PON change due to detritus grazing
-   IF (IPON == 1) THEN
-     sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) - rnc * grazingdet
-   END IF
-
-   ! Calculate POP change due to detritus grazing
-   IF (IPOP == 1) THEN
-     sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP)  - rpc * grazingdet
    END IF
 
 END SUBROUTINE sourcePOC
@@ -1817,7 +1800,7 @@ SUBROUTINE sourceZOO(kwq, lwq)
   INTEGER, INTENT (IN) :: kwq,lwq
 
   !. . .Local Variables
-  REAL :: grazingBacteria, morz, resz, exz
+  REAL :: grazingBacteria, morz, resz, exz, grazingdet
 
   !... Calculate Grazing by Bacteria (nominal concentration)
   grazingBacteria = k_grbac * Theta_gr**(salp(kwq,lwq) - 20) * BacteriaC
@@ -1827,13 +1810,16 @@ SUBROUTINE sourceZOO(kwq, lwq)
   resz = k_resz * Theta_resz **(salp(kwq,lwq) - 20) * sourcesink(kwq,lwq,LZOO)
   ! ... Calculate Excretion of Zooplankton
   exz = k_exz * Theta_resz **(salp(kwq,lwq) - 20) * sourcesink(kwq,lwq,LZOO)
+  ! Calculate grazing detritus
+  grazingdet = k_grdet * Theta_gr**(salp(kwq,lwq) - 20) *tracerpp(kwq,lwq,LZOO)
+
 
     sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO)  &
                 &   + grazingBacteria                    &  ! grazing of bacteria
+                &   + grazingdet                         &
                 &   - morz                               &  ! mortality of Zooplankton
                 &   - resz                               &  ! respiration of zooplankton
-                &   - exz                                   ! excretion of zooplankton
-                  ! + grazing detritus	       -if IPOC = 1; calculated in sourcePOC
+                &   - exz                                 ! excretion of zooplankton
                   ! + grazing algae            - if IALG = 1; calculated in sourceALG
 
 
@@ -1842,19 +1828,10 @@ IF (IDO ==1) THEN
    sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) - roc*resz
 END IF
 
-! If PON is modeled, alter sourcesink(kwq,lwq,LPON) to include mortality
+! Calculate PON change due to detritus grazing and  to include mortality
 IF (IPON == 1) THEN
-    sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) + rnc * morz
-END IF
-
-! If POP is modeled, alter sourcesink(kwq,lwq,LPOP) to include mortality
-IF (IPOP == 1) THEN
-    sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + rpc * morz
-END IF
-
-! If POC is modeled, alter sourcesink(kwq,lwq,LPOC) to include mortality
-IF (IPOC == 1) THEN
-    sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + morz
+  sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) - rnc * grazingdet
+  sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) + rnc * morz
 END IF
 
 ! If NH4 is modeled, alter sourcesink(kwq,lwq,LNH4) to include excretion
@@ -1862,9 +1839,21 @@ IF (INH4 == 1) THEN
     sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) + rnc * exz
 END IF
 
+! Calculate POP change due to detritus grazing adn to include mortality
+IF (IPOP == 1) THEN
+  sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP)  - rpc * grazingdet
+  sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + rpc * morz
+END IF
+
 ! If PO4 is modeled, alter sourcesink(kwq,lwq,LPO4) to include excretion
 IF (INH4 == 1) THEN
     sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) + rpc * exz
+END IF
+
+! Calculate POC change due to detritus grazing and to include mortality
+IF (IPOC == 1) THEN
+  sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) - grazingdet
+  sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + morz
 END IF
 
 END SUBROUTINE sourceZOO
