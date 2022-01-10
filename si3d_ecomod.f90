@@ -440,7 +440,7 @@ SUBROUTINE WQinput
   !. . . Read model stochiometeric constants and other constants
   READ (UNIT=i99,FMT='(///(14X,G20.3))',IOSTAT=ios) rnc, rpc, roc, ron, &
   &     KNIT, KSN, KSP, FNH4, KDOC, &
-  &     light_sat1, light_sat2, light_sat3, light_sat4, light_sat5, BacteriaC
+  &     light_k1, light_k2, light_k3, light_k4, light_k5, BacteriaC
   IF (ios /= 0) CALL input_error ( ios, 93)
 
   !. . . Read model rates
@@ -1187,7 +1187,8 @@ SUBROUTINE sourceALG1(kwq, lwq)
 
   !. .  Calculate growth limiting factors
     ! Light Limitation - by Steele equation (Jassby and Platt, 1976)
-   		f_L1 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat1) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat1))
+   		!f_L1 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat1) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat1)) ! Steele (1962) = Photoinhibited
+      f_L1 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k1) ! Webb et al (1974) in absence of photoinhibition
 		IF (f_L1 == 0) THEN
 		   f_L1 = 1
 		END IF
@@ -1310,8 +1311,8 @@ SUBROUTINE sourceALG2(kwq, lwq)
   ! Calculate mu, growth rate
 
   !. .  Calculate growth limiting factors
-    ! Light Limitation - by Steele equation (Jassby and Platt, 1976)
-   		f_L2 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat2) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat2))
+    !f_L2 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat2) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat2)) ! Steele (1962) = Photoinhibited
+    f_L2 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k2) ! Webb et al (1974) in absence of photoinhibition
 		IF (f_L2 == 0) THEN
 		   f_L2 = 1
 		END IF
@@ -1434,8 +1435,8 @@ SUBROUTINE sourceALG3(kwq, lwq)
   ! Calculate mu, growth rate
 
   !. .  Calculate growth limiting factors
-    ! Light Limitation - by Steele equation (Jassby and Platt, 1976)
-   		f_L3 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat3) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat3))
+    !f_L3 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat3) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat3)) ! Steele (1962) = Photoinhibited
+    f_L3 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k3) ! Webb et al (1974) in absence of photoinhibition
 		IF (f_L3 == 0) THEN
 		   f_L3 = 1
 		END IF
@@ -1558,8 +1559,8 @@ SUBROUTINE sourceALG4(kwq, lwq)
   ! Calculate mu, growth rate
 
   !. .  Calculate growth limiting factors
-    ! Light Limitation - by Steele equation (Jassby and Platt, 1976)
-   		f_L4 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat4) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat4))
+    !f_L4 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat4) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat4)) ! Steele (1962) = Photoinhibited
+    f_L4 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k4) ! Webb et al (1974) in absence of photoinhibition
 		IF (f_L4 == 0) THEN
 		   f_L4 = 1
 		END IF
@@ -1682,8 +1683,8 @@ SUBROUTINE sourceALG5(kwq, lwq)
   ! Calculate mu, growth rate
 
   !. .  Calculate growth limiting factors
-    ! Light Limitation - by Steele equation (Jassby and Platt, 1976)
-   		f_L5 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat5) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat5))
+    !f_L5 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat5) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat5)) ! Steele (1962) = Photoinhibited
+    f_L5 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k5) ! Webb et al (1974) in absence of photoinhibition
 		IF (f_L5 == 0) THEN
 		   f_L5 = 1
 		END IF

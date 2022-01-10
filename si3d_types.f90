@@ -378,7 +378,7 @@
    REAL   :: rnc, rpc, roc, ron
 
    ! - Half-saturation values and algal prefernce for NH4
-   REAL   :: KNIT, KSN, KSP, FNH4, KDOC, light_sat1, light_sat2, light_sat3, light_sat4, light_sat5, BacteriaC
+   REAL   :: KNIT, KSN, KSP, FNH4, KDOC, light_k1, light_k2, light_k3, light_k4, light_k5, BacteriaC
 
    ! - Model rates
    REAL   :: mu_max1, k_mor1, k_ex1, k_res1, k_gr1
