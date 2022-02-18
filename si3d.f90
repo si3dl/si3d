@@ -97,7 +97,8 @@
    IF (idbg == 1) PRINT *, " Before entry to SUB outs"
    IF (ipxml > 0) CALL outs(n,its)   ! Three-dimensional xml outputs
    IF (idbg == 1) PRINT *, " Before entry to SUB outp"
-   IF (ipxml < 0) CALL outp(n)   ! Three-dimensional outputs for ptrack
+   IF ((ipxml < 0) .AND. (iTurbVars == 0)) CALL outp(n)   ! Three-dimensional outputs for ptrack
+   IF ((ipxml < 0) .AND. (iTurbVars == 1)) CALL outpTurb(n)   ! Three-dimensional outputs for ptrack
    IF (idbg == 1) PRINT *, " Before entry to SUB outnb"
    IF (ioNBO > 0) CALL outNB(n,thrs)
    if (nopen > 0) CALL outcheckMass(n,thrs)
