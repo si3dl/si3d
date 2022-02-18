@@ -97,7 +97,8 @@
    IF (idbg == 1) PRINT *, " Before entry to SUB outs"
    IF (ipxml > 0) CALL outs(n,its)   ! Three-dimensional xml outputs
    IF (idbg == 1) PRINT *, " Before entry to SUB outp"
-   IF (ipxml < 0) CALL outp(n)   ! Three-dimensional outputs for ptrack
+   IF ((ipxml < 0) .AND. (iTurbVars == 0)) CALL outp(n)   ! Three-dimensional outputs for ptrack
+   IF ((ipxml < 0) .AND. (iTurbVars == 1)) CALL outpTurb(n)   ! Three-dimensional outputs for ptrack
    IF (idbg == 1) PRINT *, " Before entry to SUB outnb"
    IF (ioNBO > 0) CALL outNB(n,thrs)
    if (nopen > 0) CALL outcheckMass(n,thrs)
@@ -424,13 +425,12 @@
       !.....Output results.....
     3 IF((nnodes > 0) .AND. (MOD(n,MAX(ipt,  1)) == 0)) CALL outt(n,thrs)
       IF((iox    > 0) .AND. (MOD(n,MAX(iox,  1)) == 0)) CALL outv(n)
-      IF((iop    > 0) .AND. (MOD(n,MAX(iop,  1)) == 0)) CALL outh(n)
+      IF((iop    > 0) .AND. (n .GE. itspfh)  .AND. (MOD(n,MAX(iop,  1)) == 0)) CALL outh(n)
       IF((iop    > 0) .AND. (MOD(n,MAX(iop,  1)) == 0)) CALL outw(n)
       IF((iotr   > 0) .AND. (MOD(n,MAX(iotr, 1)) == 0)) CALL outz(n)
       IF((ipxml  > 0) .AND. (MOD(n,MAX(ipxml,1)) == 0)) CALL outs(n,its)
-      IF((ipxml  < 0) .AND. (MOD(n,MAX(apxml,1)) .GE. (apxml-100))) CALL AverageOutp(n)  ! Andrea Ptrack
-      IF((ipxml  < 0) .AND. (MOD(n,MAX(apxml,1)) == 0) .AND. (iTurbVars == 1)) CALL outpTurb(n)
-      IF((ipxml  < 0) .AND. (MOD(n,MAX(apxml,1)) == 0) .AND. (iTurbVars == 0)) CALL outp(n)
+      IF((ipxml  < 0) .AND. (n .GE. itspf) .AND. (MOD(n,MAX(apxml,1)) == 0) .AND. (iTurbVars == 1)) CALL outpTurb(n)
+      IF((ipxml  < 0) .AND. (n .GE. itspf) .AND. (MOD(n,MAX(apxml,1)) == 0) .AND. (iTurbVars == 0)) CALL outp(n)
       !IF((ioNBO  > 0) .AND. (MOD(n,MAX(ioNBO,1)) == 0)) CALL outNB(n,thrs)
       IF((ioNBO  > 0) ) CALL outNB(n,thrs)
       if((nopen > 0)  )  CALL outcheckMass(n,thrs)

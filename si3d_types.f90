@@ -272,7 +272,7 @@
 
    !         ----- Vars. & Arrays used in new OUTPUT routines (sections, planes
    !               isotherms and complete outputs ---------
-   INTEGER :: iop, iox, ioi, ioc, n_planes, n_sections, n_isot, isot_points
+   INTEGER :: iop, iox, ioi, ioc, n_planes, n_sections, n_isot, isot_points,itspfh
    INTEGER, PARAMETER :: max_planes = 10, max_sections = 30, max_isot = 20
    INTEGER, PARAMETER :: max_section_cells = 100
    INTEGER, ALLOCATABLE, DIMENSION (:) :: interior_plane_points

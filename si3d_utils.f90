@@ -72,18 +72,20 @@ SUBROUTINE input
    ! ... Read nodes for horizontal plane output ...........................
    READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) iop
    IF (ios /= 0) CALL input_error ( ios, 6 )
-   IF (iop /= 0) THEN
-     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) n_planes
-     IF (ios /= 0) CALL input_error ( ios, 6 )
-     IF (n_planes > max_planes) THEN
-       PRINT *,'ERROR: # of planes requested > maximum allowed'
-       STOP
-     END IF
-     DO j = 1, n_planes
-       ! ... Read number of cells in X-section j
-       READ (UNIT=i5, FMT='(14X,I20)' , IOSTAT=ios) p_out(j)
-     ENDDO
-   ENDIF
+   READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) itspfh
+   IF (ios /= 0) CALL input_error ( ios, 6 )
+   ! IF (iop /= 0) THEN
+   READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) n_planes
+   IF (ios /= 0) CALL input_error ( ios, 6 )
+   IF (n_planes > max_planes) THEN
+     PRINT *,'ERROR: # of planes requested > maximum allowed'
+     STOP
+   END IF
+   DO j = 1, n_planes
+     ! ... Read number of cells in X-section j
+     READ (UNIT=i5, FMT='(14X,I20)' , IOSTAT=ios) p_out(j)
+   ENDDO
+   ! ENDIF
 
    ! ... Read nodes for vertical plane output ...........................
    READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) iox
@@ -2123,7 +2125,7 @@ SUBROUTINE outh(n)
    IF( n == 0 ) THEN
 
      ! ... Determine No. of time slices to output
-     n_frames = nts/MAX(iop,1)
+     n_frames = (nts-itspfh)/MAX(iop,1)
      print *,"aa,"
      DO j = 1, n_planes
        ! ... Check that plane no. is below 2
@@ -2489,7 +2491,7 @@ SUBROUTINE outpTurb(n)
 !   REAL, ALLOCATABLE, DIMENSION(:,:) :: out_array
   IF( n == 0 ) THEN
      ! ... Determine No. of frames to output & No. of interior points
-     Noframes = nts/MAX(apxml,1)
+     Noframes = (nts-itspf)/MAX(apxml,1)
      ipoints = 0
      DO l = 1, lm
         i = l2i(l); j = l2j(l)
@@ -2597,7 +2599,7 @@ SUBROUTINE outp(n)
 !   REAL, ALLOCATABLE, DIMENSION(:,:) :: out_array
   IF( n == 0 ) THEN
      ! ... Determine No. of frames to output & No. of interior points
-     Noframes = nts/MAX(apxml,1)
+     Noframes = (nts-itspf)/MAX(apxml,1)
      ipoints = 0
      DO l = 1, lm
         i = l2i(l); j = l2j(l)
@@ -2647,6 +2649,7 @@ SUBROUTINE outp(n)
      &              ((out_array(m1,m2),m2=1,9),m1=1,ipoints)
 !     DEALLOCATE (out_array)
   ELSE
+
      ! ... Time stamp
      year_out = iyr
      mon_out  = imon
