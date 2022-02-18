@@ -27,7 +27,7 @@
    REAL :: utime, stime, utime1, stime1, utime2, stime2, utime3, stime3,  &
          & ttime1, ttime2, atime, ltime1, ltime2
    REAL :: TimeStart, TimeEnd
-   INTEGER :: maxcount = 1E6,nn,is,ie,js,je,noH,isH,ieH,la,laaux,contBC,istat,iboid,lcon,lcon2,ifrontera
+   INTEGER :: maxcount = 5E6,nn,is,ie,js,je,noH,isH,ieH,la,laaux,contBC,istat,iboid,lcon,lcon2,ifrontera
    INTEGER :: iter, itemp, i, j, niter1, p, Bstart, Bend, ide_thread, depth, mincol,liter,k,aux_la,ios
    CHARACTER (LEN = 12) :: Ifile
 
@@ -429,7 +429,8 @@
       IF((iotr   > 0) .AND. (MOD(n,MAX(iotr, 1)) == 0)) CALL outz(n)
       IF((ipxml  > 0) .AND. (MOD(n,MAX(ipxml,1)) == 0)) CALL outs(n,its)
       IF((ipxml  < 0) .AND. (MOD(n,MAX(apxml,1)) .GE. (apxml-100))) CALL AverageOutp(n)  ! Andrea Ptrack
-      IF((ipxml  < 0) .AND. (MOD(n,MAX(apxml,1)) == 0)) CALL outp(n)
+      IF((ipxml  < 0) .AND. (MOD(n,MAX(apxml,1)) == 0) .AND. (iTurbVars == 1)) CALL outpTurb(n)
+      IF((ipxml  < 0) .AND. (MOD(n,MAX(apxml,1)) == 0) .AND. (iTurbVars == 0)) CALL outp(n)
       !IF((ioNBO  > 0) .AND. (MOD(n,MAX(ioNBO,1)) == 0)) CALL outNB(n,thrs)
       IF((ioNBO  > 0) ) CALL outNB(n,thrs)
       if((nopen > 0)  )  CALL outcheckMass(n,thrs)
@@ -441,7 +442,7 @@
 
       !.....End loop over time.....
       IF(n > maxcount) THEN
-         PRINT *, " ERROR--A maximum of 1 million time steps is allowed"
+         PRINT *, " ERROR--A maximum of 5 million time steps is allowed"
          EXIT
       END IF
       TimeEnd = TIMER(0.0)

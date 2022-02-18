@@ -115,6 +115,8 @@ SUBROUTINE input
    IF (ios /= 0) CALL input_error ( ios, 7 )
    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) itspf
    IF (ios /= 0) CALL input_error ( ios, 7 )
+   READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iTurbVars
+   IF (ios /= 0) CALL input_error ( ios, 7 )
 
    !.....Read info on open boundaries.....................................
    READ (UNIT=i5, FMT='(///14X,I20)', IOSTAT=ios) nopen
@@ -2466,10 +2468,8 @@ SUBROUTINE outz(n)
 
 END SUBROUTINE outz
 
-
-
 !***********************************************************************
-SUBROUTINE outp(n)
+SUBROUTINE outpTurb(n)
 !***********************************************************************
 !
 !  Purpose: To write the complete solution in the computational domain
@@ -2487,9 +2487,7 @@ SUBROUTINE outp(n)
    REAL                 :: hour_out
    INTEGER, SAVE        :: ipoints
 !   REAL, ALLOCATABLE, DIMENSION(:,:) :: out_array
-
-   IF( n == 0 ) THEN
-
+  IF( n == 0 ) THEN
      ! ... Determine No. of frames to output & No. of interior points
      Noframes = nts/MAX(apxml,1)
      ipoints = 0
@@ -2516,13 +2514,6 @@ SUBROUTINE outp(n)
      mon_out  = imon
      day_out  = iday
      hour_out = ihr
-
-!     ALLOCATE( out_array ( ipoints, 9 ), STAT=istat )
-!     IF (istat /= 0) THEN;
-!       PRINT *, 'ERROR allocating space in output routine for PTRACK'
-!       STOP
-!     ENDIF
-
      ! ... Output tracer concentrations
      kout = 0
      ! ... Assign values to the output array
@@ -2532,7 +2523,6 @@ SUBROUTINE outp(n)
        i = l2i(l); j = l2j(l); !Andrea PT
        DO k = k1, kmz(l)
          kout = kout + 1
-
          out_array(kout,1) = FLOAT(i)
          out_array(kout,2) = FLOAT(j)
          out_array(kout,3) = FLOAT(k)
@@ -2541,7 +2531,6 @@ SUBROUTINE outp(n)
          out_array(kout,6) = vp (k,l)
          out_array(kout,7) = wp (k,l)
          out_array(kout,8) = Dv (k,l)
-         !out_array(kout,8) = Dvm (k,l) !Andrea Ptrack.Cambio Dv por Dvm
          out_array(kout,9) = sal (k,l)
          out_array(kout,10) = q2p (k,l)
          out_array(kout,11) = q2lp (k,l)
@@ -2553,21 +2542,12 @@ SUBROUTINE outp(n)
      WRITE(ptrack_id) n,year_out,mon_out, day_out,hour_out,  &
      &              ((out_array(m1,m2),m2=1,13),m1=1,ipoints)
 !     DEALLOCATE (out_array)
-
- ELSE
-
+  ELSE
      ! ... Time stamp
      year_out = iyr
      mon_out  = imon
      day_out  = iday
      hour_out = ihr
-
-!     ALLOCATE( out_array ( ipoints, 10 ), STAT=istat )
-!     IF (istat /= 0) THEN;
-!       PRINT *, 'ERROR allocating space in output routine for PTRACK'
-!       STOP
-!     ENDIF
-
      ! ... Output tracer concentrations
      kout = 0
      ! ... Assign values to the output array
@@ -2581,7 +2561,6 @@ SUBROUTINE outp(n)
          out_array(kout,3) = vp(k,l)
          out_array(kout,4) = wp(k,l)
          out_array(kout,5) = Dv(k,l)
-         !out_array(kout,5) = Dvm(k,l) !Andrea Ptrack
          out_array(kout,6) = sal (k,l)
          out_array(kout,7) = q2p (k,l)
          out_array(kout,8) = q2lp (k,l)
@@ -2593,37 +2572,109 @@ SUBROUTINE outp(n)
      WRITE(ptrack_id) n,year_out,mon_out, day_out,hour_out,  &
      &              ((out_array(m1,m2),m2=1,10),m1=1,ipoints)
      !DEALLOCATE (out_array)
-     !Dvm = 0.0   !Andrea Ptrack
  END IF
 
-END SUBROUTINE outp
+END SUBROUTINE outpTurb
 
 !***********************************************************************
-SUBROUTINE AverageOutp(n)   ! subroutine  added by ABH   marked 4 CINTIA
+SUBROUTINE outp(n)
 !***********************************************************************
 !
-!  Purpose: To write ascii output in xml format to a file used for
-!           velocity and particle-tracking animations with the Gr
-!           application. The file, called 'spacefile.xml', is
-!           essentially a header file for the sequential binary files
-!           (spacefile3d.bin  and  spacefile2d.bin) written out in
-!           SUB outs_bin. The binary files contain the 2d and 3d data
-!           from all the wet spatial nodes in the solution at
-!           snapshots in time.
-!
+!  Purpose: To write the complete solution in the computational domain
+!           The resulting file is used to drive particle tracking
+!           simulations with PTRACK-TOOL.
 !-----------------------------------------------------------------------
 
    INTEGER, INTENT(IN) :: n
 
-   Dvm = Dvm + Dv/100
+   !.....Local variables.....
+   CHARACTER (LEN = 16) :: ptrack_file
+   INTEGER, PARAMETER   :: ptrack_id = 1002
+   INTEGER              :: i, j, k, l, ios, istat, Noframes, m1, m2,  &
+                           kout, year_out, day_out, mon_out, c
+   REAL                 :: hour_out
+   INTEGER, SAVE        :: ipoints
+!   REAL, ALLOCATABLE, DIMENSION(:,:) :: out_array
+  IF( n == 0 ) THEN
+     ! ... Determine No. of frames to output & No. of interior points
+     Noframes = nts/MAX(apxml,1)
+     ipoints = 0
+     DO l = 1, lm
+        i = l2i(l); j = l2j(l)
+        DO k = k1, kmz(l)
+           ipoints = ipoints + 1;
+        ENDDO
+     ENDDO
 
-  ! PRINT*,'Dvm',Dvm(20,10000)
+     ! ... Open output file & print data & initial conditions
+     ptrack_file = "ptrack_hydro.bnr"
+     OPEN(unit=ptrack_id,file=ptrack_file,FORM='UNFORMATTED',IOSTAT=ios)
+     IF(ios /= 0) THEN
+       PRINT *, "Error opening ptrack hydro file = ", ios
+       STOP
+     ENDIF
+     !... Write number of time slices to output file
+     WRITE(ptrack_id) Noframes
+     WRITE(ptrack_id) ipoints
 
+     ! ... Time stamp
+     year_out = iyr
+     mon_out  = imon
+     day_out  = iday
+     hour_out = ihr
+     ! ... Output tracer concentrations
+     kout = 0
+     ! ... Assign values to the output array
+     DO c=1,cm1
+       IF (.NOT. mask(c)) CYCLE
+       l = l2c(c)
+       i = l2i(l); j = l2j(l); !Andrea PT
+       DO k = k1, kmz(l)
+         kout = kout + 1
+         out_array(kout,1) = FLOAT(i)
+         out_array(kout,2) = FLOAT(j)
+         out_array(kout,3) = FLOAT(k)
+         out_array(kout,4) = hp (k,l)
+         out_array(kout,5) = up (k,l)
+         out_array(kout,6) = vp (k,l)
+         out_array(kout,7) = wp (k,l)
+         out_array(kout,8) = Dv (k,l)
+         out_array(kout,9) = sal (k,l)
+       END DO;
+     END DO
+     ! ... Print time stamp followed by the records
+     WRITE(ptrack_id) n,year_out,mon_out, day_out,hour_out,  &
+     &              ((out_array(m1,m2),m2=1,9),m1=1,ipoints)
+!     DEALLOCATE (out_array)
+  ELSE
+     ! ... Time stamp
+     year_out = iyr
+     mon_out  = imon
+     day_out  = iday
+     hour_out = ihr
+     ! ... Output tracer concentrations
+     kout = 0
+     ! ... Assign values to the output array
+     DO c=1,cm1
+       IF (.NOT. mask(c)) CYCLE
+       l = l2c(c)
+       DO k = k1, kmz(l)
+         kout = kout + 1
+         out_array(kout,1) = hp(k,l)
+         out_array(kout,2) = up(k,l)
+         out_array(kout,3) = vp(k,l)
+         out_array(kout,4) = wp(k,l)
+         out_array(kout,5) = Dv(k,l)
+         out_array(kout,6) = sal (k,l)
+       END DO;
+     END DO
+     ! ... Print time stamp followed by the records
+     WRITE(ptrack_id) n,year_out,mon_out, day_out,hour_out,  &
+     &              ((out_array(m1,m2),m2=1,6),m1=1,ipoints)
+     !DEALLOCATE (out_array)
+ END IF
 
-
-END SUBROUTINE AverageOutp
-
-
+END SUBROUTINE outp
 
 !***********************************************************************
 SUBROUTINE outs(n,its)
