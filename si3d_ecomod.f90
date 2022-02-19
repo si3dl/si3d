@@ -819,7 +819,7 @@ SUBROUTINE sourceDO(kwq,lwq)
 !  theta2 = 0.000975 - 1.426*1E-5 * salp(kwq,lwq) + &
 !                      6.436*1E-8 * salp(kwq,lwq)**2
 !  os = os*Pa*((1-Pwv/Pa) *(1-theta2*Pa))&
-  &           /((1-Pwv)*(1-theta2) )
+!  &           /((1-Pwv)*(1-theta2) )
 
    OS = 10
 

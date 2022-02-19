@@ -1,7 +1,7 @@
 SHELL=$!/bin/sh
 export FORTRAN_COMPILER=IFORT
-export SI3DDIR=/mnt/c/Users/ccali/Github/psi3d
-export GOTMDIR=/mnt/c/Users/ccali/Github/gotm
+export SI3DDIR=/mnt/c/Users/alcortes/Github/psi3d
+export GOTMDIR=/mnt/c/Users/alcortes/Github/gotm
 export MODDIR=$GOTMDIR/modules
 export INCDIR=$GOTMDIR/include
 export BINDIR=$GOTMDIR/bin
