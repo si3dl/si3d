@@ -439,7 +439,7 @@ SUBROUTINE WQinput
 
   !. . . Read model stochiometeric constants and other constants
   READ (UNIT=i99,FMT='(///(14X,G20.3))',IOSTAT=ios) rnc, rpc, roc, ron, &
-  &     KNIT, KSN, KSP, FNH4, KDOC, &
+  &     KNIT, KSN, KSP, FNH4, KDOC, SOD, KSOD, &
   &     light_k1, light_k2, light_k3, light_k4, light_k5, BacteriaC
   IF (ios /= 0) CALL input_error ( ios, 93)
 
@@ -460,6 +460,7 @@ SUBROUTINE WQinput
   !... Convert model rates to time of [1/timestep]. Input file has 1/day values
   ! DO
   k_a   = idt * k_a/86400.0
+  SOD   = idt * SOD/86400.0
   ! ALG1 : Pycoplankton
   mu_max1 = idt * mu_max1/86400.0
   k_mor1 = idt * k_mor1/86400.0
@@ -508,7 +509,7 @@ SUBROUTINE WQinput
   k_grbac = idt * k_grbac/86400.0
 
   !. . . Read model temperature rates
-  READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) Theta_a, Theta_mu, Theta_mor, Theta_res, Theta_gr, &
+  READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) Theta_a, Theta_sod, Theta_mu, Theta_mor, Theta_res, Theta_gr, &
   &     Theta_dcn, Theta_mn, Theta_n , Theta_dn , &
   &     Theta_dcp , Theta_mp , Theta_dcc , Theta_DOC, Theta_morz, Theta_resz
 
@@ -800,38 +801,48 @@ SUBROUTINE sourceDO(kwq,lwq)
   INTEGER, INTENT (IN) :: kwq,lwq
 
   !. . . Local Variables
-  REAL		::	 Tk, lnOS, OS, ln_Pwv, Pwv, theta2, Patm
+!  REAL		::	 Tk, lnOS, OS, ln_Pwv, Pwv, theta2, Patm
+   REAL     ::   OS, f_SOD
 
-  ! Calculate DO saturation
-  Tk = salp(kwq,lwq) + 273
-  lnos = -139.34410 + 1.575701*1E5 /(Tk    ) &
-  &                 - 6.642308*1E7 /(Tk**2.) &
-  &	                + 1.243800*1E10/(Tk**3.) &
-  &                 - 8.621949*1E11/(Tk**4.)
-  os = EXP(lnos)
+!  ! Calculate DO saturation
+!  Tk = salp(kwq,lwq) + 273
+!  lnos = -139.34410 + 1.575701*1E5 /(Tk    ) &
+!  &                 - 6.642308*1E7 /(Tk**2.) &
+!  &	                + 1.243800*1E10/(Tk**3.) &
+!  &                 - 8.621949*1E11/(Tk**4.)
+!  os = EXP(lnos)
 
-  ! Correct for Patmospheric (Pa - declared in si3d_types and defined in surfbc0)
-  Patm   = Pa * 0.00000986923; ! Transform atmospheric pressure from Pa to atm
-  ln_Pwv = 11.8751 - 3840.70/Tk - 216961/Tk
-  Pwv    = EXP(ln_Pwv)
-  theta2 = 0.000975 - 1.426*1E-5 * salp(kwq,lwq) + &
-                      6.436*1E-8 * salp(kwq,lwq)**2
-  os = os*Pa*((1-Pwv/Pa) *(1-theta2*Pa))&
+!  ! Correct for Patmospheric (Pa - declared in si3d_types and defined in surfbc0)
+!  Patm   = Pa * 0.00000986923; ! Transform atmospheric pressure from Pa to atm
+!  ln_Pwv = 11.8751 - 3840.70/Tk - 216961/Tk
+!  Pwv    = EXP(ln_Pwv)
+!  theta2 = 0.000975 - 1.426*1E-5 * salp(kwq,lwq) + &
+!                      6.436*1E-8 * salp(kwq,lwq)**2
+!  os = os*Pa*((1-Pwv/Pa) *(1-theta2*Pa))&
   &           /((1-Pwv)*(1-theta2) )
 
-   os = 10
+   OS = 10
 
   ! Calculate reaertaion
   ! for now using constant rearation defined in wq_inp, but in future, can have
   ! alternatives for calcualting reaeration.
 
-  IF (kwq .eq. k1z(ij2l(l2i(lwq),l2j(lwq)))) THEN
-  sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO)              &
-          &       +    k_a*(OS - tracerpp(kwq,lwq,LDO)) 		!reaeration
+  IF (kwq .eq. k1z(ij2l(l2i(lwq),l2j(lwq)))+1) THEN
+  sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO)       &
+          &       +    k_a*(OS - tracerpp(kwq,lwq,LDO))   !reaeration
+
 					     ! + photosynthesis	- only if IALG = 1; calculated in sourceALG
 					     ! - Respiration		- only if IALG = 1; calculated in sourceALG
                ! - RespirationZ		- only if IZOO = 1; calculated in sourceZOO
 					     ! - Nitrification	- only if INH4 = 1; calculated in sourceNH4
+
+!. . Add contribution from sediment release and GW flux into bottom cells
+IF (kwq .eq. kmz(ij2l(l2i(lwq),l2j(lwq)))-1) THEN
+ f_SOD = tracerpp(kwq,lwq,LDO) /(KSOD + tracerpp(kwq,lwq,LDO) )
+ sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO)    &
+						& +	 SOD * Theta_sod**(salp(kwq,lwq) - 20) * f_SOD * (1/(hpp(kwq,lwq)-1))    ! sediment oxygen demand
+END IF
+
 
  END IF
 

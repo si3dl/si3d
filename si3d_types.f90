@@ -378,7 +378,7 @@
    REAL   :: rnc, rpc, roc, ron
 
    ! - Half-saturation values and algal prefernce for NH4
-   REAL   :: KNIT, KSN, KSP, FNH4, KDOC, light_k1, light_k2, light_k3, light_k4, light_k5, BacteriaC
+   REAL   :: KNIT, KSN, KSP, FNH4, KDOC, SOD, KSOD, light_k1, light_k2, light_k3, light_k4, light_k5, BacteriaC
 
    ! - Model rates
    REAL   :: mu_max1, k_mor1, k_ex1, k_res1, k_gr1
@@ -392,7 +392,7 @@
    REAL   :: k_morz, k_exz, k_resz, k_grdet, k_grbac
 
    ! - Temperature depependence factors
-   REAL	  :: Theta_a, Theta_mu, Theta_mor, Theta_res, Theta_gr
+   REAL	  :: Theta_a, Theta_sod, Theta_mu, Theta_mor, Theta_res, Theta_gr
    REAL	  :: Theta_dcn, Theta_mn, Theta_n  ,  Theta_dn
    REAL	  :: Theta_dcp , Theta_mp , Theta_dcc , Theta_DOC
    REAL   :: Theta_morz, Theta_resz
