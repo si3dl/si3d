@@ -457,56 +457,56 @@ SUBROUTINE WQinput
   IF (ios /= 0) CALL input_error ( ios, 94)
 
 
-  !... Convert model rates to time of [1/timestep]. Input file has 1/day values
+  !... Convert model rates [1/s]. Input file has 1/day values
   ! DO
-  k_a   = idt * k_a/86400.0
-  SOD   = idt * SOD/86400.0
+  k_a   =  k_a/86400.0
+  SOD   =  SOD/86400.0
   ! ALG1 : Pycoplankton
-  mu_max1 = idt * mu_max1/86400.0
-  k_mor1 = idt * k_mor1/86400.0
-  k_ex1 = idt * k_ex1/86400.0
-  k_res1 = idt * k_res1/86400.0
-  k_gr1 = idt * k_gr1/86400.0
+  mu_max1 =  mu_max1/86400.0
+  k_mor1 =  k_mor1/86400.0
+  k_ex1 =  k_ex1/86400.0
+  k_res1 =  k_res1/86400.0
+  k_gr1 =  k_gr1/86400.0
   ! ALG2 : Cyclotella
-  mu_max2 = idt * mu_max2/86400.0
-  k_mor2 = idt * k_mor2/86400.0
-  k_ex2 = idt * k_ex2/86400.0
-  k_res2 = idt * k_res2/86400.0
-  k_gr2 = idt * k_gr2/86400.0
+  mu_max2 =  mu_max2/86400.0
+  k_mor2 =  k_mor2/86400.0
+  k_ex2 =  k_ex2/86400.0
+  k_res2 =  k_res2/86400.0
+  k_gr2 =  k_gr2/86400.0
   ! ALG3: Cryptomonas
-  mu_max3 = idt * mu_max3/86400.0
-  k_mor3 = idt * k_mor3/86400.0
-  k_ex3 = idt * k_ex3/86400.0
-  k_res3 = idt * k_res3/86400.0
-  k_gr3 = idt * k_gr3/86400.0
+  mu_max3 =  mu_max3/86400.0
+  k_mor3 =  k_mor3/86400.0
+  k_ex3 =  k_ex3/86400.0
+  k_res3 =  k_res3/86400.0
+  k_gr3 =  k_gr3/86400.0
   ! ALG4: Synedra
-  mu_max4 = idt * mu_max4/86400.0
-  k_mor4 = idt * k_mor4/86400.0
-  k_ex4 = idt * k_ex4/86400.0
-  k_res4 = idt * k_res4/86400.0
-  k_gr4 = idt * k_gr4/86400.0
+  mu_max4 =  mu_max4/86400.0
+  k_mor4 =  k_mor4/86400.0
+  k_ex4 =  k_ex4/86400.0
+  k_res4 =  k_res4/86400.0
+  k_gr4 =  k_gr4/86400.0
   ! ALG5: Microcystis
-  mu_max5 = idt * mu_max5/86400.0
-  k_mor5 = idt * k_mor5/86400.0
-  k_ex5 = idt * k_ex5/86400.0
-  k_res5 = idt * k_res5/86400.0
-  k_gr5 = idt * k_gr5/86400.0
+  mu_max5 =  mu_max5/86400.0
+  k_mor5 =  k_mor5/86400.0
+  k_ex5 =  k_ex5/86400.0
+  k_res5 =  k_res5/86400.0
+  k_gr5 =  k_gr5/86400.0
   ! Nutrients
-  k_dcn = idt * k_dcn/86400.0
-  k_mn = idt * k_mn/86400.0
-  k_n = idt * k_n/86400.0
-  k_dn = idt * k_dn/86400.0
-  k_dcp = idt * k_dcp/86400.0
-  k_mp = idt * k_mp/86400.0
-  k_set = idt * k_set/86400.0
-  k_rs = idt * k_rs/86400.0
-  k_dcc = idt * k_dcc/86400.0
+  k_dcn =  k_dcn/86400.0
+  k_mn =  k_mn/86400.0
+  k_n =  k_n/86400.0
+  k_dn =  k_dn/86400.0
+  k_dcp =  k_dcp/86400.0
+  k_mp =  k_mp/86400.0
+  k_set =  k_set/86400.0
+  k_rs =  k_rs/86400.0
+  k_dcc =  k_dcc/86400.0
   ! Zooplankton
-  k_morz = idt * k_morz/86400.0
-  k_exz = idt * k_exz/86400.0
-  k_resz = idt * k_resz/86400.0
-  k_grdet = idt * k_grdet/86400.0
-  k_grbac = idt * k_grbac/86400.0
+  k_morz =  k_morz/86400.0
+  k_exz =  k_exz/86400.0
+  k_resz =  k_resz/86400.0
+  k_grdet =  k_grdet/86400.0
+  k_grbac =  k_grbac/86400.0
 
   !. . . Read model temperature rates
   READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) Theta_a, Theta_sod, Theta_mu, Theta_mor, Theta_res, Theta_gr, &
@@ -720,7 +720,7 @@ SUBROUTINE srcsnkWQ
   INTEGER:: i,j,k,l, k1s, kms,itr
 
   ! reset soursesink = 0
-  !sourcesink = 0;
+  sourcesink = 0;
 
   DO l = 1, lm;
 
@@ -728,8 +728,8 @@ SUBROUTINE srcsnkWQ
     !i = l2i(l); j = l2j(l);
 
     ! ... Retrieve top & bottom wet sal-pts .................
-    kms = kmz(j)
-    k1s = k1z(j)
+    kms = kmz(l)
+    k1s = k1z(l)
 
     DO k = k1s, kms;
 
@@ -802,7 +802,7 @@ SUBROUTINE sourceDO(kwq,lwq)
 
   !. . . Local Variables
 !  REAL		::	 Tk, lnOS, OS, ln_Pwv, Pwv, theta2, Patm
-   REAL     ::   OS, f_SOD
+   REAL     ::   OS, f_SOD !var1, var2, topcell, bottomcell
 
 !  ! Calculate DO saturation
 !  Tk = salp(kwq,lwq) + 273
@@ -826,25 +826,43 @@ SUBROUTINE sourceDO(kwq,lwq)
   ! Calculate reaertaion
   ! for now using constant rearation defined in wq_inp, but in future, can have
   ! alternatives for calcualting reaeration.
+!topcell = k1z(l)
+!PRINT*, "k = ", k,", l = ", l,", top cell = ", topcell 
 
-  IF (kwq .eq. k1z(ij2l(l2i(lwq),l2j(lwq)))+1) THEN
-  sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO)       &
-          &       +    k_a*(OS - tracerpp(kwq,lwq,LDO))   !reaeration
+sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO)
 
+ IF (kwq .eq. k1z(lwq)) THEN
+ sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO)       &
+         &       +    k_a*(OS - tracerpp(kwq,lwq,LDO))   !reaeration
+
+ 
+ !var1 = k_a*(OS - tracerpp(k,l,LDO))
+ !PRINT*, "Reaeration term = ", var1, "top cell = ", topcell 
 					     ! + photosynthesis	- only if IALG = 1; calculated in sourceALG
 					     ! - Respiration		- only if IALG = 1; calculated in sourceALG
                ! - RespirationZ		- only if IZOO = 1; calculated in sourceZOO
 					     ! - Nitrification	- only if INH4 = 1; calculated in sourceNH4
 
-!. . Add contribution from sediment release and GW flux into bottom cells
-IF (kwq .eq. kmz(ij2l(l2i(lwq),l2j(lwq)))-1) THEN
- f_SOD = tracerpp(kwq,lwq,LDO) /(KSOD + tracerpp(kwq,lwq,LDO) )
- sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO)    &
-						& +	 SOD * Theta_sod**(salp(kwq,lwq) - 20) * f_SOD * (1/(hpp(kwq,lwq)-1))    ! sediment oxygen demand
 END IF
 
 
- END IF
+!. . Add contribution from sediment release and GW flux into bottom cells
+!bottomcell = kmz(l)
+!PRINT*, "k = ", k,", l = ", l,", bottom cell = ", bottomcell
+
+IF (kwq .eq. kmz(lwq)) THEN
+
+ 
+ f_SOD = tracerpp(kwq,lwq,LDO) /(KSOD + tracerpp(kwq,lwq,LDO) )
+ 
+ !var2 = SOD * Theta_sod**(salp(k,l) - 20) * f_SOD * (1/(hpp(k,l)))
+ !PRINT*, "SOD term = ", var2, "bottom cell = ", bottomcell, ", SOD = ", SOD, ", Tcorr = ", Theta_sod**(salp(k,l) - 20), ", f_SOD = ", f_SOD, ", dz = ", hpp(k,l)
+ 
+ sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO)    &
+						& +	 SOD * Theta_sod**(salp(kwq,lwq) - 20) * f_SOD * (0.5/(hpp(kwq,lwq)))    ! sediment oxygen demand
+END IF
+
+!PRINT*, "k = ", kwq,", l = ", lwq,", DO = ", sourcesink(kwq,lwq,LDO) 
 
 END SUBROUTINE sourceDO
 !************************************************************************
