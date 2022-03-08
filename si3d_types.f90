@@ -287,7 +287,7 @@
    !          ----- Active & Non-active Scalar transport models  **********************
    INTEGER :: iotr       ! No. steps between output to file
    INTEGER :: ntr        ! No. of tracers requested for simulation
-   INTEGER, PARAMETER  :: ntrmax = 20 ! Max. No. of tracers that can be simulated
+   INTEGER, PARAMETER  :: ntrmax = 25 ! Max. No. of tracers that can be simulated
    REAL   , ALLOCATABLE, DIMENSION(:,:)  :: fluxX, fluxY, fluxZ
    REAL   , ALLOCATABLE, DIMENSION(:,:)  :: fluxXtr, fluxY2, fluxZ2, fluxXsal
    REAL   , ALLOCATABLE, DIMENSION(:,:,:):: tracer, tracerpp, sourcesink
@@ -366,19 +366,19 @@
 
    ! ... Integer switches to deterimine if constituent is modeled
    INTEGER:: iDO , iPON, iDON, iNH4, iNO3, iPOP, iDOP, iPO4
-   INTEGER:: iDOC, iPOC, iALG1, iALG2, iALG3, iALG4, iALG5, iZOO
+   INTEGER:: iDOC, iPOC, iALG1, iALG2, iALG3, iALG4, iALG5, iFT, iFN, iFP, iFL1, iFL2, iFL3, iFL4, iFL5
 
 
    ! ... Integer to determine constituent location
    INTEGER:: LDO , LPON, LDON, LNH4, LNO3, LPOP, LDOP, LPO4
-   INTEGER:: LDOC, LPOC, LALG1, LALG2, LALG3, LALG4, LALG5, LZOO
+   INTEGER:: LDOC, LPOC, LALG1, LALG2, LALG3, LALG4, LALG5, LFT, LFN, LFP, LFL1, LFL2, LFL3, LFL4, LFL5
 
    ! ... Model Constants - read from input file and many used for calibration
    ! - Stochiometeric constants
    REAL   :: rnc, rpc, roc, ron
 
    ! - Half-saturation values and algal prefernce for NH4
-   REAL   :: KNIT, KSN, KSP, FNH4, KDOC, SOD, KSOD, light_k1, light_k2, light_k3, light_k4, light_k5, BacteriaC
+   REAL   :: KNIT, KSN, KSP, FNH4, KDOC, SOD, KSOD, light_sat1, light_sat2, light_sat3, light_sat4, light_sat5, BacteriaC
 
    ! - Model rates
    REAL   :: mu_max1, k_mor1, k_ex1, k_res1, k_gr1

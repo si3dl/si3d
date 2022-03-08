@@ -434,13 +434,13 @@ SUBROUTINE WQinput
   &    iPOP, iDOP, iPO4, &
   &    iPOC, iDOC, &
   &    iALG1, iALG2, iALG3, iALG4, iALG5, &
-  &    iZOO
+  &    iFT, iFN, iFP, iFL1, iFL2, iFL3, iFL4, iFL5
   IF (ios /= 0) CALL input_error ( ios, 92)
 
   !. . . Read model stochiometeric constants and other constants
   READ (UNIT=i99,FMT='(///(14X,G20.3))',IOSTAT=ios) rnc, rpc, roc, ron, &
   &     KNIT, KSN, KSP, FNH4, KDOC, SOD, KSOD, &
-  &     light_k1, light_k2, light_k3, light_k4, light_k5, BacteriaC
+  &     light_sat1, light_sat2, light_sat3, light_sat4, light_sat5, BacteriaC
   IF (ios /= 0) CALL input_error ( ios, 93)
 
   !. . . Read model rates
@@ -526,7 +526,7 @@ SUBROUTINE WQinput
     PRINT*, "iPON = ", iPON, "iDON = ", iDON, "iNH4 = ", iNH4, "iNO3 = ", iNO3
     PRINT*, "iPOP = ", iPOP, "iDOP = ", iDOP, "iPO4 = ", iPO4
 	PRINT*, "iALG1 = ", iALG1, "iALG2 = ", iALG2, "iALG3 = ", iALG3, "iALG4 = ", iALG4, "iALG5 = ", iALG5
-    PRINT*, "iZOO = ", iZOO
+    PRINT*, "iFT = ", iFT, "iFN = ", iFN, "iFP = ", iFP, "iFL1 = ", iFL1, "iFL2 = ", iFL2, "iFL3 = ", iFL3, "iFL4 = ", iFL4, "iFL5 = ", iFL5
   END IF
 
   CALL WQinit !ACortes 09/24/2021
@@ -554,7 +554,7 @@ SUBROUTINE WQinit
   LPOP=0; LDOP=0; LPO4=0
   LALG1=0; LALG2=0; LALG3=0; LALG4=0; LALG5=0;
   LDOC=0; LPOC=0;
-  LZOO=0;
+  LFT=0; LFN=0; LFP=0; LFL1=0; LFL2=0; LFL3=0; LFL4=0; LFL5=0;
 
   !. . Assign Lxx to each constituent modeled
   !. . .. first need to define intermediate array tracerpplocal
@@ -636,11 +636,46 @@ SUBROUTINE WQinit
     i = i+1
   END IF
 
-  IF (iZOO == 1) THEN
+  IF (iFT == 1) THEN
     tracerpplocal(i) = 16
     i = i+1
   END IF
+  
+  IF (iFN == 1) THEN
+    tracerpplocal(i) = 17
+    i = i+1
+  END IF
 
+  IF (iFP == 1) THEN
+    tracerpplocal(i) = 18
+    i = i+1
+  END IF
+
+  IF (iFL1 == 1) THEN
+    tracerpplocal(i) = 19
+    i = i+1
+  END IF
+
+  IF (iFL2 == 1) THEN
+    tracerpplocal(i) = 20
+    i = i+1
+  END IF
+
+  IF (iFL3 == 1) THEN
+    tracerpplocal(i) = 21
+    i = i+1
+  END IF
+
+  IF (iFL4 == 1) THEN
+    tracerpplocal(i) = 22
+    i = i+1
+  END IF
+
+  IF (iFL5 == 1) THEN
+    tracerpplocal(i) = 23
+    i = i+1
+  END IF
+  
   sumtr = 0
   DO j = 1, ntrmax
     IF (tracerpplocal(j)>0) sumtr = sumtr + 1
@@ -693,7 +728,21 @@ END IF
     ELSEIF (tracerpplocal(i) == 15) THEN
         LALG5 = i
 	ELSEIF (tracerpplocal(i) == 16) THEN
-		LZOO = i
+		LFT = i		
+	ELSEIF (tracerpplocal(i) == 17) THEN
+		LFN = i	
+	ELSEIF (tracerpplocal(i) == 18) THEN
+		LFP = i	
+	ELSEIF (tracerpplocal(i) == 19) THEN
+		LFL1 = i	
+	ELSEIF (tracerpplocal(i) == 20) THEN
+		LFL2 = i	
+	ELSEIF (tracerpplocal(i) == 21) THEN
+		LFL3 = i	
+	ELSEIF (tracerpplocal(i) == 22) THEN
+		LFL4 = i	
+	ELSEIF (tracerpplocal(i) == 23) THEN
+		LFL5 = i	
 	END IF
   END DO
 
@@ -702,7 +751,7 @@ END IF
     PRINT*, "LPON = ", LPON, "LDON = ", LDON, "LNH4 = ", LNH4, "LNO3 = ", LNO3
     PRINT*, "LPOP = ", LPOP, "LDOP = ", LDOP
     PRINT*, "LALG1 = ", LALG1, "LALG2 = ", LALG2, "LALG3 = ", LALG3, "LALG4 = ", LALG4, "LALG5 = ", LALG5
-    PRINT*, "LZOO = ", LZOO
+    PRINT*, "LFT = ", LFT, "LFN = ", LFN, "LFP = ", LFP, "LFL1 = ", LFL1, "LFL2 = ", LFL2, "LFL3 = ", LFL3, "LFL4 = ", LFL4, "LFL5 = ", LFL5
   END IF
 
 END SUBROUTINE WQinit
@@ -778,8 +827,29 @@ SUBROUTINE srcsnkWQ
       IF (iPOC == 1) THEN
         CALL sourcePOC(k,l)
       END IF
-      IF (iZOO == 1) THEN
-        CALL sourceZOO(k,l)
+      IF (iFT == 1) THEN
+        CALL sourceFT(k,l)
+	  END IF
+	  IF (iFN == 1) THEN
+        CALL sourceFN(k,l)
+	  END IF
+	  IF (iFP == 1) THEN
+        CALL sourceFP(k,l)
+	  END IF
+	  IF (iFL1 == 1) THEN
+        CALL sourceFL1(k,l)
+	  END IF
+	  IF (iFL2 == 1) THEN
+        CALL sourceFL2(k,l)
+	  END IF
+	  IF (iFL3 == 1) THEN
+        CALL sourceFL3(k,l)
+	  END IF
+	  IF (iFL4 == 1) THEN
+        CALL sourceFL4(k,l)
+	  END IF
+	  IF (iFL5 == 1) THEN
+        CALL sourceFL5(k,l)
       END IF
 
     END DO
@@ -963,16 +1033,15 @@ sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4)			&
             ! + excretion         - if IZOO = 1; calculated in source ZOO
 
 !. . Add contribution from sediment release and GW flux into bottom cells
-IF (kwq .eq. kmz(ij2l(l2i(lwq),l2j(lwq)))) THEN
+IF (kwq .eq. kmz(lwq)) THEN
  sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) +   &
-							& (hpp(kwq,lwq)-1)*J_NH4     +	 &	! sediment release
-							& (hpp(kwq,lwq)-1)*GW_NH4	     	! GW flux
+							& (hpp(kwq,lwq))*J_NH4     +	 &	! sediment release
+							& (hpp(kwq,lwq))*GW_NH4	     	! GW flux
 END IF
 
 !. . Add contribution from atmoshperic deposition into top cells
-IF (kwq .eq. k1z(ij2l(l2i(lwq),l2j(lwq)))) THEN
-	sourcesink(kwq, lwq, LNH4) = sourcesink(kwq, lwq, LNH4) + &
-								& (hpp(kwq, lwq)+2) * ATM_NH4	 ! ATM deposition
+IF (kwq .eq. k1z(lwq)) THEN
+	sourcesink(kwq, lwq, LNH4) = sourcesink(kwq, lwq, LNH4) +(hpp(kwq, lwq)) * ATM_NH4	 
 END IF
 
 
@@ -1006,16 +1075,16 @@ sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3)		-	&
 						! - algal uptake		- if IALG = 1; calculated in sourceALG
 
 !. . Add contribution from sediment release and GW flux into bottom cells
-IF (kwq .eq. kmz(ij2l(l2i(lwq),l2j(lwq)))) THEN
+IF (kwq .eq. kmz(lwq)) THEN
  sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3) +   &
-							& (hpp(kwq,lwq)-1)*J_NO3     +	 &	! sediment release
-							& (hpp(kwq,lwq)-1)*GW_NO3	     	! GW flux
+							& (hpp(kwq,lwq))*J_NO3     +	 &	! sediment release
+							& (hpp(kwq,lwq))*GW_NO3	     	! GW flux
 END IF
 
 !. . Add contribution from atmoshperic deposition into top cells
-IF (kwq .eq. k1z(ij2l(l2i(lwq),l2j(lwq)))) THEN
+IF (kwq .eq. k1z(lwq)) THEN
 	sourcesink(kwq, lwq, LNO3) = sourcesink(kwq, lwq, LNO3) + &
-								& (hpp(kwq, lwq)+2) * ATM_NO3	 ! ATM deposition
+								& (hpp(kwq, lwq)) * ATM_NO3	 ! ATM deposition
 END IF
 
 END SUBROUTINE sourceNO3
@@ -1106,16 +1175,16 @@ SUBROUTINE sourcePO4(kwq, lwq)
    ! + zoo exc			- if IZOO = 1; calculated in sourceZOO
 
 !. . Add contribution from sediment release and GW flux into bottom cells
-IF (kwq .eq. kmz(ij2l(l2i(lwq),l2j(lwq)))) THEN
+IF (kwq .eq. kmz(lwq)) THEN
  sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) +   &
-							& (hpp(kwq,lwq)-1)*J_PO4     +	 &	! sediment release
-							& (hpp(kwq,lwq)-1)*GW_PO4	     	! GW flux
+							& (hpp(kwq,lwq))*J_PO4     +	 &	! sediment release
+							& (hpp(kwq,lwq))*GW_PO4	     	! GW flux
 END IF
 
 !. . Add contribution from atmoshperic deposition into top cells
-IF (kwq .eq. k1z(ij2l(l2i(lwq),l2j(lwq)))) THEN
+IF (kwq .eq. k1z(lwq)) THEN
 	sourcesink(kwq, lwq, LPO4) = sourcesink(kwq, lwq, LPO4) + &
-								& (hpp(kwq, lwq)+2) * ATM_PO4	 ! ATM deposition
+								& (hpp(kwq, lwq)) * ATM_PO4	 ! ATM deposition
 END IF
 
 END SUBROUTINE sourcePO4
@@ -1216,35 +1285,48 @@ SUBROUTINE sourceALG1(kwq, lwq)
 
   !. .  Calculate growth limiting factors
     ! Light Limitation - by Steele equation (Jassby and Platt, 1976)
-   		!f_L1 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat1) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat1)) ! Steele (1962) = Photoinhibited
-      f_L1 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k1) ! Webb et al (1974) in absence of photoinhibition
-		IF (f_L1 == 0) THEN
-		   f_L1 = 1
-		END IF
-
+   	  f_L1 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat1) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat1)) ! Steele (1962) = Photoinhibited
+      !f_L1 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k1) ! Webb et al (1974) in absence of photoinhibition
+	  
+	  
+	  
+		!IF (f_L1 == 0) THEN
+		!   f_L1 = 1
+		   
+		!END IF
+		
+		!F_L1(kwq,lwq) = f_L1
 	! temperature limitaton
 		f_T = Theta_mu**(salp(kwq,lwq) -20)
+		!F_T(kwq,lwq) = f_T
 
 	! nutrient limitation - but only if the nutrients are modeled
 	IF ((INH4 ==1) .AND. (INO3 ==1)) THEN
 		N_conc = tracerpp(kwq,lwq,LNH4) + tracerpp(kwq,lwq,LNO3)
 		f_N = N_conc/(KSN + N_conc)
+		!F_N(kwq,lwq) = f_N
 	ELSE IF (INH4 == 1 .AND. INO3 ==0) THEN
 		N_conc = tracerpp(kwq,lwq,LNH4)
 		f_N = N_conc/(KSN + N_conc)
+		!F_N(kwq,lwq) = f_N
 	ELSE IF (INH4 == 0 .AND. INO3 ==1) THEN
 		N_conc = tracerpp(kwq,lwq,LNO3)
 		f_N = N_conc/(KSN + N_conc)
+		!F_N(kwq,lwq) = f_N
 	ELSE
 		f_N = 1.0
+		!F_N(kwq,lwq) = f_N
 	END IF
 
 	IF (IPO4 ==1) THEN
 		f_P = tracerpp(kwq,lwq,LPO4) /(KSP + tracerpp(kwq,lwq,LPO4) )
+		!F_P(kwq,lwq) = f_P
 	ELSE
 		f_P = 1.0
+		!F_P(kwq,lwq) = f_P
 	END IF
-
+	  
+	  
 ! Growth rate considering limiting factors (light and nutrients)
 mu1 = mu_max1 * MIN(f_L1,f_N,f_P)
 
@@ -1317,9 +1399,9 @@ IF (IDOC == 1) THEN
 END IF
 
 ! If ZOO is modeled, alter sourcesink(kwq,lwq,LZOO) to include grazing
-IF (IZOO == 1) THEN
-	sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO) + graz1
-END IF
+!IF (IZOO == 1) THEN
+!	sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO) + graz1
+!END IF
 
 END SUBROUTINE sourceALG1
 
@@ -1340,8 +1422,8 @@ SUBROUTINE sourceALG2(kwq, lwq)
   ! Calculate mu, growth rate
 
   !. .  Calculate growth limiting factors
-    !f_L2 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat2) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat2)) ! Steele (1962) = Photoinhibited
-    f_L2 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k2) ! Webb et al (1974) in absence of photoinhibition
+    f_L2 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat2) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat2)) ! Steele (1962) = Photoinhibited
+    !f_L2 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k2) ! Webb et al (1974) in absence of photoinhibition
 		IF (f_L2 == 0) THEN
 		   f_L2 = 1
 		END IF
@@ -1441,9 +1523,9 @@ IF (IDOC == 1) THEN
 END IF
 
 ! If ZOO is modeled, alter sourcesink(kwq,lwq,LZOO) to include grazing
-IF (IZOO == 1) THEN
-	sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO) + graz2
-END IF
+!IF (IZOO == 1) THEN
+!	sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO) + graz2
+!END IF
 
 END SUBROUTINE sourceALG2
 
@@ -1464,8 +1546,8 @@ SUBROUTINE sourceALG3(kwq, lwq)
   ! Calculate mu, growth rate
 
   !. .  Calculate growth limiting factors
-    !f_L3 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat3) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat3)) ! Steele (1962) = Photoinhibited
-    f_L3 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k3) ! Webb et al (1974) in absence of photoinhibition
+    f_L3 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat3) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat3)) ! Steele (1962) = Photoinhibited
+    !f_L3 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k3) ! Webb et al (1974) in absence of photoinhibition
 		IF (f_L3 == 0) THEN
 		   f_L3 = 1
 		END IF
@@ -1565,9 +1647,9 @@ IF (IDOC == 1) THEN
 END IF
 
 ! If ZOO is modeled, alter sourcesink(kwq,lwq,LZOO) to include grazing
-IF (IZOO == 1) THEN
-	sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO) + graz3
-END IF
+!IF (IZOO == 1) THEN
+!	sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO) + graz3
+!END IF
 
 END SUBROUTINE sourceALG3
 
@@ -1588,8 +1670,8 @@ SUBROUTINE sourceALG4(kwq, lwq)
   ! Calculate mu, growth rate
 
   !. .  Calculate growth limiting factors
-    !f_L4 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat4) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat4)) ! Steele (1962) = Photoinhibited
-    f_L4 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k4) ! Webb et al (1974) in absence of photoinhibition
+    f_L4 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat4) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat4)) ! Steele (1962) = Photoinhibited
+    !f_L4 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k4) ! Webb et al (1974) in absence of photoinhibition
 		IF (f_L4 == 0) THEN
 		   f_L4 = 1
 		END IF
@@ -1689,9 +1771,9 @@ IF (IDOC == 1) THEN
 END IF
 
 ! If ZOO is modeled, alter sourcesink(kwq,lwq,LZOO) to include grazing
-IF (IZOO == 1) THEN
-	sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO) + graz4
-END IF
+!IF (IZOO == 1) THEN
+!	sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO) + graz4
+!END IF
 
 END SUBROUTINE sourceALG4
 
@@ -1712,8 +1794,8 @@ SUBROUTINE sourceALG5(kwq, lwq)
   ! Calculate mu, growth rate
 
   !. .  Calculate growth limiting factors
-    !f_L5 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat5) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat5)) ! Steele (1962) = Photoinhibited
-    f_L5 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k5) ! Webb et al (1974) in absence of photoinhibition
+    f_L5 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat5) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat5)) ! Steele (1962) = Photoinhibited
+    !f_L5 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k5) ! Webb et al (1974) in absence of photoinhibition
 		IF (f_L5 == 0) THEN
 		   f_L5 = 1
 		END IF
@@ -1813,80 +1895,222 @@ IF (IDOC == 1) THEN
 END IF
 
 ! If ZOO is modeled, alter sourcesink(kwq,lwq,LZOO) to include grazing
-IF (IZOO == 1) THEN
-	sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO) + graz5
-END IF
+!IF (IZOO == 1) THEN
+!	sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO) + graz5
+!END IF
 
 END SUBROUTINE sourceALG5
 
 !************************************************************************
-SUBROUTINE sourceZOO(kwq, lwq)
+!SUBROUTINE sourceZOO(kwq, lwq)
 !*********************************************************************
 !
 ! Purpose: To calculate sourcesink terms that depend on ZOO
 !
 !--------------------------------------------------------------------------
   ! ... Arguments
-  INTEGER, INTENT (IN) :: kwq,lwq
+! INTEGER, INTENT (IN) :: kwq,lwq
 
   !. . .Local Variables
-  REAL :: grazingBacteria, morz, resz, exz, grazingdet
+!  REAL :: grazingBacteria, morz, resz, exz, grazingdet
 
   !... Calculate Grazing by Bacteria (nominal concentration)
-  grazingBacteria = k_grbac * Theta_gr**(salp(kwq,lwq) - 20) * BacteriaC
+!  grazingBacteria = k_grbac * Theta_gr**(salp(kwq,lwq) - 20) * BacteriaC
   ! ... Calculate Mortality of Zooplankton
-  morz = k_morz * Theta_morz **(salp(kwq,lwq) - 20) * sourcesink(kwq,lwq,LZOO)
+!  morz = k_morz * Theta_morz **(salp(kwq,lwq) - 20) * sourcesink(kwq,lwq,LZOO)
   ! ... Calculate Respiration of Zooplankton
-  resz = k_resz * Theta_resz **(salp(kwq,lwq) - 20) * sourcesink(kwq,lwq,LZOO)
+!  resz = k_resz * Theta_resz **(salp(kwq,lwq) - 20) * sourcesink(kwq,lwq,LZOO)
   ! ... Calculate Excretion of Zooplankton
-  exz = k_exz * Theta_resz **(salp(kwq,lwq) - 20) * sourcesink(kwq,lwq,LZOO)
+!  exz = k_exz * Theta_resz **(salp(kwq,lwq) - 20) * sourcesink(kwq,lwq,LZOO)
   ! Calculate grazing detritus
-  grazingdet = k_grdet * Theta_gr**(salp(kwq,lwq) - 20) *tracerpp(kwq,lwq,LZOO)
+!  grazingdet = k_grdet * Theta_gr**(salp(kwq,lwq) - 20) *tracerpp(kwq,lwq,LZOO)
 
 
-    sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO)  &
-                &   + grazingBacteria                    &  ! grazing of bacteria
-                &   + grazingdet                         &
-                &   - morz                               &  ! mortality of Zooplankton
-                &   - resz                               &  ! respiration of zooplankton
-                &   - exz                                 ! excretion of zooplankton
+!    sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO)  &
+!                &   + grazingBacteria                    &  ! grazing of bacteria
+!                &   + grazingdet                         &
+!                &   - morz                               &  ! mortality of Zooplankton
+!                &   - resz                               &  ! respiration of zooplankton
+!                &   - exz                                 ! excretion of zooplankton
                   ! + grazing algae            - if IALG = 1; calculated in sourceALG
 
 
 ! If dissolved oxygen is modeled, alter sourcesink(kwq,lwq,LDO) to reflect resp
-IF (IDO ==1) THEN
-   sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) - roc*resz
-END IF
+!IF (IDO ==1) THEN
+!   sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) - roc*resz
+!END IF
 
 ! Calculate PON change due to detritus grazing and  to include mortality
-IF (IPON == 1) THEN
-  sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) - rnc * grazingdet
-  sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) + rnc * morz
-END IF
+!IF (IPON == 1) THEN
+!  sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) - rnc * grazingdet
+!  sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) + rnc * morz
+!END IF
 
 ! If NH4 is modeled, alter sourcesink(kwq,lwq,LNH4) to include excretion
-IF (INH4 == 1) THEN
-    sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) + rnc * exz
-END IF
+!IF (INH4 == 1) THEN
+!    sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) + rnc * exz
+!END IF
 
 ! Calculate POP change due to detritus grazing adn to include mortality
-IF (IPOP == 1) THEN
-  sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP)  - rpc * grazingdet
-  sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + rpc * morz
-END IF
+!IF (IPOP == 1) THEN
+!  sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP)  - rpc * grazingdet
+!  sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + rpc * morz
+!END IF
 
 ! If PO4 is modeled, alter sourcesink(kwq,lwq,LPO4) to include excretion
-IF (INH4 == 1) THEN
-    sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) + rpc * exz
-END IF
+!IF (INH4 == 1) THEN
+!    sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) + rpc * exz
+!END IF
 
 ! Calculate POC change due to detritus grazing and to include mortality
-IF (IPOC == 1) THEN
-  sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) - grazingdet
-  sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + morz
-END IF
+!IF (IPOC == 1) THEN
+!  sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) - grazingdet
+!  sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + morz
+!END IF
 
-END SUBROUTINE sourceZOO
+!END SUBROUTINE sourceZOO
+
+
+!************************************************************************
+SUBROUTINE sourceFT(kwq, lwq)
+!*********************************************************************
+!
+! Purpose: To calculate FT
+!
+!--------------------------------------------------------------------------
+  ! ... Arguments
+  INTEGER, INTENT (IN) :: kwq,lwq	
+	! temperature limitaton
+		
+		tracerpp(kwq,lwq,LFT) = Theta_mu**(salp(kwq,lwq) -20)
+
+END SUBROUTINE sourceFT
+
+
+!************************************************************************
+SUBROUTINE sourceFN(kwq, lwq)
+!*********************************************************************
+!
+! Purpose: To calculate FN
+!
+!--------------------------------------------------------------------------
+  ! ... Arguments
+  INTEGER, INTENT (IN) :: kwq,lwq	
+  REAL::	N_conc
+		
+		
+	! nutrient limitation - but only if the nutrients are modeled
+	IF ((INH4 ==1) .AND. (INO3 ==1)) THEN
+		N_conc = tracerpp(kwq,lwq,LNH4) + tracerpp(kwq,lwq,LNO3)
+		tracerpp(kwq,lwq,LFN)  = N_conc/(KSN + N_conc)
+
+	ELSE IF (INH4 == 1 .AND. INO3 ==0) THEN
+		N_conc = tracerpp(kwq,lwq,LNH4)
+		tracerpp(kwq,lwq,LFN) = N_conc/(KSN + N_conc)
+
+	ELSE IF (INH4 == 0 .AND. INO3 ==1) THEN
+		N_conc = tracerpp(kwq,lwq,LNO3)
+		tracerpp(kwq,lwq,LFN) = N_conc/(KSN + N_conc)
+
+	ELSE
+		tracerpp(kwq,lwq,LFN) = 1.0
+		
+	END IF
+
+END SUBROUTINE sourceFN
+
+!************************************************************************
+SUBROUTINE sourceFP(kwq, lwq)
+!*********************************************************************
+!
+! Purpose: To calculate FP
+!
+!--------------------------------------------------------------------------
+  ! ... Arguments
+  INTEGER, INTENT (IN) :: kwq,lwq	
+
+		
+		
+	! nutrient limitation - but only if the nutrients are modeled
+	IF (IPO4 ==1) THEN
+		tracerpp(kwq,lwq,LFP) = tracerpp(kwq,lwq,LPO4) /(KSP + tracerpp(kwq,lwq,LPO4) )
+		
+	ELSE
+		tracerpp(kwq,lwq,LFP) = 1.0
+		
+	END IF
+
+END SUBROUTINE sourceFP
+
+!************************************************************************
+SUBROUTINE sourceFL1(kwq, lwq)
+!*********************************************************************
+!
+! Purpose: To calculate FL1
+!
+!--------------------------------------------------------------------------
+  ! ... Arguments
+  INTEGER, INTENT (IN) :: kwq,lwq	
+
+	tracerpp(kwq,lwq,LFL1) = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat1) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat1)) ! Steele (1962) = Photoinhibited	
+	
+END SUBROUTINE sourceFL1
+
+!************************************************************************
+SUBROUTINE sourceFL2(kwq, lwq)
+!*********************************************************************
+!
+! Purpose: To calculate FL2
+!
+!--------------------------------------------------------------------------
+  ! ... Arguments
+  INTEGER, INTENT (IN) :: kwq,lwq	
+
+	tracerpp(kwq,lwq,LFL2) = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat2) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat2)) ! Steele (1962) = Photoinhibited	
+		
+END SUBROUTINE sourceFL2
+
+!************************************************************************
+SUBROUTINE sourceFL3(kwq, lwq)
+!*********************************************************************
+!
+! Purpose: To calculate FL3
+!
+!--------------------------------------------------------------------------
+  ! ... Arguments
+  INTEGER, INTENT (IN) :: kwq,lwq	
+
+	tracerpp(kwq,lwq,LFL3) = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat3) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat3)) ! Steele (1962) = Photoinhibited	
+		
+END SUBROUTINE sourceFL3
+
+!************************************************************************
+SUBROUTINE sourceFL4(kwq, lwq)
+!*********************************************************************
+!
+! Purpose: To calculate FL4
+!
+!--------------------------------------------------------------------------
+  ! ... Arguments
+  INTEGER, INTENT (IN) :: kwq,lwq	
+
+	tracerpp(kwq,lwq,LFL4) = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat4) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat4)) ! Steele (1962) = Photoinhibited	
+		
+END SUBROUTINE sourceFL4
+
+!************************************************************************
+SUBROUTINE sourceFL5(kwq, lwq)
+!*********************************************************************
+!
+! Purpose: To calculate FL5
+!
+!--------------------------------------------------------------------------
+  ! ... Arguments
+  INTEGER, INTENT (IN) :: kwq,lwq	
+
+	tracerpp(kwq,lwq,LFL5) = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat5) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat5)) ! Steele (1962) = Photoinhibited	
+		
+END SUBROUTINE sourceFL5
 
 !************************************************************************
 SUBROUTINE allocate_error ( istat, ierror_code )

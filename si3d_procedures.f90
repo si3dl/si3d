@@ -218,6 +218,7 @@ SUBROUTINE InitializeScalarFields
          tracer(:,:,nn) = sal;
        ENDDO
        tracerpp = tracer;
+
      ENDIF
 
    ! ... OPTION 2 - Internal Seiche (use analytical solution) ------
@@ -330,14 +331,15 @@ SUBROUTINE InitializeScalarFields
        IF (ecomod < 0 ) THEN
          CALL InitTracerCloud
        ELSE
-       DO  nn = 1, ntr
-         DO k = 1, km1
-           tracer(k,:,nn) = Scalardepthile(k,nn+1)
-         ENDDO
-       END DO ! ... End loop over tracers
+		   DO  nn = 1, ntr
+			 DO k = 1, km1
+			   tracer(k,:,nn) = Scalardepthile(k,nn+1)
+			 ENDDO
+		   END DO ! ... End loop over tracers
        END IF
        tracerpp = tracer;
-     ENDIF
+	 
+	   ENDIF
 
      ! ... Deallocate array holding scalar concs.
      DEALLOCATE ( Scalardepthile )

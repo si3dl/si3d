@@ -1130,13 +1130,23 @@ SUBROUTINE outt(n,thrs)
             & trout(k,13),                                         &
             & trout(k,14),                                         &
             & trout(k,15),                                         &
+			& trout(k,16),                                         &
+			& trout(k,17),                                         &
+			& trout(k,18),                                         &
+			& trout(k,19),                                         &
+			& trout(k,20),                                         &
+			& trout(k,21),                                         &
+			& trout(k,22),                                         &
+			& trout(k,23),                                         &
+			& trout(k,24),                                         &
+			& trout(k,25),                                         &
             & k = k1,kmz(l))
      ENDIF
 
    4 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PE15.7 / &
                   & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PE15.7 ))
-   5 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),16(0PF15.7)/ &
-                  & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),16(0PF15.7)))
+   5 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),26(0PF15.7)/ &
+                  & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),26(0PF15.7)))
    END DO
 
    !.....Compute CPU time spent in subroutine.....
