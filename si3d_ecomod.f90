@@ -929,7 +929,7 @@ IF (kwq .eq. kmz(lwq)) THEN
  !PRINT*, "SOD term = ", var2, "bottom cell = ", bottomcell, ", SOD = ", SOD, ", Tcorr = ", Theta_sod**(salp(k,l) - 20), ", f_SOD = ", f_SOD, ", dz = ", hpp(k,l)
  
  sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO)    &
-						& +	 SOD * Theta_sod**(salp(kwq,lwq) - 20) * f_SOD * (0.5/(hpp(kwq,lwq)))    ! sediment oxygen demand
+						& +	 SOD * Theta_sod**(salp(kwq,lwq) - 20) * f_SOD * (1/(hpp(kwq,lwq)))    ! sediment oxygen demand
 END IF
 
 !PRINT*, "k = ", kwq,", l = ", lwq,", DO = ", sourcesink(kwq,lwq,LDO) 
@@ -1385,7 +1385,7 @@ END IF
 
 ! If PO4 is modeled, alter sourcesink(kwq,lwq,LPO4) to include excretion and uptake
 IF (IPO4 == 1) THEN
-	sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) + rpc*(excr1 - growth1)
+	sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) - rpc* growth1 ! excr from phyto removed
 END IF
 
 ! If POC is modeled, alter sourcesink(kwq,lwq,LPOC) to include mortality
