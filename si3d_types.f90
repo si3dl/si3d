@@ -68,7 +68,7 @@
             & iturb, ilin, ihomo, ipt, ipx, ipc, iadv, ihd, ibc, isal,   &
             & nnodes, nopen, iseich, idbg, iextrp, iyr0, imon0, iday0,   &
             & ihr0, istd, igs, ivpv, iupwind, ioutg, ipv, ipsal, ipxml,  &
-            & itspf, itrsca, itrmom, ibathyf, apxml
+            & itspf, itrsca, itrmom, ibathyf, apxml, iTurbVars
    CHARACTER :: title*80, sal_ic_file*50, wse_file*7, flw_file*7,        &
               & hcn_file*7, sal_file*7, barrier_file*50, commentline*50
 
@@ -272,7 +272,7 @@
 
    !         ----- Vars. & Arrays used in new OUTPUT routines (sections, planes
    !               isotherms and complete outputs ---------
-   INTEGER :: iop, iox, ioi, ioc, n_planes, n_sections, n_isot, isot_points
+   INTEGER :: iop, iox, ioi, ioc, n_planes, n_sections, n_isot, isot_points,itspfh
    INTEGER, PARAMETER :: max_planes = 10, max_sections = 30, max_isot = 20
    INTEGER, PARAMETER :: max_section_cells = 100
    INTEGER, ALLOCATABLE, DIMENSION (:) :: interior_plane_points
