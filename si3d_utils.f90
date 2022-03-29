@@ -3834,7 +3834,7 @@ END FUNCTION leap_year
      ELSE
        z = zlevel(kms) + 0.5 * hp(kms,l)
      ENDIF
-     rijk = densty_s(salp(kms,l),0.00004,z)+1000.
+     rijk = densty_s(salp(kms,l), 0.00004, z) + 1000.
      PotE = PotE + rijk*g*elev*h(kms,l)
      IF (k1s == kms) CYCLE
      DO k = kms-1, k1s, -1
@@ -3844,7 +3844,7 @@ END FUNCTION leap_year
          z = zlevel(k) + 0.5 * hp(k,l)
        ENDIF
        elev = elev + (hp(k+1,l)+hp(k,l))/2.
-       rijk = densty_s(salp(k,l),0.00004,z)+1000.
+       rijk = densty_s(salp(k,l), 0.00004, z) + 1000.
        PotE = PotE + rijk*g*elev*hp(k,l)
      END DO
    END DO;
@@ -3865,7 +3865,7 @@ END FUNCTION leap_year
      ELSE
        z = zlevel(kms) + 0.5 * hp(kms,l)
      ENDIF
-     rijk = densty_s(salp(kms,l),0.00004,z)+1000.
+     rijk = densty_s(salp(kms,l), 0.00004, z) + 1000.
      KinE = KinE + 0.5*rijk*(uijk**2.+vijk**2.+wijk**2.)*h(kms,l)
      IF (k1s == kms) CYCLE
      DO k = kms-1, k1s, -1
@@ -3877,7 +3877,7 @@ END FUNCTION leap_year
        ELSE
          z = zlevel(k) + 0.5 * hp(k,l)
        ENDIF
-       rijk = densty_s(salp(k,l),0.00004,z)+1000.
+       rijk = densty_s(salp(k,l), 0.00004, z) + 1000.
        KinE = KinE + 0.5*rijk*(uijk**2.+vijk**2.+wijk**2.)*h(k,l)
      END DO
    END DO;
@@ -3983,14 +3983,14 @@ PURE FUNCTION densty_s ( temperature, salinity, elevation )
             + salinity**(3/2)*(-5.72466e-3                        &
             + 1.0227e-4*temperature                               &
             - 1.6546e-6*temperature**2) + 4.8314e-4*salinity**2
-    IF (elevation < 10.01) THEN
+    IF (elevation < 4) THEN
       densty_s = densws
     ELSE
       ! Fixed Method root finding for density equation with Pressure. SV
-      rhoguess = 999
+      rhoguess = densws
       delta = 1
       iter = 0
-      maxiter = 1000
+      maxiter = 10000
       DO WHILE (delta > 1e-6 .AND. iter < maxiter)
         pressureh = rhoguess*9.806*elevation
         pressure = 1e-5*pressureh
