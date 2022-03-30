@@ -33205,8 +33205,8 @@ c            = 1.49e-8   for dec 10  (approx.) 2**-26
 c            = 1.192e-7  for vax 11/780 (approx) 2**-23
 c            = 4.768e-7  for ibm 370/158
 *            = 1.192e-7  for silicon graphics iris                   pes 110900
-*            = 2.220e-16 for sgi (double precision) (2**-52)         pes 110900		
-*            = 2.220e-16 for pentium, windows                        pes 110900	
+*            = 2.220e-16 for sgi (double precision) (2**-52)         pes 110900
+*            = 2.220e-16 for pentium, windows                        pes 110900
 c
 c             *** should be changed for other machines ***
 c
@@ -33315,10 +33315,10 @@ c
       real utime                                                   ! pes 110900
 c     call cpu_time(utime)                                         ! pes 110900
 c     timer = utime                                                ! pes 110900
-      INTEGER(4) :: IC4, CRATE4
+      INTEGER(8) :: IC4, CRATE4
       CALL SYSTEM_CLOCK(COUNT=IC4, COUNT_RATE=CRATE4)
       timer = real(IC4)/real(CRATE4)
-      
+
 c
 c     real tarray(2)
 c     call etime (tarray)
