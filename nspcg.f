@@ -33315,7 +33315,7 @@ c
       real utime                                                   ! pes 110900
 c     call cpu_time(utime)                                         ! pes 110900
 c     timer = utime                                                ! pes 110900
-      INTEGER(8) :: IC4, CRATE4
+      INTEGER(4) :: IC4, CRATE4
       CALL SYSTEM_CLOCK(COUNT=IC4, COUNT_RATE=CRATE4)
       timer = real(IC4)/real(CRATE4)
 
