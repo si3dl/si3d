@@ -3971,10 +3971,10 @@ PURE FUNCTION densty_s ( temperature, salinity, elevation )
 
     densw = 999.842594                    &
           + 6.793952e-2*temperature       &
-          - 9.095290e-3*temperature**2    &
-          + 1.001685e-4*temperature**3    &
-          - 1.120083e-6*temperature**4    &
-          + 6.536332e-9*temperature**5
+          - 9.095290e-3*temperature**2.    &
+          + 1.001685e-4*temperature**3.    &
+          - 1.120083e-6*temperature**4.    &
+          + 6.536332e-9*temperature**5.
 
     densws = densw + salinity*(0.824493 - 4.0899e-3*temperature   &
             + 7.6438e-5*temperature**2                            &
