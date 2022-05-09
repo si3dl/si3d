@@ -3966,7 +3966,7 @@ PURE FUNCTION densty_s ( temperature, salinity, elevation )
     ! ... Io variables
   REAL, INTENT(IN) :: temperature, salinity, elevation
   REAL             :: densty_s, rhoguess,rhomin,rhomax,delta, densw,   &
-                      pressureh, pressure, densws, kw, k, maxiter,     &
+                      pressureh, pressure, densws, kw, ks, k, maxiter,     &
                       iter, of, ofmin, pressuremin, kmin
 
     densw = 999.842594                    &
@@ -3998,16 +3998,16 @@ PURE FUNCTION densty_s ( temperature, salinity, elevation )
         kw = 19652.21 + 148.4206*temperature                          &
             - 2.327105*temperature**2                                 &
             + 1.360477e-2*temperature**3                              &
-            - 5.155288e-5*temperature**4;
+            - 5.155288e-5*temperature**4
 
-        k = kw + salinity*(54.6746 - 0.603459*temperature             &
+        ks = kw + salinity*(54.6746 - 0.603459*temperature            &
             + 1.09987e-2*temperature**2                               &
             - 6.1670e-5*temperature**3)                               &
             + salinity**(3/2)*(7.944e-2                               &
             + 1.6483e-2*temperature                                   &
             - 5.3009e-4*temperature**2)
 
-        k = k + pressure*(3.239908                                    &
+        k = ks + pressure*(3.239908                                   &
             + 1.43713e-3*temperature + 1.16092e-4*temperature**2      &
             - 5.77905e-7*temperature**3)                              &
             + pressure*salinity*(2.2838e-3                            &
@@ -4017,7 +4017,7 @@ PURE FUNCTION densty_s ( temperature, salinity, elevation )
             + pressure**2*(8.50935e-5                                 &
             - 6.12293e-6*temperature                                  &
             + 5.2787e-8*temperature**2)                               &
-            + pressure**2*salinity*(-9.9348e-7                        &
+            + pressure**2*(salinity)*(-9.9348e-7                        &
             + 2.0816e-8*temperature + 9.1697e-10*temperature**2)
 
         densty_s = densws/(1-pressure/k)
