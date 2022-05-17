@@ -296,6 +296,7 @@
    REAL   , ALLOCATABLE, DIMENSION(:  )  :: trcx0, trcy0, trcz0, &
                                             trcsx, trcsy, trcsz, trcpk
 
+
    !          ----- Point Sources & Sinks Eqs. Vars. & Arrays *********************
    ! ... Variables used specificallly to model plumes -
    REAL    :: k4sod      ! 5.7870E-6 ! g/m2/s
@@ -377,26 +378,24 @@
    ! - Stochiometeric constants
    REAL   :: rnc, rpc, roc, ron
 
-   ! - Half-saturation values and algal prefernce for NH4
-   REAL   :: KNIT, KSN, KSP, FNH4, KDOC, SOD, KSOD, light_sat1, light_sat2, light_sat3, light_sat4, light_sat5, BacteriaC
+   ! - Half-saturation values and algal constants
+   REAL   :: KNIT, KSN, KSP, FNH4, KDOC, SOD, KSOD, light_sat1, light_sat2, light_sat3, light_sat4, light_sat5, Topt1, Topt2, Topt3, Topt4, Topt5
 
    ! - Model rates
-   REAL   :: mu_max1, k_mor1, k_ex1, k_res1, k_gr1
-   REAL   :: mu_max2, k_mor2, k_ex2, k_res2, k_gr2
-   REAL   :: mu_max3, k_mor3, k_ex3, k_res3, k_gr3
-   REAL   :: mu_max4, k_mor4, k_ex4, k_res4, k_gr4
-   REAL   :: mu_max5, k_mor5, k_ex5, k_res5, k_gr5
+   REAL   :: mu_max1, k_mor1, k_ex1, k_gr1
+   REAL   :: mu_max2, k_mor2, k_ex2, k_gr2
+   REAL   :: mu_max3, k_mor3, k_ex3, k_gr3
+   REAL   :: mu_max4, k_mor4, k_ex4, k_gr4
+   REAL   :: mu_max5, k_mor5, k_ex5, k_gr5
    REAL   :: k_a, k_dcn, k_mn, k_n, k_dn
    REAL   :: k_dcp, k_mp, k_dcc
    REAL   :: k_set, k_rs
-   REAL   :: k_morz, k_exz, k_resz, k_grdet, k_grbac
-
+  
    ! - Temperature depependence factors
-   REAL	  :: Theta_a, Theta_sod, Theta_mu, Theta_mor, Theta_res, Theta_gr
+   REAL	  :: Theta_a, Theta_sod, Theta_mu, Theta_mor, Theta_exc, Theta_gr
    REAL	  :: Theta_dcn, Theta_mn, Theta_n  ,  Theta_dn
    REAL	  :: Theta_dcp , Theta_mp , Theta_dcc , Theta_DOC
-   REAL   :: Theta_morz, Theta_resz
-
+   
 
    ! - Atmoshperic deposition rates
    REAL	  :: ATM_DON, ATM_NH4, ATM_NO3, ATM_PO4, ATM_DOP, ATM_DOC
@@ -407,7 +406,9 @@
    ! Sediment release rates
    REAL	  :: J_NH4, J_NO3, J_PO4, J_DOC
 
-
+   ! Zooplankton
+   REAL   , ALLOCATABLE, DIMENSION(:  )  :: rotifers, codotisnapuli, diatomus, bosmina, daphnia, epischura, mysis
+   REAL   :: rotifersnew, codotisnapulinew, diatomusnew, bosminanew, daphnianew, epischuranew, mysisnew
 
 !                        -----Data Dictionary-----
 

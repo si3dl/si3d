@@ -7,7 +7,6 @@
 !
 !-------------------------------------------------------------------------
 
-   !USE si3d_ecomod
    !USE si3d_BoundaryConditions
    USE si3d_types
 
@@ -440,78 +439,67 @@ SUBROUTINE WQinput
   !. . . Read model stochiometeric constants and other constants
   READ (UNIT=i99,FMT='(///(14X,G20.3))',IOSTAT=ios) rnc, rpc, roc, ron, &
   &     KNIT, KSN, KSP, FNH4, KDOC, SOD, KSOD, &
-  &     light_sat1, light_sat2, light_sat3, light_sat4, light_sat5, BacteriaC
+  &     light_sat1, light_sat2, light_sat3, light_sat4, light_sat5, &
+  &     Topt1, Topt2, Topt3, Topt4, Topt5
   IF (ios /= 0) CALL input_error ( ios, 93)
 
   !. . . Read model rates
   READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) k_a,  &
-  &    mu_max1, k_mor1, k_ex1, k_res1, k_gr1, &
-  &    mu_max2, k_mor2, k_ex2, k_res2, k_gr2, &
-  &    mu_max3, k_mor3, k_ex3, k_res3, k_gr3, &
-  &    mu_max4, k_mor4, k_ex4, k_res4, k_gr4, &
-  &    mu_max5, k_mor5, k_ex5, k_res5, k_gr5, &
+  &    mu_max1, k_mor1, k_ex1, k_gr1, &
+  &    mu_max2, k_mor2, k_ex2, k_gr2, &
+  &    mu_max3, k_mor3, k_ex3, k_gr3, &
+  &    mu_max4, k_mor4, k_ex4, k_gr4, &
+  &    mu_max5, k_mor5, k_ex5, k_gr5, &
   &    k_dcn, k_mn, k_n, k_dn, &
   &    k_dcp, k_mp, k_dcc, &
-  &    k_set, k_rs, &
-  &    k_morz, k_exz, k_resz, k_grdet, k_grbac
+  &    k_set, k_rs
   IF (ios /= 0) CALL input_error ( ios, 94)
 
 
   !... Convert model rates [1/s]. Input file has 1/day values
   ! DO
-  k_a   =  k_a/86400.0
-  SOD   =  SOD/86400.0
+  k_a   =  k_a*idt/86400.0
+  SOD   =  SOD*idt/86400.0
   ! ALG1 : Pycoplankton
-  mu_max1 =  mu_max1/86400.0
-  k_mor1 =  k_mor1/86400.0
-  k_ex1 =  k_ex1/86400.0
-  k_res1 =  k_res1/86400.0
-  k_gr1 =  k_gr1/86400.0
+  mu_max1 =  mu_max1*idt/86400.0
+  k_mor1 =  k_mor1*idt/86400.0
+  k_ex1 =  k_ex1*idt/86400.0
+  k_gr1 =  k_gr1*idt/86400.0
   ! ALG2 : Cyclotella
-  mu_max2 =  mu_max2/86400.0
-  k_mor2 =  k_mor2/86400.0
-  k_ex2 =  k_ex2/86400.0
-  k_res2 =  k_res2/86400.0
-  k_gr2 =  k_gr2/86400.0
+  mu_max2 =  mu_max2*idt/86400.0
+  k_mor2 =  k_mor2*idt/86400.0
+  k_ex2 =  k_ex2*idt/86400.0
+  k_gr2 =  k_gr2*idt/86400.0
   ! ALG3: Cryptomonas
-  mu_max3 =  mu_max3/86400.0
-  k_mor3 =  k_mor3/86400.0
-  k_ex3 =  k_ex3/86400.0
-  k_res3 =  k_res3/86400.0
-  k_gr3 =  k_gr3/86400.0
+  mu_max3 =  mu_max3*idt/86400.0
+  k_mor3 =  k_mor3*idt/86400.0
+  k_ex3 =  k_ex3*idt/86400.0
+  k_gr3 =  k_gr3*idt/86400.0
   ! ALG4: Synedra
-  mu_max4 =  mu_max4/86400.0
-  k_mor4 =  k_mor4/86400.0
-  k_ex4 =  k_ex4/86400.0
-  k_res4 =  k_res4/86400.0
-  k_gr4 =  k_gr4/86400.0
+  mu_max4 =  mu_max4*idt/86400.0
+  k_mor4 =  k_mor4*idt/86400.0
+  k_ex4 =  k_ex4*idt/86400.0
+  k_gr4 =  k_gr4*idt/86400.0
   ! ALG5: Microcystis
-  mu_max5 =  mu_max5/86400.0
-  k_mor5 =  k_mor5/86400.0
-  k_ex5 =  k_ex5/86400.0
-  k_res5 =  k_res5/86400.0
-  k_gr5 =  k_gr5/86400.0
+  mu_max5 =  mu_max5*idt/86400.0
+  k_mor5 =  k_mor5*idt/86400.0
+  k_ex5 =  k_ex5*idt/86400.0
+  k_gr5 =  k_gr5*idt/86400.0
   ! Nutrients
-  k_dcn =  k_dcn/86400.0
-  k_mn =  k_mn/86400.0
-  k_n =  k_n/86400.0
-  k_dn =  k_dn/86400.0
-  k_dcp =  k_dcp/86400.0
-  k_mp =  k_mp/86400.0
-  k_set =  k_set/86400.0
-  k_rs =  k_rs/86400.0
-  k_dcc =  k_dcc/86400.0
-  ! Zooplankton
-  k_morz =  k_morz/86400.0
-  k_exz =  k_exz/86400.0
-  k_resz =  k_resz/86400.0
-  k_grdet =  k_grdet/86400.0
-  k_grbac =  k_grbac/86400.0
+  k_dcn =  k_dcn*idt/86400.0
+  k_mn =  k_mn*idt/86400.0
+  k_n =  k_n*idt/86400.0
+  k_dn =  k_dn*idt/86400.0
+  k_dcp =  k_dcp*idt/86400.0
+  k_mp =  k_mp*idt/86400.0
+  k_set =  k_set*idt/86400.0
+  k_rs =  k_rs*idt/86400.0
+  k_dcc =  k_dcc*idt/86400.0
 
   !. . . Read model temperature rates
-  READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) Theta_a, Theta_sod, Theta_mu, Theta_mor, Theta_res, Theta_gr, &
+  READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) Theta_a, Theta_sod, Theta_mu, Theta_mor, Theta_exc, Theta_gr, &
   &     Theta_dcn, Theta_mn, Theta_n , Theta_dn , &
-  &     Theta_dcp , Theta_mp , Theta_dcc , Theta_DOC, Theta_morz, Theta_resz
+  &     Theta_dcp , Theta_mp , Theta_dcc , Theta_DOC
 
   IF (ios /= 0) CALL input_error ( ios, 95)
 
@@ -719,14 +707,14 @@ END IF
 		LDOC = i
 	ELSEIF (tracerpplocal(i) == 11) THEN
 		LALG1 = i
-    ELSEIF (tracerpplocal(i) == 12) THEN
-        LALG2 = i
-    ELSEIF (tracerpplocal(i) == 13) THEN
-        LALG3 = i
-    ELSEIF (tracerpplocal(i) == 14) THEN
+  ELSEIF (tracerpplocal(i) == 12) THEN
+    LALG2 = i
+  ELSEIF (tracerpplocal(i) == 13) THEN
+    LALG3 = i
+  ELSEIF (tracerpplocal(i) == 14) THEN
  		LALG4 = i
-    ELSEIF (tracerpplocal(i) == 15) THEN
-        LALG5 = i
+  ELSEIF (tracerpplocal(i) == 15) THEN
+    LALG5 = i
 	ELSEIF (tracerpplocal(i) == 16) THEN
 		LFT = i		
 	ELSEIF (tracerpplocal(i) == 17) THEN
@@ -757,7 +745,7 @@ END IF
 END SUBROUTINE WQinit
 
 !************************************************************
-SUBROUTINE srcsnkWQ
+SUBROUTINE srcsnkWQ(thrs)
 !***********************************************************
 !
 !   Purpose: to call all source subroutines for all cells
@@ -767,6 +755,7 @@ SUBROUTINE srcsnkWQ
 
   !... Local variables
   INTEGER:: i,j,k,l, k1s, kms,itr
+  REAL, INTENT(IN) :: thrs
 
   ! reset soursesink = 0
   sourcesink = 0;
@@ -807,16 +796,16 @@ SUBROUTINE srcsnkWQ
         CALL sourcePO4(k,l)
       END IF
       IF (iALG1 == 1) THEN
-        CALL sourceALG1(k,l)
+        CALL sourceALG1(k,l,thrs)
       END IF
       IF (iALG2 == 1) THEN
-        CALL sourceALG2(k,l)
+        CALL sourceALG2(k,l,thrs)
       END IF
       IF (iALG3 == 1) THEN
-        CALL sourceALG3(k,l)
+        CALL sourceALG3(k,l,thrs)
       END IF
       IF (iALG4 == 1) THEN
-        CALL sourceALG4(k,l)
+        CALL sourceALG4(k,l,thrs)
       END IF
       IF (iALG5 == 1) THEN
         CALL sourceALG5(k,l)
@@ -829,27 +818,27 @@ SUBROUTINE srcsnkWQ
       END IF
       IF (iFT == 1) THEN
         CALL sourceFT(k,l)
-	  END IF
-	  IF (iFN == 1) THEN
-        CALL sourceFN(k,l)
-	  END IF
-	  IF (iFP == 1) THEN
-        CALL sourceFP(k,l)
-	  END IF
-	  IF (iFL1 == 1) THEN
-        CALL sourceFL1(k,l)
-	  END IF
-	  IF (iFL2 == 1) THEN
-        CALL sourceFL2(k,l)
-	  END IF
-	  IF (iFL3 == 1) THEN
-        CALL sourceFL3(k,l)
-	  END IF
-	  IF (iFL4 == 1) THEN
-        CALL sourceFL4(k,l)
-	  END IF
-	  IF (iFL5 == 1) THEN
-        CALL sourceFL5(k,l)
+  	  END IF
+  	  IF (iFN == 1) THEN
+          CALL sourceFN(k,l)
+  	  END IF
+  	  IF (iFP == 1) THEN
+          CALL sourceFP(k,l)
+  	  END IF
+  	  IF (iFL1 == 1) THEN
+          CALL sourceFL1(k,l)
+  	  END IF
+  	  IF (iFL2 == 1) THEN
+          CALL sourceFL2(k,l)
+  	  END IF
+  	  IF (iFL3 == 1) THEN
+          CALL sourceFL3(k,l)
+  	  END IF
+  	  IF (iFL4 == 1) THEN
+          CALL sourceFL4(k,l)
+  	  END IF
+  	  IF (iFL5 == 1) THEN
+          CALL sourceFL5(k,l)
       END IF
 
     END DO
@@ -872,7 +861,7 @@ SUBROUTINE sourceDO(kwq,lwq)
 
   !. . . Local Variables
 !  REAL		::	 Tk, lnOS, OS, ln_Pwv, Pwv, theta2, Patm
-   REAL     ::   OS, f_SOD !var1, var2, topcell, bottomcell
+   REAL     ::   OS, f_SOD 
 
 !  ! Calculate DO saturation
 !  Tk = salp(kwq,lwq) + 273
@@ -896,38 +885,21 @@ SUBROUTINE sourceDO(kwq,lwq)
   ! Calculate reaertaion
   ! for now using constant rearation defined in wq_inp, but in future, can have
   ! alternatives for calcualting reaeration.
-!topcell = k1z(l)
-!PRINT*, "k = ", k,", l = ", l,", top cell = ", topcell 
-
 sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO)
 
  IF (kwq .eq. k1z(lwq)) THEN
  sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO)       &
          &       +    k_a*(OS - tracerpp(kwq,lwq,LDO))   !reaeration
 
- 
- !var1 = k_a*(OS - tracerpp(k,l,LDO))
- !PRINT*, "Reaeration term = ", var1, "top cell = ", topcell 
-					     ! + photosynthesis	- only if IALG = 1; calculated in sourceALG
-					     ! - Respiration		- only if IALG = 1; calculated in sourceALG
-               ! - RespirationZ		- only if IZOO = 1; calculated in sourceZOO
-					     ! - Nitrification	- only if INH4 = 1; calculated in sourceNH4
-
-END IF
+ END IF
 
 
-!. . Add contribution from sediment release and GW flux into bottom cells
-!bottomcell = kmz(l)
-!PRINT*, "k = ", k,", l = ", l,", bottom cell = ", bottomcell
+!. . Add contribution from sediment release into bottom cells
 
 IF (kwq .eq. kmz(lwq)) THEN
 
- 
  f_SOD = tracerpp(kwq,lwq,LDO) /(KSOD + tracerpp(kwq,lwq,LDO) )
- 
- !var2 = SOD * Theta_sod**(salp(k,l) - 20) * f_SOD * (1/(hpp(k,l)))
- !PRINT*, "SOD term = ", var2, "bottom cell = ", bottomcell, ", SOD = ", SOD, ", Tcorr = ", Theta_sod**(salp(k,l) - 20), ", f_SOD = ", f_SOD, ", dz = ", hpp(k,l)
- 
+
  sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO)    &
 						& +	 SOD * Theta_sod**(salp(kwq,lwq) - 20) * f_SOD * (1/(hpp(kwq,lwq)))    ! sediment oxygen demand
 END IF
@@ -957,7 +929,7 @@ SUBROUTINE sourcePON(kwq,lwq)
   &                          - k_set* tracerpp(kwq,lwq,LPON)	      &	! settling
   &                          + k_rs * tracerpp(kwq,lwq,LPON)			! resusupension
 						                ! + mortality	- only if IALG = 1; calcualted in sourceALG
-                            ! + mortalityZ	- only if IZOO = 1; calcualted in sourceZOO
+                            
 
   ! Add contribution of mineralization to DON concentration
   IF (iDON == 1) THEN
@@ -990,9 +962,10 @@ SUBROUTINE sourceDON(kwq,lwq)
 							! + Excr	    - only if IAlG = 1; calculated in sourceALG
 
 !. . .Add contribution from atmospheric deposition to top layer
-IF (kwq .eq. k1z(ij2l(l2i(lwq),l2j(lwq)))) THEN
+IF (kwq .eq. k1z(lwq)) THEN
+
 	sourcesink(kwq,lwq, LDON) = sourcesink(kwq, lwq, LDON) + &
-								& (hpp(kwq,lwq)+2)*ATM_DON		! Atmoshperic deposition
+								& (hpp(kwq,lwq))*ATM_DON		! Atmoshperic deposition
 END IF
 
   IF (INH4 == 1) THEN		! add mineralization of DON to NH4
@@ -1030,7 +1003,6 @@ sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4)			&
 
 						! - Algal Uptake		- if IALG = 1; calculated in sourceALG
 						! + mineralization		- if IDON = 1; calculated in sourceDON
-            ! + excretion         - if IZOO = 1; calculated in source ZOO
 
 !. . Add contribution from sediment release and GW flux into bottom cells
 IF (kwq .eq. kmz(lwq)) THEN
@@ -1112,7 +1084,6 @@ sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP)		    &
 						&   - k_set * tracerpp(kwq, lwq, LPOP)        &  ! settling
 						&   + k_rs*tracerpp(kwq,lwq,LPOP)			          ! Resuspension
 						! + mortality	- only if IALG = 1; calcualted in sourceALG
-            ! + mortalityZ	- only if IZOO = 1; calcualted in sourceZOO
 
 ! Caclulate decomposition contribution to DOP
 IF (IDOP == 1) THEN
@@ -1145,9 +1116,9 @@ sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP)		&
 						! + decomposition		- if iPOP = 1; calculated in sourcePOP
 
 !... Add atmoshperic deposition to top layer
-IF (kwq == k1z(ij2l(l2i(lwq),l2j(lwq)))) THEN
+ IF (kwq .eq. k1z(lwq)) THEN
 	sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP)				+	&
-						&  (h(kwq,lwq)+2)*ATM_DOP					! Atmospheric deposition
+						&  (h(kwq,lwq))*ATM_DOP					! Atmospheric deposition
 END IF
 
 ! Caclulate mineralization contribution to PO4
@@ -1172,7 +1143,6 @@ SUBROUTINE sourcePO4(kwq, lwq)
  ! + mineralization		- if IDOP = 1; calculated in sourceDOP
    ! + algal exc			- if IALG = 1; calculated in sourceALG
    ! - algal uptake		- if IALG = 1; calculated in sourceALG
-   ! + zoo exc			- if IZOO = 1; calculated in sourceZOO
 
 !. . Add contribution from sediment release and GW flux into bottom cells
 IF (kwq .eq. kmz(lwq)) THEN
@@ -1211,7 +1181,6 @@ SUBROUTINE sourcePOC (kwq, lwq)
 						&  -   k_set * tracerpp(kwq,lwq,LPOC) 	  &	             ! settling
 						&  +   k_rs * tracerpp(kwq,lwq,LPOC)			                 ! Resuspension
 						! + mortality		                        - if IALG = 1; calculated in sourceALG
-            ! - grazing detritus - if IZOO = 1; calculated in sourceZOO
 
   ! Caclulate decomposition contribution to DOC
   IF (IDOC == 1) THEN
@@ -1249,16 +1218,16 @@ SUBROUTINE sourceDOC(kwq, lwq)
 
 
 !. . Add contribution from sediment release and GW flux into bottom cells
-IF (kwq .eq. kmz(ij2l(l2i(lwq),l2j(lwq)))) THEN
+ IF (kwq .eq. kmz(lwq)) THEN
  sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) +   &
-							& (hpp(kwq,lwq)-1)*J_DOC     +	 &	! sediment release
-							& (hpp(kwq,lwq)-1)*GW_DOC	     	! GW flux
+							& (hpp(kwq,lwq))*J_DOC     +	 &	! sediment release
+							& (hpp(kwq,lwq))*GW_DOC	     	! GW flux
 END IF
 
 !. . Add contribution from atmoshperic deposition into top cells
-IF (kwq .eq. k1z(ij2l(l2i(lwq),l2j(lwq)))) THEN
+ IF (kwq .eq. k1z(lwq)) THEN
 	sourcesink(kwq, lwq, LDOC) = sourcesink(kwq, lwq, LDOC) + &
-								& (hpp(kwq, lwq)+2) * ATM_DOC	 ! ATM deposition
+								& (hpp(kwq, lwq)) * ATM_DOC	 ! ATM deposition
 END IF
 
   IF (IDO == 1) THEN
@@ -1268,7 +1237,7 @@ END IF
 END SUBROUTINE sourceDOC
 
 !************************************************************************
-SUBROUTINE sourceALG1(kwq, lwq)
+SUBROUTINE sourceALG1(kwq, lwq, thrs)
 !*********************************************************************
 !
 ! Purpose: To calculate sourcesink terms that depend on ALG1
@@ -1276,81 +1245,87 @@ SUBROUTINE sourceALG1(kwq, lwq)
 !--------------------------------------------------------------------------
   ! ... Arguments
   INTEGER, INTENT (IN) :: kwq,lwq
+  REAL, INTENT(IN) :: thrs
 
   !. . .Local Variables
   REAL::	mu1, f_L1, f_T, f_N, f_P, N_conc
-  REAL::	growth1, resp1, excr1, mort1, graz1, sett1, resus1
+  REAL::	growth1, mort1, excr1,  graz1, sett1, resus1
+  REAL::  dthrs_zoop
 
   ! Calculate mu, growth rate
 
   !. .  Calculate growth limiting factors
     ! Light Limitation - by Steele equation (Jassby and Platt, 1976)
    	  f_L1 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat1) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat1)) ! Steele (1962) = Photoinhibited
-      !f_L1 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k1) ! Webb et al (1974) in absence of photoinhibition
-	  
-	  
-	  
-		!IF (f_L1 == 0) THEN
-		!   f_L1 = 1
-		   
-		!END IF
-		
-		!F_L1(kwq,lwq) = f_L1
+      !f_L1 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k1) ! Webb et al (1974) in absence of photoinhibition 
+
 	! temperature limitaton
-		f_T = Theta_mu**(salp(kwq,lwq) -20)
-		!F_T(kwq,lwq) = f_T
+		f_T = Theta_mu**(-0.01*(salp(kwq,lwq) - Topt1)**2)
 
 	! nutrient limitation - but only if the nutrients are modeled
 	IF ((INH4 ==1) .AND. (INO3 ==1)) THEN
 		N_conc = tracerpp(kwq,lwq,LNH4) + tracerpp(kwq,lwq,LNO3)
 		f_N = N_conc/(KSN + N_conc)
-		!F_N(kwq,lwq) = f_N
 	ELSE IF (INH4 == 1 .AND. INO3 ==0) THEN
 		N_conc = tracerpp(kwq,lwq,LNH4)
 		f_N = N_conc/(KSN + N_conc)
-		!F_N(kwq,lwq) = f_N
 	ELSE IF (INH4 == 0 .AND. INO3 ==1) THEN
 		N_conc = tracerpp(kwq,lwq,LNO3)
 		f_N = N_conc/(KSN + N_conc)
-		!F_N(kwq,lwq) = f_N
 	ELSE
 		f_N = 1.0
-		!F_N(kwq,lwq) = f_N
 	END IF
 
 	IF (IPO4 ==1) THEN
 		f_P = tracerpp(kwq,lwq,LPO4) /(KSP + tracerpp(kwq,lwq,LPO4) )
-		!F_P(kwq,lwq) = f_P
 	ELSE
 		f_P = 1.0
-		!F_P(kwq,lwq) = f_P
 	END IF
 	  
 	  
 ! Growth rate considering limiting factors (light and nutrients)
 mu1 = mu_max1 * MIN(f_L1,f_N,f_P)
 
+! Read Zooplankton. Daily values between April 13 and June 15, 2018
+    rotifers =  (/192.54,  196.37,  200.26,  204.19,  208.16,  212.17,  216.21,  220.29,  224.39,  228.51,  232.65,  236.80,  240.96,  245.12,  249.28,  253.44,  257.58,  &
+  &    261.72,  265.83,  269.93,  273.99,  278.03,  282.03,  285.99,  289.91,  293.78,  297.60,  301.36,  305.06,  308.69,  312.26,  315.75,  319.16,  322.49,  325.73,  328.88,  &
+  &    331.94,  334.89,  337.74,  340.49,  343.12,  345.63,  348.12,  350.68,  353.30,  355.97,  358.69,  361.45,  364.24,  367.05,  369.87,  372.69,  375.52,  378.33,  381.12,  383.89,  &
+  &    386.61,  389.30,  391.93,  394.51,  397.01,  399.44,  401.79,  404.04/)
+    rotifers = rotifers/1000
+
+    bosmina = (/0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00/)
+    bosmina = bosmina/1000
+
+! Interpolate Zooplankton to the simulation time interval (thrs)
+dthrs_zoop = 24.
+rotifersnew = parabn(0.,thrs,rotifers,dthrs_zoop)
+bosminanew = parabn(0.,thrs,bosmina,dthrs_zoop)
+
 !. . Calculate growth
 		growth1 = mu1 * f_T * tracerpp(kwq,lwq,LALG1)
-!. . Calculate respiration
-		resp1   = k_res1 * Theta_res**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG1)
-!. . Calculate excretion
-		excr1   = k_ex1 * Theta_res**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG1)
 !. . Calculate mortality
-		mort1   = k_mor1 * Theta_mor**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG1)
+    mort1   = k_mor1 * Theta_mor**(-0.01*(salp(kwq,lwq) - Topt1)**2) * tracerpp(kwq,lwq,LALG1)
+!. . Calculate excretion
+		excr1   = k_ex1 * Theta_exc**(-0.01*(salp(kwq,lwq) - Topt1)**2) * tracerpp(kwq,lwq,LALG1)
 !. . Calculate grazing
-		graz1   = k_gr1 * Theta_gr**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG1)
+		!graz1   = k_gr1 * Theta_gr**(-0.01*(salp(kwq,lwq) - Topt1)**2) * tracerpp(kwq,lwq,LALG1)
+    graz1 = (rotifersnew*0.0003936/4.0 + bosminanew*0.00495/3.0)*(86400.0)! LT2
 !. . Calculate settling
 		sett1   = k_set * tracerpp(kwq,lwq,LALG1)
 !. . Calculate resuspension
     resus1   = k_rs * tracerpp(kwq,lwq,LALG1)
 
-sourcesink(kwq,lwq,LALG1) = sourcesink(kwq,lwq,LALG1)	+ growth1 - resp1	- excr1	- mort1  - graz1 - sett1 + resus1
+sourcesink(kwq,lwq,LALG1) = sourcesink(kwq,lwq,LALG1)	+ growth1 - excr1	- mort1  - graz1 - sett1 + resus1
+
 
 ! If dissolved oxygen is modeled, alter sourcesink(kwq,lwq,LDO) to reflect growth and resp
 ! of algae population
 IF (IDO ==1) THEN
-	sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) + roc*(growth1-resp1)
+	sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) + roc*(growth1)
 END IF
 
 ! IF PON is modeled, alter sourcesink(kwq,lwq,LPON) to reflect mortality of algae
@@ -1398,15 +1373,11 @@ IF (IDOC == 1) THEN
 	sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + excr1
 END IF
 
-! If ZOO is modeled, alter sourcesink(kwq,lwq,LZOO) to include grazing
-!IF (IZOO == 1) THEN
-!	sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO) + graz1
-!END IF
 
 END SUBROUTINE sourceALG1
 
 !************************************************************************
-SUBROUTINE sourceALG2(kwq, lwq)
+SUBROUTINE sourceALG2(kwq, lwq, thrs)
 !*********************************************************************
 !
 ! Purpose: To calculate sourcesink terms that depend on ALG2
@@ -1414,123 +1385,148 @@ SUBROUTINE sourceALG2(kwq, lwq)
 !--------------------------------------------------------------------------
   ! ... Arguments
   INTEGER, INTENT (IN) :: kwq,lwq
+  REAL, INTENT(IN) :: thrs
 
   !. . .Local Variables
-  REAL::	mu2, f_L2, f_T, f_N, f_P, N_conc
-  REAL::	growth2, resp2, excr2, mort2, graz2, sett2, resus2
+  REAL::  mu2, f_L2, f_T, f_N, f_P, N_conc
+  REAL::  growth2, mort2, excr2,  graz2, sett2, resus2
+  REAL::  dthrs_zoop, netgrowth2
 
   ! Calculate mu, growth rate
 
   !. .  Calculate growth limiting factors
-    f_L2 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat2) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat2)) ! Steele (1962) = Photoinhibited
-    !f_L2 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k2) ! Webb et al (1974) in absence of photoinhibition
-		IF (f_L2 == 0) THEN
-		   f_L2 = 1
-		END IF
+    ! Light Limitation - by Steele equation (Jassby and Platt, 1976)
+      f_L2 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat2) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat2)) ! Steele (1962) = Photoinhibited
+      !f_L2 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k2) ! Webb et al (1974) in absence of photoinhibition 
 
-	! temperature limitaton
-		f_T = Theta_mu**(salp(kwq,lwq) -20)
+  ! temperature limitaton
+    f_T = Theta_mu**(-0.01*(salp(kwq,lwq) - Topt1)**2)
 
-	! nutrient limitation - but only if the nutrients are modeled
-	IF ((INH4 ==1) .AND. (INO3 ==1)) THEN
-		N_conc = tracerpp(kwq,lwq,LNH4) + tracerpp(kwq,lwq,LNO3)
-		f_N = N_conc/(KSN + N_conc)
-	ELSE IF (INH4 == 1 .AND. INO3 ==0) THEN
-		N_conc = tracerpp(kwq,lwq,LNH4)
-		f_N = N_conc/(KSN + N_conc)
-	ELSE IF (INH4 == 0 .AND. INO3 ==1) THEN
-		N_conc = tracerpp(kwq,lwq,LNO3)
-		f_N = N_conc/(KSN + N_conc)
-	ELSE
-		f_N = 1.0
-	END IF
+  ! nutrient limitation - but only if the nutrients are modeled
+  IF ((INH4 ==1) .AND. (INO3 ==1)) THEN
+    N_conc = tracerpp(kwq,lwq,LNH4) + tracerpp(kwq,lwq,LNO3)
+    f_N = N_conc/(KSN + N_conc)
+  ELSE IF (INH4 == 1 .AND. INO3 ==0) THEN
+    N_conc = tracerpp(kwq,lwq,LNH4)
+    f_N = N_conc/(KSN + N_conc)
+  ELSE IF (INH4 == 0 .AND. INO3 ==1) THEN
+    N_conc = tracerpp(kwq,lwq,LNO3)
+    f_N = N_conc/(KSN + N_conc)
+  ELSE
+    f_N = 1.0
+  END IF
 
-	IF (IPO4 ==1) THEN
-		f_P = tracerpp(kwq,lwq,LPO4) /(KSP + tracerpp(kwq,lwq,LPO4) )
-	ELSE
-		f_P = 1.0
-	END IF
-
+  IF (IPO4 ==1) THEN
+    f_P = tracerpp(kwq,lwq,LPO4) /(KSP + tracerpp(kwq,lwq,LPO4) )
+  ELSE
+    f_P = 1.0
+  END IF
+    
+    
 ! Growth rate considering limiting factors (light and nutrients)
 mu2 = mu_max2 * MIN(f_L2,f_N,f_P)
 
+! Read Zooplankton. Daily values between April 13 and June 15, 2018
+    rotifers =  (/192.54,  196.37,  200.26,  204.19,  208.16,  212.17,  216.21,  220.29,  224.39,  228.51,  232.65,  236.80,  240.96,  245.12,  249.28,  253.44,  257.58,  &
+  &    261.72,  265.83,  269.93,  273.99,  278.03,  282.03,  285.99,  289.91,  293.78,  297.60,  301.36,  305.06,  308.69,  312.26,  315.75,  319.16,  322.49,  325.73,  328.88,  &
+  &    331.94,  334.89,  337.74,  340.49,  343.12,  345.63,  348.12,  350.68,  353.30,  355.97,  358.69,  361.45,  364.24,  367.05,  369.87,  372.69,  375.52,  378.33,  381.12,  383.89,  &
+  &    386.61,  389.30,  391.93,  394.51,  397.01,  399.44,  401.79,  404.04/)
+    rotifers = rotifers/1000
+
+    bosmina = (/0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00/)
+    bosmina = bosmina/1000
+
+! Interpolate Zooplankton to the simulation time interval (thrs)
+dthrs_zoop = 24.
+rotifersnew = parabn(0.,thrs,rotifers,dthrs_zoop)
+bosminanew = parabn(0.,thrs,bosmina,dthrs_zoop)
+
 !. . Calculate growth
-		growth2 = mu2 * f_T * tracerpp(kwq,lwq,LALG2)
-!. . Calculate respiration
-		resp2   = k_res2 * Theta_res**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG2)
-!. . Calculate excretion
-		excr2   = k_ex2 * Theta_res**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG2)
+    growth2 = mu2 * f_T * tracerpp(kwq,lwq,LALG2)
 !. . Calculate mortality
-		mort2   = k_mor2 * Theta_mor**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG2)
+    mort2   = k_mor2 * Theta_mor**(-0.01*(salp(kwq,lwq) - Topt2)**2) * tracerpp(kwq,lwq,LALG2)
+!. . Calculate excretion
+    excr2   = k_ex2 * Theta_exc**(-0.01*(salp(kwq,lwq) - Topt2)**2) * tracerpp(kwq,lwq,LALG2)
 !. . Calculate grazing
-		graz2   = k_gr2 * Theta_gr**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG2)
+    !graz2   = k_gr2 * Theta_gr**(-0.01*(salp(kwq,lwq) - Topt2)**2) * tracerpp(kwq,lwq,LALG2)
+    IF (kwq .lt. 37) THEN
+        graz2 = ((rotifersnew*0.0003936/4.0) + (bosminanew*0.00495/3.0))/(86400.0)! 2T6
+    ELSE IF (kwq .gt. 36) THEN
+        graz2 = 0
+    END IF
+    ! Make sure that grazing is below of equal to the phytoplankton numbers on each time step
+    netgrowth2 = sourcesink(kwq,lwq,LALG2) + growth2 - excr2 - mort2
+    IF (graz2 > netgrowth2) THEN
+       graz2 = netgrowth2 + 0.01
+    END IF
 !. . Calculate settling
-		sett2   = k_set * tracerpp(kwq,lwq,LALG2)
+    sett2   = k_set * tracerpp(kwq,lwq,LALG2)
 !. . Calculate resuspension
     resus2   = k_rs * tracerpp(kwq,lwq,LALG2)
 
-sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2)	+ growth2 - resp2	- excr2	- mort2  - graz2 - sett2 + resus2
+sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) + growth2 - excr2 - mort2  - graz2 - sett2 + resus2
 
 ! If dissolved oxygen is modeled, alter sourcesink(kwq,lwq,LDO) to reflect growth and resp
 ! of algae population
 IF (IDO ==1) THEN
-	sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) + roc*(growth2-resp2)
+  sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) + roc*(growth2)
 END IF
 
 ! IF PON is modeled, alter sourcesink(kwq,lwq,LPON) to reflect mortality of algae
 IF (IPON == 1) THEN
-	sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) + rnc*mort2
+  sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) + rnc*mort2
 END IF
 
 ! If DON is modeled, alter soucesink(kwq,lwq,LDON) to reflect excretion of algae
 IF (IDON ==1) THEN
-	sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)  + rnc*excr2
+  sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)  + rnc*excr2
 END IF
 
 ! IF NH4 is modeled, alter sourcesink(kwq,lwq,LNH4) to include uptake of NH4 by algae
 IF (INH4 == 1) THEN
-	sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) - rnc*FNH4*growth2
+  sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) - rnc*FNH4*growth2
 END IF
 
 ! IF NO3 is modeled, alter sourcesink(kwq,lwq,NO3) to include uptake of NO3 by algae
 IF (INO3 == 1) THEN
-	sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3) - rnc*(1-FNH4) * growth2
+  sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3) - rnc*(1-FNH4) * growth2
 END IF
 
 ! If POP is modeled, alter sourcesink(kwq,lwq,POP) to include mortality of algae
 IF (IPOP == 1) THEN
-	sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + rpc*mort2
+  sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + rpc*mort2
 END IF
 
 ! If DOP is modeled, alter sourcesink(kwq,lwq,LDOP) to include excretion
 IF (IDOP == 1) THEN
-	sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) + rpc*excr2
+  sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) + rpc*excr2
 END IF
 
 ! If PO4 is modeled, alter sourcesink(kwq,lwq,LPO4) to include excretion and uptake
 IF (IPO4 == 1) THEN
-	sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) + rpc*(excr2 - growth2)
+  sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) - rpc* growth2 ! excr from phyto removed
 END IF
 
 ! If POC is modeled, alter sourcesink(kwq,lwq,LPOC) to include mortality
 IF (IPOC == 1) THEN
-	sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + mort2
+  sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + mort2
 END IF
 
 ! If DOC is modeled, alter sourcesink(kwq,lwq,LDOC) to include excretion
 IF (IDOC == 1) THEN
-	sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + excr2
+  sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + excr2
 END IF
 
-! If ZOO is modeled, alter sourcesink(kwq,lwq,LZOO) to include grazing
-!IF (IZOO == 1) THEN
-!	sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO) + graz2
-!END IF
 
 END SUBROUTINE sourceALG2
 
+
 !************************************************************************
-SUBROUTINE sourceALG3(kwq, lwq)
+SUBROUTINE sourceALG3(kwq, lwq, thrs)
 !*********************************************************************
 !
 ! Purpose: To calculate sourcesink terms that depend on ALG3
@@ -1538,123 +1534,184 @@ SUBROUTINE sourceALG3(kwq, lwq)
 !--------------------------------------------------------------------------
   ! ... Arguments
   INTEGER, INTENT (IN) :: kwq,lwq
+  REAL, INTENT(IN) :: thrs
 
   !. . .Local Variables
-  REAL::	mu3, f_L3, f_T, f_N, f_P, N_conc
-  REAL::	growth3, resp3, excr3, mort3, graz3, sett3, resus3
+  REAL::  mu3, f_L3, f_T, f_N, f_P, N_conc
+  REAL::  growth3, mort3, excr3,  graz3, sett3, resus3
+  REAL::  dthrs_zoop, netgrowth3
 
   ! Calculate mu, growth rate
 
   !. .  Calculate growth limiting factors
-    f_L3 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat3) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat3)) ! Steele (1962) = Photoinhibited
-    !f_L3 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k3) ! Webb et al (1974) in absence of photoinhibition
-		IF (f_L3 == 0) THEN
-		   f_L3 = 1
-		END IF
+    ! Light Limitation - by Steele equation (Jassby and Platt, 1976)
+      f_L3 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat3) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat3)) ! Steele (1962) = Photoinhibited
+      !f_L3 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k3) ! Webb et al (1974) in absence of photoinhibition 
 
-	! temperature limitaton
-		f_T = Theta_mu**(salp(kwq,lwq) -20)
+  ! temperature limitaton
+    f_T = Theta_mu**(-0.01*(salp(kwq,lwq) - Topt1)**2)
 
-	! nutrient limitation - but only if the nutrients are modeled
-	IF ((INH4 ==1) .AND. (INO3 ==1)) THEN
-		N_conc = tracerpp(kwq,lwq,LNH4) + tracerpp(kwq,lwq,LNO3)
-		f_N = N_conc/(KSN + N_conc)
-	ELSE IF (INH4 == 1 .AND. INO3 ==0) THEN
-		N_conc = tracerpp(kwq,lwq,LNH4)
-		f_N = N_conc/(KSN + N_conc)
-	ELSE IF (INH4 == 0 .AND. INO3 ==1) THEN
-		N_conc = tracerpp(kwq,lwq,LNO3)
-		f_N = N_conc/(KSN + N_conc)
-	ELSE
-		f_N = 1.0
-	END IF
+  ! nutrient limitation - but only if the nutrients are modeled
+  IF ((INH4 ==1) .AND. (INO3 ==1)) THEN
+    N_conc = tracerpp(kwq,lwq,LNH4) + tracerpp(kwq,lwq,LNO3)
+    f_N = N_conc/(KSN + N_conc)
+  ELSE IF (INH4 == 1 .AND. INO3 ==0) THEN
+    N_conc = tracerpp(kwq,lwq,LNH4)
+    f_N = N_conc/(KSN + N_conc)
+  ELSE IF (INH4 == 0 .AND. INO3 ==1) THEN
+    N_conc = tracerpp(kwq,lwq,LNO3)
+    f_N = N_conc/(KSN + N_conc)
+  ELSE
+    f_N = 1.0
+  END IF
 
-	IF (IPO4 ==1) THEN
-		f_P = tracerpp(kwq,lwq,LPO4) /(KSP + tracerpp(kwq,lwq,LPO4) )
-	ELSE
-		f_P = 1.0
-	END IF
-
+  IF (IPO4 ==1) THEN
+    f_P = tracerpp(kwq,lwq,LPO4) /(KSP + tracerpp(kwq,lwq,LPO4) )
+  ELSE
+    f_P = 1.0
+  END IF
+    
+    
 ! Growth rate considering limiting factors (light and nutrients)
 mu3 = mu_max3 * MIN(f_L3,f_N,f_P)
 
+! Read Zooplankton. Daily values between April 13 and June 15, 2018
+    rotifers =  (/192.54,  196.37,  200.26,  204.19,  208.16,  212.17,  216.21,  220.29,  224.39,  228.51,  232.65,  236.80,  240.96,  245.12,  249.28,  253.44,  257.58,  &
+  &    261.72,  265.83,  269.93,  273.99,  278.03,  282.03,  285.99,  289.91,  293.78,  297.60,  301.36,  305.06,  308.69,  312.26,  315.75,  319.16,  322.49,  325.73,  328.88,  &
+  &    331.94,  334.89,  337.74,  340.49,  343.12,  345.63,  348.12,  350.68,  353.30,  355.97,  358.69,  361.45,  364.24,  367.05,  369.87,  372.69,  375.52,  378.33,  381.12,  383.89,  &
+  &    386.61,  389.30,  391.93,  394.51,  397.01,  399.44,  401.79,  404.04/)
+    rotifers = rotifers/1000
+
+    codotisnapuli = (/147.54,  150.47,  153.49,  156.60,  159.80,  163.10,  166.48,  169.96,  173.52,  177.18,  180.92,  184.76,  188.69,  192.70,  196.81,  201.00, 205.29,  209.67,  214.13, 218.68, &  
+    &  223.33,  228.06,  232.88,  237.79,  242.79,  247.88,  253.06,  258.33,  263.68,  269.12,  274.65,  280.27,  285.98,  291.77,  297.66,  303.63,  309.68,  315.83,  322.06, &
+    &  328.38,  334.79,  341.28,  349.34,  360.36,  374.17,  390.63,  409.58,  430.86,  454.34,  479.85,  507.23,  536.35,  567.04,  599.16,  632.54,  667.04,  702.51,  738.78,  775.71, &
+    &  813.15,  850.94,  888.94,  926.97,  964.90/)
+    codotisnapuli = codotisnapuli/1000
+
+    diatomus =(/91.52,  96.11,  100.74,  105.42,  110.13,  114.87,  119.63,  124.41,  129.21,  134.00, 138.80,  143.59,  148.37,  153.13,  157.86,  162.57,  167.24,  171.86,  176.44,  180.96, &
+    &  185.42, 189.81,  194.13,  198.37,  202.53,  206.59,  210.56,  214.42,  218.18,  221.82,  225.34,  228.73,  231.99,  235.11,  238.08,  240.91,  243.57,  246.07,  248.41,  250.57,  252.54, &
+    &  254.33,  255.99,  257.60,  259.15,  260.65,  262.11,  263.51,  264.87,  266.19,  267.48,  268.73,  269.94,  271.13,  272.29,  273.42,  274.53,  275.62,  276.70,  277.76,  278.82,  279.86, &       
+    &  280.90,281.93/)
+    diatomus = diatomus/1000
+
+    bosmina = (/0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00/)
+    bosmina = bosmina/1000
+
+    daphnia =(/0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00/)
+    daphnia = daphnia/1000
+
+    epischura = (/317.73,  333.08,  348.53,  364.05,  379.62,  395.21,  410.80,  426.37,  441.89,  457.34,  472.69,  487.92,  503.01,  517.92,  532.65,  547.16,  561.43,  575.43,  589.14,  &
+    &  602.55, 615.61,  628.31,  640.63,  652.54,  664.02,  675.04,  685.58,  695.61,  705.11,  714.06,  722.43,  730.20,  737.35,  743.84,  749.66,  754.78,  759.18,  762.84,  765.72,  767.81, &
+    &  769.08,  769.51, 768.93,  767.23,  764.49,  760.75,  756.10,  750.59,  744.30,  737.28,  729.60,  721.34,  712.54,  703.29,  693.64,  683.67,  673.43,  663.00, 652.43,  641.80,  631.17, &
+    &  620.60,  610.17,  599.93/)
+    epischura = epischura/1000
+
+    mysis = (/0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
+    & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00/)
+    mysis = mysis/1000
+
+! Interpolate Zooplankton to the simulation time interval (thrs)
+dthrs_zoop = 24.
+rotifersnew = parabn(0.,thrs,rotifers,dthrs_zoop)
+codotisnapulinew = parabn(0.,thrs,codotisnapuli,dthrs_zoop)
+diatomusnew = parabn(0.,thrs,diatomus,dthrs_zoop)
+bosminanew = parabn(0.,thrs,bosmina,dthrs_zoop)
+daphnianew = parabn(0.,thrs,daphnia,dthrs_zoop)
+epischuranew = parabn(0.,thrs,epischura,dthrs_zoop)
+mysisnew = parabn(0.,thrs,mysis,dthrs_zoop)
+
 !. . Calculate growth
-		growth3 = mu3 * f_T * tracerpp(kwq,lwq,LALG3)
-!. . Calculate respiration
-		resp3   = k_res3 * Theta_res**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG3)
-!. . Calculate excretion
-		excr3   = k_ex3 * Theta_res**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG3)
+    growth3 = mu3 * f_T * tracerpp(kwq,lwq,LALG3)
 !. . Calculate mortality
-		mort3   = k_mor3 * Theta_mor**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG3)
+    mort3   = k_mor3 * Theta_mor**(-0.01*(salp(kwq,lwq) - Topt3)**2) * tracerpp(kwq,lwq,LALG3)
+!. . Calculate excretion
+    excr3   = k_ex3 * Theta_exc**(-0.01*(salp(kwq,lwq) - Topt3)**2) * tracerpp(kwq,lwq,LALG3)
 !. . Calculate grazing
-		graz3   = k_gr3 * Theta_gr**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG3)
+    !graz3   = k_gr3 * Theta_gr**(-0.01*(salp(kwq,lwq) - Topt3)**2) * tracerpp(kwq,lwq,LALG3)
+    IF (kwq .lt. 37) THEN
+        graz3 = ((rotifersnew*0.002035/4.0)+(codotisnapulinew*0.185/2.5)+(diatomusnew*0.2267/2.5)+(bosminanew*0.00495/3.0)+(daphnianew*0.04752/2.5)+(epischuranew*0.7467/2.5)+(mysisnew*0.0))/(86400.0)!
+    ELSE IF (kwq .gt. 36) THEN
+        graz3 = 0
+    END IF
+   ! Make sure that grazing is below of equal to the phytoplankton numbers on each time step
+    netgrowth3 = sourcesink(kwq,lwq,LALG3) + growth3 - excr3 - mort3
+    IF (graz3 > netgrowth3) THEN
+       graz3 = netgrowth3 + 0.01
+    END IF
 !. . Calculate settling
-		sett3   = k_set * tracerpp(kwq,lwq,LALG3)
+    sett3   = k_set * tracerpp(kwq,lwq,LALG3)
 !. . Calculate resuspension
     resus3   = k_rs * tracerpp(kwq,lwq,LALG3)
 
-sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3)	+ growth3 - resp3	- excr3	- mort3  - graz3 - sett3 + resus3
+sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) + growth3 - excr3 - mort3  - graz3 - sett3 + resus3
 
 ! If dissolved oxygen is modeled, alter sourcesink(kwq,lwq,LDO) to reflect growth and resp
 ! of algae population
 IF (IDO ==1) THEN
-	sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) + roc*(growth3-resp3)
+  sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) + roc*(growth3)
 END IF
 
 ! IF PON is modeled, alter sourcesink(kwq,lwq,LPON) to reflect mortality of algae
 IF (IPON == 1) THEN
-	sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) + rnc*mort3
+  sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) + rnc*mort3
 END IF
 
 ! If DON is modeled, alter soucesink(kwq,lwq,LDON) to reflect excretion of algae
 IF (IDON ==1) THEN
-	sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)  + rnc*excr3
+  sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)  + rnc*excr3
 END IF
 
 ! IF NH4 is modeled, alter sourcesink(kwq,lwq,LNH4) to include uptake of NH4 by algae
 IF (INH4 == 1) THEN
-	sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) - rnc*FNH4*growth3
+  sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) - rnc*FNH4*growth3
 END IF
 
 ! IF NO3 is modeled, alter sourcesink(kwq,lwq,NO3) to include uptake of NO3 by algae
 IF (INO3 == 1) THEN
-	sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3) - rnc*(1-FNH4) * growth3
+  sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3) - rnc*(1-FNH4) * growth3
 END IF
 
 ! If POP is modeled, alter sourcesink(kwq,lwq,POP) to include mortality of algae
 IF (IPOP == 1) THEN
-	sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + rpc*mort3
+  sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + rpc*mort3
 END IF
 
 ! If DOP is modeled, alter sourcesink(kwq,lwq,LDOP) to include excretion
 IF (IDOP == 1) THEN
-	sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) + rpc*excr3
+  sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) + rpc*excr3
 END IF
 
 ! If PO4 is modeled, alter sourcesink(kwq,lwq,LPO4) to include excretion and uptake
 IF (IPO4 == 1) THEN
-	sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) + rpc*(excr3 - growth3)
+  sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) - rpc* growth3 ! excr from phyto removed
 END IF
 
 ! If POC is modeled, alter sourcesink(kwq,lwq,LPOC) to include mortality
 IF (IPOC == 1) THEN
-	sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + mort3
+  sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + mort3
 END IF
 
 ! If DOC is modeled, alter sourcesink(kwq,lwq,LDOC) to include excretion
 IF (IDOC == 1) THEN
-	sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + excr3
+  sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + excr3
 END IF
 
-! If ZOO is modeled, alter sourcesink(kwq,lwq,LZOO) to include grazing
-!IF (IZOO == 1) THEN
-!	sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO) + graz3
-!END IF
 
 END SUBROUTINE sourceALG3
 
 !************************************************************************
-SUBROUTINE sourceALG4(kwq, lwq)
+SUBROUTINE sourceALG4(kwq, lwq, thrs)
 !*********************************************************************
 !
 ! Purpose: To calculate sourcesink terms that depend on ALG4
@@ -1662,118 +1719,128 @@ SUBROUTINE sourceALG4(kwq, lwq)
 !--------------------------------------------------------------------------
   ! ... Arguments
   INTEGER, INTENT (IN) :: kwq,lwq
+  REAL, INTENT(IN) :: thrs
 
   !. . .Local Variables
-  REAL::	mu4, f_L4, f_T, f_N, f_P, N_conc
-  REAL::	growth4, resp4, excr4, mort4, graz4, sett4, resus4
+  REAL::  mu4, f_L4, f_T, f_N, f_P, N_conc
+  REAL::  growth4, mort4, excr4,  graz4, sett4, resus4, varprint
+  REAL::  dthrs_zoop
 
   ! Calculate mu, growth rate
 
   !. .  Calculate growth limiting factors
-    f_L4 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat4) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat4)) ! Steele (1962) = Photoinhibited
-    !f_L4 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k4) ! Webb et al (1974) in absence of photoinhibition
-		IF (f_L4 == 0) THEN
-		   f_L4 = 1
-		END IF
+    ! Light Limitation - by Steele equation (Jassby and Platt, 1976)
+      f_L4 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat4) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat4)) ! Steele (1962) = Photoinhibited
+      !f_L4 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k4) ! Webb et al (1974) in absence of photoinhibition 
 
-	! temperature limitaton
-		f_T = Theta_mu**(salp(kwq,lwq) -20)
+  ! temperature limitaton
+    f_T = Theta_mu**(-0.01*(salp(kwq,lwq) - Topt1)**2)
 
-	! nutrient limitation - but only if the nutrients are modeled
-	IF ((INH4 ==1) .AND. (INO3 ==1)) THEN
-		N_conc = tracerpp(kwq,lwq,LNH4) + tracerpp(kwq,lwq,LNO3)
-		f_N = N_conc/(KSN + N_conc)
-	ELSE IF (INH4 == 1 .AND. INO3 ==0) THEN
-		N_conc = tracerpp(kwq,lwq,LNH4)
-		f_N = N_conc/(KSN + N_conc)
-	ELSE IF (INH4 == 0 .AND. INO3 ==1) THEN
-		N_conc = tracerpp(kwq,lwq,LNO3)
-		f_N = N_conc/(KSN + N_conc)
-	ELSE
-		f_N = 1.0
-	END IF
+  ! nutrient limitation - but only if the nutrients are modeled
+  IF ((INH4 ==1) .AND. (INO3 ==1)) THEN
+    N_conc = tracerpp(kwq,lwq,LNH4) + tracerpp(kwq,lwq,LNO3)
+    f_N = N_conc/(KSN + N_conc)
+  ELSE IF (INH4 == 1 .AND. INO3 ==0) THEN
+    N_conc = tracerpp(kwq,lwq,LNH4)
+    f_N = N_conc/(KSN + N_conc)
+  ELSE IF (INH4 == 0 .AND. INO3 ==1) THEN
+    N_conc = tracerpp(kwq,lwq,LNO3)
+    f_N = N_conc/(KSN + N_conc)
+  ELSE
+    f_N = 1.0
+  END IF
 
-	IF (IPO4 ==1) THEN
-		f_P = tracerpp(kwq,lwq,LPO4) /(KSP + tracerpp(kwq,lwq,LPO4) )
-	ELSE
-		f_P = 1.0
-	END IF
-
+  IF (IPO4 ==1) THEN
+    f_P = tracerpp(kwq,lwq,LPO4) /(KSP + tracerpp(kwq,lwq,LPO4) )
+  ELSE
+    f_P = 1.0
+  END IF
+    
+    
 ! Growth rate considering limiting factors (light and nutrients)
 mu4 = mu_max4 * MIN(f_L4,f_N,f_P)
 
+! Read Zooplankton. Daily values between April 13 and June 15, 2018
+    rotifers =  (/192.54,  196.37,  200.26,  204.19,  208.16,  212.17,  216.21,  220.29,  224.39,  228.51,  232.65,  236.80,  240.96,  245.12,  249.28,  253.44,  257.58,  &
+  &    261.72,  265.83,  269.93,  273.99,  278.03,  282.03,  285.99,  289.91,  293.78,  297.60,  301.36,  305.06,  308.69,  312.26,  315.75,  319.16,  322.49,  325.73,  328.88,  &
+  &    331.94,  334.89,  337.74,  340.49,  343.12,  345.63,  348.12,  350.68,  353.30,  355.97,  358.69,  361.45,  364.24,  367.05,  369.87,  372.69,  375.52,  378.33,  381.12,  383.89,  &
+  &    386.61,  389.30,  391.93,  394.51,  397.01,  399.44,  401.79,  404.04/)
+    rotifers = rotifers/1000
+
+! Interpolate Zooplankton to the simulation time interval (thrs)
+dthrs_zoop = 24.
+rotifersnew = parabn(0.,thrs,rotifers,dthrs_zoop)
+
 !. . Calculate growth
-		growth4 = mu4 * f_T * tracerpp(kwq,lwq,LALG4)
-!. . Calculate respiration
-		resp4   = k_res4 * Theta_res**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG4)
-!. . Calculate excretion
-		excr4   = k_ex4 * Theta_res**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG4)
+    growth4 = mu4 * f_T * tracerpp(kwq,lwq,LALG4)
 !. . Calculate mortality
-		mort4   = k_mor4 * Theta_mor**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG4)
+    mort4   = k_mor4 * Theta_mor**(-0.01*(salp(kwq,lwq) - Topt4)**2) * tracerpp(kwq,lwq,LALG4)
+!. . Calculate excretion
+    excr4   = k_ex4 * Theta_exc**(-0.01*(salp(kwq,lwq) - Topt4)**2) * tracerpp(kwq,lwq,LALG4)
 !. . Calculate grazing
-		graz4   = k_gr4 * Theta_gr**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG4)
+    !graz4   = k_gr4 * Theta_gr**(-0.01*(salp(kwq,lwq) - Topt4)**2) * tracerpp(kwq,lwq,LALG4)
+     graz4 = (rotifersnew*0.0003936/4.0)*(86400.0)! G30
+
 !. . Calculate settling
-		sett4   = k_set * tracerpp(kwq,lwq,LALG4)
+    sett4   = k_set * tracerpp(kwq,lwq,LALG4)
 !. . Calculate resuspension
     resus4   = k_rs * tracerpp(kwq,lwq,LALG4)
 
-sourcesink(kwq,lwq,LALG4) = sourcesink(kwq,lwq,LALG4)	+ growth4 - resp4	- excr4	- mort4  - graz4 - sett4 + resus4
+sourcesink(kwq,lwq,LALG4) = sourcesink(kwq,lwq,LALG4) + growth4 - excr4 - mort4  - graz4 - sett4 + resus4
+
+
 
 ! If dissolved oxygen is modeled, alter sourcesink(kwq,lwq,LDO) to reflect growth and resp
 ! of algae population
 IF (IDO ==1) THEN
-	sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) + roc*(growth4-resp4)
+  sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) + roc*(growth4)
 END IF
 
 ! IF PON is modeled, alter sourcesink(kwq,lwq,LPON) to reflect mortality of algae
 IF (IPON == 1) THEN
-	sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) + rnc*mort4
+  sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) + rnc*mort4
 END IF
 
 ! If DON is modeled, alter soucesink(kwq,lwq,LDON) to reflect excretion of algae
 IF (IDON ==1) THEN
-	sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)  + rnc*excr4
+  sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)  + rnc*excr4
 END IF
 
 ! IF NH4 is modeled, alter sourcesink(kwq,lwq,LNH4) to include uptake of NH4 by algae
 IF (INH4 == 1) THEN
-	sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) - rnc*FNH4*growth4
+  sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) - rnc*FNH4*growth4
 END IF
 
 ! IF NO3 is modeled, alter sourcesink(kwq,lwq,NO3) to include uptake of NO3 by algae
 IF (INO3 == 1) THEN
-	sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3) - rnc*(1-FNH4) * growth4
+  sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3) - rnc*(1-FNH4) * growth4
 END IF
 
 ! If POP is modeled, alter sourcesink(kwq,lwq,POP) to include mortality of algae
 IF (IPOP == 1) THEN
-	sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + rpc*mort4
+  sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + rpc*mort4
 END IF
 
 ! If DOP is modeled, alter sourcesink(kwq,lwq,LDOP) to include excretion
 IF (IDOP == 1) THEN
-	sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) + rpc*excr4
+  sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) + rpc*excr4
 END IF
 
 ! If PO4 is modeled, alter sourcesink(kwq,lwq,LPO4) to include excretion and uptake
 IF (IPO4 == 1) THEN
-	sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) + rpc*(excr4 - growth4)
+  sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) - rpc* growth4 ! excr from phyto removed
 END IF
 
 ! If POC is modeled, alter sourcesink(kwq,lwq,LPOC) to include mortality
 IF (IPOC == 1) THEN
-	sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + mort4
+  sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + mort4
 END IF
 
 ! If DOC is modeled, alter sourcesink(kwq,lwq,LDOC) to include excretion
 IF (IDOC == 1) THEN
-	sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + excr4
+  sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + excr4
 END IF
 
-! If ZOO is modeled, alter sourcesink(kwq,lwq,LZOO) to include grazing
-!IF (IZOO == 1) THEN
-!	sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO) + graz4
-!END IF
 
 END SUBROUTINE sourceALG4
 
@@ -1788,188 +1855,112 @@ SUBROUTINE sourceALG5(kwq, lwq)
   INTEGER, INTENT (IN) :: kwq,lwq
 
   !. . .Local Variables
-  REAL::	mu5, f_L5, f_T, f_N, f_P, N_conc
-  REAL::	growth5, resp5, excr5, mort5, graz5, sett5, resus5
+  REAL::  mu5, f_L5, f_T, f_N, f_P, N_conc
+  REAL::  growth5, mort5, excr5,  graz5, sett5, resus5, varprint
 
   ! Calculate mu, growth rate
 
   !. .  Calculate growth limiting factors
-    f_L5 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat5) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat5)) ! Steele (1962) = Photoinhibited
-    !f_L5 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k5) ! Webb et al (1974) in absence of photoinhibition
-		IF (f_L5 == 0) THEN
-		   f_L5 = 1
-		END IF
+    ! Light Limitation - by Steele equation (Jassby and Platt, 1976)
+      f_L5 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat5) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat5)) ! Steele (1962) = Photoinhibited
+      !f_L5 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k5) ! Webb et al (1974) in absence of photoinhibition 
 
-	! temperature limitaton
-		f_T = Theta_mu**(salp(kwq,lwq) -20)
+  ! temperature limitaton
+    f_T = Theta_mu**(-0.01*(salp(kwq,lwq) - Topt1)**2)
 
-	! nutrient limitation - but only if the nutrients are modeled
-	IF ((INH4 ==1) .AND. (INO3 ==1)) THEN
-		N_conc = tracerpp(kwq,lwq,LNH4) + tracerpp(kwq,lwq,LNO3)
-		f_N = N_conc/(KSN + N_conc)
-	ELSE IF (INH4 == 1 .AND. INO3 ==0) THEN
-		N_conc = tracerpp(kwq,lwq,LNH4)
-		f_N = N_conc/(KSN + N_conc)
-	ELSE IF (INH4 == 0 .AND. INO3 ==1) THEN
-		N_conc = tracerpp(kwq,lwq,LNO3)
-		f_N = N_conc/(KSN + N_conc)
-	ELSE
-		f_N = 1.0
-	END IF
+  ! nutrient limitation - but only if the nutrients are modeled
+  IF ((INH4 ==1) .AND. (INO3 ==1)) THEN
+    N_conc = tracerpp(kwq,lwq,LNH4) + tracerpp(kwq,lwq,LNO3)
+    f_N = N_conc/(KSN + N_conc)
+  ELSE IF (INH4 == 1 .AND. INO3 ==0) THEN
+    N_conc = tracerpp(kwq,lwq,LNH4)
+    f_N = N_conc/(KSN + N_conc)
+  ELSE IF (INH4 == 0 .AND. INO3 ==1) THEN
+    N_conc = tracerpp(kwq,lwq,LNO3)
+    f_N = N_conc/(KSN + N_conc)
+  ELSE
+    f_N = 1.0
+  END IF
 
-	IF (IPO4 ==1) THEN
-		f_P = tracerpp(kwq,lwq,LPO4) /(KSP + tracerpp(kwq,lwq,LPO4) )
-	ELSE
-		f_P = 1.0
-	END IF
-
+  IF (IPO4 ==1) THEN
+    f_P = tracerpp(kwq,lwq,LPO4) /(KSP + tracerpp(kwq,lwq,LPO4) )
+  ELSE
+    f_P = 1.0
+  END IF
+    
+    
 ! Growth rate considering limiting factors (light and nutrients)
 mu5 = mu_max5 * MIN(f_L5,f_N,f_P)
 
 !. . Calculate growth
-		growth5 = mu5 * f_T * tracerpp(kwq,lwq,LALG5)
-!. . Calculate respiration
-		resp5   = k_res5 * Theta_res**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG5)
-!. . Calculate excretion
-		excr5   = k_ex5 * Theta_res**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG5)
+    growth5 = mu5 * f_T * tracerpp(kwq,lwq,LALG5)
 !. . Calculate mortality
-		mort5   = k_mor5 * Theta_mor**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG5)
+    mort5   = k_mor5 * Theta_mor**(-0.01*(salp(kwq,lwq) - Topt5)**2) * tracerpp(kwq,lwq,LALG5)
+!. . Calculate excretion
+    excr5   = k_ex5 * Theta_exc**(-0.01*(salp(kwq,lwq) - Topt5)**2) * tracerpp(kwq,lwq,LALG5)
 !. . Calculate grazing
-		graz5   = k_gr5 * Theta_gr**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LALG5)
+    graz5   = k_gr5 * Theta_gr**(-0.01*(salp(kwq,lwq) - Topt5)**2) * tracerpp(kwq,lwq,LALG5)
 !. . Calculate settling
-		sett5   = k_set * tracerpp(kwq,lwq,LALG5)
+    sett5   = k_set * tracerpp(kwq,lwq,LALG5)
 !. . Calculate resuspension
     resus5   = k_rs * tracerpp(kwq,lwq,LALG5)
 
-sourcesink(kwq,lwq,LALG5) = sourcesink(kwq,lwq,LALG5)	+ growth5 - resp5	- excr5	- mort5  - graz5 - sett5 + resus5
+sourcesink(kwq,lwq,LALG5) = sourcesink(kwq,lwq,LALG5) + growth5 - excr5 - mort5  - graz5 - sett5 + resus5
+
 
 ! If dissolved oxygen is modeled, alter sourcesink(kwq,lwq,LDO) to reflect growth and resp
 ! of algae population
 IF (IDO ==1) THEN
-	sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) + roc*(growth5-resp5)
+  sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) + roc*(growth5)
 END IF
 
 ! IF PON is modeled, alter sourcesink(kwq,lwq,LPON) to reflect mortality of algae
 IF (IPON == 1) THEN
-	sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) + rnc*mort5
+  sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) + rnc*mort5
 END IF
 
 ! If DON is modeled, alter soucesink(kwq,lwq,LDON) to reflect excretion of algae
 IF (IDON ==1) THEN
-	sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)  + rnc*excr5
+  sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)  + rnc*excr5
 END IF
 
 ! IF NH4 is modeled, alter sourcesink(kwq,lwq,LNH4) to include uptake of NH4 by algae
 IF (INH4 == 1) THEN
-	sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) - rnc*FNH4*growth5
+  sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) - rnc*FNH4*growth5
 END IF
 
 ! IF NO3 is modeled, alter sourcesink(kwq,lwq,NO3) to include uptake of NO3 by algae
 IF (INO3 == 1) THEN
-	sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3) - rnc*(1-FNH4) * growth5
+  sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3) - rnc*(1-FNH4) * growth5
 END IF
 
 ! If POP is modeled, alter sourcesink(kwq,lwq,POP) to include mortality of algae
 IF (IPOP == 1) THEN
-	sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + rpc*mort5
+  sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + rpc*mort5
 END IF
 
 ! If DOP is modeled, alter sourcesink(kwq,lwq,LDOP) to include excretion
 IF (IDOP == 1) THEN
-	sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) + rpc*excr5
+  sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) + rpc*excr5
 END IF
 
 ! If PO4 is modeled, alter sourcesink(kwq,lwq,LPO4) to include excretion and uptake
 IF (IPO4 == 1) THEN
-	sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) + rpc*(excr5 - growth5)
+  sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) - rpc* growth5 ! excr from phyto removed
 END IF
 
 ! If POC is modeled, alter sourcesink(kwq,lwq,LPOC) to include mortality
 IF (IPOC == 1) THEN
-	sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + mort5
+  sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + mort5
 END IF
 
 ! If DOC is modeled, alter sourcesink(kwq,lwq,LDOC) to include excretion
 IF (IDOC == 1) THEN
-	sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + excr5
+  sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + excr5
 END IF
 
-! If ZOO is modeled, alter sourcesink(kwq,lwq,LZOO) to include grazing
-!IF (IZOO == 1) THEN
-!	sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO) + graz5
-!END IF
 
 END SUBROUTINE sourceALG5
-
-!************************************************************************
-!SUBROUTINE sourceZOO(kwq, lwq)
-!*********************************************************************
-!
-! Purpose: To calculate sourcesink terms that depend on ZOO
-!
-!--------------------------------------------------------------------------
-  ! ... Arguments
-! INTEGER, INTENT (IN) :: kwq,lwq
-
-  !. . .Local Variables
-!  REAL :: grazingBacteria, morz, resz, exz, grazingdet
-
-  !... Calculate Grazing by Bacteria (nominal concentration)
-!  grazingBacteria = k_grbac * Theta_gr**(salp(kwq,lwq) - 20) * BacteriaC
-  ! ... Calculate Mortality of Zooplankton
-!  morz = k_morz * Theta_morz **(salp(kwq,lwq) - 20) * sourcesink(kwq,lwq,LZOO)
-  ! ... Calculate Respiration of Zooplankton
-!  resz = k_resz * Theta_resz **(salp(kwq,lwq) - 20) * sourcesink(kwq,lwq,LZOO)
-  ! ... Calculate Excretion of Zooplankton
-!  exz = k_exz * Theta_resz **(salp(kwq,lwq) - 20) * sourcesink(kwq,lwq,LZOO)
-  ! Calculate grazing detritus
-!  grazingdet = k_grdet * Theta_gr**(salp(kwq,lwq) - 20) *tracerpp(kwq,lwq,LZOO)
-
-
-!    sourcesink(kwq,lwq,LZOO) = sourcesink(kwq,lwq,LZOO)  &
-!                &   + grazingBacteria                    &  ! grazing of bacteria
-!                &   + grazingdet                         &
-!                &   - morz                               &  ! mortality of Zooplankton
-!                &   - resz                               &  ! respiration of zooplankton
-!                &   - exz                                 ! excretion of zooplankton
-                  ! + grazing algae            - if IALG = 1; calculated in sourceALG
-
-
-! If dissolved oxygen is modeled, alter sourcesink(kwq,lwq,LDO) to reflect resp
-!IF (IDO ==1) THEN
-!   sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) - roc*resz
-!END IF
-
-! Calculate PON change due to detritus grazing and  to include mortality
-!IF (IPON == 1) THEN
-!  sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) - rnc * grazingdet
-!  sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) + rnc * morz
-!END IF
-
-! If NH4 is modeled, alter sourcesink(kwq,lwq,LNH4) to include excretion
-!IF (INH4 == 1) THEN
-!    sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) + rnc * exz
-!END IF
-
-! Calculate POP change due to detritus grazing adn to include mortality
-!IF (IPOP == 1) THEN
-!  sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP)  - rpc * grazingdet
-!  sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + rpc * morz
-!END IF
-
-! If PO4 is modeled, alter sourcesink(kwq,lwq,LPO4) to include excretion
-!IF (INH4 == 1) THEN
-!    sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) + rpc * exz
-!END IF
-
-! Calculate POC change due to detritus grazing and to include mortality
-!IF (IPOC == 1) THEN
-!  sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) - grazingdet
-!  sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + morz
-!END IF
-
-!END SUBROUTINE sourceZOO
-
 
 !************************************************************************
 SUBROUTINE sourceFT(kwq, lwq)
@@ -2111,6 +2102,34 @@ SUBROUTINE sourceFL5(kwq, lwq)
 	tracerpp(kwq,lwq,LFL5) = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat5) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat5)) ! Steele (1962) = Photoinhibited	
 		
 END SUBROUTINE sourceFL5
+
+!***********************************************************************
+FUNCTION parabn ( frstpt, x, fx, dx )
+!***********************************************************************
+!
+!  Purpose: To interpolate parabolically between the functional values
+!           within the array fx.
+!
+!-----------------------------------------------------------------------
+
+   REAL, DIMENSION(:), INTENT(IN) :: fx      ! Assumed-shape array
+   REAL, INTENT(IN) :: frstpt, x, dx
+   REAL :: parabn
+   REAL :: om, theta
+   INTEGER :: m
+
+   m = (x - frstpt)/dx
+   om = m
+   theta = (x - frstpt - om*dx) / dx
+   IF (m == 0) THEN
+      m = 2
+      theta = theta - 1.0
+   ELSE
+      m = m + 1
+   END IF
+   parabn=fx(m)+0.5*theta*(fx(m+1)-fx(m-1)+theta*(fx(m+1)+fx(m-1)-2.0*fx(m)))
+
+END FUNCTION parabn
 
 !************************************************************************
 SUBROUTINE allocate_error ( istat, ierror_code )

@@ -516,7 +516,7 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
        ELSE IF (ecomod == 0) THEN
          CALL srcsnk00
        ELSE IF (ecomod == 1) THEN
-         CALL srcsnkWQ
+         CALL srcsnkWQ(thrs)
        ELSE IF (ecomod == 2) THEN
          CALL srcsnkSZ
        ELSE IF (ecomod == 3) THEN
