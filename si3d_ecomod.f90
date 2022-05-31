@@ -919,13 +919,13 @@ SUBROUTINE sourcePON(kwq,lwq)
   INTEGER, INTENT (IN) :: kwq,lwq
 
   !... Local variables
-  REAL:: decomposition
+  REAL:: decompositionn
 
   !. Calculate hydrolysis
-  decomposition = k_dcn *Theta_dcn**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LPON)
+  decompositionn = k_dcn * tracerpp(kwq,lwq,LPON)
 
   sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON)               &
-  &                          - decomposition			                  &   ! decomposition
+  &                          - decompositionn			                  &   ! decomposition
   &                          - k_set* tracerpp(kwq,lwq,LPON)	      &	! settling
   &                          + k_rs * tracerpp(kwq,lwq,LPON)			! resusupension
 						                ! + mortality	- only if IALG = 1; calcualted in sourceALG
@@ -933,7 +933,7 @@ SUBROUTINE sourcePON(kwq,lwq)
 
   ! Add contribution of mineralization to DON concentration
   IF (iDON == 1) THEN
-    sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)	+  decomposition
+    sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)	+  decompositionn
   END IF
 
 END SUBROUTINE sourcePON
@@ -951,13 +951,13 @@ SUBROUTINE sourceDON(kwq,lwq)
   INTEGER, INTENT (IN) :: kwq,lwq
 
   !. . . Local variables
-  REAL:: minrl
+  REAL:: minrln
 
   !. . mineralization
-  minrl = k_mn * Theta_mn**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LDON)
+  minrln = k_mn * tracerpp(kwq,lwq,LDON)
 
   sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)					&
-  &                         -  minrl
+  &                         -  minrln
 							! + decomposition	- only if IPON = 1; caluclated in sourcePON
 							! + Excr	    - only if IAlG = 1; calculated in sourceALG
 
@@ -969,7 +969,7 @@ IF (kwq .eq. k1z(lwq)) THEN
 END IF
 
   IF (INH4 == 1) THEN		! add mineralization of DON to NH4
-    sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) + minrl
+    sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) + minrln
   END IF
 
 END SUBROUTINE sourceDON
@@ -996,7 +996,7 @@ REAL:: nitrif, f_DO
 		f_DO = 1.0
 	END IF
 
-	nitrif = k_n*Theta_n**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LNH4) * f_DO
+	nitrif = k_n* tracerpp(kwq,lwq,LNH4)
 
 sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4)			&
 						&  -  nitrif			          ! nitrificatin
@@ -1042,7 +1042,7 @@ SUBROUTINE sourceNO3(kwq,lwq)
 
 
 sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3)		-	&
-						&  k_dn*Theta_dn**(salp(kwq,lwq) - 20)* tracerpp(kwq,lwq,LNO3)	! denitrification
+						&  k_dn* tracerpp(kwq,lwq,LNO3)	! denitrification
 						! + nitrification		- if INH4 = 1; calculated in sourceNH4
 						! - algal uptake		- if IALG = 1; calculated in sourceALG
 
@@ -1077,7 +1077,7 @@ REAL:: decomposition
 
 ! Calculate decomposition
 
-decomposition = k_dcp*Theta_dcp**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LPOP)
+decomposition = k_dcp* tracerpp(kwq,lwq,LPOP)
 
 sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP)		    &
 						&   - decomposition                           & ! decomposition
@@ -1108,7 +1108,7 @@ REAL:: minrl
 
 ! Calculate mineralization
 
-minrl = k_mp*Theta_mp**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LDOP)
+minrl = k_mp* tracerpp(kwq,lwq,LDOP)
 
 sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP)		&
 						&   -  minrl				                  ! decomposition
@@ -1390,7 +1390,8 @@ SUBROUTINE sourceALG2(kwq, lwq, thrs)
   !. . .Local Variables
   REAL::  mu2, f_L2, f_T, f_N, f_P, N_conc
   REAL::  growth2, mort2, excr2,  graz2, sett2, resus2
-  REAL::  dthrs_zoop, netgrowth2
+  REAL::  dthrs_zoop, sources2, sinks2, var2
+  REAL::  minimum_nut2, alg_min
 
   ! Calculate mu, growth rate
 
@@ -1454,21 +1455,92 @@ bosminanew = parabn(0.,thrs,bosmina,dthrs_zoop)
 !. . Calculate grazing
     !graz2   = k_gr2 * Theta_gr**(-0.01*(salp(kwq,lwq) - Topt2)**2) * tracerpp(kwq,lwq,LALG2)
     IF (kwq .lt. 37) THEN
-        graz2 = ((rotifersnew*0.0003936/4.0) + (bosminanew*0.00495/3.0))/(86400.0)! 2T6
+        graz2 = ((rotifersnew*0.0003936/4.0) + (bosminanew*0.00495/3.0))*(idt/86400.0)! 2T6
     ELSE IF (kwq .gt. 36) THEN
         graz2 = 0
     END IF
-    ! Make sure that grazing is below of equal to the phytoplankton numbers on each time step
-    netgrowth2 = sourcesink(kwq,lwq,LALG2) + growth2 - excr2 - mort2
-    IF (graz2 > netgrowth2) THEN
-       graz2 = netgrowth2 + 0.01
-    END IF
+
 !. . Calculate settling
     sett2   = k_set * tracerpp(kwq,lwq,LALG2)
 !. . Calculate resuspension
     resus2   = k_rs * tracerpp(kwq,lwq,LALG2)
 
-sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) + growth2 - excr2 - mort2  - graz2 - sett2 + resus2
+
+ ! Estimate the minimum alloable nutrient value and recalculate growth if nutrient < 0
+ 
+ !minimum_nut2 = MIN(sourcesink(kwq,lwq,LPO4)-(rpc*growth2),sourcesink(kwq,lwq,LNO3)-(rnc*growth2*(1-FNH4)),sourcesink(kwq,lwq,LNH4)-(rnc*growth2*FNH4))
+ !IF (minimum_nut2 .lt. 0.0) THEN
+ !   growth2 = 0.9*(MIN(sourcesink(kwq,lwq,LPO4)/rpc, sourcesink(kwq,lwq,LNO3)/(rnc*(1-FNH4)), sourcesink(kwq,lwq,LNH4)/(rnc*FNH4)))
+ !      IF (growth2 .lt. 0.0) THEN
+ !            growth2 = -growth2
+ !        END IF
+ !END IF
+
+growth2 = growth2*0.1/8
+sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) + growth2
+
+ ! Limit the minimum algae value (0.01) for mortality
+ !alg_min = 0.01*idt/86400
+ !IF ((sourcesink(kwq,lwq,LALG2) - mort2) .le. alg_min) THEN
+ !     mort2 = 0.9 * (sourcesink(kwq,lwq,LALG2) - alg_min) !  In run 12C the following IF loop is commented and 0.9 factor, Uncommented in 12D. In 12B states term =0 if this calculation is negative (org)
+ !       IF (mort2 .lt. 0.0) THEN
+ !            IF (growth2 .gt. 0.0) THEN
+ !              mort2 = -mort2
+ !            END IF
+ !            IF (growth2 .eq. 0.0) THEN
+ !              mort2 = 0
+ !            END IF
+ !        END IF
+ !END IF
+
+! Estimate the minimum alloable nutrient value and recalculate mortality if nutrient < 0
+! minimum_nut2 = 0.0
+! minimum_nut2 = MIN(sourcesink(kwq,lwq,LALG2)-mort2,sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc - mort2*rnc, sourcesink(kwq,lwq,LALG2)*rpc + growth2*rpc - mort2*rpc)
+! IF (minimum_nut2 .lt. 0.0) THEN
+!   mort2 = 0.9*(MIN(sourcesink(kwq,lwq,LALG2), (sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc)/rnc,(sourcesink(kwq,lwq,LALG2)*rpc + growth2*rpc)/rpc))
+!         IF (mort2 .lt. 0.0) THEN
+!             mort2 = 0.0
+!         END IF
+!END IF
+mort2 = mort2 *0.1/8
+sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) - mort2
+
+ ! Limit the minimum algae value (0.01) for grazing
+ !alg_min = 0.01*idt/86400
+ !IF ((sourcesink(kwq,lwq,LALG2) - graz2) .le. alg_min) THEN
+ !     graz2 = 0.1 * (sourcesink(kwq,lwq,LALG2) - alg_min) !  In run 12C the following IF loop is commented and 0.9 factor, Uncommented in 12D. In 12B states term =0 if this calculation is negative (org)
+ !        IF (graz2 .lt. 0.0) THEN
+ !            IF (growth2 .gt. 0.0) THEN
+ !              graz2 = -graz2
+ !            END IF
+ !            IF (growth2 .eq. 0.0) THEN
+ !              graz2 = 0
+ !            END IF
+ !        END IF
+ !END IF
+graz2 = graz2 * 0.1/8
+sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) - graz2
+
+!! Estimate the minimum alloable nutrient value and recalculate grazing if nutrient < 0
+! minimum_nut2 = 0.0
+! minimum_nut2 = MIN(sourcesink(kwq,lwq,LALG2)-graz2,sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc - mort2*rnc - graz2*rnc, sourcesink(kwq,lwq,LALG2)*rpc + growth2*rpc - mort2*rpc - graz2*rpc)
+! IF (minimum_nut2 .lt. 0.0) THEN
+!    graz2 = 0.9*(MIN(sourcesink(kwq,lwq,LALG2), (sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc - mort2*rnc)/rnc,(sourcesink(kwq,lwq,LALG2)*rpc + growth2*rpc - mort2*rpc)/rpc)
+!        IF (graz2 .lt. 0.0) THEN
+!             graz2 = 0.0
+!         END IF
+!END IF
+
+
+sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) - sett2 + resus2
+!sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) + growth2 - mort2  graz2 - sett2 + resus2
+var2 = sourcesink(kwq,lwq,LALG2)
+   IF (lwq .eq. 300) THEN
+      IF (kwq .eq. 5) THEN
+       PRINT *, 'lwq2 = ', lwq, ', kwq2 = ', kwq, ', growth2 = ', growth2, ', mort2 = ', mort2, 'grazing2 = ', graz2, ', SS2 = ', var2
+      END IF
+   END IF
+
 
 ! If dissolved oxygen is modeled, alter sourcesink(kwq,lwq,LDO) to reflect growth and resp
 ! of algae population
@@ -1481,9 +1553,9 @@ IF (IPON == 1) THEN
   sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) + rnc*mort2
 END IF
 
-! If DON is modeled, alter soucesink(kwq,lwq,LDON) to reflect excretion of algae
+! If DON is modeled, alter soucesink(kwq,lwq,LDON) to reflect excretion of algae (used motality as a sink)
 IF (IDON ==1) THEN
-  sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)  + rnc*excr2
+  sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)  + rnc*mort2
 END IF
 
 ! IF NH4 is modeled, alter sourcesink(kwq,lwq,LNH4) to include uptake of NH4 by algae
@@ -1501,9 +1573,9 @@ IF (IPOP == 1) THEN
   sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + rpc*mort2
 END IF
 
-! If DOP is modeled, alter sourcesink(kwq,lwq,LDOP) to include excretion
+! If DOP is modeled, alter sourcesink(kwq,lwq,LDOP) to include excretion (used motality as a sink)
 IF (IDOP == 1) THEN
-  sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) + rpc*excr2
+  sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) + rpc*mort2
 END IF
 
 ! If PO4 is modeled, alter sourcesink(kwq,lwq,LPO4) to include excretion and uptake
@@ -1516,9 +1588,9 @@ IF (IPOC == 1) THEN
   sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + mort2
 END IF
 
-! If DOC is modeled, alter sourcesink(kwq,lwq,LDOC) to include excretion
+! If DOC is modeled, alter sourcesink(kwq,lwq,LDOC) to include excretion (used motality as a sink)
 IF (IDOC == 1) THEN
-  sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + excr2
+  sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + mort2
 END IF
 
 
@@ -1539,7 +1611,9 @@ SUBROUTINE sourceALG3(kwq, lwq, thrs)
   !. . .Local Variables
   REAL::  mu3, f_L3, f_T, f_N, f_P, N_conc
   REAL::  growth3, mort3, excr3,  graz3, sett3, resus3
-  REAL::  dthrs_zoop, netgrowth3
+  REAL::  dthrs_zoop, sources3, sinks3, var3
+  REAL::  minimum_nut3, alg_min
+
 
   ! Calculate mu, growth rate
 
@@ -1640,21 +1714,91 @@ mysisnew = parabn(0.,thrs,mysis,dthrs_zoop)
 !. . Calculate grazing
     !graz3   = k_gr3 * Theta_gr**(-0.01*(salp(kwq,lwq) - Topt3)**2) * tracerpp(kwq,lwq,LALG3)
     IF (kwq .lt. 37) THEN
-        graz3 = ((rotifersnew*0.002035/4.0)+(codotisnapulinew*0.185/2.5)+(diatomusnew*0.2267/2.5)+(bosminanew*0.00495/3.0)+(daphnianew*0.04752/2.5)+(epischuranew*0.7467/2.5)+(mysisnew*0.0))/(86400.0)!
+    graz3 = ((rotifersnew*0.002035/4.0)+(codotisnapulinew*0.185/2.5)+(diatomusnew*0.2267/2.5)+(bosminanew*0.00495/3.0)+(daphnianew*0.04752/2.5)+(epischuranew*0.7467/2.5)+(mysisnew*0.0))*(idt/86400.0)!
     ELSE IF (kwq .gt. 36) THEN
         graz3 = 0
-    END IF
-   ! Make sure that grazing is below of equal to the phytoplankton numbers on each time step
-    netgrowth3 = sourcesink(kwq,lwq,LALG3) + growth3 - excr3 - mort3
-    IF (graz3 > netgrowth3) THEN
-       graz3 = netgrowth3 + 0.01
     END IF
 !. . Calculate settling
     sett3   = k_set * tracerpp(kwq,lwq,LALG3)
 !. . Calculate resuspension
     resus3   = k_rs * tracerpp(kwq,lwq,LALG3)
 
-sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) + growth3 - excr3 - mort3  - graz3 - sett3 + resus3
+
+ ! Estimate the minimum alloable nutrient value and recalculate growth if nutrient < 0 . Uncomment in v12C
+  !minimum_nut3 = MIN(sourcesink(kwq,lwq,LPO4)-(rpc*growth3),sourcesink(kwq,lwq,LNO3)-(rnc*growth3*(1-FNH4)),sourcesink(kwq,lwq,LNH4)-(rnc*growth3*FNH4))
+ !IF (minimum_nut3 .lt. 0.0) THEN
+ !   growth3 = 0.9*(MIN(sourcesink(kwq,lwq,LPO4)/rpc, sourcesink(kwq,lwq,LNO3)/(rnc*(1-FNH4)), sourcesink(kwq,lwq,LNH4)/(rnc*FNH4)))
+ !       IF (growth3 .lt. 0.0) THEN ! In v12c, next line equal to zero
+ !            growth3 = -growth3
+ !       END IF
+ !END IF
+growth3 = growth3 * 0.1/8 ! comment in V12C
+sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) + growth3
+
+ ! Limit the minimum algae value (0.01) for mortality
+ alg_min = 0.01*idt/86400
+ !IF ((sourcesink(kwq,lwq,LALG3) - mort3) .le. alg_min) THEN ! Uncomment next 1 lines in v12C
+ !     mort3 = 0.9 * (sourcesink(kwq,lwq,LALG3) - alg_min) ! 
+ !        IF (mort3 .lt. 0.0) THEN ! Loop commented in v12C
+ !            IF (growth3 .gt. 0.0) THEN
+ !             mort3 = -mort3
+ !            END IF
+ !            IF (growth3 .eq. 0.0) THEN
+ !             mort3 = 0
+ !            END IF
+ !        END IF
+ !END IF
+
+! Estimate the minimum alloable nutrient value and recalculate mortality if nutrient < 0. Uncomment in v12C
+! minimum_nut3 = 0.0
+! minimum_nut3 = MIN(sourcesink(kwq,lwq,LALG3)-mort3,sourcesink(kwq,lwq,LALG3)*rnc + growth3*rnc - mort3*rnc, sourcesink(kwq,lwq,LALG3)*rpc + growth3*rpc - mort3*rpc)
+! IF (minimum_nut3 .lt. 0.0) THEN
+!    mort3 = 0.9*(MIN(sourcesink(kwq,lwq,LALG3), (sourcesink(kwq,lwq,LALG3)*rnc + growth3*rnc)/rnc,(sourcesink(kwq,lwq,LALG3)*rpc + growth3*rpc)/rpc))
+!         IF (mort3 .lt. 0.0) THEN ! Keep commented in v12c
+!             mort3 = 0.0
+!         END IF
+!END IF
+
+mort3 = mort3 * 0.1/8 ! Comment in v12C
+sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) - mort3
+
+ ! Limit the minimum algae value (0.01) for grazing
+ alg_min = 0.01*idt/86400 
+ !IF ((sourcesink(kwq,lwq,LALG3) - graz3) .le. alg_min) THEN   ! Uncomment next 1 lines in v12C
+ !     graz3 = 0.1 * (sourcesink(kwq,lwq,LALG3) - alg_min) !  In run 12C the following IF loop is commented and 0.9 factor, Uncommented in 12D. In 12B states term =0 if this calculation is negative (org)
+ !        IF (graz3 .lt. 0.0) THEN  ! keep commented in v12C
+ !            IF (growth3 .gt. 0.0) THEN
+ !              graz3 = -graz3
+ !            END IF
+ !            IF (growth3 .eq. 0.0) THEN
+ !              graz3 = 0
+ !            END IF
+ !        END IF
+ !END IF
+
+graz3 = graz3 * 0.1/8 ! Comment in v12C
+sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) - graz3
+
+!! Estimate the minimum alloable nutrient value and recalculate grazing if nutrient < 0
+! minimum_nut3 = 0.0
+! minimum_nut3 = MIN(sourcesink(kwq,lwq,LALG3)-graz3,sourcesink(kwq,lwq,LALG3)*rnc + growth3*rnc - mort3*rnc - graz3*rnc, sourcesink(kwq,lwq,LALG3)*rpc + growth3*rpc - mort3*rpc - graz3*rpc)
+! IF (minimum_nut3 .lt. 0.0) THEN
+!    graz3 = 0.9*(MIN(sourcesink(kwq,lwq,LALG3), (sourcesink(kwq,lwq,LALG3)*rnc + growth3*rnc - mort3*rnc)/rnc,(sourcesink(kwq,lwq,LALG3)*rpc + growth3*rpc - mort3*rpc)/rpc)
+!        IF (graz3 .lt. 0.0) THEN
+!             graz3 = 0.0
+!         END IF
+!END IF
+
+
+sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) - sett3 + resus3
+!sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) + growth3 - mort3  graz3 - sett3 + resus3
+
+var3 = sourcesink(kwq,lwq,LALG3)
+   IF (lwq .eq. 300) THEN
+      IF (kwq .eq. 5) THEN
+       PRINT *, 'lwq3 = ', lwq, ', kwq3 = ', kwq, ', growth3 = ', growth3, ', mort3 = ', mort3, 'grazing3 = ', graz3, ', SS3 = ', var3
+      END IF
+   END IF
 
 ! If dissolved oxygen is modeled, alter sourcesink(kwq,lwq,LDO) to reflect growth and resp
 ! of algae population
@@ -1667,9 +1811,9 @@ IF (IPON == 1) THEN
   sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) + rnc*mort3
 END IF
 
-! If DON is modeled, alter soucesink(kwq,lwq,LDON) to reflect excretion of algae
+! If DON is modeled, alter soucesink(kwq,lwq,LDON) to reflect excretion of algae (used motality as a sink)
 IF (IDON ==1) THEN
-  sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)  + rnc*excr3
+  sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)  + rnc*mort3
 END IF
 
 ! IF NH4 is modeled, alter sourcesink(kwq,lwq,LNH4) to include uptake of NH4 by algae
@@ -1687,9 +1831,9 @@ IF (IPOP == 1) THEN
   sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + rpc*mort3
 END IF
 
-! If DOP is modeled, alter sourcesink(kwq,lwq,LDOP) to include excretion
+! If DOP is modeled, alter sourcesink(kwq,lwq,LDOP) to include excretion (used motality as a sink)
 IF (IDOP == 1) THEN
-  sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) + rpc*excr3
+  sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) + rpc*mort3
 END IF
 
 ! If PO4 is modeled, alter sourcesink(kwq,lwq,LPO4) to include excretion and uptake
@@ -1702,9 +1846,9 @@ IF (IPOC == 1) THEN
   sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + mort3
 END IF
 
-! If DOC is modeled, alter sourcesink(kwq,lwq,LDOC) to include excretion
+! If DOC is modeled, alter sourcesink(kwq,lwq,LDOC) to include excretion (used motality as a sink)
 IF (IDOC == 1) THEN
-  sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + excr3
+  sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + mort3
 END IF
 
 
