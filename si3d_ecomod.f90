@@ -481,7 +481,7 @@ SUBROUTINE WQinput
   k_ex4 =  k_ex4*idt/86400.0
   k_gr4 =  k_gr4*idt/86400.0
   ! ALG5: Microcystis
-  mu_max5 =  mu_max5*idt/86400.0
+  mu_max5 =  mu_max5/86400.0
   k_mor5 =  k_mor5*idt/86400.0
   k_ex5 =  k_ex5*idt/86400.0
   k_gr5 =  k_gr5*idt/86400.0
@@ -922,7 +922,7 @@ SUBROUTINE sourcePON(kwq,lwq)
   REAL:: decompositionn
 
   !. Calculate hydrolysis
-  decompositionn = k_dcn * tracerpp(kwq,lwq,LPON)
+  decompositionn = k_dcn * Theta_dcn**(salp(kwq,lwq) - 20) *tracerpp(kwq,lwq,LPON)
 
   sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON)               &
   &                          - decompositionn			                  &   ! decomposition
@@ -954,7 +954,7 @@ SUBROUTINE sourceDON(kwq,lwq)
   REAL:: minrln
 
   !. . mineralization
-  minrln = k_mn * tracerpp(kwq,lwq,LDON)
+  minrln = k_mn * Theta_mn**(salp(kwq,lwq) - 20) *tracerpp(kwq,lwq,LDON)
 
   sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)					&
   &                         -  minrln
@@ -996,7 +996,7 @@ REAL:: nitrif, f_DO
 		f_DO = 1.0
 	END IF
 
-	nitrif = k_n* tracerpp(kwq,lwq,LNH4)
+	nitrif = k_n* Theta_n**(salp(kwq,lwq) - 20) *tracerpp(kwq,lwq,LNH4)
 
 sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4)			&
 						&  -  nitrif			          ! nitrificatin
@@ -1042,7 +1042,7 @@ SUBROUTINE sourceNO3(kwq,lwq)
 
 
 sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3)		-	&
-						&  k_dn* tracerpp(kwq,lwq,LNO3)	! denitrification
+						&  k_dn* Theta_dn**(salp(kwq,lwq) - 20) *tracerpp(kwq,lwq,LNO3)	! denitrification
 						! + nitrification		- if INH4 = 1; calculated in sourceNH4
 						! - algal uptake		- if IALG = 1; calculated in sourceALG
 
@@ -1077,7 +1077,7 @@ REAL:: decomposition
 
 ! Calculate decomposition
 
-decomposition = k_dcp* tracerpp(kwq,lwq,LPOP)
+decomposition = k_dcp* Theta_dcp**(salp(kwq,lwq) - 20) *tracerpp(kwq,lwq,LPOP)
 
 sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP)		    &
 						&   - decomposition                           & ! decomposition
@@ -1108,7 +1108,7 @@ REAL:: minrl
 
 ! Calculate mineralization
 
-minrl = k_mp* tracerpp(kwq,lwq,LDOP)
+minrl = k_mp* Theta_mp**(salp(kwq,lwq) - 20) *tracerpp(kwq,lwq,LDOP)
 
 sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP)		&
 						&   -  minrl				                  ! decomposition
@@ -1319,7 +1319,7 @@ bosminanew = parabn(0.,thrs,bosmina,dthrs_zoop)
 !. . Calculate resuspension
     resus1   = k_rs * tracerpp(kwq,lwq,LALG1)
 
-sourcesink(kwq,lwq,LALG1) = sourcesink(kwq,lwq,LALG1)	+ growth1 - excr1	- mort1  - graz1 - sett1 + resus1
+sourcesink(kwq,lwq,LALG1) = sourcesink(kwq,lwq,LALG1)	+ growth1 -  mort1  - graz1 - sett1 + resus1
 
 
 ! If dissolved oxygen is modeled, alter sourcesink(kwq,lwq,LDO) to reflect growth and resp
@@ -1333,9 +1333,9 @@ IF (IPON == 1) THEN
 	sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON) + rnc*mort1
 END IF
 
-! If DON is modeled, alter soucesink(kwq,lwq,LDON) to reflect excretion of algae
+! If DON is modeled, alter soucesink(kwq,lwq,LDON) to reflect excretion of algae (used mortality)
 IF (IDON ==1) THEN
-	sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)  + rnc*excr1
+	sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)  + rnc*mort1
 END IF
 
 ! IF NH4 is modeled, alter sourcesink(kwq,lwq,LNH4) to include uptake of NH4 by algae
@@ -1353,9 +1353,9 @@ IF (IPOP == 1) THEN
 	sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + rpc*mort1
 END IF
 
-! If DOP is modeled, alter sourcesink(kwq,lwq,LDOP) to include excretion
+! If DOP is modeled, alter sourcesink(kwq,lwq,LDOP) to include excretion (used mortality)
 IF (IDOP == 1) THEN
-	sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) + rpc*excr1
+	sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) + rpc*mort1
 END IF
 
 ! If PO4 is modeled, alter sourcesink(kwq,lwq,LPO4) to include excretion and uptake
@@ -1368,9 +1368,9 @@ IF (IPOC == 1) THEN
 	sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + mort1
 END IF
 
-! If DOC is modeled, alter sourcesink(kwq,lwq,LDOC) to include excretion
+! If DOC is modeled, alter sourcesink(kwq,lwq,LDOC) to include excretion (used mortality)
 IF (IDOC == 1) THEN
-	sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + excr1
+	sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + mort1
 END IF
 
 
@@ -1401,7 +1401,7 @@ SUBROUTINE sourceALG2(kwq, lwq, thrs)
       !f_L2 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k2) ! Webb et al (1974) in absence of photoinhibition 
 
   ! temperature limitaton
-    f_T = Theta_mu**(-0.01*(salp(kwq,lwq) - Topt1)**2)
+    f_T = Theta_mu**(-0.01*(salp(kwq,lwq) - Topt2)**2)
 
   ! nutrient limitation - but only if the nutrients are modeled
   IF ((INH4 ==1) .AND. (INO3 ==1)) THEN
@@ -1442,9 +1442,9 @@ mu2 = mu_max2 * MIN(f_L2,f_N,f_P)
     bosmina = bosmina/1000
 
 ! Interpolate Zooplankton to the simulation time interval (thrs)
-dthrs_zoop = 24.
-rotifersnew = parabn(0.,thrs,rotifers,dthrs_zoop)
-bosminanew = parabn(0.,thrs,bosmina,dthrs_zoop)
+!dthrs_zoop = 24.
+!rotifersnew = parabn(0.,thrs,rotifers,dthrs_zoop)
+!bosminanew = parabn(0.,thrs,bosmina,dthrs_zoop)
 
 !. . Calculate growth
     growth2 = mu2 * f_T * tracerpp(kwq,lwq,LALG2)
@@ -1453,12 +1453,12 @@ bosminanew = parabn(0.,thrs,bosmina,dthrs_zoop)
 !. . Calculate excretion
     excr2   = k_ex2 * Theta_exc**(-0.01*(salp(kwq,lwq) - Topt2)**2) * tracerpp(kwq,lwq,LALG2)
 !. . Calculate grazing
-    !graz2   = k_gr2 * Theta_gr**(-0.01*(salp(kwq,lwq) - Topt2)**2) * tracerpp(kwq,lwq,LALG2)
-    IF (kwq .lt. 37) THEN
-        graz2 = ((rotifersnew*0.0003936/4.0) + (bosminanew*0.00495/3.0))*(idt/86400.0)! 2T6
-    ELSE IF (kwq .gt. 36) THEN
-        graz2 = 0
-    END IF
+    !!graz2   = k_gr2 * Theta_gr**(-0.01*(salp(kwq,lwq) - Topt2)**2) * tracerpp(kwq,lwq,LALG2)
+    !IF (kwq .lt. 37) THEN
+    !    graz2 = ((rotifersnew*0.0003936/4.0) + (bosminanew*0.00495/3.0))/(86400.0)! 2T6
+    !ELSE IF (kwq .gt. 36) THEN
+    !    graz2 = 0
+    !END IF
 
 !. . Calculate settling
     sett2   = k_set * tracerpp(kwq,lwq,LALG2)
@@ -1472,72 +1472,68 @@ bosminanew = parabn(0.,thrs,bosmina,dthrs_zoop)
  !IF (minimum_nut2 .lt. 0.0) THEN
  !   growth2 = 0.9*(MIN(sourcesink(kwq,lwq,LPO4)/rpc, sourcesink(kwq,lwq,LNO3)/(rnc*(1-FNH4)), sourcesink(kwq,lwq,LNH4)/(rnc*FNH4)))
  !      IF (growth2 .lt. 0.0) THEN
- !            growth2 = -growth2
+ !            growth2 = 0
  !        END IF
  !END IF
 
-growth2 = growth2*0.1/8
+! To account for paralelization
+growth2 = growth2/8
 sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) + growth2
 
  ! Limit the minimum algae value (0.01) for mortality
- !alg_min = 0.01*idt/86400
- !IF ((sourcesink(kwq,lwq,LALG2) - mort2) .le. alg_min) THEN
- !     mort2 = 0.9 * (sourcesink(kwq,lwq,LALG2) - alg_min) !  In run 12C the following IF loop is commented and 0.9 factor, Uncommented in 12D. In 12B states term =0 if this calculation is negative (org)
- !       IF (mort2 .lt. 0.0) THEN
- !            IF (growth2 .gt. 0.0) THEN
- !              mort2 = -mort2
- !            END IF
- !            IF (growth2 .eq. 0.0) THEN
- !              mort2 = 0
- !            END IF
- !        END IF
- !END IF
-
-! Estimate the minimum alloable nutrient value and recalculate mortality if nutrient < 0
-! minimum_nut2 = 0.0
-! minimum_nut2 = MIN(sourcesink(kwq,lwq,LALG2)-mort2,sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc - mort2*rnc, sourcesink(kwq,lwq,LALG2)*rpc + growth2*rpc - mort2*rpc)
-! IF (minimum_nut2 .lt. 0.0) THEN
-!   mort2 = 0.9*(MIN(sourcesink(kwq,lwq,LALG2), (sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc)/rnc,(sourcesink(kwq,lwq,LALG2)*rpc + growth2*rpc)/rpc))
-!         IF (mort2 .lt. 0.0) THEN
-!             mort2 = 0.0
+! alg_min = 0.01/86400
+! IF ((sourcesink(kwq,lwq,LALG2) - mort2) .le. alg_min) THEN
+!      mort2 = 0.9 * (sourcesink(kwq,lwq,LALG2) - alg_min) !  In run 12C the following IF loop is commented and 0.9 factor, Uncommented in 12D. In 12B states term =0 if this calculation is negative (org)
+!        IF (mort2 .lt. 0.0) THEN
+!              mort2 = 0
 !         END IF
-!END IF
-mort2 = mort2 *0.1/8
+! END IF
+
+!! Estimate the minimum alloable nutrient value and recalculate mortality if nutrient < 0
+!! minimum_nut2 = 0.0
+!! minimum_nut2 = MIN(sourcesink(kwq,lwq,LALG2)-mort2,sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc - mort2*rnc, sourcesink(kwq,lwq,LALG2)*rpc + growth2*rpc - mort2*rpc)
+!! IF (minimum_nut2 .lt. 0.0) THEN
+!!     mort2 = 0.9*(MIN(sourcesink(kwq,lwq,LALG2), (sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc)/rnc,(sourcesink(kwq,lwq,LALG2)*rpc + growth2*rpc)/rpc))
+!!         IF (mort2 .lt. 0.0) THEN
+!!             mort2 = 0.0
+!!         END IF
+!!END IF
+
+! To account for paralelization
+mort2 = mort2 /8
 sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) - mort2
 
  ! Limit the minimum algae value (0.01) for grazing
- !alg_min = 0.01*idt/86400
- !IF ((sourcesink(kwq,lwq,LALG2) - graz2) .le. alg_min) THEN
- !     graz2 = 0.1 * (sourcesink(kwq,lwq,LALG2) - alg_min) !  In run 12C the following IF loop is commented and 0.9 factor, Uncommented in 12D. In 12B states term =0 if this calculation is negative (org)
+! alg_min = 0.01/86400
+! IF ((sourcesink(kwq,lwq,LALG2) - graz2) .le. alg_min) THEN
+!      graz2 = 0.1 * (sourcesink(kwq,lwq,LALG2) - alg_min) !  In run 12C the following IF loop is commented and 0.9 factor, Uncommented in 12D. In 12B states term =0 if this calculation is negative (org)
  !        IF (graz2 .lt. 0.0) THEN
- !            IF (growth2 .gt. 0.0) THEN
- !              graz2 = -graz2
- !            END IF
- !            IF (growth2 .eq. 0.0) THEN
  !              graz2 = 0
- !            END IF
  !        END IF
  !END IF
-graz2 = graz2 * 0.1/8
-sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) - graz2
 
-!! Estimate the minimum alloable nutrient value and recalculate grazing if nutrient < 0
-! minimum_nut2 = 0.0
-! minimum_nut2 = MIN(sourcesink(kwq,lwq,LALG2)-graz2,sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc - mort2*rnc - graz2*rnc, sourcesink(kwq,lwq,LALG2)*rpc + growth2*rpc - mort2*rpc - graz2*rpc)
-! IF (minimum_nut2 .lt. 0.0) THEN
-!    graz2 = 0.9*(MIN(sourcesink(kwq,lwq,LALG2), (sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc - mort2*rnc)/rnc,(sourcesink(kwq,lwq,LALG2)*rpc + growth2*rpc - mort2*rpc)/rpc)
-!        IF (graz2 .lt. 0.0) THEN
-!             graz2 = 0.0
-!         END IF
-!END IF
+ ! To account for paralelization
+!graz2 = graz2 /8
+!sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) - graz2
+
+!!! Estimate the minimum alloable nutrient value and recalculate grazing if nutrient < 0
+!! minimum_nut2 = 0.0
+!! minimum_nut2 = MIN(sourcesink(kwq,lwq,LALG2)-graz2,sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc - mort2*rnc - graz2*rnc, sourcesink(kwq,lwq,LALG2)*rpc + growth2*rpc - mort2*rpc - graz2*rpc)
+!! IF (minimum_nut2 .lt. 0.0) THEN
+!!    graz2 = 0.9*(MIN(sourcesink(kwq,lwq,LALG2), (sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc - mort2*rnc)/rnc,(sourcesink(kwq,lwq,LALG2)*rpc + growth2*rpc - mort2*rpc)/rpc)
+!!        IF (graz2 .lt. 0.0) THEN
+!!             graz2 = 0.0
+!!         END IF
+!!END IF
 
 
-sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) - sett2 + resus2
-!sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) + growth2 - mort2  graz2 - sett2 + resus2
+!sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) - sett2 + resus2
+!!sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) + growth2 - mort2  graz2 - sett2 + resus2
 var2 = sourcesink(kwq,lwq,LALG2)
    IF (lwq .eq. 300) THEN
       IF (kwq .eq. 5) THEN
-       PRINT *, 'lwq2 = ', lwq, ', kwq2 = ', kwq, ', growth2 = ', growth2, ', mort2 = ', mort2, 'grazing2 = ', graz2, ', SS2 = ', var2
+       !PRINT *, 'lwq2 = ', lwq, ', kwq2 = ', kwq, ', growth2 = ', growth2, ', mort2 = ', mort2, 'grazing2 = ', graz2, ', SS2 = ', var2
+       !PRINT *, 'lwq2 = ', lwq, ', kwq2 = ', kwq, ', growth2 = ', growth2, ', SS2 = ', var2, ', tracer2 = ',tracerpp(kwq,lwq,LALG2), ', f_L2 = ', f_L2, ', f_N2 = ', f_N, ', f_P2 = ', f_P, ', !PARpenetrates2 = ',Qsw*QswFr(kwq,lwq)*0.47
       END IF
    END IF
 
@@ -1623,7 +1619,7 @@ SUBROUTINE sourceALG3(kwq, lwq, thrs)
       !f_L3 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k3) ! Webb et al (1974) in absence of photoinhibition 
 
   ! temperature limitaton
-    f_T = Theta_mu**(-0.01*(salp(kwq,lwq) - Topt1)**2)
+    f_T = Theta_mu**(-0.01*(salp(kwq,lwq) - Topt3)**2)
 
   ! nutrient limitation - but only if the nutrients are modeled
   IF ((INH4 ==1) .AND. (INO3 ==1)) THEN
@@ -1696,14 +1692,14 @@ mu3 = mu_max3 * MIN(f_L3,f_N,f_P)
     mysis = mysis/1000
 
 ! Interpolate Zooplankton to the simulation time interval (thrs)
-dthrs_zoop = 24.
-rotifersnew = parabn(0.,thrs,rotifers,dthrs_zoop)
-codotisnapulinew = parabn(0.,thrs,codotisnapuli,dthrs_zoop)
-diatomusnew = parabn(0.,thrs,diatomus,dthrs_zoop)
-bosminanew = parabn(0.,thrs,bosmina,dthrs_zoop)
-daphnianew = parabn(0.,thrs,daphnia,dthrs_zoop)
-epischuranew = parabn(0.,thrs,epischura,dthrs_zoop)
-mysisnew = parabn(0.,thrs,mysis,dthrs_zoop)
+!dthrs_zoop = 24.
+!rotifersnew = parabn(0.,thrs,rotifers,dthrs_zoop)
+!codotisnapulinew = parabn(0.,thrs,codotisnapuli,dthrs_zoop)
+!diatomusnew = parabn(0.,thrs,diatomus,dthrs_zoop)
+!bosminanew = parabn(0.,thrs,bosmina,dthrs_zoop)
+!daphnianew = parabn(0.,thrs,daphnia,dthrs_zoop)
+!epischuranew = parabn(0.,thrs,epischura,dthrs_zoop)
+!mysisnew = parabn(0.,thrs,mysis,dthrs_zoop)
 
 !. . Calculate growth
     growth3 = mu3 * f_T * tracerpp(kwq,lwq,LALG3)
@@ -1712,12 +1708,12 @@ mysisnew = parabn(0.,thrs,mysis,dthrs_zoop)
 !. . Calculate excretion
     excr3   = k_ex3 * Theta_exc**(-0.01*(salp(kwq,lwq) - Topt3)**2) * tracerpp(kwq,lwq,LALG3)
 !. . Calculate grazing
-    !graz3   = k_gr3 * Theta_gr**(-0.01*(salp(kwq,lwq) - Topt3)**2) * tracerpp(kwq,lwq,LALG3)
-    IF (kwq .lt. 37) THEN
-    graz3 = ((rotifersnew*0.002035/4.0)+(codotisnapulinew*0.185/2.5)+(diatomusnew*0.2267/2.5)+(bosminanew*0.00495/3.0)+(daphnianew*0.04752/2.5)+(epischuranew*0.7467/2.5)+(mysisnew*0.0))*(idt/86400.0)!
-    ELSE IF (kwq .gt. 36) THEN
-        graz3 = 0
-    END IF
+    !!graz3   = k_gr3 * Theta_gr**(-0.01*(salp(kwq,lwq) - Topt3)**2) * tracerpp(kwq,lwq,LALG3)
+    !IF (kwq .lt. 37) THEN
+    !graz3 = ((rotifersnew*0.002035/4.0)+(codotisnapulinew*0.185/2.5)+(diatomusnew*0.2267/2.5)+(bosminanew*0.00495/3.0)+(daphnianew*0.04752/2.5)+(epischuranew*0.7467/2.5)+(mysisnew*0.0))/(86400.0)!
+    !ELSE IF (kwq .gt. 36) THEN
+    !    graz3 = 0
+    !END IF
 !. . Calculate settling
     sett3   = k_set * tracerpp(kwq,lwq,LALG3)
 !. . Calculate resuspension
@@ -1725,78 +1721,72 @@ mysisnew = parabn(0.,thrs,mysis,dthrs_zoop)
 
 
  ! Estimate the minimum alloable nutrient value and recalculate growth if nutrient < 0 . Uncomment in v12C
-  !minimum_nut3 = MIN(sourcesink(kwq,lwq,LPO4)-(rpc*growth3),sourcesink(kwq,lwq,LNO3)-(rnc*growth3*(1-FNH4)),sourcesink(kwq,lwq,LNH4)-(rnc*growth3*FNH4))
+ !minimum_nut3 = MIN(sourcesink(kwq,lwq,LPO4)-(rpc*growth3),sourcesink(kwq,lwq,LNO3)-(rnc*growth3*(1-FNH4)),sourcesink(kwq,lwq,LNH4)-(rnc*growth3*FNH4))
  !IF (minimum_nut3 .lt. 0.0) THEN
  !   growth3 = 0.9*(MIN(sourcesink(kwq,lwq,LPO4)/rpc, sourcesink(kwq,lwq,LNO3)/(rnc*(1-FNH4)), sourcesink(kwq,lwq,LNH4)/(rnc*FNH4)))
  !       IF (growth3 .lt. 0.0) THEN ! In v12c, next line equal to zero
- !            growth3 = -growth3
- !       END IF
+ !            growth3 = 0
+ !      END IF
  !END IF
-growth3 = growth3 * 0.1/8 ! comment in V12C
+
+! To account for paralelization
+growth3 = growth3 /8 ! comment in V12C
 sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) + growth3
 
  ! Limit the minimum algae value (0.01) for mortality
- alg_min = 0.01*idt/86400
+ !alg_min = 0.01/86400
  !IF ((sourcesink(kwq,lwq,LALG3) - mort3) .le. alg_min) THEN ! Uncomment next 1 lines in v12C
  !     mort3 = 0.9 * (sourcesink(kwq,lwq,LALG3) - alg_min) ! 
  !        IF (mort3 .lt. 0.0) THEN ! Loop commented in v12C
- !            IF (growth3 .gt. 0.0) THEN
- !             mort3 = -mort3
- !            END IF
- !            IF (growth3 .eq. 0.0) THEN
  !             mort3 = 0
- !            END IF
  !        END IF
  !END IF
 
-! Estimate the minimum alloable nutrient value and recalculate mortality if nutrient < 0. Uncomment in v12C
-! minimum_nut3 = 0.0
-! minimum_nut3 = MIN(sourcesink(kwq,lwq,LALG3)-mort3,sourcesink(kwq,lwq,LALG3)*rnc + growth3*rnc - mort3*rnc, sourcesink(kwq,lwq,LALG3)*rpc + growth3*rpc - mort3*rpc)
-! IF (minimum_nut3 .lt. 0.0) THEN
-!    mort3 = 0.9*(MIN(sourcesink(kwq,lwq,LALG3), (sourcesink(kwq,lwq,LALG3)*rnc + growth3*rnc)/rnc,(sourcesink(kwq,lwq,LALG3)*rpc + growth3*rpc)/rpc))
-!         IF (mort3 .lt. 0.0) THEN ! Keep commented in v12c
-!             mort3 = 0.0
-!         END IF
-!END IF
+!! Estimate the minimum alloable nutrient value and recalculate mortality if nutrient < 0. Uncomment in v12C
+!! minimum_nut3 = 0.0
+!! minimum_nut3 = MIN(sourcesink(kwq,lwq,LALG3)-mort3,sourcesink(kwq,lwq,LALG3)*rnc + growth3*rnc - mort3*rnc, sourcesink(kwq,lwq,LALG3)*rpc + growth3*rpc - mort3*rpc)
+!! IF (minimum_nut3 .lt. 0.0) THEN
+!!    mort3 = 0.9*(MIN(sourcesink(kwq,lwq,LALG3), (sourcesink(kwq,lwq,LALG3)*rnc + growth3*rnc)/rnc,(sourcesink(kwq,lwq,LALG3)*rpc + growth3*rpc)/rpc))
+!!         IF (mort3 .lt. 0.0) THEN ! Keep commented in v12c
+!!             mort3 = 0.0
+!!         END IF
+!!END IF
 
-mort3 = mort3 * 0.1/8 ! Comment in v12C
+! To account for paralelization
+mort3 = mort3 /8 ! Comment in v12C
 sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) - mort3
 
  ! Limit the minimum algae value (0.01) for grazing
- alg_min = 0.01*idt/86400 
- !IF ((sourcesink(kwq,lwq,LALG3) - graz3) .le. alg_min) THEN   ! Uncomment next 1 lines in v12C
- !     graz3 = 0.1 * (sourcesink(kwq,lwq,LALG3) - alg_min) !  In run 12C the following IF loop is commented and 0.9 factor, Uncommented in 12D. In 12B states term =0 if this calculation is negative (org)
- !        IF (graz3 .lt. 0.0) THEN  ! keep commented in v12C
- !            IF (growth3 .gt. 0.0) THEN
- !              graz3 = -graz3
- !            END IF
- !            IF (growth3 .eq. 0.0) THEN
- !              graz3 = 0
- !            END IF
- !        END IF
- !END IF
+! alg_min = 0.01/86400 
+! IF ((sourcesink(kwq,lwq,LALG3) - graz3) .le. alg_min) THEN   ! Uncomment next 1 lines in v12C
+!      graz3 = 0.9 * (sourcesink(kwq,lwq,LALG3) - alg_min) !  In run 12C the following IF loop is commented and 0.9 factor, Uncommented in 12D. In 12B states term =0 if this calculation is negative (org)
+!         IF (graz3 .lt. 0.0) THEN  ! keep commented in v12C
+!               graz3 = 0
+!         END IF
+! END IF
 
-graz3 = graz3 * 0.1/8 ! Comment in v12C
-sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) - graz3
+! To account for paralelization
+!graz3 = graz3 /8 ! Comment in v12C
+!sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) - graz3
 
 !! Estimate the minimum alloable nutrient value and recalculate grazing if nutrient < 0
-! minimum_nut3 = 0.0
-! minimum_nut3 = MIN(sourcesink(kwq,lwq,LALG3)-graz3,sourcesink(kwq,lwq,LALG3)*rnc + growth3*rnc - mort3*rnc - graz3*rnc, sourcesink(kwq,lwq,LALG3)*rpc + growth3*rpc - mort3*rpc - graz3*rpc)
-! IF (minimum_nut3 .lt. 0.0) THEN
-!    graz3 = 0.9*(MIN(sourcesink(kwq,lwq,LALG3), (sourcesink(kwq,lwq,LALG3)*rnc + growth3*rnc - mort3*rnc)/rnc,(sourcesink(kwq,lwq,LALG3)*rpc + growth3*rpc - mort3*rpc)/rpc)
-!        IF (graz3 .lt. 0.0) THEN
-!             graz3 = 0.0
-!         END IF
-!END IF
+!! minimum_nut3 = 0.0
+!! minimum_nut3 = MIN(sourcesink(kwq,lwq,LALG3)-graz3,sourcesink(kwq,lwq,LALG3)*rnc + growth3*rnc - mort3*rnc - graz3*rnc, sourcesink(kwq,lwq,LALG3)*rpc + growth3*rpc - mort3*rpc - graz3*rpc)
+!! IF (minimum_nut3 .lt. 0.0) THEN
+!!    graz3 = 0.9*(MIN(sourcesink(kwq,lwq,LALG3), (sourcesink(kwq,lwq,LALG3)*rnc + growth3*rnc - mort3*rnc)/rnc,(sourcesink(kwq,lwq,LALG3)*rpc + growth3*rpc - mort3*rpc)/rpc)
+!!        IF (graz3 .lt. 0.0) THEN
+!!             graz3 = 0.0
+!!         END IF
+!!END IF
 
-
-sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) - sett3 + resus3
-!sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) + growth3 - mort3  graz3 - sett3 + resus3
+!sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) - sett3 + resus3
+!!sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) + growth3 - mort3  graz3 - sett3 + resus3
 
 var3 = sourcesink(kwq,lwq,LALG3)
    IF (lwq .eq. 300) THEN
       IF (kwq .eq. 5) THEN
-       PRINT *, 'lwq3 = ', lwq, ', kwq3 = ', kwq, ', growth3 = ', growth3, ', mort3 = ', mort3, 'grazing3 = ', graz3, ', SS3 = ', var3
+       !PRINT *, 'lwq3 = ', lwq, ', kwq3 = ', kwq, ', growth3 = ', growth3, ', mort3 = ', mort3, 'grazing3 = ', graz3, ', SS3 = ', var3
+       !PRINT *, 'lwq3 = ', lwq, ', kwq3 = ', kwq, ', growth3 = ', growth3, ', SS3 = ', var3, ', tracer3 = ',tracerpp(kwq,lwq,LALG3), ', f_L3 = ', f_L3, ', f_N3 = ', f_N, ', f_P3 = ', f_P, ', !PARpenetrates3 = ',Qsw*QswFr(kwq,lwq)*0.47
       END IF
    END IF
 
@@ -2117,7 +2107,7 @@ SUBROUTINE sourceFT(kwq, lwq)
   INTEGER, INTENT (IN) :: kwq,lwq	
 	! temperature limitaton
 		
-		tracerpp(kwq,lwq,LFT) = Theta_mu**(salp(kwq,lwq) -20)
+		tracerpp(kwq,lwq,LFT) = Theta_mu**(-0.01*(salp(kwq,lwq) - Topt3)**2)
 
 END SUBROUTINE sourceFT
 
