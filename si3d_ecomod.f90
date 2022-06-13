@@ -922,7 +922,7 @@ SUBROUTINE sourcePON(kwq,lwq)
   REAL:: decompositionn
 
   !. Calculate hydrolysis
-  decompositionn = k_dcn * Theta_dcn**(salp(kwq,lwq) - 20) *tracerpp(kwq,lwq,LPON)
+  decompositionn = k_dcn * Theta_dcn**(salp(kwq,lwq) - 20.0) *tracerpp(kwq,lwq,LPON)
 
   sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON)               &
   &                          - decompositionn			                  &   ! decomposition
@@ -954,7 +954,7 @@ SUBROUTINE sourceDON(kwq,lwq)
   REAL:: minrln
 
   !. . mineralization
-  minrln = k_mn * Theta_mn**(salp(kwq,lwq) - 20) *tracerpp(kwq,lwq,LDON)
+  minrln = k_mn * Theta_mn**(salp(kwq,lwq) - 20.0) *tracerpp(kwq,lwq,LDON)
 
   sourcesink(kwq,lwq,LDON) = sourcesink(kwq,lwq,LDON)					&
   &                         -  minrln
@@ -996,7 +996,7 @@ REAL:: nitrif, f_DO
 		f_DO = 1.0
 	END IF
 
-	nitrif = k_n* Theta_n**(salp(kwq,lwq) - 20) *tracerpp(kwq,lwq,LNH4)
+	nitrif = k_n* Theta_n**(salp(kwq,lwq) - 20.0) *tracerpp(kwq,lwq,LNH4)
 
 sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4)			&
 						&  -  nitrif			          ! nitrificatin
@@ -1042,7 +1042,7 @@ SUBROUTINE sourceNO3(kwq,lwq)
 
 
 sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3)		-	&
-						&  k_dn* Theta_dn**(salp(kwq,lwq) - 20) *tracerpp(kwq,lwq,LNO3)	! denitrification
+						&  k_dn* Theta_dn**(salp(kwq,lwq) - 20.0) *tracerpp(kwq,lwq,LNO3)	! denitrification
 						! + nitrification		- if INH4 = 1; calculated in sourceNH4
 						! - algal uptake		- if IALG = 1; calculated in sourceALG
 
@@ -1077,7 +1077,7 @@ REAL:: decomposition
 
 ! Calculate decomposition
 
-decomposition = k_dcp* Theta_dcp**(salp(kwq,lwq) - 20) *tracerpp(kwq,lwq,LPOP)
+decomposition = k_dcp* Theta_dcp**(salp(kwq,lwq) - 20.0) *tracerpp(kwq,lwq,LPOP)
 
 sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP)		    &
 						&   - decomposition                           & ! decomposition
@@ -1108,7 +1108,7 @@ REAL:: minrl
 
 ! Calculate mineralization
 
-minrl = k_mp* Theta_mp**(salp(kwq,lwq) - 20) *tracerpp(kwq,lwq,LDOP)
+minrl = k_mp* Theta_mp**(salp(kwq,lwq) - 20.0) *tracerpp(kwq,lwq,LDOP)
 
 sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP)		&
 						&   -  minrl				                  ! decomposition
@@ -1174,7 +1174,7 @@ SUBROUTINE sourcePOC (kwq, lwq)
   REAL:: decomposition
 
   ! Calculate decomposition
-  decomposition = k_dcc*Theta_dcc**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LPOC)
+  decomposition = k_dcc*Theta_dcc**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LPOC)
 
   sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC)	&
 						&  -   decomposition						          &              ! decomposition
@@ -1209,7 +1209,7 @@ SUBROUTINE sourceDOC(kwq, lwq)
   END IF
 
   ! Calculate Microbial Uptake (oxidation)
-  oxid = KDOC * Theta_DOC**(salp(kwq,lwq) - 20) * tracerpp(kwq,lwq,LDOC) * F_DO
+  oxid = KDOC * Theta_DOC**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LDOC) * F_DO
 
   sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC)  &
                      &    - oxid                         ! microbial uptake (oxidation)
@@ -1401,7 +1401,7 @@ SUBROUTINE sourceALG2(kwq, lwq, thrs)
       !f_L2 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k2) ! Webb et al (1974) in absence of photoinhibition 
 
   ! temperature limitaton
-    f_T = Theta_mu**(-0.01*(salp(kwq,lwq) - Topt2)**2)
+    f_T = Theta_mu**(salp(kwq,lwq) - 20.0)
 
   ! nutrient limitation - but only if the nutrients are modeled
   IF ((INH4 ==1) .AND. (INO3 ==1)) THEN
@@ -1432,14 +1432,14 @@ mu2 = mu_max2 * MIN(f_L2,f_N,f_P)
   &    261.72,  265.83,  269.93,  273.99,  278.03,  282.03,  285.99,  289.91,  293.78,  297.60,  301.36,  305.06,  308.69,  312.26,  315.75,  319.16,  322.49,  325.73,  328.88,  &
   &    331.94,  334.89,  337.74,  340.49,  343.12,  345.63,  348.12,  350.68,  353.30,  355.97,  358.69,  361.45,  364.24,  367.05,  369.87,  372.69,  375.52,  378.33,  381.12,  383.89,  &
   &    386.61,  389.30,  391.93,  394.51,  397.01,  399.44,  401.79,  404.04/)
-    rotifers = rotifers/1000
+    rotifers = rotifers/1000.0
 
     bosmina = (/0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
     & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
     & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
     & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
     & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00/)
-    bosmina = bosmina/1000
+    bosmina = bosmina/1000.0
 
 ! Interpolate Zooplankton to the simulation time interval (thrs)
 !dthrs_zoop = 24.
@@ -1449,13 +1449,13 @@ mu2 = mu_max2 * MIN(f_L2,f_N,f_P)
 !. . Calculate growth
     growth2 = mu2 * f_T * tracerpp(kwq,lwq,LALG2)
 !. . Calculate mortality
-    mort2   = k_mor2 * Theta_mor**(-0.01*(salp(kwq,lwq) - Topt2)**2) * tracerpp(kwq,lwq,LALG2)
+    mort2   = k_mor2 * Theta_mor**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG2)
 !. . Calculate excretion
-    excr2   = k_ex2 * Theta_exc**(-0.01*(salp(kwq,lwq) - Topt2)**2) * tracerpp(kwq,lwq,LALG2)
+    excr2   = k_ex2 * Theta_exc**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG2)
 !. . Calculate grazing
-    !!graz2   = k_gr2 * Theta_gr**(-0.01*(salp(kwq,lwq) - Topt2)**2) * tracerpp(kwq,lwq,LALG2)
+    !!graz2   = k_gr2 * Theta_gr**(-0.01*(salp(kwq,lwq) - Topt2)) * tracerpp(kwq,lwq,LALG2) ! NOT USED
     !IF (kwq .lt. 37) THEN
-    !    graz2 = ((rotifersnew*0.0003936/4.0) + (bosminanew*0.00495/3.0))/(86400.0)! 2T6
+    !    graz2 = ((rotifersnew*0.0003936/4.0) + (bosminanew*0.00495/3.0))*(idt/86400.0)! 2T6
     !ELSE IF (kwq .gt. 36) THEN
     !    graz2 = 0
     !END IF
@@ -1477,7 +1477,7 @@ mu2 = mu_max2 * MIN(f_L2,f_N,f_P)
  !END IF
 
 ! To account for paralelization
-growth2 = growth2/8
+growth2 = growth2/8.0
 sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) + growth2
 
  ! Limit the minimum algae value (0.01) for mortality
@@ -1491,7 +1491,8 @@ sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) + growth2
 
 !! Estimate the minimum alloable nutrient value and recalculate mortality if nutrient < 0
 !! minimum_nut2 = 0.0
-!! minimum_nut2 = MIN(sourcesink(kwq,lwq,LALG2)-mort2,sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc - mort2*rnc, sourcesink(kwq,lwq,LALG2)*rpc + growth2*rpc - mort2*rpc)
+!! minimum_nut2 = MIN(sourcesink(kwq,lwq,LALG2)-mort2,sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc - mort2*rnc, sourcesink(kwq,lwq,LALG2)*rpc 
+!+ growth2*rpc - mort2*rpc)
 !! IF (minimum_nut2 .lt. 0.0) THEN
 !!     mort2 = 0.9*(MIN(sourcesink(kwq,lwq,LALG2), (sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc)/rnc,(sourcesink(kwq,lwq,LALG2)*rpc + growth2*rpc)/rpc))
 !!         IF (mort2 .lt. 0.0) THEN
@@ -1500,13 +1501,14 @@ sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) + growth2
 !!END IF
 
 ! To account for paralelization
-mort2 = mort2 /8
+mort2 = mort2 /8.0
 sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) - mort2
 
  ! Limit the minimum algae value (0.01) for grazing
 ! alg_min = 0.01/86400
 ! IF ((sourcesink(kwq,lwq,LALG2) - graz2) .le. alg_min) THEN
-!      graz2 = 0.1 * (sourcesink(kwq,lwq,LALG2) - alg_min) !  In run 12C the following IF loop is commented and 0.9 factor, Uncommented in 12D. In 12B states term =0 if this calculation is negative (org)
+!      graz2 = 0.1 * (sourcesink(kwq,lwq,LALG2) - alg_min) !  In run 12C the following IF loop is commented and 0.9 factor,
+! Uncommented in 12D. In 12B states term =0 if this calculation is negative (org)
  !        IF (graz2 .lt. 0.0) THEN
  !              graz2 = 0
  !        END IF
@@ -1518,9 +1520,11 @@ sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) - mort2
 
 !!! Estimate the minimum alloable nutrient value and recalculate grazing if nutrient < 0
 !! minimum_nut2 = 0.0
-!! minimum_nut2 = MIN(sourcesink(kwq,lwq,LALG2)-graz2,sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc - mort2*rnc - graz2*rnc, sourcesink(kwq,lwq,LALG2)*rpc + growth2*rpc - mort2*rpc - graz2*rpc)
+!! minimum_nut2 = MIN(sourcesink(kwq,lwq,LALG2)-graz2,sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc - mort2*rnc - graz2*rnc, sourcesink(kwq,lwq,LALG2)*rpc 
+!+ growth2*rpc - mort2*rpc - graz2*rpc)
 !! IF (minimum_nut2 .lt. 0.0) THEN
-!!    graz2 = 0.9*(MIN(sourcesink(kwq,lwq,LALG2), (sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc - mort2*rnc)/rnc,(sourcesink(kwq,lwq,LALG2)*rpc + growth2*rpc - mort2*rpc)/rpc)
+!!    graz2 = 0.9*(MIN(sourcesink(kwq,lwq,LALG2), (sourcesink(kwq,lwq,LALG2)*rnc + growth2*rnc - mort2*rnc)/rnc,(sourcesink(kwq,lwq,LALG2)*rpc 
+!+ growth2*rpc - mort2*rpc)/rpc)
 !!        IF (graz2 .lt. 0.0) THEN
 !!             graz2 = 0.0
 !!         END IF
@@ -1619,7 +1623,7 @@ SUBROUTINE sourceALG3(kwq, lwq, thrs)
       !f_L3 = 1 - EXP(-(Qsw*QswFr(kwq,lwq)*0.47)/light_k3) ! Webb et al (1974) in absence of photoinhibition 
 
   ! temperature limitaton
-    f_T = Theta_mu**(-0.01*(salp(kwq,lwq) - Topt3)**2)
+    f_T = Theta_mu**(salp(kwq,lwq) - 20.0)
 
   ! nutrient limitation - but only if the nutrients are modeled
   IF ((INH4 ==1) .AND. (INO3 ==1)) THEN
@@ -1650,49 +1654,49 @@ mu3 = mu_max3 * MIN(f_L3,f_N,f_P)
   &    261.72,  265.83,  269.93,  273.99,  278.03,  282.03,  285.99,  289.91,  293.78,  297.60,  301.36,  305.06,  308.69,  312.26,  315.75,  319.16,  322.49,  325.73,  328.88,  &
   &    331.94,  334.89,  337.74,  340.49,  343.12,  345.63,  348.12,  350.68,  353.30,  355.97,  358.69,  361.45,  364.24,  367.05,  369.87,  372.69,  375.52,  378.33,  381.12,  383.89,  &
   &    386.61,  389.30,  391.93,  394.51,  397.01,  399.44,  401.79,  404.04/)
-    rotifers = rotifers/1000
+    rotifers = rotifers/1000.0
 
     codotisnapuli = (/147.54,  150.47,  153.49,  156.60,  159.80,  163.10,  166.48,  169.96,  173.52,  177.18,  180.92,  184.76,  188.69,  192.70,  196.81,  201.00, 205.29,  209.67,  214.13, 218.68, &  
     &  223.33,  228.06,  232.88,  237.79,  242.79,  247.88,  253.06,  258.33,  263.68,  269.12,  274.65,  280.27,  285.98,  291.77,  297.66,  303.63,  309.68,  315.83,  322.06, &
     &  328.38,  334.79,  341.28,  349.34,  360.36,  374.17,  390.63,  409.58,  430.86,  454.34,  479.85,  507.23,  536.35,  567.04,  599.16,  632.54,  667.04,  702.51,  738.78,  775.71, &
     &  813.15,  850.94,  888.94,  926.97,  964.90/)
-    codotisnapuli = codotisnapuli/1000
+    codotisnapuli = codotisnapuli/1000.0
 
     diatomus =(/91.52,  96.11,  100.74,  105.42,  110.13,  114.87,  119.63,  124.41,  129.21,  134.00, 138.80,  143.59,  148.37,  153.13,  157.86,  162.57,  167.24,  171.86,  176.44,  180.96, &
     &  185.42, 189.81,  194.13,  198.37,  202.53,  206.59,  210.56,  214.42,  218.18,  221.82,  225.34,  228.73,  231.99,  235.11,  238.08,  240.91,  243.57,  246.07,  248.41,  250.57,  252.54, &
     &  254.33,  255.99,  257.60,  259.15,  260.65,  262.11,  263.51,  264.87,  266.19,  267.48,  268.73,  269.94,  271.13,  272.29,  273.42,  274.53,  275.62,  276.70,  277.76,  278.82,  279.86, &       
     &  280.90,281.93/)
-    diatomus = diatomus/1000
+    diatomus = diatomus/1000.0
 
     bosmina = (/0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
     & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
     & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
     & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
     & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00/)
-    bosmina = bosmina/1000
+    bosmina = bosmina/1000.0
 
     daphnia =(/0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
     & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
     & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
     & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
     & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00/)
-    daphnia = daphnia/1000
+    daphnia = daphnia/1000.0
 
     epischura = (/317.73,  333.08,  348.53,  364.05,  379.62,  395.21,  410.80,  426.37,  441.89,  457.34,  472.69,  487.92,  503.01,  517.92,  532.65,  547.16,  561.43,  575.43,  589.14,  &
     &  602.55, 615.61,  628.31,  640.63,  652.54,  664.02,  675.04,  685.58,  695.61,  705.11,  714.06,  722.43,  730.20,  737.35,  743.84,  749.66,  754.78,  759.18,  762.84,  765.72,  767.81, &
     &  769.08,  769.51, 768.93,  767.23,  764.49,  760.75,  756.10,  750.59,  744.30,  737.28,  729.60,  721.34,  712.54,  703.29,  693.64,  683.67,  673.43,  663.00, 652.43,  641.80,  631.17, &
     &  620.60,  610.17,  599.93/)
-    epischura = epischura/1000
+    epischura = epischura/1000.0
 
     mysis = (/0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
     & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
     & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
     & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,&
     & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00/)
-    mysis = mysis/1000
+    mysis = mysis/1000.0
 
 ! Interpolate Zooplankton to the simulation time interval (thrs)
-!dthrs_zoop = 24.
+!dthrs_zoop = 24.0
 !rotifersnew = parabn(0.,thrs,rotifers,dthrs_zoop)
 !codotisnapulinew = parabn(0.,thrs,codotisnapuli,dthrs_zoop)
 !diatomusnew = parabn(0.,thrs,diatomus,dthrs_zoop)
@@ -1704,11 +1708,11 @@ mu3 = mu_max3 * MIN(f_L3,f_N,f_P)
 !. . Calculate growth
     growth3 = mu3 * f_T * tracerpp(kwq,lwq,LALG3)
 !. . Calculate mortality
-    mort3   = k_mor3 * Theta_mor**(-0.01*(salp(kwq,lwq) - Topt3)**2) * tracerpp(kwq,lwq,LALG3)
+    mort3   = k_mor3 * Theta_mor**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG3)
 !. . Calculate excretion
-    excr3   = k_ex3 * Theta_exc**(-0.01*(salp(kwq,lwq) - Topt3)**2) * tracerpp(kwq,lwq,LALG3)
+    excr3   = k_ex3 * Theta_exc**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG3)
 !. . Calculate grazing
-    !!graz3   = k_gr3 * Theta_gr**(-0.01*(salp(kwq,lwq) - Topt3)**2) * tracerpp(kwq,lwq,LALG3)
+    !!graz3   = k_gr3 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG3)
     !IF (kwq .lt. 37) THEN
     !graz3 = ((rotifersnew*0.002035/4.0)+(codotisnapulinew*0.185/2.5)+(diatomusnew*0.2267/2.5)+(bosminanew*0.00495/3.0)+(daphnianew*0.04752/2.5)+(epischuranew*0.7467/2.5)+(mysisnew*0.0))/(86400.0)!
     !ELSE IF (kwq .gt. 36) THEN
@@ -1730,7 +1734,7 @@ mu3 = mu_max3 * MIN(f_L3,f_N,f_P)
  !END IF
 
 ! To account for paralelization
-growth3 = growth3 /8 ! comment in V12C
+growth3 = growth3 /8.0 ! comment in V12C
 sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) + growth3
 
  ! Limit the minimum algae value (0.01) for mortality
@@ -1753,7 +1757,7 @@ sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) + growth3
 !!END IF
 
 ! To account for paralelization
-mort3 = mort3 /8 ! Comment in v12C
+mort3 = mort3 /8.0 ! Comment in v12C
 sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) - mort3
 
  ! Limit the minimum algae value (0.01) for grazing
