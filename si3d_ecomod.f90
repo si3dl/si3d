@@ -1442,9 +1442,9 @@ mu2 = mu_max2 * MIN(f_L2,f_N,f_P)
     bosmina = bosmina/1000.0
 
 ! Interpolate Zooplankton to the simulation time interval (thrs)
-!dthrs_zoop = 24.
-!rotifersnew = parabn(0.,thrs,rotifers,dthrs_zoop)
-!bosminanew = parabn(0.,thrs,bosmina,dthrs_zoop)
+dthrs_zoop = 24.
+rotifersnew = parabn(0.,thrs,rotifers,dthrs_zoop)
+bosminanew = parabn(0.,thrs,bosmina,dthrs_zoop)
 
 !. . Calculate growth
     growth2 = mu2 * f_T * tracerpp(kwq,lwq,LALG2)
@@ -1454,11 +1454,11 @@ mu2 = mu_max2 * MIN(f_L2,f_N,f_P)
     excr2   = k_ex2 * Theta_exc**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG2)
 !. . Calculate grazing
     !!graz2   = k_gr2 * Theta_gr**(-0.01*(salp(kwq,lwq) - Topt2)) * tracerpp(kwq,lwq,LALG2) ! NOT USED
-    !IF (kwq .lt. 37) THEN
-    !    graz2 = ((rotifersnew*0.0003936/4.0) + (bosminanew*0.00495/3.0))*(idt/86400.0)! 2T6
-    !ELSE IF (kwq .gt. 36) THEN
-    !    graz2 = 0
-    !END IF
+    IF (kwq .lt. 37) THEN
+        graz2 = k_gr2 * f_T * (((rotifersnew*0.0003936/4.0) + (bosminanew*0.00495/3.0))*(idt/86400.0))! 2T6
+    ELSE IF (kwq .gt. 36) THEN
+        graz2 = 0
+    END IF
 
 !. . Calculate settling
     sett2   = k_set * tracerpp(kwq,lwq,LALG2)
@@ -1515,8 +1515,11 @@ sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) - mort2
  !END IF
 
  ! To account for paralelization
-!graz2 = graz2 /8
-!sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) - graz2
+graz2 = graz2/8.0
+IF ((tracerpp(kwq,lwq,LALG2)- graz2) .le. 0.01) THEN
+    graz2 = 0.0
+END IF
+sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) - graz2
 
 !!! Estimate the minimum alloable nutrient value and recalculate grazing if nutrient < 0
 !! minimum_nut2 = 0.0
@@ -1696,14 +1699,14 @@ mu3 = mu_max3 * MIN(f_L3,f_N,f_P)
     mysis = mysis/1000.0
 
 ! Interpolate Zooplankton to the simulation time interval (thrs)
-!dthrs_zoop = 24.0
-!rotifersnew = parabn(0.,thrs,rotifers,dthrs_zoop)
-!codotisnapulinew = parabn(0.,thrs,codotisnapuli,dthrs_zoop)
-!diatomusnew = parabn(0.,thrs,diatomus,dthrs_zoop)
-!bosminanew = parabn(0.,thrs,bosmina,dthrs_zoop)
-!daphnianew = parabn(0.,thrs,daphnia,dthrs_zoop)
-!epischuranew = parabn(0.,thrs,epischura,dthrs_zoop)
-!mysisnew = parabn(0.,thrs,mysis,dthrs_zoop)
+dthrs_zoop = 24.0
+rotifersnew = parabn(0.,thrs,rotifers,dthrs_zoop)
+codotisnapulinew = parabn(0.,thrs,codotisnapuli,dthrs_zoop)
+diatomusnew = parabn(0.,thrs,diatomus,dthrs_zoop)
+bosminanew = parabn(0.,thrs,bosmina,dthrs_zoop)
+daphnianew = parabn(0.,thrs,daphnia,dthrs_zoop)
+epischuranew = parabn(0.,thrs,epischura,dthrs_zoop)
+mysisnew = parabn(0.,thrs,mysis,dthrs_zoop)
 
 !. . Calculate growth
     growth3 = mu3 * f_T * tracerpp(kwq,lwq,LALG3)
@@ -1713,11 +1716,11 @@ mu3 = mu_max3 * MIN(f_L3,f_N,f_P)
     excr3   = k_ex3 * Theta_exc**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG3)
 !. . Calculate grazing
     !!graz3   = k_gr3 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG3)
-    !IF (kwq .lt. 37) THEN
-    !graz3 = ((rotifersnew*0.002035/4.0)+(codotisnapulinew*0.185/2.5)+(diatomusnew*0.2267/2.5)+(bosminanew*0.00495/3.0)+(daphnianew*0.04752/2.5)+(epischuranew*0.7467/2.5)+(mysisnew*0.0))/(86400.0)!
-    !ELSE IF (kwq .gt. 36) THEN
-    !    graz3 = 0
-    !END IF
+    IF (kwq .lt. 37) THEN
+    graz3 = k_gr3 * f_T *(((rotifersnew*0.002035/4.0)+(codotisnapulinew*0.185/2.5)+(diatomusnew*0.2267/2.5)+(bosminanew*0.00495/3.0)+(daphnianew*0.04752/2.5)+(epischuranew*0.7467/2.5)+(mysisnew*0.0))*(idt/86400.0))!
+    ELSE IF (kwq .gt. 36) THEN
+        graz3 = 0
+    END IF
 !. . Calculate settling
     sett3   = k_set * tracerpp(kwq,lwq,LALG3)
 !. . Calculate resuspension
@@ -1769,9 +1772,12 @@ sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) - mort3
 !         END IF
 ! END IF
 
-! To account for paralelization
-!graz3 = graz3 /8 ! Comment in v12C
-!sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) - graz3
+ ! To account for paralelization
+graz3 = graz3/8.0
+IF ((tracerpp(kwq,lwq,LALG3)- graz3) .le. 0.01) THEN
+    graz3 = 0.0
+END IF
+sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) - graz3
 
 !! Estimate the minimum alloable nutrient value and recalculate grazing if nutrient < 0
 !! minimum_nut3 = 0.0
