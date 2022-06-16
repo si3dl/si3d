@@ -1539,7 +1539,7 @@ sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) - graz2
 var2 = sourcesink(kwq,lwq,LALG2)
    IF (lwq .eq. 300) THEN
       IF (kwq .eq. 5) THEN
-       !PRINT *, 'lwq2 = ', lwq, ', kwq2 = ', kwq, ', growth2 = ', growth2, ', mort2 = ', mort2, 'grazing2 = ', graz2, ', SS2 = ', var2
+       !PRINT *, 'lwq2 = ', lwq, ', kwq2 = ', kwq, ', growth2 = ', growth2, ', mort2 = ', mort2, 'grazing2 = ', graz2, ', SS2 = ', var2, ', tracer2 = ',tracerpp(kwq,lwq,LALG2)
        !PRINT *, 'lwq2 = ', lwq, ', kwq2 = ', kwq, ', growth2 = ', growth2, ', SS2 = ', var2, ', tracer2 = ',tracerpp(kwq,lwq,LALG2), ', f_L2 = ', f_L2, ', f_N2 = ', f_N, ', f_P2 = ', f_P, ', !PARpenetrates2 = ',Qsw*QswFr(kwq,lwq)*0.47
       END IF
    END IF
@@ -1717,7 +1717,7 @@ mysisnew = parabn(0.,thrs,mysis,dthrs_zoop)
 !. . Calculate grazing
     !!graz3   = k_gr3 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG3)
     IF (kwq .lt. 37) THEN
-    graz3 = k_gr3 * f_T *(((rotifersnew*0.002035/4.0)+(codotisnapulinew*0.185/2.5)+(diatomusnew*0.2267/2.5)+(bosminanew*0.00495/3.0)+(daphnianew*0.04752/2.5)+(epischuranew*0.7467/2.5)+(mysisnew*0.0))*(idt/86400.0))!
+    graz3 = k_gr3 * f_T *(((rotifersnew*0.002035/4.0)+(codotisnapulinew*0.185)+(diatomusnew*0.2267)+(bosminanew*0.00495/3.0)+(daphnianew*0.04752)+(epischuranew*0.7467)+(mysisnew*0.0))*(idt/86400.0))!
     ELSE IF (kwq .gt. 36) THEN
         graz3 = 0
     END IF
@@ -1795,7 +1795,7 @@ sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) - graz3
 var3 = sourcesink(kwq,lwq,LALG3)
    IF (lwq .eq. 300) THEN
       IF (kwq .eq. 5) THEN
-       !PRINT *, 'lwq3 = ', lwq, ', kwq3 = ', kwq, ', growth3 = ', growth3, ', mort3 = ', mort3, 'grazing3 = ', graz3, ', SS3 = ', var3
+       !PRINT *, 'lwq3 = ', lwq, ', kwq3 = ', kwq, ', growth3 = ', growth3, ', mort3 = ', mort3, 'grazing3 = ', graz3, ', SS3 = ', var3, ', tracer3 = ',tracerpp(kwq,lwq,LALG3)
        !PRINT *, 'lwq3 = ', lwq, ', kwq3 = ', kwq, ', growth3 = ', growth3, ', SS3 = ', var3, ', tracer3 = ',tracerpp(kwq,lwq,LALG3), ', f_L3 = ', f_L3, ', f_N3 = ', f_N, ', f_P3 = ', f_P, ', !PARpenetrates3 = ',Qsw*QswFr(kwq,lwq)*0.47
       END IF
    END IF
