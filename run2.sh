@@ -26,9 +26,5 @@ then
 	#rm *.o
 	cd $MODDIR
 	#rm si3d*
-else
-	cd $SI3DDIR
-	make si3d
-	rm *.o
+	echo 'Hello Mark!'
 fi
-

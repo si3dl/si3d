@@ -1441,10 +1441,17 @@ mu2 = mu_max2 * MIN(f_L2,f_N,f_P)
     & 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00/)
     bosmina = bosmina/1000.0
 
+    codotisnapuli = (/147.54,  150.47,  153.49,  156.60,  159.80,  163.10,  166.48,  169.96,  173.52,  177.18,  180.92,  184.76,  188.69,  192.70,  196.81,  201.00, 205.29,  209.67,  214.13, 218.68, &  
+    &  223.33,  228.06,  232.88,  237.79,  242.79,  247.88,  253.06,  258.33,  263.68,  269.12,  274.65,  280.27,  285.98,  291.77,  297.66,  303.63,  309.68,  315.83,  322.06, &
+    &  328.38,  334.79,  341.28,  349.34,  360.36,  374.17,  390.63,  409.58,  430.86,  454.34,  479.85,  507.23,  536.35,  567.04,  599.16,  632.54,  667.04,  702.51,  738.78,  775.71, &
+    &  813.15,  850.94,  888.94,  926.97,  964.90/)
+    codotisnapuli = codotisnapuli/1000.0
+
 ! Interpolate Zooplankton to the simulation time interval (thrs)
 dthrs_zoop = 24.
 rotifersnew = parabn(0.,thrs,rotifers,dthrs_zoop)
 bosminanew = parabn(0.,thrs,bosmina,dthrs_zoop)
+codotisnapulinew = parabn(0.,thrs,codotisnapuli,dthrs_zoop)
 
 !. . Calculate growth
     growth2 = mu2 * f_T * tracerpp(kwq,lwq,LALG2)
@@ -1455,7 +1462,7 @@ bosminanew = parabn(0.,thrs,bosmina,dthrs_zoop)
 !. . Calculate grazing
     !!graz2   = k_gr2 * Theta_gr**(-0.01*(salp(kwq,lwq) - Topt2)) * tracerpp(kwq,lwq,LALG2) ! NOT USED
     IF (kwq .lt. 37) THEN
-        graz2 = k_gr2 * f_T * (((rotifersnew*0.0003936/4.0) + (bosminanew*0.00495/3.0))*(idt/86400.0))! 2T6
+        graz2 = k_gr2 * f_T * (((rotifersnew*0.0003936/4.0) + (bosminanew*0.00495/3.0) + (codotisnapulinew*0.185/2.0))*(idt/86400.0))! 2T6
     ELSE IF (kwq .gt. 36) THEN
         graz2 = 0
     END IF
@@ -1657,13 +1664,7 @@ mu3 = mu_max3 * MIN(f_L3,f_N,f_P)
   &    261.72,  265.83,  269.93,  273.99,  278.03,  282.03,  285.99,  289.91,  293.78,  297.60,  301.36,  305.06,  308.69,  312.26,  315.75,  319.16,  322.49,  325.73,  328.88,  &
   &    331.94,  334.89,  337.74,  340.49,  343.12,  345.63,  348.12,  350.68,  353.30,  355.97,  358.69,  361.45,  364.24,  367.05,  369.87,  372.69,  375.52,  378.33,  381.12,  383.89,  &
   &    386.61,  389.30,  391.93,  394.51,  397.01,  399.44,  401.79,  404.04/)
-    rotifers = rotifers/1000.0
-
-    codotisnapuli = (/147.54,  150.47,  153.49,  156.60,  159.80,  163.10,  166.48,  169.96,  173.52,  177.18,  180.92,  184.76,  188.69,  192.70,  196.81,  201.00, 205.29,  209.67,  214.13, 218.68, &  
-    &  223.33,  228.06,  232.88,  237.79,  242.79,  247.88,  253.06,  258.33,  263.68,  269.12,  274.65,  280.27,  285.98,  291.77,  297.66,  303.63,  309.68,  315.83,  322.06, &
-    &  328.38,  334.79,  341.28,  349.34,  360.36,  374.17,  390.63,  409.58,  430.86,  454.34,  479.85,  507.23,  536.35,  567.04,  599.16,  632.54,  667.04,  702.51,  738.78,  775.71, &
-    &  813.15,  850.94,  888.94,  926.97,  964.90/)
-    codotisnapuli = codotisnapuli/1000.0
+    !rotifers = rotifers/1000.0
 
     diatomus =(/91.52,  96.11,  100.74,  105.42,  110.13,  114.87,  119.63,  124.41,  129.21,  134.00, 138.80,  143.59,  148.37,  153.13,  157.86,  162.57,  167.24,  171.86,  176.44,  180.96, &
     &  185.42, 189.81,  194.13,  198.37,  202.53,  206.59,  210.56,  214.42,  218.18,  221.82,  225.34,  228.73,  231.99,  235.11,  238.08,  240.91,  243.57,  246.07,  248.41,  250.57,  252.54, &
@@ -1701,7 +1702,6 @@ mu3 = mu_max3 * MIN(f_L3,f_N,f_P)
 ! Interpolate Zooplankton to the simulation time interval (thrs)
 dthrs_zoop = 24.0
 rotifersnew = parabn(0.,thrs,rotifers,dthrs_zoop)
-codotisnapulinew = parabn(0.,thrs,codotisnapuli,dthrs_zoop)
 diatomusnew = parabn(0.,thrs,diatomus,dthrs_zoop)
 bosminanew = parabn(0.,thrs,bosmina,dthrs_zoop)
 daphnianew = parabn(0.,thrs,daphnia,dthrs_zoop)
@@ -1717,7 +1717,7 @@ mysisnew = parabn(0.,thrs,mysis,dthrs_zoop)
 !. . Calculate grazing
     !!graz3   = k_gr3 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG3)
     IF (kwq .lt. 37) THEN
-    graz3 = k_gr3 * f_T *(((rotifersnew*0.002035/4.0)+(codotisnapulinew*0.185)+(diatomusnew*0.2267)+(bosminanew*0.00495/3.0)+(daphnianew*0.04752)+(epischuranew*0.7467)+(mysisnew*0.0))*(idt/86400.0))!
+    graz3 = k_gr3 * f_T *(((rotifersnew*0.002035/4.0)+(diatomusnew*0.2267)+(bosminanew*0.00495/3.0)+(daphnianew*0.04752)+(epischuranew*0.078)+(mysisnew*0.0))*(idt/86400.0))!
     ELSE IF (kwq .gt. 36) THEN
         graz3 = 0
     END IF
@@ -1725,7 +1725,6 @@ mysisnew = parabn(0.,thrs,mysis,dthrs_zoop)
     sett3   = k_set * tracerpp(kwq,lwq,LALG3)
 !. . Calculate resuspension
     resus3   = k_rs * tracerpp(kwq,lwq,LALG3)
-
 
  ! Estimate the minimum alloable nutrient value and recalculate growth if nutrient < 0 . Uncomment in v12C
  !minimum_nut3 = MIN(sourcesink(kwq,lwq,LPO4)-(rpc*growth3),sourcesink(kwq,lwq,LNO3)-(rnc*growth3*(1-FNH4)),sourcesink(kwq,lwq,LNH4)-(rnc*growth3*FNH4))
@@ -1795,7 +1794,8 @@ sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) - graz3
 var3 = sourcesink(kwq,lwq,LALG3)
    IF (lwq .eq. 300) THEN
       IF (kwq .eq. 5) THEN
-       !PRINT *, 'lwq3 = ', lwq, ', kwq3 = ', kwq, ', growth3 = ', growth3, ', mort3 = ', mort3, 'grazing3 = ', graz3, ', SS3 = ', var3, ', tracer3 = ',tracerpp(kwq,lwq,LALG3)
+       !PRINT *, 'growth3 = ', growth3, ', mort3 = ', mort3, 'grazing3 = ', graz3, ', SS3 = ', var3, ', tracer3 = ',tracerpp(kwq,lwq,LALG3)
+       !PRINT *, 'epischuranew = ', epischuranew, ', codotisnapulinew = ', codotisnapulinew, 'diatomusnew = ', diatomusnew
        !PRINT *, 'lwq3 = ', lwq, ', kwq3 = ', kwq, ', growth3 = ', growth3, ', SS3 = ', var3, ', tracer3 = ',tracerpp(kwq,lwq,LALG3), ', f_L3 = ', f_L3, ', f_N3 = ', f_N, ', f_P3 = ', f_P, ', !PARpenetrates3 = ',Qsw*QswFr(kwq,lwq)*0.47
       END IF
    END IF
