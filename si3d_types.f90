@@ -367,32 +367,28 @@
 
    ! ... Integer switches to deterimine if constituent is modeled
    INTEGER:: iDO , iPON, iDON, iNH4, iNO3, iPOP, iDOP, iPO4
-   INTEGER:: iDOC, iPOC, iALG1, iALG2, iALG3, iALG4, iALG5, iFT, iFN, iFP, iFL1, iFL2, iFL3, iFL4, iFL5
+   INTEGER:: iDOC, iPOC, iALG1, iALG2, iALG3, iALG4
 
 
    ! ... Integer to determine constituent location
    INTEGER:: LDO , LPON, LDON, LNH4, LNO3, LPOP, LDOP, LPO4
-   INTEGER:: LDOC, LPOC, LALG1, LALG2, LALG3, LALG4, LALG5, LFT, LFN, LFP, LFL1, LFL2, LFL3, LFL4, LFL5
+   INTEGER:: LDOC, LPOC, LALG1, LALG2, LALG3, LALG4
 
    ! ... Model Constants - read from input file and many used for calibration
    ! - Stochiometeric constants
    REAL   :: rnc, rpc, roc, ron
 
    ! - Half-saturation values and algal constants
-   REAL   :: KNIT, KSN, KSP, FNH4, KDOC, SOD, KSOD, light_sat1, light_sat2, light_sat3, light_sat4, light_sat5, Topt1, Topt2, Topt3, Topt4, Topt5
+   REAL   :: KNIT, KSN, KSP, FNH4, KDOC, SOD, KSOD, light_sat1, light_sat2, light_sat3, light_sat4
 
    ! - Model rates
-   REAL   :: mu_max1, k_mor1, k_ex1, k_gr1
-   REAL   :: mu_max2, k_mor2, k_ex2, k_gr2
-   REAL   :: mu_max3, k_mor3, k_ex3, k_gr3
-   REAL   :: mu_max4, k_mor4, k_ex4, k_gr4
-   REAL   :: mu_max5, k_mor5, k_ex5, k_gr5
+   REAL   :: mu_max1, k_mor1, k_gr1,mu_max2, k_mor2, k_gr2,mu_max3, k_mor3, k_gr3,mu_max4, k_mor4, k_gr4
    REAL   :: k_a, k_dcn, k_mn, k_n, k_dn
    REAL   :: k_dcp, k_mp, k_dcc
-   REAL   :: k_set, k_rs
+   REAL   :: k_set, k_res
   
    ! - Temperature depependence factors
-   REAL	  :: Theta_a, Theta_sod, Theta_mu, Theta_mor, Theta_exc, Theta_gr
+   REAL	  :: Theta_a, Theta_sod, Theta_mu, Theta_mor, Theta_gr
    REAL	  :: Theta_dcn, Theta_mn, Theta_n  ,  Theta_dn
    REAL	  :: Theta_dcp , Theta_mp , Theta_dcc , Theta_DOC
    
@@ -406,9 +402,6 @@
    ! Sediment release rates
    REAL	  :: J_NH4, J_NO3, J_PO4, J_DOC
 
-   ! Zooplankton
-   REAL   , ALLOCATABLE, DIMENSION(:  )  :: rotifers, codotisnapuli, diatomus, bosmina, daphnia, epischura, mysis
-   REAL   :: rotifersnew, codotisnapulinew, diatomusnew, bosminanew, daphnianew, epischuranew, mysisnew
 
 !                        -----Data Dictionary-----
 
