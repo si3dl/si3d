@@ -784,7 +784,7 @@ SUBROUTINE sourceDO(kwq,lwq, num_threads)
  ! alternatives for reaeration rates. 
  IF (kwq .eq. k1z(lwq)) THEN
     reaeration  = R_reaer*(OS - tracerpp(kwq,lwq,LDO))
-    reaeration  = reaeration 
+    reaeration  = reaeration /REAL(num_threads)
  ELSE
     reaeration  = 0.0
  END IF
@@ -793,7 +793,7 @@ SUBROUTINE sourceDO(kwq,lwq, num_threads)
  IF (kwq .eq. kmz(lwq)) THEN
     f_SOD = tracerpp(kwq,lwq,LDO) /(KSOD + tracerpp(kwq,lwq,LDO) ) ! DO inhibition of sediment oxygen demand
     sedoxydemand = R_SOD * f_SOD* (Theta_SOD**(salp(kwq,lwq) - 20))  * (1/(hpp(kwq,lwq))) 
-    sedoxydemand = sedoxydemand
+    sedoxydemand = sedoxydemand/REAL(num_threads)
 ELSE
     sedoxydemand = 0.0
 
@@ -840,15 +840,15 @@ REAL:: decompositionPON, f_decom, settlingPON, resuspensionPON
     f_decom = 1.0
   END IF
 decompositionPON = R_decom_pon * f_decom * (Theta_decom**(salp(kwq,lwq) - 20.0)) *tracerpp(kwq,lwq,LPON)
-decompositionPON = decompositionPON
+decompositionPON = decompositionPON/REAL(num_threads)
 
 ! ... Calculate settling of PON
 settlingPON = R_settl * tracerpp(kwq,lwq,LPON) / hpp(kwq,lwq)
-settlingPON = settlingPON
+settlingPON = settlingPON/REAL(num_threads)
 
 ! ... Calculate resusupension of PON
 resuspensionPON = R_resusp * tracerpp(kwq,lwq,LPON) / hpp(kwq,lwq)
-resuspensionPON = resuspensionPON
+resuspensionPON = resuspensionPON/REAL(num_threads)
 
 ! ... Incorporate all terms to the source-sink PON term
 sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON)       &
@@ -889,12 +889,12 @@ REAL:: mineralizationDON, f_miner, atmosdepositionDON, f_sedflux, sedfluxDON
     f_miner = 1.0
   END IF
 mineralizationDON = R_miner_don * f_miner * (Theta_miner**(salp(kwq,lwq) - 20.0)) *tracerpp(kwq,lwq,LDON)
-mineralizationDON = mineralizationDON
+mineralizationDON = mineralizationDON/REAL(num_threads)
 
 !. . .Add contribution from atmospheric deposition to top layer
 IF (kwq .eq. k1z(lwq)) THEN
   atmosdepositionDON = ATM_DON/hpp(kwq,lwq)
-  atmosdepositionDON = atmosdepositionDON
+  atmosdepositionDON = atmosdepositionDON/REAL(num_threads)
 ELSE
   atmosdepositionDON = 0.0
 END IF
@@ -908,7 +908,7 @@ END IF
        f_sedflux = 1.0
     END IF
     sedfluxDON = SED_DON * f_sedflux* (Theta_sedflux**(salp(kwq,lwq) - 20))  * (1/(hpp(kwq,lwq))) 
-    sedfluxDON = sedfluxDON
+    sedfluxDON = sedfluxDON/REAL(num_threads)
 ELSE
     sedfluxDON = 0.0
 
@@ -953,13 +953,13 @@ REAL:: nitrification, f_nitrif, atmosdepositionNH4, sedfluxNH4, f_sedflux
 	END IF
 
 nitrification = R_nitrif * f_nitrif * (Theta_nitrif**(salp(kwq,lwq) - 20.0)) *tracerpp(kwq,lwq,LNH4)
-nitrification = nitrification
+nitrification = nitrification/REAL(num_threads)
 
 
 !. . .Add contribution from atmospheric deposition to top layer
 IF (kwq .eq. k1z(lwq)) THEN
   atmosdepositionNH4 = ATM_NH4/hpp(kwq,lwq)
-  atmosdepositionNH4 = atmosdepositionNH4
+  atmosdepositionNH4 = atmosdepositionNH4/REAL(num_threads)
 ELSE
   atmosdepositionNH4 = 0.0
 END IF
@@ -973,7 +973,7 @@ END IF
        f_sedflux = 1.0
     END IF
     sedfluxNH4 = SED_NH4 * f_sedflux* (Theta_sedflux**(salp(kwq,lwq) - 20))  * (1/(hpp(kwq,lwq))) 
-    sedfluxNH4 = sedfluxNH4
+    sedfluxNH4 = sedfluxNH4/REAL(num_threads)
 ELSE
     sedfluxNH4 = 0.0
 
@@ -1017,13 +1017,13 @@ REAL:: denitrification, atmosdepositionNO3, sedfluxNO3, f_sedflux
 
 ! ... Denitrification (release of N2 gas)
 denitrification = R_denit* (Theta_denit**(salp(kwq,lwq) - 20.0)) *tracerpp(kwq,lwq,LNO3)
-denitrification = denitrification
+denitrification = denitrification/REAL(num_threads)
 
 
 !. . .Add contribution from atmospheric deposition to top layer
 IF (kwq .eq. k1z(lwq)) THEN
   atmosdepositionNO3 = ATM_NO3/hpp(kwq,lwq)
-  atmosdepositionNO3 = atmosdepositionNO3
+  atmosdepositionNO3 = atmosdepositionNO3/REAL(num_threads)
 ELSE
   atmosdepositionNO3 = 0.0
 END IF
@@ -1037,7 +1037,7 @@ END IF
        f_sedflux = 1.0
     END IF
     sedfluxNO3 = SED_NO3 * f_sedflux* (Theta_sedflux**(salp(kwq,lwq) - 20))  * (1/(hpp(kwq,lwq))) 
-    sedfluxNO3 = sedfluxNO3
+    sedfluxNO3 = sedfluxNO3/REAL(num_threads)
 ELSE
     sedfluxNO3 = 0.0
 
@@ -1077,15 +1077,15 @@ REAL:: decompositionPOP, f_decom, settlingPOP, resuspensionPOP
     f_decom = 1.0
   END IF
 decompositionPOP = R_decom_pop * f_decom * (Theta_decom**(salp(kwq,lwq) - 20.0)) *tracerpp(kwq,lwq,LPOP)
-decompositionPOP = decompositionPOP
+decompositionPOP = decompositionPOP/REAL(num_threads)
 
 ! ... Calculate settling of POP
 settlingPOP = R_settl * tracerpp(kwq,lwq,LPOP) / hpp(kwq,lwq)
-settlingPOP = settlingPOP
+settlingPOP = settlingPOP/REAL(num_threads)
 
 ! ... Calculate resusupension of POP
 resuspensionPOP = R_resusp * tracerpp(kwq,lwq,LPOP) / hpp(kwq,lwq)
-resuspensionPOP = resuspensionPOP
+resuspensionPOP = resuspensionPOP/REAL(num_threads)
 
 ! ... Incorporate all terms to the source-sink POP term
 sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP)       &
@@ -1125,12 +1125,12 @@ REAL:: mineralizationDOP, f_miner, atmosdepositionDOP, f_sedflux, sedfluxDOP
     f_miner = 1.0
   END IF
 mineralizationDOP = R_miner_dop * f_miner * (Theta_miner**(salp(kwq,lwq) - 20.0)) *tracerpp(kwq,lwq,LDOP)
-mineralizationDOP = mineralizationDOP
+mineralizationDOP = mineralizationDOP/REAL(num_threads)
 
 !. . .Add contribution from atmospheric deposition to top layer
 IF (kwq .eq. k1z(lwq)) THEN
   atmosdepositionDOP = ATM_DOP/hpp(kwq,lwq)
-  atmosdepositionDOP = atmosdepositionDOP
+  atmosdepositionDOP = atmosdepositionDOP/REAL(num_threads)
 ELSE
   atmosdepositionDOP = 0.0
 END IF
@@ -1144,7 +1144,7 @@ END IF
        f_sedflux = 1.0
     END IF
     sedfluxDOP = SED_DOP * f_sedflux* (Theta_sedflux**(salp(kwq,lwq) - 20))  * (1/(hpp(kwq,lwq))) 
-    sedfluxDOP = sedfluxDOP
+    sedfluxDOP = sedfluxDOP/REAL(num_threads)
 ELSE
     sedfluxDOP = 0.0
 
@@ -1183,7 +1183,7 @@ REAL:: atmosdepositionPO4, sedfluxPO4, f_sedflux
 !. . .Add contribution from atmospheric deposition to top layer
 IF (kwq .eq. k1z(lwq)) THEN
   atmosdepositionPO4 = ATM_PO4/hpp(kwq,lwq)
-  atmosdepositionPO4 = atmosdepositionPO4
+  atmosdepositionPO4 = atmosdepositionPO4/REAL(num_threads)
 ELSE
   atmosdepositionPO4 = 0.0
 END IF
@@ -1197,7 +1197,7 @@ END IF
        f_sedflux = 1.0
     END IF
     sedfluxPO4 = SED_PO4 * f_sedflux* (Theta_sedflux**(salp(kwq,lwq) - 20))  * (1/(hpp(kwq,lwq))) 
-    sedfluxPO4 = sedfluxPO4
+    sedfluxPO4 = sedfluxPO4/REAL(num_threads)
 ELSE
     sedfluxPO4 = 0.0
 
@@ -1236,15 +1236,15 @@ REAL:: decompositionPOC, f_decom, settlingPOC, resuspensionPOC
     f_decom = 1.0
   END IF
 decompositionPOC = R_decom_poc * f_decom * (Theta_decom**(salp(kwq,lwq) - 20.0)) *tracerpp(kwq,lwq,LPOC)
-decompositionPOC = decompositionPOC
+decompositionPOC = decompositionPOC/REAL(num_threads)
 
 ! ... Calculate settling of POC
 settlingPOC = R_settl * tracerpp(kwq,lwq,LPOC) / hpp(kwq,lwq)
-settlingPOC = settlingPOC
+settlingPOC = settlingPOC/REAL(num_threads)
 
 ! ... Calculate resusupension of POC
 resuspensionPOC = R_resusp * tracerpp(kwq,lwq,LPOC) / hpp(kwq,lwq)
-resuspensionPOC = resuspensionPOC
+resuspensionPOC = resuspensionPOC/REAL(num_threads)
 
 ! ... Incorporate all terms to the source-sink POC term
 sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC)       &
@@ -1285,12 +1285,12 @@ REAL:: mineralizationDOC, f_miner, atmosdepositionDOC, f_sedflux, sedfluxDOC
     f_miner = 1.0
   END IF
 mineralizationDOC = R_miner_doc * f_miner * (Theta_miner**(salp(kwq,lwq) - 20.0)) *tracerpp(kwq,lwq,LDOC)
-mineralizationDOC = mineralizationDOC
+mineralizationDOC = mineralizationDOC/REAL(num_threads)
 
 !. . .Add contribution from atmospheric deposition to top layer
 IF (kwq .eq. k1z(lwq)) THEN
   atmosdepositionDOC = ATM_DOC/hpp(kwq,lwq)
-  atmosdepositionDOC = atmosdepositionDOC
+  atmosdepositionDOC = atmosdepositionDOC/REAL(num_threads)
 ELSE
   atmosdepositionDOC = 0.0
 END IF
@@ -1304,7 +1304,7 @@ END IF
        f_sedflux = 1.0
     END IF
     sedfluxDOC = SED_DOC * f_sedflux* (Theta_sedflux**(salp(kwq,lwq) - 20))  * (1/(hpp(kwq,lwq))) 
-    sedfluxDOC = sedfluxDOC
+    sedfluxDOC = sedfluxDOC/REAL(num_threads)
 ELSE
     sedfluxDOC = 0.0
 
@@ -1342,9 +1342,6 @@ SUBROUTINE sourceALG1(kwq, lwq, num_threads)
   !. .  Calculate growth limiting factors
     ! Light Limitation
       f_L1 = ((Qsw*QswFr(kwq,lwq)*0.47)/light_sat1) *EXP(1 -((Qsw*QswFr(kwq,lwq)*0.47)/light_sat1)) ! Steele (1962) = Photoinhibited
-      IF (f_L1 .lt. 0) THEN
-         f_L1 = 0
-      END IF
 
    ! temperature limitaton
     f_T = Theta_mu**(salp(kwq,lwq) - 20.0)
@@ -1363,10 +1360,6 @@ SUBROUTINE sourceALG1(kwq, lwq, num_threads)
     f_N = 1.0
   END IF
 
-      IF (f_N .lt. 0) THEN
-         f_N =0.005/(KSN + 0.005)
-      END IF
-
   IF (IPO4 ==1) THEN
     f_P = tracerpp(kwq,lwq,LPO4) /(KSP + tracerpp(kwq,lwq,LPO4) )
   ELSE
@@ -1381,10 +1374,6 @@ SUBROUTINE sourceALG1(kwq, lwq, num_threads)
 !. . Calculate mortality, respiration & excretion
     mort1   = R_mor1 * Theta_mor**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG1)
     mort1 = mort1 /REAL(num_threads)
-      IF (mort1 .lt. 0.0) THEN
-         mort1 = 0.0
-      END IF
-
 !. . Calculate grazing
     graz1   = R_gr1 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG1) 
     graz1 = graz1/REAL(num_threads)
@@ -1401,17 +1390,18 @@ SUBROUTINE sourceALG1(kwq, lwq, num_threads)
 ! Source-Sink equation
 sourcesink(kwq,lwq,LALG1) = sourcesink(kwq,lwq,LALG1) + growth1 - mort1 - graz1 - sett1 + resus1
 
- !  IF (lwq .eq. 300) THEN
- !     IF (kwq .eq. 5) THEN
- !      PRINT *, 'lwq = ', lwq, ', kwq = ', kwq, ', f_L1 = ', f_L1, ', f_N = ', f_N, 'f_P = ', f_P,' , sourcesink(ALG1)  = ',sourcesink(kwq,lwq,LALG1) 
- !      PRINT *, 'growth1 = ', growth1, ', mort1 = ', mort1, ', graz1 = ', graz1,' , PhytoC = ',tracerpp(kwq,lwq,LALG1)
- !     END IF
- !  END IF
+   IF (lwq .eq. 300) THEN
+      IF (kwq .eq. 5) THEN
+       PRINT *, 'lwq = ', lwq, ', kwq = ', kwq, ', f_L1 = ', f_L1, ', f_N = ', f_N, 'f_P = ', f_P,' , sourcesink(ALG1)  = ',sourcesink(kwq,lwq,LALG1) 
+       PRINT *, 'lwq = ', lwq, ', kwq = ', kwq, ', growth1 = ', growth1, ', mort1 = ', mort1, ', graz1 = ', graz1,' , PhytoC = ',tracerpp(kwq,lwq,LALG1)
+       PRINT *, 'lwq = ', lwq, ', kwq = ', kwq, ', growth-repirDO = ', roc*growth1 - roc*mort1, ', rnc*mort1 = ', rnc*mort1, 'rnc*FNH4*growth1 = ', rnc*FNH4*growth1
+      END IF
+   END IF
 
 ! If dissolved oxygen is modeled, alter sourcesink(kwq,lwq,LDO) to reflect photosynthetic oxygen production 
 ! and respiration consumption by phytoplankton
 IF (IDO ==1) THEN
-  sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) + (roc*growth1 - roc*mort1)
+  sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) + roc*growth1 - roc*mort1
 END IF
 
 ! IF PON is modeled, alter sourcesink(kwq,lwq,LPON) to reflect mortality of algae
@@ -1421,22 +1411,22 @@ END IF
 
 ! IF NH4 is modeled, alter sourcesink(kwq,lwq,LNH4) to include uptake of NH4 by algae
 IF (INH4 == 1) THEN
-  sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) - (rnc*FNH4*growth1)
+  sourcesink(kwq,lwq,LNH4) = sourcesink(kwq,lwq,LNH4) - rnc*FNH4*growth1
 END IF
 
 ! IF NO3 is modeled, alter sourcesink(kwq,lwq,NO3) to include uptake of NO3 by algae
 IF (INO3 == 1) THEN
-  sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3) - (rnc*(1-FNH4) * growth1)
+  sourcesink(kwq,lwq,LNO3) = sourcesink(kwq,lwq,LNO3) - rnc*(1-FNH4) * growth1
 END IF
 
 ! If POP is modeled, alter sourcesink(kwq,lwq,POP) to include mortality of algae
 IF (IPOP == 1) THEN
-  sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + (rpc*mort1)
+  sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP) + rpc*mort1
 END IF
 
 ! If PO4 is modeled, alter sourcesink(kwq,lwq,LPO4) to include uptake
 IF (IPO4 == 1) THEN
-  sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) - (rpc* growth1)
+  sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4) - rpc* growth1
 END IF
 
 ! If POC is modeled, alter sourcesink(kwq,lwq,LPOC) to include mortality
@@ -1493,22 +1483,22 @@ SUBROUTINE sourceALG2(kwq, lwq, num_threads)
 !. . Calculate growth
     mu2 = mu_max2 * MIN(f_L2,f_N,f_P)
     growth2 = mu2 * f_T * tracerpp(kwq,lwq,LALG2)
-    growth2 = growth2
+    growth2 = growth2/REAL(num_threads)
 !. . Calculate mortality & excretion
     mort2   = R_mor2 * Theta_mor**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG2)
-    mort2 = mort2 
+    mort2 = mort2 /REAL(num_threads)
 !. . Calculate grazing
     graz2   = R_gr2 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG2) 
-    graz2 = graz2
+    graz2 = graz2/REAL(num_threads)
     IF ((tracerpp(kwq,lwq,LALG2)- graz2) .le. 0.01) THEN
         graz2 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
     END IF
 !. . Calculate settling
     sett2   = R_settl * tracerpp(kwq,lwq,LALG2)
-    sett2 = sett2
+    sett2 = sett2/REAL(num_threads)
 !. . Calculate resuspension
     resus2   = R_resusp * tracerpp(kwq,lwq,LALG2)
-    resus2 = resus2
+    resus2 = resus2/REAL(num_threads)
 
 ! Source-Sink equation
 sourcesink(kwq,lwq,LALG2) = sourcesink(kwq,lwq,LALG2) + growth2 - mort2 - graz2 - sett2 + resus2
@@ -1599,22 +1589,22 @@ SUBROUTINE sourceALG3(kwq, lwq, num_threads)
 !. . Calculate growth
     mu3 = mu_max3 * MIN(f_L3,f_N,f_P)
     growth3 = mu3 * f_T * tracerpp(kwq,lwq,LALG3)
-    growth3 = growth3
+    growth3 = growth3/REAL(num_threads)
 !. . Calculate mortality & excretion
     mort3   = R_mor3 * Theta_mor**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG3)
-    mort3 = mort3 
+    mort3 = mort3 /REAL(num_threads)
 !. . Calculate grazing
     graz3   = R_gr3 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG3) 
-    graz3 = graz3
+    graz3 = graz3/REAL(num_threads)
     IF ((tracerpp(kwq,lwq,LALG3)- graz3) .le. 0.01) THEN
         graz3 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
     END IF
 !. . Calculate settling
     sett3   = R_settl * tracerpp(kwq,lwq,LALG3)
-    sett3 = sett3 
+    sett3 = sett3 /REAL(num_threads)
 !. . Calculate resuspension
     resus3   = R_resusp * tracerpp(kwq,lwq,LALG3)
-    resus3 = resus3 
+    resus3 = resus3 /REAL(num_threads)
 
 ! Source-Sink equation
 sourcesink(kwq,lwq,LALG3) = sourcesink(kwq,lwq,LALG3) + growth3 - mort3 - graz3 - sett3 + resus3
@@ -1704,22 +1694,22 @@ SUBROUTINE sourceALG4(kwq, lwq, num_threads)
 !. . Calculate growth
     mu4 = mu_max4 * MIN(f_L4,f_N,f_P)
     growth4 = mu4 * f_T * tracerpp(kwq,lwq,LALG4)
-    growth4 = growth4
+    growth4 = growth4/REAL(num_threads)
 !. . Calculate mortality & excretion
     mort4   = R_mor4 * Theta_mor**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG4)
-    mort4 = mort4 
+    mort4 = mort4 /REAL(num_threads)
 !. . Calculate grazing
     graz4   = R_gr4 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG4) 
-    graz4 = graz4
+    graz4 = graz4/REAL(num_threads)
     IF ((tracerpp(kwq,lwq,LALG4)- graz4) .le. 0.01) THEN
         graz4 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
     END IF
 !. . Calculate settling
     sett4   = R_settl * tracerpp(kwq,lwq,LALG4)
-    sett4 = sett4 
+    sett4 = sett4 /REAL(num_threads)
 !. . Calculate resuspension
     resus4   = R_resusp * tracerpp(kwq,lwq,LALG4)
-    resus4 = resus4 
+    resus4 = resus4 /REAL(num_threads)
 
 ! Source-Sink equation
 sourcesink(kwq,lwq,LALG4) = sourcesink(kwq,lwq,LALG4) + growth4 - mort4 - graz4 - sett4 + resus4

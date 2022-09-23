@@ -379,28 +379,24 @@
    REAL   :: rnc, rpc, roc, ron
 
    ! - Half-saturation values and algal constants
-   REAL   :: KNIT, KSN, KSP, FNH4, KDOC, SOD, KSOD, light_sat1, light_sat2, light_sat3, light_sat4
+   REAL   :: KSOD, KDECMIN, KSED, KNIT, KSN, KSP, FNH4, light_sat1, light_sat2, light_sat3, light_sat4
 
    ! - Model rates
-   REAL   :: mu_max1, k_mor1, k_gr1,mu_max2, k_mor2, k_gr2,mu_max3, k_mor3, k_gr3,mu_max4, k_mor4, k_gr4
-   REAL   :: k_a, k_dcn, k_mn, k_n, k_dn
-   REAL   :: k_dcp, k_mp, k_dcc
-   REAL   :: k_set, k_res
+   REAL   :: mu_max1, R_mor1, R_gr1,mu_max2, R_mor2, R_gr2, mu_max3, R_mor3, R_gr3, mu_max4, R_mor4, R_gr4
+   REAL   :: R_reaer, R_SOD, R_decom_pon, R_miner_don, R_nitrif, R_denit
+   REAL   :: R_decom_pop, R_miner_dop, R_decom_poc, R_miner_doc
+   REAL   :: R_settl, R_resusp
   
    ! - Temperature depependence factors
-   REAL	  :: Theta_a, Theta_sod, Theta_mu, Theta_mor, Theta_gr
-   REAL	  :: Theta_dcn, Theta_mn, Theta_n  ,  Theta_dn
-   REAL	  :: Theta_dcp , Theta_mp , Theta_dcc , Theta_DOC
+   REAL	  :: Theta_SOD, Theta_mu, Theta_mor, Theta_gr
+   REAL	  :: Theta_decom, Theta_miner, Theta_sedflux,Theta_nitrif,  Theta_denit
    
 
    ! - Atmoshperic deposition rates
-   REAL	  :: ATM_DON, ATM_NH4, ATM_NO3, ATM_PO4, ATM_DOP, ATM_DOC
-
-   ! Groundwater flux rates
-   REAL	  :: GW_NH4, GW_NO3, GW_PO4, GW_DOC
+   REAL	  :: ATM_DON, ATM_NH4, ATM_NO3, ATM_DOP, ATM_PO4,  ATM_DOC
 
    ! Sediment release rates
-   REAL	  :: J_NH4, J_NO3, J_PO4, J_DOC
+   REAL	  :: SED_DON, SED_NH4, SED_NO3, SED_DOP, SED_PO4, SED_DOC
 
 
 !                        -----Data Dictionary-----

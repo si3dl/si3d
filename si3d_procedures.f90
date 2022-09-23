@@ -4487,7 +4487,15 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
          !.....form r.h.s. matrix [ds].....
          DO k = k1s, kms
             ds(k) = Bex(k,l) + sourcesink(k,l,nt)
+                                 !  IF (l .eq. 300) THEN
+                                 !     IF (k .eq. 5) THEN
+                                 !     PRINT *, 'l = ', l, ', k = ', k, ', ds(k) = ', ds(k), ', Bex(k,l) = ', Bex(k,l), 'sourcesink(k,l,nt) = ', sourcesink(k,l,nt)
+                                 !     END IF
+                                 !  END IF
+
          ENDDO
+
+
 
          ! ... Modify transport eqs. to accont for sources & sinks.
          IF ( iopssH(omp_get_thread_num ( )+1) > 0 ) THEN
@@ -4509,11 +4517,18 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
 
          !.....Solve tridiagonal system for the
          !     vertical distribution of active scalar.....
-         CALL trid1 (aa, ds, sal1, k1s, kms, km1, nwlayers)
+         CALL trid1 (aa, ds, sal1, k1s, kms, km1, nwlayers) ! The output is "sal"
 
          !.....Define scalars at new time step....
          tracer(k1s:kms  ,l,nt) = sal1(1:nwlayers)
          tracer(k1 :k1s-1,l,nt) = sal1(1         )
+
+                !IF (l .eq. 300) THEN
+                !    IF (nt .eq. 11) THEN
+                !       PRINT *, 'nt = ', nt, 'l = ', l, ', kms = ',kms, ',  tracer(k1s:kms  ,l,nt) = ', tracer(k1s:kms  ,l,nt)
+                !    END IF
+                !END IF
+
 
       END SELECT
 
