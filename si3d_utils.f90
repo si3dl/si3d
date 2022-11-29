@@ -58,38 +58,54 @@ SUBROUTINE input
    IF (ios /= 0) CALL input_error ( ios, 4 )
 
    !.....Read node numbers for time series output .......................
-   READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) ipt
+   READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) ipt,nnodes
    IF (ios /= 0) CALL input_error ( ios, 5 )
-   IF (ipt > 0) THEN
-     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) nnodes
+
+   IF (nnodes > 0) THEN
      IF (ios /= 0) CALL input_error ( ios, 5 )
-     READ (UNIT=i5, FMT='(14X,10I5)', IOSTAT=ios) (inode(nn), nn = 1, nnodes) ! Changed to I5 12/2010 SWA
+     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (inode(nn), nn = 1, nnodes) ! Changed to I5 12/2010 SWA
      IF (ios /= 0) CALL input_error ( ios, 5 )
-     READ (UNIT=i5, FMT='(14X,10I5)', IOSTAT=ios) (jnode(nn), nn = 1, nnodes) ! Changed to I5 12/2010 SWA
+     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jnode(nn), nn = 1, nnodes) ! Changed to I5 12/2010 SWA
+     IF (ios /= 0) CALL input_error ( ios, 5 )
+   ELSE IF (nnodes == 0) THEN
+     READ (UNIT=i5, FMT='(/)', IOSTAT=ios)
      IF (ios /= 0) CALL input_error ( ios, 5 )
    ENDIF
+
+   PRINT* ,'ipt=',ipt
+   PRINT* , 'nnodes=',nnodes
+   PRINT* , 'inode=',inode
+   PRINT* , 'jnode=',jnode
 
    ! ... Read nodes for horizontal plane output ...........................
    READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) iop
    IF (ios /= 0) CALL input_error ( ios, 6 )
    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) itspfh
    IF (ios /= 0) CALL input_error ( ios, 6 )
-   ! IF (iop /= 0) THEN
    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) n_planes
    IF (ios /= 0) CALL input_error ( ios, 6 )
    IF (n_planes > max_planes) THEN
      PRINT *,'ERROR: # of planes requested > maximum allowed'
      STOP
    END IF
-   DO j = 1, n_planes
-     ! ... Read number of cells in X-section j
-     READ (UNIT=i5, FMT='(14X,I20)' , IOSTAT=ios) p_out(j)
-   ENDDO
-   ! ENDIF
+   IF (n_planes > 0) THEN
+     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (p_out(nn), nn = 1, n_planes)
+     IF (ios /= 0) CALL input_error ( ios, 6 )
+   ELSE IF (n_planes == 0) THEN
+     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios)
+     IF (ios /= 0) CALL input_error ( ios, 6 )
+   END IF
+
+   PRINT*, 'iht',iop
+   PRINT*, 'itspfh',itspfh
+   PRINT*, 'n_planes',n_planes
+   PRINT*, 'p_out',p_out
+
 
    ! ... Read nodes for vertical plane output ...........................
    READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) iox
    IF (ios /= 0) CALL input_error ( ios, 7 )
+   PRINT*, 'iox',iox
    IF (iox /= 0) THEN
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) n_sections
      IF (ios /= 0) CALL input_error ( ios, 7 )
@@ -114,10 +130,13 @@ SUBROUTINE input
 
    !! ... Read toggles for 3D output  .....................................
    READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) ipxml
+   PRINT*, 'ipxml', ipxml
    IF (ios /= 0) CALL input_error ( ios, 7 )
    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) itspf
+   PRINT*, 'itspf', itspf
    IF (ios /= 0) CALL input_error ( ios, 7 )
    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iTurbVars
+   PRINT*, 'iTurbVars', iTurbVars
    IF (ios /= 0) CALL input_error ( ios, 7 )
 
    !.....Read info on open boundaries.....................................
@@ -126,21 +145,31 @@ SUBROUTINE input
    IF (nopen > 0) THEN
       READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) dtsecopenbc
       IF (ios /= 0) CALL input_error ( ios, 8 )
-      DO nn = 1, nopen
-         READ (UNIT=i5, FMT='(/(14X,I20))', IOSTAT=ios) iside(nn)
-         IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) itype(nn)
-         IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) isbc(nn)
-         IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) jsbc(nn)
-         IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iebc(nn)
-         IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) jebc(nn)
-         IF (ios /= 0) CALL input_error ( ios, 8 )
-      END DO
+      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iside(nn), nn = 1, nopen)
+      IF (ios /= 0) CALL input_error ( ios, 8 )
+      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (itype(nn), nn = 1, nopen)
+      IF (ios /= 0) CALL input_error ( ios, 8 )
+      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (isbc(nn), nn = 1, nopen)
+      IF (ios /= 0) CALL input_error ( ios, 8 )
+      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jsbc(nn), nn = 1, nopen)
+      IF (ios /= 0) CALL input_error ( ios, 8 )
+      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iebc(nn), nn = 1, nopen)
+      IF (ios /= 0) CALL input_error ( ios, 8 )
+      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jebc(nn), nn = 1, nopen)
+      IF (ios /= 0) CALL input_error ( ios, 8 )
+    ELSE IF (nopen == 0) THEN
+      READ (UNIT=i5, FMT='(//////)', IOSTAT=ios)
+      IF (ios /= 0) CALL input_error ( ios, 8 )
    END IF
+
+   PRINT*, 'nopen',nopen
+   PRINT*, 'dtsecopenbc', dtsecopenbc
+   PRINT*, 'iside', iside
+   PRINT*, 'itype', itype
+   PRINT*, 'isbc', isbc
+   PRINT*, 'jsbc', jsbc
+   PRINT*, 'iebc', iebc
+   PRINT*, 'jebc', jebc
 
    !.....Read info to output nested grid boundaries ......................
    IF (ioNBTOGGLE > 0 ) THEN
@@ -151,22 +180,30 @@ SUBROUTINE input
        IF (ios /= 0) CALL input_error ( ios, 8 )
        READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) xxNBO
        IF (ios /= 0) CALL input_error ( ios, 8 )
-       DO nn = 1, nxNBO
-         READ (UNIT=i5, FMT='(/(14X,I20))', IOSTAT=ios) isdNBO(nn)
+         READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (isdNBO(nn), nn=1, nxNBO)
          IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) isbcNBO(nn)
+         READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (isbcNBO(nn), nn=1, nxNBO)
          IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) jsbcNBO(nn)
+         READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jsbcNBO(nn), nn=1, nxNBO)
          IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iebcNBO(nn)
+         READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iebcNBO(nn), nn=1, nxNBO)
          IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) jebcNBO(nn)
+         READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jebcNBO(nn), nn=1, nxNBO)
          IF (ios /= 0) CALL input_error ( ios, 8 )
-
-
-       END DO
+       ELSE IF (nxNBO == 0) THEN
+         READ (UNIT=i5, FMT='(//////)', IOSTAT=ios)
+         IF (ios /= 0) CALL input_error ( ios, 8 )
      END IF
    END IF
+
+   PRINT*, 'nxNBO',nxNBO
+   PRINT*, 'ioNBO', ioNBO
+   PRINT*, 'xxNBO', xxNBO
+   PRINT*, 'isdNBO', isdNBO
+   PRINT*, 'isbcNBO', isbcNBO
+   PRINT*, 'jsbcNBO', jsbcNBO
+   PRINT*, 'iebcNBO', iebcNBO
+   PRINT*, 'jebcNBO', jebcNBO
 
    !.... Read info for tracers ...........................................
    READ (UNIT=i5, FMT='(///14X,I20)', IOSTAT=ios) ntr
@@ -176,8 +213,15 @@ SUBROUTINE input
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) ecomod
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iotr
      IF (ios  /= 0) CALL input_error ( ios, 9 )
+   ELSE IF (ntr == 0) THEN
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
    ENDIF
-    print *,"aqui interp"
+
+   PRINT*, 'ntr',ntr
+   PRINT*, 'ecomod',ecomod
+   PRINT*, 'iotr',iotr
+
    !.... Read info for plume models & oxygenation systems ................
    READ (UNIT=i5, FMT='(///14X,I20)', IOSTAT=ios) iopss
    IF (ios  /= 0) CALL input_error ( ios, 10 )
@@ -202,60 +246,64 @@ SUBROUTINE input
 
      ! ... Read in locations & characteristics of diffusers
      !     At this point, they are pressumed constants in time
-     READ (UNIT=i5, FMT='(A)', IOSTAT=ios) commentline
      i = 0;
-     DO j = 1, iopss
-       IF (ios/= 0) CALL input_error ( ios, 10)
-       READ (UNIT=i5, FMT='(9X,3I4)', IOSTAT=ios)  &
-            ipss(j), jpss(j), iodev(j)
-       IF (ios/= 0) CALL input_error ( ios, 10 )
-       IF (iodev(j).NE.i) i = iodev(j)
-     END DO
-     IF (i .NE. npssdev) THEN
-       PRINT *, '*** ERROR ***'
-       PRINT *, 'No. of devices causing point sources'
-       STOP
-     ENDIF
+     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (ipss(nn), nn=1, iopss)
+     IF (ios/= 0) CALL input_error ( ios, 10)
+     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jpss(nn), nn=1, iopss)
+     IF (ios/= 0) CALL input_error ( ios, 10)
+     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iodev(nn), nn=1, iopss)
+     IF (ios/= 0) CALL input_error ( ios, 10)
 
+     IF (SUM(iodev) /= npssdev) THEN
+       PRINT*, '*** ERROR *** No. of Devices causing point sources'
+       STOP
+     END IF
      ! ... Read sources & sinks specifications -
      CALL PointSourceSinkInput
-
+   ELSE IF (iopss == 0) THEN
+     READ (UNIT=i5, FMT='(////)', IOSTAT=ios)
+     IF (ios  /= 0) CALL input_error ( ios, 10 )
    ENDIF
-   print *,"antes interp"
+
+   PRINT*, 'iopss', iopss
+   PRINT*, 'Nodev', npssdev
+   PRINT*, 'iodt',dtsecpss
+   PRINT*, 'ipss', ipss
+   PRINT*, 'jpss', jpss
+   PRINT*, 'iodev', iodev
+   PRINT*, 'sum',SUM(iodev)
 
    ! ... Input instructions & parameters controlling the solution of
    !     the tracer transport equations.
    IF (ntr > 0) THEN
-
      ! ... Allocate space for some arrays - they are initialized
-   !     only if ecomod < 0, but used allways in determining
-   !     if the tracer transport equation is used or not in subroutine fd.
+     !     only if ecomod < 0, but used allways in determining
+     !     if the tracer transport equation is used or not in subroutine fd.
      !ALLOCATE ( trct0(ntr), trcpk(ntr), trctn(ntr), &
      !          trcx0(ntr), trcy0(ntr), trcz0(ntr), &
      !           trcsx(ntr), trcsy(ntr), trcsz(ntr), STAT=istat)
      !IF (istat /= 0) CALL allocate_error ( istat, 121 )
 
      ! .... Initialize trct0 and trctn to default values
-   trct0 = 1E7;
-   trctn =   0;
+     trct0 = 1E7;
+     trctn =   0;
 
      ! .... Define other input variables
      SELECT CASE (ecomod)
-     CASE (-1) ! Tracer Cloud Releases
+      CASE (-1) ! Tracer Cloud Releases
         PRINT *, 'Tracer Cloud Modelling activated'
         CALL trcinput
-     CASE (1) ! Water quality routines
+      CASE (1) ! Water quality routines
         PRINT *, 'Water Quality Model activated'
         CALL wqinput
-     CASE (2) ! Size Structure distribution
+      CASE (2) ! Size Structure distribution
         PRINT *, 'Size Structure Model activated'
         CALL szinput
-     CASE (3) ! Sediment transport routines
+      CASE (3) ! Sediment transport routines
         PRINT *, 'Sediment transport activated'
         CALL sdinput
-     END SELECT
-
-   ENDIF
+      END SELECT
+    ENDIF
 
    ! ... Read info for interpolation method (Added 12/2010 by SWA)
    IF (ifsurfbc >=10) THEN
@@ -268,6 +316,9 @@ SUBROUTINE input
        IF (ios  /= 0) CALL input_error ( ios, 10 )
      ENDIF
    ENDIF
+   PRINT*,'iinterp',iinterp
+   PRINT*,'gammaB',gammaB
+   PRINT*,'delNfactor',delNfactor
 
    !.....Close input file.....
    CLOSE (UNIT=i5)
