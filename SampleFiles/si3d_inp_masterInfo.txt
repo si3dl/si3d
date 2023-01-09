@@ -1,0 +1,124 @@
+*******************************************************
+LAKE MODELING RUN ##  ---------------------------------
+=======================================================
+----THIS FILE IS EXCLUSIVELY TO PROVIDE INFORMATION----
+----ON HOW EDIT THE INPUT FILE. PLEASE USE THE---------
+----si3d_inp_master.txt AS THE SAMPLE INPUT FILE FOR---
+----PSI3D.--------------------------------------------- 
+=======================================================
+Start date and time for simulations
+-------------------------------------------------------
+ year        !    2018            !
+ month       !      04            !
+ day         !      13            !
+ hour        !    0000            !
+-------------------------------------------------------
+Space-time domains, cell size & time steps  
+-------------------------------------------------------
+ xl          !    20800.          ! Length of domain (m) in EW direction
+ yl          !    35200.          !   "    "    "    (m) in NS       "
+ zl          !     504.0          !   "    "    "    (m) in vertical
+ tl          !   86400.0          ! Length of time (s) simulated (61d)
+ idx         !     800.0          ! Cell size (m) in EW direction
+ idy         !     800.0          ! Cell size (m) in NS direction
+ idz         !       5.0          ! Cell size (m) in vertical
+ dzmin       !       1.0          ! Min. cell size (m) in vertical
+ datadj      !       0.0          ! Adjustment of datum by default datum = 0.0
+ zeta0       !       0.0          ! Initial location of water surface 
+ idt         !      10.0          ! Time step (s)
+ ibathf      !        -1          ! How bathy file is read 0(General) 1(SDWSC) 2(SHR)
+-------------------------------------------------------
+Parameters controlling solution algorithm  
+-------------------------------------------------------
+ itrap       !        1           ! 1 = trapezoidal iteration is used; single step LF if 0 
+ niter       !        3           ! No. of trapezoidal iterations 
+ smooth      !        0           ! Smoothing of LF solution 1 = Smooth; 0 = DO NOT smooth
+ beta        !     0.05           ! Beta parameter for smoothing filter (0.05-0.2 recommended)
+ iturb       !        1           ! 0 = constant vert. eddy visc. 1 = 2-eq. model (Mellor&Yamada)
+ az0         !    1.E-3           ! Constant vert. eddy viscosity (if iturb = 0) (m2/s)
+ dz0         !    1.E-3           ! Constant vert. eddy diffusivity (if iturb = 0) (m2/s)
+ iadv        !        1           ! 0 = mom. advection OFF; 1 = mom. advection ON
+ itrmom      !        1           ! Algorithm for mom. horizontal advection 1=centered; 2=upwind
+ ihd         !        2           ! 0 = horizontal diffusion (of mom. or scalar) OFF 1 = horiz. diffusion ON  2 = Smagorisnki
+ ax0         !    1.E-3           ! Horizontal eddy diffusivity/viscosity in EW-direction (ms-2)
+ ay0         !    1.E-3           ! Horizontal eddy diffusivity/viscosity in NS-direction(ms-2)
+ f           !   9.197e-5         ! f Coriolis parameter (s-1)
+ theta       !        1.          ! Weighting parameter for semi-implicit solution (0.5-1) - Not used
+ ibc         !        1           ! 1 = Baroclinic terms in included in mom. solution (0 otherwise)
+ isal        !        1           ! 1 = Solve scalar transport equation (0 otherwise)
+ itrsch      !        1           ! Scalar advection 1=centered(C);2=upwind(U);3=U at k=k1z+1; (4)=Flux limiter
+ cd          !    0.004           ! Bottom drag coefficient (adimensional)
+ ifsbc       !        3           ! Surface BC; 0 = constant ; 1 = preprocess mode ; 2 = runtime mode I ; 3 = Runtime mode II
+ dtsbc       !     600.           ! Time step (s) between records in surbc.txt (when ifsbc = 1)
+ cw          !     1.1E-3         ! Wind drag coefficient (only if ifsbc = 0)
+ ws          !      0.00          ! Wind speed (constant in m/s) when ifsbc = 0
+ phi         !    000.0           ! Wind direction (constant in degress) when ifsbc = 0
+ idbg        !        0           ! 0 = no check messages 1 = check messages output for debug purposes
+ nth         !       12           ! Number of processors used in parallelization
+-------------------------------------------------------
+Output specifications for time files (individual nodes)
+-------------------------------------------------------  
+ ipt         !       360          ! No. of time step between consecutive output to time file  (2h)
+ nnodes      !         4          !
+ inodes      ! 159, 60,101, 2     ! i-location for the node to extract variables. Use bathymetry for reference (i.e., h file)  
+ inodes      !  69,500, 28,27     ! j-location for the node to extract variables. Use bathymetry for reference (i.e., h file)
+-------------------------------------------------------
+Output specifications for H-plane files (plot in matlab with LoadPlotSheetFile3L)
+-------------------------------------------------------
+ iht         !       360          ! No. of time step between consecutive output to plane file  (2h)
+ itspfh      !         0          ! No. of time steps before first output to horizontal plane file 
+ nplanes     !         5          !
+ planes      !   2,3,5,40,20      ! Layer numbers of depth that will be exported
+------------------------------------------------------
+Output specifications for X-section files (plot in matlab with LoadPlotSectionFile3L)
+-------------------------------------------------------
+ ixt         !        0           ! No. of time step between consecutive output to section file
+-------------------------------------------------------
+Output specifications for 3D space files
+-------------------------------------------------------
+ ipxml       !      -720          ! No. of time step between consecutive output to 3D-space file (1h)
+ itspf       !         0          ! No. of time steps before first output to 3D-space file
+ iTurbVars   !         0          ! 0 for only velocity and temperature outputs and 1 to include turbulent parameters
+-------------------------------------------------------  
+Open boundary conditions specifications 
+-------------------------------------------------------   
+ nopen       !        2           ! No. of open boundaries
+ dtsecopenbc !     600.0          ! Time (s) betwen consecutive records in openb boundary conditions files
+ iside       !        1,3         ! 1 = West; 2 = North; 3 = East; 4 = South boundary
+ itype       !        2,3         ! 1 = wse ; 2 = surface flow; 3 = subsurface flow;
+ isbc        !        5,151       ! i- location for first cell along open boundary 
+ jsbc        !       97,100       ! j- location for first cell along open boundary
+ iebc        !        5,151       ! i- location for last cell along open boundary or k- top cell (if itype = 3)
+ jebc        !       97,100       ! j- location ofr last cell alont open boundary or k- bot cell (if itype = 3), outflow of 5m heigth and 5m width
+------------------------------------------------------     
+Open boundary conditions for nesting procedures  
+-------------------------------------------------------     
+ nxBDO       !        2           ! No. of open bdries
+ iob         !        1           ! Steps between consecutive records to output files
+ xxb         !        4           ! Scaling in the x-direction
+ iside       !        3,1         ! 1 = West; 2 = North; 3 = East; 4 = South boundary
+ isbc        !       64,45        ! j- location for first cell along open boundary
+ jsbc        !       78,78        ! i- location for first cell along open boundary 
+ iebc        !       64,32        ! j- location ofr last cell alont open boundary or k- bot cell (if itype = 3) 
+ jebc        !       92,43        ! i- location for last cell along open boundary or k- top cell (if itype = 3)
+ ------------------------------------------------------    
+Specification for tracer (other than oxygen) simulation 
+-------------------------------------------------------     
+ ntr         !        0           ! No. of tracers sim. 
+ ecomod      !       -1           !
+ iotr        !      300           ! (10 min) 
+-------------------------------------------------------       
+Specification for oxgygenation system simulations
+-------------------------------------------------------            
+ iopts       !        4           ! No. of columns with point sources-sinks
+ Nodev       !        4           ! No. of devices acting as sources-sinks 
+ iodt        !      600.          ! Time (secs) between consecutive records in io files
+ ipss        !  17,18,19,20
+ jpss        ! 399,20,20,20
+ iodev       !   1,2,3,4
+-------------------------------------------------------       
+Specification for interpolation method
+------------------------------------------------------- 
+ iinterp     !        2           ! Interpolation type (1=old Barnes, 2=new Barnes, 3=inverse distance)
+ gammaB      !      0.3           ! Correction pass factor for new Barnes method (0.2<=gammaB<=1.0)
+ delNfactor  !      1.5           ! Sphere of influence factor for new Barnes method (factor>=1.0)
