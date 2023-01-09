@@ -246,7 +246,6 @@ SUBROUTINE input
 
      ! ... Read in locations & characteristics of diffusers
      !     At this point, they are pressumed constants in time
-     i = 0;
      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (ipss(nn), nn=1, iopss)
      IF (ios/= 0) CALL input_error ( ios, 10)
      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jpss(nn), nn=1, iopss)
@@ -254,7 +253,7 @@ SUBROUTINE input
      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iodev(nn), nn=1, iopss)
      IF (ios/= 0) CALL input_error ( ios, 10)
 
-     IF (SUM(iodev) /= npssdev) THEN
+     IF (iodev) /= npssdev) THEN  ! iodev es el identificador del dispositivo. Nodev es el numero de dispositivos. Entonces, el ultimo valor de iodev debe ser igual al Nodev. 
        PRINT*, '*** ERROR *** No. of Devices causing point sources'
        STOP
      END IF
