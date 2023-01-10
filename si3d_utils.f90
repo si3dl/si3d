@@ -253,7 +253,7 @@ SUBROUTINE input
      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iodev(nn), nn=1, iopss)
      IF (ios/= 0) CALL input_error ( ios, 10)
 
-     IF (iodev) /= npssdev) THEN  ! iodev es el identificador del dispositivo. Nodev es el numero de dispositivos. Entonces, el ultimo valor de iodev debe ser igual al Nodev. 
+     IF (iodev(npssdev) /= npssdev) THEN  ! iodev es el identificador del dispositivo. Nodev es el numero de dispositivos. Entonces, el ultimo valor de iodev debe ser igual al Nodev. 
        PRINT*, '*** ERROR *** No. of Devices causing point sources'
        STOP
      END IF
