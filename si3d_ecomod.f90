@@ -444,34 +444,34 @@ SUBROUTINE WQinput
   IF (ios /= 0) CALL input_error ( ios, 94)
 
 
-  !... Convert model rates [1/s]. Input file has 1/day values
+  !... Convert model rates [1/s]. Input file has 1/day values. WQ module is run every hour
   ! DO
-  R_reaer   =  R_reaer*idt/86400.0
-  R_SOD     =  R_SOD*idt/86400.0
+  R_reaer   =  R_reaer/86400.0
+  R_SOD     =  R_SOD/86400.0
   ! ALG 
-  mu_max1 =  mu_max1*idt/86400.0
-  R_mor1 =  R_mor1*idt/86400.0
-  R_gr1 =  R_gr1*idt/86400.0
-  mu_max2 =  mu_max2*idt/86400.0
-  R_mor2 =  R_mor2*idt/86400.0
-  R_gr2 =  R_gr2*idt/86400.0
-  mu_max3 =  mu_max3*idt/86400.0
-  R_mor3 =  R_mor3*idt/86400.0
-  R_gr3 =  R_gr3*idt/86400.0
-  mu_max4 =  mu_max4*idt/86400.0
-  R_mor4 =  R_mor4*idt/86400.0
-  R_gr4 =  R_gr4*idt/86400.0
+  mu_max1 =  mu_max1/86400.0
+  R_mor1 =  R_mor1/86400.0
+  R_gr1 =  R_gr1/86400.0
+  mu_max2 =  mu_max2/86400.0
+  R_mor2 =  R_mor2/86400.0
+  R_gr2 =  R_gr2/86400.0
+  mu_max3 =  mu_max3/86400.0
+  R_mor3 =  R_mor3/86400.0
+  R_gr3 =  R_gr3/86400.0
+  mu_max4 =  mu_max4/86400.0
+  R_mor4 =  R_mor4/86400.0
+  R_gr4 =  R_gr4/86400.0
   ! Nutrients
-  R_decom_pon =  R_decom_pon*idt/86400.0
-  R_miner_don =  R_miner_don*idt/86400.0
-  R_nitrif =  R_nitrif*idt/86400.0
-  R_denit =  R_denit*idt/86400.0
-  R_decom_pop =  R_decom_pop*idt/86400.0
-  R_miner_dop =  R_miner_dop*idt/86400.0
-  R_decom_poc =  R_decom_poc*idt/86400.0
-  R_miner_doc =  R_miner_doc*idt/86400.0
-  R_settl =  R_settl*idt/86400.0
-  R_resusp =  R_resusp*idt/86400.0
+  R_decom_pon =  R_decom_pon/86400.0
+  R_miner_don =  R_miner_don/86400.0
+  R_nitrif =  R_nitrif/86400.0
+  R_denit =  R_denit/86400.0
+  R_decom_pop =  R_decom_pop/86400.0
+  R_miner_dop =  R_miner_dop/86400.0
+  R_decom_poc =  R_decom_poc/86400.0
+  R_miner_doc =  R_miner_doc/86400.0
+  R_settl =  R_settl/86400.0
+  R_resusp =  R_resusp/86400.0
 
   !. . . Read model temperature rates
   READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) Theta_SOD, Theta_mu, Theta_mor, Theta_gr, &
@@ -485,18 +485,18 @@ SUBROUTINE WQinput
   &    SED_DOP, SED_PO4, SED_DOC
   IF (ios /= 0) CALL input_error ( ios, 96)
 
-  ATM_DON = ATM_DON*idt/86400.0
-  ATM_NH4 = ATM_NH4*idt/86400.0
-  ATM_NO3 = ATM_NO3*idt/86400.0
-  ATM_DOP = ATM_DOP*idt/86400.0
-  ATM_PO4 = ATM_PO4*idt/86400.0
-  ATM_DOC = ATM_DOC*idt/86400.0
-  SED_DON = SED_DON*idt/86400.0
-  SED_NH4 = SED_NH4*idt/86400.0
-  SED_NO3 = SED_NO3*idt/86400.0
-  SED_DOP = SED_DOP*idt/86400.0
-  SED_PO4 = SED_PO4*idt/86400.0
-  SED_DOC = SED_DOC*idt/86400.0
+  ATM_DON = ATM_DON/86400.0
+  ATM_NH4 = ATM_NH4/86400.0
+  ATM_NO3 = ATM_NO3/86400.0
+  ATM_DOP = ATM_DOP/86400.0
+  ATM_PO4 = ATM_PO4/86400.0
+  ATM_DOC = ATM_DOC/86400.0
+  SED_DON = SED_DON/86400.0
+  SED_NH4 = SED_NH4/86400.0
+  SED_NO3 = SED_NO3/86400.0
+  SED_DOP = SED_DOP/86400.0
+  SED_PO4 = SED_PO4/86400.0
+  SED_DOC = SED_DOC/86400.0
 
   IF (idbg == 1) THEN
     PRINT*, "iDO  = ", iDO , "iPOC = ", iPOC, "iDOC = ", iDOC
@@ -769,6 +769,7 @@ SUBROUTINE sourceDO(kwq,lwq, num_threads)
   OS = EXP(lnos)
 
   ! Correct for Patmospheric (Pa - declared in si3d_types and defined in surfbc0)
+
   Patm   = Pa * 0.00000986923; ! Transform atmospheric pressure from Pa to atm
   ln_Pwv = 11.8751 - (3840.70/Tk) - (216961/(Tk**2.))
   Pwv    = EXP(ln_Pwv)
@@ -799,9 +800,9 @@ ELSE
 
 END IF
 
-!IF (lwq .eq. 300) THEN
+!IF (lwq .eq. 11) THEN
 !      IF (kwq .eq. k1z(lwq)) THEN
-!         PRINT *, 'DOs = ', OS,', DO = ',tracerpp(kwq,lwq,LDO),', reaeration = ',reaeration
+!        PRINT *, 'DOs = ', OS,', DO = ',tracerpp(kwq,lwq,LDO),', reaeration = ',reaeration
 !      END IF
 !END IF
 
@@ -1377,26 +1378,26 @@ SUBROUTINE sourceALG1(kwq, lwq, num_threads)
 !. . Calculate growth
     mu1 = mu_max1 * MIN(f_L1,f_N,f_P)
     growth1 = mu1 * f_T * tracerpp(kwq,lwq,LALG1)
-    growth1 = growth1/REAL(num_threads)
+    !growth1 = growth1/REAL(num_threads)
 !. . Calculate mortality, respiration & excretion
     mort1   = R_mor1 * Theta_mor**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG1)
-    mort1 = mort1 /REAL(num_threads)
+    !mort1 = mort1 /REAL(num_threads)
       IF (mort1 .lt. 0.0) THEN
          mort1 = 0.0
       END IF
 
 !. . Calculate grazing
     graz1   = R_gr1 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG1) 
-    graz1 = graz1/REAL(num_threads)
+    !graz1 = graz1/REAL(num_threads)
     IF ((tracerpp(kwq,lwq,LALG1)- graz1) .le. 0.01) THEN
         graz1 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
     END IF
 !. . Calculate settling
     sett1   = R_settl * tracerpp(kwq,lwq,LALG1)/ hpp(kwq,lwq)
-    sett1 = sett1 /REAL(num_threads)
+    !sett1 = sett1 /REAL(num_threads)
 !. . Calculate resuspension
     resus1   = R_resusp * tracerpp(kwq,lwq,LALG1)/ hpp(kwq,lwq)
-    resus1 = resus1 /REAL(num_threads)
+    !resus1 = resus1 /REAL(num_threads)
 
 ! Source-Sink equation
 sourcesink(kwq,lwq,LALG1) = sourcesink(kwq,lwq,LALG1) + growth1 - mort1 - graz1 - sett1 + resus1

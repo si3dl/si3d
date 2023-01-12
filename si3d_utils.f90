@@ -171,6 +171,7 @@ SUBROUTINE input
    IF (ntr > 0) THEN
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) ecomod
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iotr
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) ipwq ! Time step to run WQ modules. E.g. in idt = 100 s, and want to run WQ every 1 h, ipwq = 36;
      IF (ios  /= 0) CALL input_error ( ios, 9 )
    ENDIF
     print *,"aqui interp"

@@ -516,7 +516,10 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
        ELSE IF (ecomod == 0) THEN
          CALL srcsnk00
        ELSE IF (ecomod == 1) THEN
-         CALL srcsnkWQ(thrs)
+         IF (idbg == 1) PRINT *, " Before entry into SUB srcsnkWQ "
+          IF((ecomod == 1) .AND. (MOD(n,MAX(ipwq,  1)) == 0)) CALL srcsnkWQ(thrs) ! ACC 11/21/2022 added to run WQ at lower frequency than hydrodynamics
+         !CALL srcsnkWQ(thrs)
+         IF (idbg == 1) PRINT *, " After entry into SUB srcsnkWQ "
        ELSE IF (ecomod == 2) THEN
          CALL srcsnkSZ
        ELSE IF (ecomod == 3) THEN
