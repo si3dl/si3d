@@ -19,7 +19,6 @@
 
 CONTAINS
 
-
 !***********************************************************************
 SUBROUTINE init
 !***********************************************************************
@@ -358,7 +357,6 @@ SUBROUTINE InitializeScalarFields
          z = zlevel(k) + 0.5 * hp(k,l)
        ENDIF
        rhop(k,l) = densty_s ( salp(k,l), 0.00004,z) - 1000.
-       ! PRINT *, "z=",z,"rho=",rhop(k,l)+1000
      END DO
    END DO
 
@@ -927,65 +925,6 @@ SUBROUTINE exmom ( ieq  )
                  &     -  haypp(k,lSC(l))*(vpp(k,lEC(lSC(l)))-vpp(k,lSC(l))))/dxdy
             ENDIF
 
-            ! ... Adjust terms to account for boundary conditions - HardCoded for NortheDelta Study
-            !IF((                           j>=  jm1 - 20          )   .OR. &
-            !   (i<=591               .AND. j<=  60                )   .OR. &
-            !   (i<=20                                             )   .OR. &
-            !   (i>=990 .AND. i<=1010 .AND. j>=  74 .AND. j <=  81 )   .OR. &
-            !   (                           j<=  20                )   .OR. &
-            !   (i>=678 .AND. i<= 682 .AND. j>= 100 .AND. j <= 115 )) THEN
-            !   corx = 0.0
-            !   advx = 0.0
-            !   hdx  = 2.*hdx
-            !ENDIF
-
-            !IF ((i<=86                 .AND. j>991                 )   .OR. & !CINTIA (SUTTER SLOUGH)
-            !    (i>=613                .AND. j<=27                 )   .OR. & !CINTIA (SUTTER GEO)
-            !    (i>679                 .AND. j<=114                ))  THEN  !CINTIA (SUTTER DCC)
-            !  !corx = 0.0
-            !  !advx = 0.0
-            !  hdx = 2.*hdx
-            !ENDIF
-
-            ! ... Needed to keep simulations stable near the boundaries - TAHOE MAC
-            !IF(i >= 2 .AND. i <= 10) THEN
-            !  hdx   = 4.*hdx
-            !  advx  = 0.0
-            !  corx  = 0.
-            !ENDIF
-            !IF(j >= 2 .AND. j <= 13) THEN
-            !  hdx   = 4.*hdx
-            !  advx  = 0.0
-            !  corx  = 0.
-            !ENDIF
-            !IF(i >= 2 .AND. i <= 7) THEN
-            !  hdx   = 4.*hdx
-            !  advx  = 0.0
-            !  corx  = 0.
-            !ENDIF
-
-            !IF(i == 2) THEN
-            !  hdx   = 4.*hdx
-            !  advx  = 0.0
-            !  corx  = 0.
-            !ENDIF
-            !IF(j == 2) THEN
-            !  hdx   = 4.*hdx
-            !  advx  = 0.0
-            !  corx  = 0.
-            !ENDIF
-            !IF(j == 23) THEN !13
-            !  hdx   = 4.*hdx
-            !  advx  = 0.0
-            !  corx  = 0.
-            !ENDIF
-
-            !IF (i >= (im1 - 20) ) THEN; !BeznarCOLA
-            !   hdx  = 10.*hdx;
-            !   corx = 0.0;
-            !   advx = 0.0;
-            !end IF
-
             !.....Final explicit term.....
             ex(k,l) = uhpp(k,l) - twodt1*(advx*iadv-corx-hdx)
 
@@ -1192,74 +1131,6 @@ SUBROUTINE exmom ( ieq  )
                  &   +   (haxpp(k,    l )*(upp(k,lNC(    l ))-upp(k,    l ))       &
                  &     -  haxpp(k,lWC(l))*(upp(k,lNC(lWC(l)))-upp(k,lWC(l))))/dxdy
             ENDIF
-
-            ! ... Adjust terms to account for boundary conditions - HardCoded for NorthDelta Study
-            !IF((                           j>=  jm1 - 20          )   .OR. &
-            !   (i<=591               .AND. j<=  60                )   .OR. &
-            !   (i<=20                                             )   .OR. &
-            !   (i>=990 .AND. i<=1010 .AND. j>=  74 .AND. j <=  81 )   .OR. &
-            !   (                           j<=  20                )   .OR. &
-            !   (i>=678 .AND. i<= 682 .AND. j>= 100 .AND. j <= 115 )) THEN
-            !   cory = 0.0
-            !   advy = 0.0
-            !   hdy  = 2.*hdy
-            !ENDIF
-
-            !IF ((i<=86                 .AND. j>991                 )   .OR. & !CINTIA (SUTTER SLOUGH)
-            !    (i>=613                .AND. j<=27                 )   .OR. & !CINTIA (SUTTER GEO)
-            !    (i>679                 .AND. j<=114                ))  THEN  !CINTIA (SUTTER DCC)
-
-            !  !cory = 0.0
-            !  !advy = 0.0
-            !  hdy = 2.*hdy
-            !ENDIF
-
-            ! ... Needed to keep simulations stable near the boundaries - Cayuga
-            !IF( i >=  im1 - 20) THEN;
-            !  hdy   = 4.*hdy
-            !  advy  = 0.0
-            !  cory  = 0.
-            !ENDIF
-            !IF(j >= 297 .AND. j <= 301) THEN
-            !  hdy   = 4.*hdy
-            !  advy  = 0.0
-            !  cory  = 0.
-            !ENDIF
-            !IF(j >= 2 .AND. j <= 6) THEN
-            !  hdy   = 4.*hdy
-            !  advy  = 0.0
-            !  cory  = 0.
-            !ENDIF
-            !IF(i >= 2 .AND. i <= 6) THEN
-            !  hdy   = 4.*hdy
-            !  advy  = 0.0
-            !  cory  = 0.
-            !ENDIF
-
-
-            !IF(j == 23) THEN !13
-            !  hdy   = 4.*hdy
-            !  advy  = 0.0
-            !  cory  = 0.
-            !ENDIF
-            !IF(j == 2) THEN
-            !  hdy   = 4.*hdy
-            !  advy  = 0.0
-            !  cory  = 0.
-            !ENDIF
-            !IF(i == 2) THEN
-            !  hdy   = 4.*hdy
-            !  advy  = 0.0
-            !  cory  = 0.
-            !ENDIF
-
-            ! ... Needed to keep simulations stable near the boundaries - Beznar Cola
-            !IF( i >=  im1 - 20) THEN;
-            !  hdy   = 10.*hdy
-            !  advy  = 0.0
-            !  cory  = 0.0
-            !ENDIF
-
 
             !.....Final explicit term.....
             ex(k,l) = vhpp(k,l) - twodt1*(advy*iadv+cory-hdy)

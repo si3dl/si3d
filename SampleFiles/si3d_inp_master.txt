@@ -79,29 +79,30 @@ Open boundary conditions specifications
 -------------------------------------------------------   
  nopen       !        2           ! No. of open boundaries
  dtsecopenbc !     600.0          ! Time (s) betwen consecutive records in openb boundary conditions files
- iside       !        1,3                       ! 1 = West; 2 = North; 3 = East; 4 = South boundary
- itype       !        2,3                       ! 1 = wse ; 2 = surface flow; 3 = subsurface flow;
- isbc        !        5,151                     ! i- location for first cell along open boundary 
- jsbc        !       97,100                     ! j- location for first cell along open boundary
- iebc        !        5,151                     ! i- location for last cell along open boundary or k- top cell (if itype = 3)
- jebc        !       97,100                     ! j- location ofr last cell alont open boundary or k- bot cell (if itype = 3), outflow of 5m heigth and 5m width
+ iside       !        1,3
+ itype       !        2,3
+ isbc        !        5,151
+ jsbc        !       97,100
+ iebc        !        5,151
+ jebc        !       97,100
 ------------------------------------------------------     
 Open boundary conditions for nesting procedures  
 -------------------------------------------------------     
  nxBDO       !        2           ! No. of open bdries
  iob         !        1           ! Steps between consecutive records to output files
  xxb         !        4           ! Scaling in the x-direction
- iside       !        3,1                      ! 1 = West; 2 = North; 3 = East; 4 = South boundary
- isbc        !       64,45                     ! j- location for first cell along open boundary
- jsbc        !       78,78                     ! i- location for first cell along open boundary 
- iebc        !       64,32                     ! j- location ofr last cell alont open boundary or k- bot cell (if itype = 3) 
- jebc        !       92,43                     ! i- location for last cell along open boundary or k- top cell (if itype = 3)
+ iside       !        3,1
+ isbc        !       64,45
+ jsbc        !       78,78
+ iebc        !       64,32 
+ jebc        !       92,43
  ------------------------------------------------------    
 Specification for tracer (other than oxygen) simulation 
 -------------------------------------------------------     
  ntr         !        0           ! No. of tracers sim. 
  ecomod      !       -1           !
- iotr        !      300           ! (10 min) 
+ iotr        !      300           ! (10 min)
+ ipwq        !       36           ! Frequency to run WQ module in time steps - Currently testing 1 h (don't change) 
 -------------------------------------------------------       
 Specification for oxgygenation system simulations
 -------------------------------------------------------            

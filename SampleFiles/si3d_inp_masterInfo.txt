@@ -107,6 +107,7 @@ Specification for tracer (other than oxygen) simulation
  ntr         !        0           ! No. of tracers sim. 
  ecomod      !       -1           !
  iotr        !      300           ! (10 min) 
+ ipwq        !       36           ! Frequency to run WQ module in time steps - Currently testing 1 h (don't change)
 -------------------------------------------------------       
 Specification for oxgygenation system simulations
 -------------------------------------------------------            

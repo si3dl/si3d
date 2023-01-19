@@ -17,9 +17,6 @@
 
   CONTAINS
 
-
-
-
 !************************************************************************
 SUBROUTINE input
 !************************************************************************
@@ -35,7 +32,6 @@ SUBROUTINE input
    !.....Open input parameter file.....
    OPEN (UNIT=i5, FILE=input_file, STATUS="OLD", IOSTAT=ios)
    IF (ios /= 0) CALL open_error ( "Error opening "//input_file, ios )
-
 
    !.....Read header record containing comments about run................
    READ (UNIT=i5, FMT='(/(A))', IOSTAT=ios) title
@@ -72,11 +68,6 @@ SUBROUTINE input
      IF (ios /= 0) CALL input_error ( ios, 5 )
    ENDIF
 
-   PRINT* ,'ipt=',ipt
-   PRINT* , 'nnodes=',nnodes
-   PRINT* , 'inode=',inode
-   PRINT* , 'jnode=',jnode
-
    ! ... Read nodes for horizontal plane output ...........................
    READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) iop
    IF (ios /= 0) CALL input_error ( ios, 6 )
@@ -96,16 +87,9 @@ SUBROUTINE input
      IF (ios /= 0) CALL input_error ( ios, 6 )
    END IF
 
-   PRINT*, 'iht',iop
-   PRINT*, 'itspfh',itspfh
-   PRINT*, 'n_planes',n_planes
-   PRINT*, 'p_out',p_out
-
-
    ! ... Read nodes for vertical plane output ...........................
    READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) iox
    IF (ios /= 0) CALL input_error ( ios, 7 )
-   PRINT*, 'iox',iox
    IF (iox /= 0) THEN
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) n_sections
      IF (ios /= 0) CALL input_error ( ios, 7 )
@@ -130,13 +114,10 @@ SUBROUTINE input
 
    !! ... Read toggles for 3D output  .....................................
    READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) ipxml
-   PRINT*, 'ipxml', ipxml
    IF (ios /= 0) CALL input_error ( ios, 7 )
    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) itspf
-   PRINT*, 'itspf', itspf
    IF (ios /= 0) CALL input_error ( ios, 7 )
    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iTurbVars
-   PRINT*, 'iTurbVars', iTurbVars
    IF (ios /= 0) CALL input_error ( ios, 7 )
 
    !.....Read info on open boundaries.....................................
@@ -161,15 +142,6 @@ SUBROUTINE input
       READ (UNIT=i5, FMT='(//////)', IOSTAT=ios)
       IF (ios /= 0) CALL input_error ( ios, 8 )
    END IF
-
-   PRINT*, 'nopen',nopen
-   PRINT*, 'dtsecopenbc', dtsecopenbc
-   PRINT*, 'iside', iside
-   PRINT*, 'itype', itype
-   PRINT*, 'isbc', isbc
-   PRINT*, 'jsbc', jsbc
-   PRINT*, 'iebc', iebc
-   PRINT*, 'jebc', jebc
 
    !.....Read info to output nested grid boundaries ......................
    IF (ioNBTOGGLE > 0 ) THEN
@@ -196,15 +168,6 @@ SUBROUTINE input
      END IF
    END IF
 
-   PRINT*, 'nxNBO',nxNBO
-   PRINT*, 'ioNBO', ioNBO
-   PRINT*, 'xxNBO', xxNBO
-   PRINT*, 'isdNBO', isdNBO
-   PRINT*, 'isbcNBO', isbcNBO
-   PRINT*, 'jsbcNBO', jsbcNBO
-   PRINT*, 'iebcNBO', iebcNBO
-   PRINT*, 'jebcNBO', jebcNBO
-
    !.... Read info for tracers ...........................................
    READ (UNIT=i5, FMT='(///14X,I20)', IOSTAT=ios) ntr
    IF (ios  /= 0) CALL input_error ( ios, 9 )
@@ -212,15 +175,14 @@ SUBROUTINE input
    IF (ntr > 0) THEN
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) ecomod
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iotr
+     ! ipwq = Time step to run WQ modules. E.g. in idt = 100 s, and want to run WQ every 1 h, ipwq = 36;
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) ipwq 
      IF (ios  /= 0) CALL input_error ( ios, 9 )
    ELSE IF (ntr == 0) THEN
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
    ENDIF
-
-   PRINT*, 'ntr',ntr
-   PRINT*, 'ecomod',ecomod
-   PRINT*, 'iotr',iotr
 
    !.... Read info for plume models & oxygenation systems ................
    READ (UNIT=i5, FMT='(///14X,I20)', IOSTAT=ios) iopss
@@ -263,14 +225,6 @@ SUBROUTINE input
      READ (UNIT=i5, FMT='(////)', IOSTAT=ios)
      IF (ios  /= 0) CALL input_error ( ios, 10 )
    ENDIF
-
-   PRINT*, 'iopss', iopss
-   PRINT*, 'Nodev', npssdev
-   PRINT*, 'iodt',dtsecpss
-   PRINT*, 'ipss', ipss
-   PRINT*, 'jpss', jpss
-   PRINT*, 'iodev', iodev
-   PRINT*, 'sum',SUM(iodev)
 
    ! ... Input instructions & parameters controlling the solution of
    !     the tracer transport equations.
@@ -315,9 +269,6 @@ SUBROUTINE input
        IF (ios  /= 0) CALL input_error ( ios, 10 )
      ENDIF
    ENDIF
-   PRINT*,'iinterp',iinterp
-   PRINT*,'gammaB',gammaB
-   PRINT*,'delNfactor',delNfactor
 
    !.....Close input file.....
    CLOSE (UNIT=i5)
@@ -406,7 +357,6 @@ SUBROUTINE ZGridDimensions
 
    ENDIF
 
-
 END SUBROUTINE ZGridDimensions
 
 !************************************************************************
@@ -426,8 +376,6 @@ SUBROUTINE AllocateSpace
 
    !.....Local variables.....
    INTEGER :: istat, one=1
-
-
 
    !..... Allocate geometry arrays
    ALLOCATE (kmz   (lm1), k1z(lm1), &

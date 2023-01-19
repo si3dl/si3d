@@ -11,7 +11,7 @@ export BINDIR=$GOTMDIR/bin
 export LIBDIR=$GOTMDIR/lib
 
 #IF IFGOTM=false --> The modules 'util' and 'turbulence' are not compiled
-export IFGOTM=true
+export IFGOTM=false
 #IF IFSI3D=false --> Only SI3D is compiled
 export IFSI3D=true
 
