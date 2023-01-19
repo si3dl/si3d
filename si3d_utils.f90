@@ -17,9 +17,6 @@
 
   CONTAINS
 
-
-
-
 !************************************************************************
 SUBROUTINE input
 !************************************************************************
@@ -35,7 +32,6 @@ SUBROUTINE input
    !.....Open input parameter file.....
    OPEN (UNIT=i5, FILE=input_file, STATUS="OLD", IOSTAT=ios)
    IF (ios /= 0) CALL open_error ( "Error opening "//input_file, ios )
-
 
    !.....Read header record containing comments about run................
    READ (UNIT=i5, FMT='(/(A))', IOSTAT=ios) title
@@ -58,14 +54,17 @@ SUBROUTINE input
    IF (ios /= 0) CALL input_error ( ios, 4 )
 
    !.....Read node numbers for time series output .......................
-   READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) ipt
+   READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) ipt,nnodes
    IF (ios /= 0) CALL input_error ( ios, 5 )
-   IF (ipt > 0) THEN
-     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) nnodes
+
+   IF (nnodes > 0) THEN
      IF (ios /= 0) CALL input_error ( ios, 5 )
-     READ (UNIT=i5, FMT='(14X,10I5)', IOSTAT=ios) (inode(nn), nn = 1, nnodes) ! Changed to I5 12/2010 SWA
+     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (inode(nn), nn = 1, nnodes) ! Changed to I5 12/2010 SWA
      IF (ios /= 0) CALL input_error ( ios, 5 )
-     READ (UNIT=i5, FMT='(14X,10I5)', IOSTAT=ios) (jnode(nn), nn = 1, nnodes) ! Changed to I5 12/2010 SWA
+     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jnode(nn), nn = 1, nnodes) ! Changed to I5 12/2010 SWA
+     IF (ios /= 0) CALL input_error ( ios, 5 )
+   ELSE IF (nnodes == 0) THEN
+     READ (UNIT=i5, FMT='(/)', IOSTAT=ios)
      IF (ios /= 0) CALL input_error ( ios, 5 )
    ENDIF
 
@@ -74,18 +73,19 @@ SUBROUTINE input
    IF (ios /= 0) CALL input_error ( ios, 6 )
    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) itspfh
    IF (ios /= 0) CALL input_error ( ios, 6 )
-   ! IF (iop /= 0) THEN
    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) n_planes
    IF (ios /= 0) CALL input_error ( ios, 6 )
    IF (n_planes > max_planes) THEN
      PRINT *,'ERROR: # of planes requested > maximum allowed'
      STOP
    END IF
-   DO j = 1, n_planes
-     ! ... Read number of cells in X-section j
-     READ (UNIT=i5, FMT='(14X,I20)' , IOSTAT=ios) p_out(j)
-   ENDDO
-   ! ENDIF
+   IF (n_planes > 0) THEN
+     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (p_out(nn), nn = 1, n_planes)
+     IF (ios /= 0) CALL input_error ( ios, 6 )
+   ELSE IF (n_planes == 0) THEN
+     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios)
+     IF (ios /= 0) CALL input_error ( ios, 6 )
+   END IF
 
    ! ... Read nodes for vertical plane output ...........................
    READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) iox
@@ -126,20 +126,21 @@ SUBROUTINE input
    IF (nopen > 0) THEN
       READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) dtsecopenbc
       IF (ios /= 0) CALL input_error ( ios, 8 )
-      DO nn = 1, nopen
-         READ (UNIT=i5, FMT='(/(14X,I20))', IOSTAT=ios) iside(nn)
-         IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) itype(nn)
-         IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) isbc(nn)
-         IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) jsbc(nn)
-         IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iebc(nn)
-         IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) jebc(nn)
-         IF (ios /= 0) CALL input_error ( ios, 8 )
-      END DO
+      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iside(nn), nn = 1, nopen)
+      IF (ios /= 0) CALL input_error ( ios, 8 )
+      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (itype(nn), nn = 1, nopen)
+      IF (ios /= 0) CALL input_error ( ios, 8 )
+      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (isbc(nn), nn = 1, nopen)
+      IF (ios /= 0) CALL input_error ( ios, 8 )
+      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jsbc(nn), nn = 1, nopen)
+      IF (ios /= 0) CALL input_error ( ios, 8 )
+      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iebc(nn), nn = 1, nopen)
+      IF (ios /= 0) CALL input_error ( ios, 8 )
+      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jebc(nn), nn = 1, nopen)
+      IF (ios /= 0) CALL input_error ( ios, 8 )
+    ELSE IF (nopen == 0) THEN
+      READ (UNIT=i5, FMT='(//////)', IOSTAT=ios)
+      IF (ios /= 0) CALL input_error ( ios, 8 )
    END IF
 
    !.....Read info to output nested grid boundaries ......................
@@ -151,20 +152,19 @@ SUBROUTINE input
        IF (ios /= 0) CALL input_error ( ios, 8 )
        READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) xxNBO
        IF (ios /= 0) CALL input_error ( ios, 8 )
-       DO nn = 1, nxNBO
-         READ (UNIT=i5, FMT='(/(14X,I20))', IOSTAT=ios) isdNBO(nn)
+         READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (isdNBO(nn), nn=1, nxNBO)
          IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) isbcNBO(nn)
+         READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (isbcNBO(nn), nn=1, nxNBO)
          IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) jsbcNBO(nn)
+         READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jsbcNBO(nn), nn=1, nxNBO)
          IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iebcNBO(nn)
+         READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iebcNBO(nn), nn=1, nxNBO)
          IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) jebcNBO(nn)
+         READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jebcNBO(nn), nn=1, nxNBO)
          IF (ios /= 0) CALL input_error ( ios, 8 )
-
-
-       END DO
+       ELSE IF (nxNBO == 0) THEN
+         READ (UNIT=i5, FMT='(//////)', IOSTAT=ios)
+         IF (ios /= 0) CALL input_error ( ios, 8 )
      END IF
    END IF
 
@@ -175,9 +175,15 @@ SUBROUTINE input
    IF (ntr > 0) THEN
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) ecomod
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iotr
+     ! ipwq = Time step to run WQ modules. E.g. in idt = 100 s, and want to run WQ every 1 h, ipwq = 36;
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) ipwq 
      IF (ios  /= 0) CALL input_error ( ios, 9 )
+   ELSE IF (ntr == 0) THEN
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
    ENDIF
-    print *,"aqui interp"
+
    !.... Read info for plume models & oxygenation systems ................
    READ (UNIT=i5, FMT='(///14X,I20)', IOSTAT=ios) iopss
    IF (ios  /= 0) CALL input_error ( ios, 10 )
@@ -202,60 +208,55 @@ SUBROUTINE input
 
      ! ... Read in locations & characteristics of diffusers
      !     At this point, they are pressumed constants in time
-     READ (UNIT=i5, FMT='(A)', IOSTAT=ios) commentline
-     i = 0;
-     DO j = 1, iopss
-       IF (ios/= 0) CALL input_error ( ios, 10)
-       READ (UNIT=i5, FMT='(9X,3I4)', IOSTAT=ios)  &
-            ipss(j), jpss(j), iodev(j)
-       IF (ios/= 0) CALL input_error ( ios, 10 )
-       IF (iodev(j).NE.i) i = iodev(j)
-     END DO
-     IF (i .NE. npssdev) THEN
-       PRINT *, '*** ERROR ***'
-       PRINT *, 'No. of devices causing point sources'
-       STOP
-     ENDIF
+     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (ipss(nn), nn=1, iopss)
+     IF (ios/= 0) CALL input_error ( ios, 10)
+     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jpss(nn), nn=1, iopss)
+     IF (ios/= 0) CALL input_error ( ios, 10)
+     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iodev(nn), nn=1, iopss)
+     IF (ios/= 0) CALL input_error ( ios, 10)
 
+     IF (iodev(npssdev) /= npssdev) THEN  ! iodev es el identificador del dispositivo. Nodev es el numero de dispositivos. Entonces, el ultimo valor de iodev debe ser igual al Nodev. 
+       PRINT*, '*** ERROR *** No. of Devices causing point sources'
+       STOP
+     END IF
      ! ... Read sources & sinks specifications -
      CALL PointSourceSinkInput
-
+   ELSE IF (iopss == 0) THEN
+     READ (UNIT=i5, FMT='(////)', IOSTAT=ios)
+     IF (ios  /= 0) CALL input_error ( ios, 10 )
    ENDIF
-   print *,"antes interp"
 
    ! ... Input instructions & parameters controlling the solution of
    !     the tracer transport equations.
    IF (ntr > 0) THEN
-
      ! ... Allocate space for some arrays - they are initialized
-   !     only if ecomod < 0, but used allways in determining
-   !     if the tracer transport equation is used or not in subroutine fd.
+     !     only if ecomod < 0, but used allways in determining
+     !     if the tracer transport equation is used or not in subroutine fd.
      !ALLOCATE ( trct0(ntr), trcpk(ntr), trctn(ntr), &
      !          trcx0(ntr), trcy0(ntr), trcz0(ntr), &
      !           trcsx(ntr), trcsy(ntr), trcsz(ntr), STAT=istat)
      !IF (istat /= 0) CALL allocate_error ( istat, 121 )
 
      ! .... Initialize trct0 and trctn to default values
-   trct0 = 1E7;
-   trctn =   0;
+     trct0 = 1E7;
+     trctn =   0;
 
      ! .... Define other input variables
      SELECT CASE (ecomod)
-     CASE (-1) ! Tracer Cloud Releases
+      CASE (-1) ! Tracer Cloud Releases
         PRINT *, 'Tracer Cloud Modelling activated'
         CALL trcinput
-     CASE (1) ! Water quality routines
+      CASE (1) ! Water quality routines
         PRINT *, 'Water Quality Model activated'
         CALL wqinput
-     CASE (2) ! Size Structure distribution
+      CASE (2) ! Size Structure distribution
         PRINT *, 'Size Structure Model activated'
         CALL szinput
-     CASE (3) ! Sediment transport routines
+      CASE (3) ! Sediment transport routines
         PRINT *, 'Sediment transport activated'
         CALL sdinput
-     END SELECT
-
-   ENDIF
+      END SELECT
+    ENDIF
 
    ! ... Read info for interpolation method (Added 12/2010 by SWA)
    IF (ifsurfbc >=10) THEN
@@ -356,7 +357,6 @@ SUBROUTINE ZGridDimensions
 
    ENDIF
 
-
 END SUBROUTINE ZGridDimensions
 
 !************************************************************************
@@ -376,8 +376,6 @@ SUBROUTINE AllocateSpace
 
    !.....Local variables.....
    INTEGER :: istat, one=1
-
-
 
    !..... Allocate geometry arrays
    ALLOCATE (kmz   (lm1), k1z(lm1), &
