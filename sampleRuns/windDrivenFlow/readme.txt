@@ -3,11 +3,4 @@ This model run is for the purpose of validating si3d against theoretical solutio
 
 Details of the test case can be read in the si3d_inp.txt file used for the model run. 
 
-The analytical solution is:
-
-%% Analytical solution Huang 1993
-k = 0.005;      % [m/s] Linearized friction coefficient
-dl_dx = (3/2)*(tau/(rho_w*g*h))*((2*K_v+k*h)/(3*K_v+k*h));
-c1 = (1/(6*K_v))*g*h^2;
-c2 = (tau*h/(2*rho_w*K_v));
-u_Huang = 100*(c1.*dl_dx.*(3.*(dh-1).^2-1)+c2.*(2.*dh-1));
+The analytical test case is explained in the Electronic Supporting Material of the article 3D Flow Structures During Upwelling Events in Lakes of Moderate Size. The supporting information can be found in https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2021WR030666
