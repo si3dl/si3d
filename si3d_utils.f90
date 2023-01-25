@@ -4424,7 +4424,7 @@ SUBROUTINE PointSourceSinkInput
       IF (ios /= 0) CALL input_error ( ios, 48 )
 
       ! Read type of source-sink simulated (plumes, boundary conditions, pumped inflows)
-      READ (UNIT=i52, FMT='(10X,G7.2)', IOSTAT=ios) ptype(nn)
+      READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) ptype(nn)
       IF (ios /= 0) CALL input_error ( ios, 48 )
 
       ! Read number of points in file (it has to be equal in all arrays)
