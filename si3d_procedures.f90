@@ -325,17 +325,17 @@ SUBROUTINE InitializeScalarFields
 
      ! ... Initialize non-active scalar fields (if requested)
      IF (ntr > 0) THEN
-       tracer = 0.0;
-       IF (ecomod < 0 ) THEN
-         CALL InitTracerCloud
-       ELSE
-       DO  nn = 1, ntr
-         DO k = 1, km1
-           tracer(k,:,nn) = Scalardepthile(k,nn+1)
-         ENDDO
-       END DO ! ... End loop over tracers
-       END IF
-       tracerpp = tracer;
+      tracer = 0.0;
+      IF (ecomod < 0 ) THEN
+        CALL InitTracerCloud
+      ELSE
+        DO  nn = 1, ntr
+          DO k = 1, km1
+            tracer(k,:,nn) = Scalardepthile(k,nn+1)
+          ENDDO
+        END DO ! ... End loop over tracers
+      END IF
+      tracerpp = tracer;
      ENDIF
 
      ! ... Deallocate array holding scalar concs.
@@ -356,7 +356,7 @@ SUBROUTINE InitializeScalarFields
        ELSE
          z = zlevel(k) + 0.5 * hp(k,l)
        ENDIF
-       rhop(k,l) = densty_s ( salp(k,l), 0.00004,z) - 1000.
+       rhop(k,l) = densty_s ( salp(k,l), 0.00004, z) - 1000.
      END DO
    END DO
 
@@ -512,7 +512,10 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
        ELSE IF (ecomod == 0) THEN
          CALL srcsnk00
        ELSE IF (ecomod == 1) THEN
-         CALL srcsnkWQ
+         IF (idbg = 1) PRINT *, 'Before entry into SUB srcsnkWQ'
+         IF ((ecomod == 1) .AND. (MOD(n,MAX(ipwq, 1)) == 0)) CALL srcsnkWQ(thrs) !! ACC 11/21/2022 added to run WQ at lower frequency than hydrodynamics
+         ! CALL srcsnkWQ(thrs)
+         IF (idbg == 1) PRINT *, ' After entry into SUB srcsnkWQ'
        ELSE IF (ecomod == 2) THEN
          CALL srcsnkSZ
        ELSE IF (ecomod == 3) THEN
@@ -4337,7 +4340,7 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
       CASE (1)
 
         aa( 2,k1s) = hn(k1s)/twodt1
-        ds(   k1s) = Bex(k1s,l)
+        ds(   k1s) = Bex(k1s,l) + sourcesink(k1s,l,nt)
         tracer(k1s,l,nt) = ds(k1s  )/aa(2,k1s)
 
       !.....Calculate active scalar for case of two or more layers.....
@@ -4355,7 +4358,7 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
 
          !.....form r.h.s. matrix [ds].....
          DO k = k1s, kms
-            ds(k) = Bex(k,l)
+            ds(k) = Bex(k,l) + sourcesink(k,l,nt)
          ENDDO
 
          ! ... Modify transport eqs. to accont for sources & sinks.
@@ -4378,7 +4381,7 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
 
          !.....Solve tridiagonal system for the
          !     vertical distribution of active scalar.....
-         CALL trid1 (aa, ds, sal1, k1s, kms, km1, nwlayers)
+         CALL trid1 (aa, ds, sal1, k1s, kms, km1, nwlayers) ! The output is "sal"
 
          !.....Define scalars at new time step....
          tracer(k1s:kms  ,l,nt) = sal1(1:nwlayers)
