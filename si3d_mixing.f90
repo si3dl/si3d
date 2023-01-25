@@ -11,16 +11,16 @@
 
 
   USE si3d_Types
-  USE turbulence,  only: turb_method
-  USE turbulence,  only: init_turbulence, do_turbulence
-  USE turbulence,  only: num,nuh,nus
-  USE turbulence,  only: eps, L, tke, tkeo
-  USE turbulence,  only: const_num,const_nuh
-  USE turbulence,  only: gamu,gamv,gamh,gams
-  USE turbulence,  only: kappa
-  USE kpp,         only: init_kpp,do_kpp
-  USE mtridiagonal,only: init_tridiagonal,clean_tridiagonal
-  USE eqstate,     only: init_eqstate
+!  USE turbulence,  only: turb_method
+!  USE turbulence,  only: init_turbulence, do_turbulence
+!  USE turbulence,  only: num,nuh,nus
+!  USE turbulence,  only: eps, L, tke, tkeo
+!  USE turbulence,  only: const_num,const_nuh
+!  USE turbulence,  only: gamu,gamv,gamh,gams
+!  USE turbulence,  only: kappa
+!  USE kpp,         only: init_kpp,do_kpp
+!  USE mtridiagonal,only: init_tridiagonal,clean_tridiagonal
+!  USE eqstate,     only: init_eqstate
   USE si3d_Utils
 
   IMPLICIT NONE
@@ -82,148 +82,148 @@ SUBROUTINE UpdateMixingCoefficients(Bstart,Bend,istep,uairB,vairB,cdwB, &
 
    SELECT CASE (iturb)
 
-   !          ----- Inteface with GOTM -------
-   CASE(-1)
-
-
-     ! ... Solve only on the last iteration in each time step
-     IF ( lastiter < 1) RETURN
-
-     !.....Sweep over wet pressure points
-     DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
-
-
-        ll = id_column(liter)
-
-       ! .... Map 3D-(i,j) and l- index
-       !i = l2i(ll); j = l2j(ll);
-
-       !.....Compute the number of wet layers.....
-       kms = kmz(ll); k1s = k1z(ll)
-       nwlayers = (kms-k1s) + 1
-
-       ! ... Ignore 1-layer colums
-       IF (nwlayers <= 1) CYCLE
-
-       ! ... Initialize & calculate MM & NN frequencies
-       ! Note that MM, NN, and hl are ordered from bottom to top
-       ! i.e. bottom layer (km) = 1 and top layer = nwlayers
-       ! following Gotm convention
-       MM = 0.0; NN = 0.0; m = 0; depth = 0; hl = 0.0;
-       DO k = kms, k1s+1,-1
-
-         ! ... Update counter
-         m = m + 1
-
-         ! ... Depth & layer thikness
-         depth = depth + hp(k,ll)
-         hl(m) = hp(k,ll)
-
-         ! ... Calculate buoyancy frequency MM
-         deltaz(k) = 0.5 * (hp  (k-1,ll) + hp  (k,ll))
-         rhoavg(k) = 0.5 * (rhop(k-1,ll) + rhop(k,ll)) + 1000.
-         drhodz(k) = (rhop(k-1,ll) - rhop(k,ll))/deltaz(k)
-         NN    (m) = - g * drhodz(k) / rhoavg(k)
-
-         ! ... Evaluate shear frequency MM
-         !dudz  (k) = 0.5*(up(k-1,ll)+up(k-1,lWC(ll))-   &
-         !&                up(k  ,ll)-up(k  ,lWC(ll)))/deltaz(k)
-         !dvdz  (k) = 0.5*(vp(k-1,ll)+vp(k-1,lSC(ll))-   &
-         !&                vp(k  ,ll)-vp(k  ,lSC(ll)))/deltaz(k)
-         !MM    (m) =  dudz(k) **2. + dvdz(k)**2.
-
-         ! ... The following lines follow GOTM meanflow routines
-         uup  = 0.5*(u  (k-1,ll)+u  (k-1,lWC(ll)))
-         udn  = 0.5*(u  (k  ,ll)+u  (k  ,lWC(ll)))
-         uupo = 0.5*(upp(k-1,ll)+upp(k-1,lWC(ll)))
-         udno = 0.5*(upp(k  ,ll)+upp(k  ,lWC(ll)))
-         ssu(k)= 0.5*(                                      &
-                     (theta    *(uup -udn )*(uup -udno)+    &
-                     (1.-theta)*(uupo-udno)*(uupo-udn ))    &
-                    /deltaz(k) / hp(k,ll)                  &
-                    +(theta    *(uup -udn )*(uupo-udn )+    &
-                     (1.-theta)*(uupo-udno)*(uup -udno))    &
-                     /deltaz(k) / hp(k,ll)                  )
-
-         vup  = 0.5*(v  (k-1,ll)+v  (k-1,lSC(ll)))
-         vdn  = 0.5*(v  (k  ,ll)+v  (k  ,lSC(ll)))
-         vupo = 0.5*(vpp(k-1,ll)+vpp(k-1,lSC(ll)))
-         vdno = 0.5*(vpp(k  ,ll)+vpp(k  ,lSC(ll)))
-         ssv(k)= 0.5*(                                      &
-                     (theta    *(vup -vdn )*(vup -vdno)+    &
-                     (1.-theta)*(vupo-vdno)*(vupo-vdn ))    &
-                     /deltaz(k) / hp(k,ll)                  &
-                    +(theta    *(vup -vdn )*(vupo-vdn )+    &
-                     (1.-theta)*(vupo-vdno)*(vup -vdno))    &
-                     /deltaz(k) / hp(k,ll)                  )
-         MM(m) = ssu(k) + ssv(k)
-       END DO
-
-       ! ... Add conttribution of the top-most layer
-       hl(m+1) = hp(k1s,ll)
-       depth   = depth + hp(k1s,ll)
-
-       ! ... Bottom friction velocity .......................
-       taub  = cd  * ( (0.5*(u(kms,ll) + u(kms,lWC(ll))))**2.&
-       &            +  (0.5*(v(kms,ll) + v(kms,lSC(ll))))**2.)
-
-       !  compute the friction velocity at the bottom (from gotm code friction.F90)
-       !  compute the factor r (version 1, with log-law)
-       !rr=kappa/(log((z0b+dz(kms)/2)/z0b))
-       !ustarb = rr*sqrt( u(kms)*u(kms) + v(kms)*v(kms) )
-
-       !  compute the friction velocity at the bottom (original)
-       ustarb = sqrt(taub)
-
-
-       ! ... Surface friction velocity ......................
-       usurf = 0.5*(up(k1u(ll),ll) + up(k1u(lWC(ll)),lWC(ll)) )
-       vsurf = 0.5*(vp(k1v(ll),ll) + vp(k1v(lSC(ll)),lSC(ll)) )
-       taus  = cdw(ll)*rhoair * ((uair(ll)-usurf)**2.+     &
-       &                          (vair(ll)-vsurf)**2.)
-       ustars = sqrt(taus/1000.)
-
-       ! ... Calculate bottom roughness z0b
-       z0b = 0.03*h0b
-
-       ! ... Calculate surface roughness z0s
-       z0s = MAX(charnock_val * (ustars**2.)/g, z0s_min)
-
-       ! ... Set tke, eps, L & diff. to stored values in si3d
-       m = 0
-       DO k = kms, k1s+1,-1
-         m = m + 1
-         L   (m) = si3dlen(k,ll)
-         eps (m) = si3deps(k,ll)
-         tke (m) = si3dtke(k,ll)
-         tkeo(m) = si3dtke(k,ll)
-         num (m) = Av     (k,ll) - AvMolecular
-         nuh (m) = Dv     (k,ll) - DvMolecular
-       ENDDO
-
-       ! ... Udate tke, eps, L & diff.
-       CALL do_turbulence(nwlayers,copydt,depth,ustars,ustarb,z0s,z0b,  &
-                          hl(0:nwlayers),NN(0:nwlayers),MM(0:nwlayers))
-
-       ! ... Save updated tke, eps, L & diff. in si3d variables
-       m = 0
-       DO k = kms, k1s+1,-1
-         m = m + 1
-         si3dlen(k,ll) = L   (m)
-         si3deps(k,ll) = eps (m)
-         si3dtke(k,ll) = tke (m)
-         Av     (k,ll) = num (m) + AvMolecular
-         Dv     (k,ll) = nuh (m) + DvMolecular
-       ENDDO
-
-       ! ... Assign transfer coefficients at top & bottom surfaces
-       Av(1:k1s,ll) = 0.0; Av(kms+1:km1,ll) = 0.0
-       Dv(1:k1s,ll) = 0.0; Dv(kms+1:km1,ll) = 0.0
-
-     ENDDO
-
-   !PRINT *, ustarb;
-
+!   !          ----- Inteface with GOTM -------
+!   CASE(-1)
+!
+!
+!     ! ... Solve only on the last iteration in each time step
+!     IF ( lastiter < 1) RETURN
+!
+!     !.....Sweep over wet pressure points
+!     DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
+!
+!
+!        ll = id_column(liter)
+!
+!       ! .... Map 3D-(i,j) and l- index
+!       !i = l2i(ll); j = l2j(ll);
+!
+!       !.....Compute the number of wet layers.....
+!       kms = kmz(ll); k1s = k1z(ll)
+!       nwlayers = (kms-k1s) + 1
+!
+!       ! ... Ignore 1-layer colums
+!       IF (nwlayers <= 1) CYCLE
+!
+!       ! ... Initialize & calculate MM & NN frequencies
+!       ! Note that MM, NN, and hl are ordered from bottom to top
+!       ! i.e. bottom layer (km) = 1 and top layer = nwlayers
+!       ! following Gotm convention
+!       MM = 0.0; NN = 0.0; m = 0; depth = 0; hl = 0.0;
+!       DO k = kms, k1s+1,-1
+!
+!         ! ... Update counter
+!         m = m + 1
+!
+!         ! ... Depth & layer thikness
+!         depth = depth + hp(k,ll)
+!         hl(m) = hp(k,ll)
+!
+!         ! ... Calculate buoyancy frequency MM
+!         deltaz(k) = 0.5 * (hp  (k-1,ll) + hp  (k,ll))
+!         rhoavg(k) = 0.5 * (rhop(k-1,ll) + rhop(k,ll)) + 1000.
+!         drhodz(k) = (rhop(k-1,ll) - rhop(k,ll))/deltaz(k)
+!         NN    (m) = - g * drhodz(k) / rhoavg(k)
+!
+!         ! ... Evaluate shear frequency MM
+!         !dudz  (k) = 0.5*(up(k-1,ll)+up(k-1,lWC(ll))-   &
+!         !&                up(k  ,ll)-up(k  ,lWC(ll)))/deltaz(k)
+!         !dvdz  (k) = 0.5*(vp(k-1,ll)+vp(k-1,lSC(ll))-   &
+!         !&                vp(k  ,ll)-vp(k  ,lSC(ll)))/deltaz(k)
+!         !MM    (m) =  dudz(k) **2. + dvdz(k)**2.
+!
+!         ! ... The following lines follow GOTM meanflow routines
+!         uup  = 0.5*(u  (k-1,ll)+u  (k-1,lWC(ll)))
+!         udn  = 0.5*(u  (k  ,ll)+u  (k  ,lWC(ll)))
+!         uupo = 0.5*(upp(k-1,ll)+upp(k-1,lWC(ll)))
+!         udno = 0.5*(upp(k  ,ll)+upp(k  ,lWC(ll)))
+!         ssu(k)= 0.5*(                                      &
+!                     (theta    *(uup -udn )*(uup -udno)+    &
+!                     (1.-theta)*(uupo-udno)*(uupo-udn ))    &
+!                    /deltaz(k) / hp(k,ll)                  &
+!                    +(theta    *(uup -udn )*(uupo-udn )+    &
+!                     (1.-theta)*(uupo-udno)*(uup -udno))    &
+!                     /deltaz(k) / hp(k,ll)                  )
+!
+!         vup  = 0.5*(v  (k-1,ll)+v  (k-1,lSC(ll)))
+!         vdn  = 0.5*(v  (k  ,ll)+v  (k  ,lSC(ll)))
+!         vupo = 0.5*(vpp(k-1,ll)+vpp(k-1,lSC(ll)))
+!         vdno = 0.5*(vpp(k  ,ll)+vpp(k  ,lSC(ll)))
+!         ssv(k)= 0.5*(                                      &
+!                     (theta    *(vup -vdn )*(vup -vdno)+    &
+!                     (1.-theta)*(vupo-vdno)*(vupo-vdn ))    &
+!                     /deltaz(k) / hp(k,ll)                  &
+!                    +(theta    *(vup -vdn )*(vupo-vdn )+    &
+!                     (1.-theta)*(vupo-vdno)*(vup -vdno))    &
+!                     /deltaz(k) / hp(k,ll)                  )
+!         MM(m) = ssu(k) + ssv(k)
+!       END DO
+!
+!       ! ... Add conttribution of the top-most layer
+!       hl(m+1) = hp(k1s,ll)
+!       depth   = depth + hp(k1s,ll)
+!
+!       ! ... Bottom friction velocity .......................
+!       taub  = cd  * ( (0.5*(u(kms,ll) + u(kms,lWC(ll))))**2.&
+!       &            +  (0.5*(v(kms,ll) + v(kms,lSC(ll))))**2.)
+!
+!       !  compute the friction velocity at the bottom (from gotm code friction.F90)
+!       !  compute the factor r (version 1, with log-law)
+!       !rr=kappa/(log((z0b+dz(kms)/2)/z0b))
+!       !ustarb = rr*sqrt( u(kms)*u(kms) + v(kms)*v(kms) )
+!
+!       !  compute the friction velocity at the bottom (original)
+!       ustarb = sqrt(taub)
+!
+!
+!       ! ... Surface friction velocity ......................
+!       usurf = 0.5*(up(k1u(ll),ll) + up(k1u(lWC(ll)),lWC(ll)) )
+!       vsurf = 0.5*(vp(k1v(ll),ll) + vp(k1v(lSC(ll)),lSC(ll)) )
+!       taus  = cdw(ll)*rhoair * ((uair(ll)-usurf)**2.+     &
+!       &                          (vair(ll)-vsurf)**2.)
+!       ustars = sqrt(taus/1000.)
+!
+!       ! ... Calculate bottom roughness z0b
+!       z0b = 0.03*h0b
+!
+!       ! ... Calculate surface roughness z0s
+!       z0s = MAX(charnock_val * (ustars**2.)/g, z0s_min)
+!
+!       ! ... Set tke, eps, L & diff. to stored values in si3d
+!       m = 0
+!       DO k = kms, k1s+1,-1
+!         m = m + 1
+!         L   (m) = si3dlen(k,ll)
+!         eps (m) = si3deps(k,ll)
+!         tke (m) = si3dtke(k,ll)
+!         tkeo(m) = si3dtke(k,ll)
+!         num (m) = Av     (k,ll) - AvMolecular
+!         nuh (m) = Dv     (k,ll) - DvMolecular
+!       ENDDO
+!
+!       ! ... Udate tke, eps, L & diff.
+!       CALL do_turbulence(nwlayers,copydt,depth,ustars,ustarb,z0s,z0b,  &
+!                          hl(0:nwlayers),NN(0:nwlayers),MM(0:nwlayers))
+!
+!       ! ... Save updated tke, eps, L & diff. in si3d variables
+!       m = 0
+!       DO k = kms, k1s+1,-1
+!         m = m + 1
+!         si3dlen(k,ll) = L   (m)
+!         si3deps(k,ll) = eps (m)
+!         si3dtke(k,ll) = tke (m)
+!         Av     (k,ll) = num (m) + AvMolecular
+!         Dv     (k,ll) = nuh (m) + DvMolecular
+!       ENDDO
+!
+!       ! ... Assign transfer coefficients at top & bottom surfaces
+!       Av(1:k1s,ll) = 0.0; Av(kms+1:km1,ll) = 0.0
+!       Dv(1:k1s,ll) = 0.0; Dv(kms+1:km1,ll) = 0.0
+!
+!     ENDDO
+!
+!   !PRINT *, ustarb;
+!
    !          ----- Method 0: Constant eddy coefficients -------
    CASE (0)
 
@@ -631,21 +631,21 @@ END SUBROUTINE tridT
 
    SELECT CASE (iturb)
 
-   ! ... GOTM
-   CASE(-1)
-
-     CALL init_turbulence(namlst,'gotmturb.nml',km)
-     CALL init_tridiagonal(km)
-     ! Note - if we do not use KPP methods we do not have to initializeq
-     ! equation of state or kpp -
-     DO m = 1, lm
-       si3dtke(k1:km1,m) = tke
-       si3deps(k1:km1,m) = eps
-       si3dlen(k1:km1,m) = L
-       Av     (k1:km1,m) = num
-       Dv     (k1:km1,m) = nuh
-     ENDDO
-
+!   ! ... GOTM
+!   CASE(-1)
+!
+!     CALL init_turbulence(namlst,'gotmturb.nml',km)
+!     CALL init_tridiagonal(km)
+!     ! Note - if we do not use KPP methods we do not have to initializeq
+!     ! equation of state or kpp -
+!     DO m = 1, lm
+!       si3dtke(k1:km1,m) = tke
+!       si3deps(k1:km1,m) = eps
+!       si3dlen(k1:km1,m) = L
+!       Av     (k1:km1,m) = num
+!       Dv     (k1:km1,m) = nuh
+!     ENDDO
+!
    ! ... Fixed eddy viscosity & diffusivity
    CASE (0)
 
