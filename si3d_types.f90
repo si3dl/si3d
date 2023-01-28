@@ -68,7 +68,8 @@
             & iturb, ilin, ihomo, ipt, ipx, ipc, iadv, ihd, ibc, isal,   &
             & nnodes, nopen, iseich, idbg, iextrp, iyr0, imon0, iday0,   &
             & ihr0, istd, igs, ivpv, iupwind, ioutg, ipv, ipsal, ipxml,  &
-            & itspf, itrsca, itrmom, ibathyf, apxml, iTurbVars, ipwq
+            & itspf, itrsca, itrmom, ibathyf, apxml, iTurbVars, ipwq,    &
+            & itspfh, itspftr
    CHARACTER :: title*80, sal_ic_file*50, wse_file*7, flw_file*7,        &
               & hcn_file*7, sal_file*7, barrier_file*50, commentline*50
 
@@ -272,7 +273,7 @@
 
    !         ----- Vars. & Arrays used in new OUTPUT routines (sections, planes
    !               isotherms and complete outputs ---------
-   INTEGER :: iop, iox, ioi, ioc, n_planes, n_sections, n_isot, isot_points,itspfh
+   INTEGER :: iop, iox, ioi, ioc, n_planes, n_sections, n_isot, isot_points
    INTEGER, PARAMETER :: max_planes = 10, max_sections = 30, max_isot = 20
    INTEGER, PARAMETER :: max_section_cells = 100
    INTEGER, ALLOCATABLE, DIMENSION (:) :: interior_plane_points
@@ -287,7 +288,7 @@
    !          ----- Active & Non-active Scalar transport models  **********************
    INTEGER :: iotr       ! No. steps between output to file
    INTEGER :: ntr        ! No. of tracers requested for simulation
-   INTEGER, PARAMETER  :: ntrmax = 15 ! Max. No. of tracers that can be simulated
+   INTEGER, PARAMETER  :: ntrmax = 25 ! Max. No. of tracers that can be simulated
    REAL   , ALLOCATABLE, DIMENSION(:,:)  :: fluxX, fluxY, fluxZ
    REAL   , ALLOCATABLE, DIMENSION(:,:)  :: fluxXtr, fluxY2, fluxZ2, fluxXsal
    REAL   , ALLOCATABLE, DIMENSION(:,:,:):: tracer, tracerpp, sourcesink
@@ -352,7 +353,6 @@
    !        -------- ECOMOD - Sediment Transport **************************************
    REAL, ALLOCATABLE, DIMENSION (:) :: sdenSED  ! Submerged specific density (adimensional)
    REAL, ALLOCATABLE, DIMENSION (:) :: diamSED  ! Particle diameter (m)
-   REAL, PARAMETER :: Ased = 1.3e7;
    !                                   vdep (uses the same array as ECOMOD = 1)
    REAL :: dthrsWIBSS, &                      ! Hours between WIBSS fields (input)
            thrsWIBSS , &                      ! Hours from start to current WIBSS field
@@ -365,13 +365,29 @@
    !         ------- ECOMOD - Water Quality   ******************************************
 
    ! ... Integer switches to deterimine if constituent is modeled
-   INTEGER:: iDO , iPON, iDON, iNH4, iNO3, iPOP, iDOP, iPO4
-   INTEGER:: iDOC, iPOC, iALG1, iALG2, iALG3, iALG4
-
+   INTEGER :: iDO       !< Dissolved Oxygen
+   INTEGER :: iPON      !< Particulate Organic Nitrogen
+   INTEGER :: iDON      !< Dissolved Organic Nitrogen
+   INTEGER :: iNH4      !< Ammonia
+   INTEGER :: iNO3      !< Nitrate and Nitrite
+   INTEGER :: iPOP      !< Particulate Organic Phosphours 
+   INTEGER :: iDOP      !< Dissolved Organic Phosphorus
+   INTEGER :: iPO4      !< Orthophospate
+   INTEGER :: iPOC      !< Particulate Organic Carbon
+   INTEGER :: iDOC      !< Dissolved Organic Carbon
+   INTEGER :: iALG1     !< Algae-1, PhytoC1
+   INTEGER :: iALG2     !< Algae-2, PhytoC2
+   INTEGER :: iALG3     !< Algae-3, PhytoC3
+   INTEGER :: iALG4     !< Algae-4, PhytoC4
+   INTEGER :: iMeHg     !< Methylmercury
+   INTEGER :: iHg2      !< Mercury
+   INTEGER :: iHg0      !< Mercury
+   INTEGER :: iSS       !< Suspended Sediments
 
    ! ... Integer to determine constituent location
-   INTEGER:: LDO , LPON, LDON, LNH4, LNO3, LPOP, LDOP, LPO4
-   INTEGER:: LDOC, LPOC, LALG1, LALG2, LALG3, LALG4
+   INTEGER :: LDO , LPON, LDON, LNH4, LNO3, LPOP, LDOP, LPO4
+   INTEGER :: LDOC, LPOC, LALG1, LALG2, LALG3, LALG4
+   INTEGER :: LMeHg, LHg2, LHg0, LSS1, LSS2, LSS3
 
    ! ... Model Constants - read from input file and many used for calibration
    ! - Stochiometeric constants
@@ -397,7 +413,14 @@
    ! Sediment release rates
    REAL    :: SED_DON, SED_NH4, SED_NO3, SED_DOP, SED_PO4, SED_DOC
 
-
+   ! Sediment Parameters
+   INTEGER                          :: sedMax = 3       !< Max number of sediments to model
+   INTEGER                          :: sedNumber        !< Number of sediments to model
+   REAL, ALLOCATABLE, DIMENSION (:) :: sed_diameter     !< (um) Sediment diameter D50 in micrometers
+   REAL, ALLOCATABLE, DIMENSION (:) :: sed_dens         !< (kg/m3) Sediment density
+   REAL, ALLOCATABLE, DIMENSION (:) :: sed_frac         !< Fraction of type of sediment in total suspended sediment
+   REAL, PARAMETER                  :: Ased = 1.3d-7    !< Constant value for estimates of sediment fluxes. Garcia and Parker 1991,1993, Reardon 2014, etc
+   REAL                             :: kinematic_viscosity = 1.3081d-6   !< Kinematic viscosity of water 10C         
 !                        -----Data Dictionary-----
 
 END MODULE si3d_types

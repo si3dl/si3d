@@ -9,6 +9,7 @@
 
    !USE si3d_ecomod
    USE si3d_types
+   USE si3d_sed
 
    IMPLICIT NONE
    SAVE
@@ -409,8 +410,8 @@ SUBROUTINE WQinput
 
 
   !. . . .Local Variables
-  CHARACTER(LEN=12):: wq_input_file="si3d_wq.txt"
-  INTEGER::   ios
+  CHARACTER(LEN=15):: wq_input_file="si3d_wq_inp.txt"
+  INTEGER::   ios, nn
 
   !.....Open input parameter file.....
   OPEN (UNIT=i99, FILE=wq_input_file, STATUS="OLD", IOSTAT=ios)
@@ -422,27 +423,64 @@ SUBROUTINE WQinput
 
   !. . Read list of tracerpps modeled: Dissolved oxygen, N forms, P forms, C forms 
 
-  READ (UNIT=i99,FMT='(///(14X,I20))',IOSTAT=ios) iDO,  &
-  &    iPON, iDON, iNH4, iNO3, &
-  &    iPOP, iDOP, iPO4, &
-  &    iPOC, iDOC, &
-  &    iALG1, iALG2, iALG3, iALG4
+  READ (UNIT=i99,FMT='(///(18X,I20))',IOSTAT=ios) iDO,  &
+      iPON, iDON, iNH4, iNO3, iPOP, iDOP, iPO4, iPOC,   &
+      iDOC, iALG1, iALG2, iALG3, iALG4, iMeHg, iHg2,    &
+      iHg0, iSS 
   IF (ios /= 0) CALL input_error ( ios, 92)
 
   !. . . Read model stochiometeric constants and other constants
-  READ (UNIT=i99,FMT='(///(14X,G20.3))',IOSTAT=ios) rnc, rpc, roc, ron, &
+  READ (UNIT=i99,FMT='(///(18X,G20.3))',IOSTAT=ios) rnc, rpc, roc, ron, &
   &     KSOD, KDECMIN, KSED, KNIT, KSN, KSP, FNH4,  &
   &     light_sat1, light_sat2, light_sat3, light_sat4
   IF (ios /= 0) CALL input_error ( ios, 93)
 
   !. . . Read model rates
-  READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) R_reaer, R_SOD, &
+  READ (UNIT=i99,FMT='(///(18X,G20.2))',IOSTAT=ios) R_reaer, R_SOD, &
   &    mu_max1, R_mor1, R_gr1, mu_max2, R_mor2, R_gr2, mu_max3, R_mor3, R_gr3, mu_max4, R_mor4, R_gr4, &
   &    R_decom_pon, R_miner_don, R_nitrif, R_denit, &
   &    R_decom_pop, R_miner_dop, R_decom_poc, R_miner_doc, &
   &    R_settl, R_resusp
   IF (ios /= 0) CALL input_error ( ios, 94)
 
+  !. . . Read model temperature rates
+  READ (UNIT=i99,FMT='(///(18X,G20.2))',IOSTAT=ios) Theta_SOD, Theta_mu, Theta_mor, Theta_gr, &
+  &     Theta_decom, Theta_miner, Theta_sedflux, Theta_nitrif , Theta_denit 
+
+  IF (ios /= 0) CALL input_error ( ios, 95)
+
+  !. . . Read miscillaneous rates
+  READ (UNIT=i99,FMT='(///(18X,G20.2))',IOSTAT=ios) ATM_DON, ATM_NH4,    &
+  &    ATM_NO3, ATM_DOP, ATM_PO4,  ATM_DOC, SED_DON, SED_NH4, SED_NO3, &
+  &    SED_DOP, SED_PO4, SED_DOC
+  IF (ios /= 0) CALL input_error ( ios, 96)
+
+  !. . . Read Sediment Parameters
+  READ (UNIT=i99,FMT='(///(18X,I20))',IOSTAT=ios) sedNumber
+  IF (ios /= 0) CALL input_error ( ios, 97 )
+
+  IF (sedNumber > 0) THEN
+    if (sedNumber .gt. sedMax) then
+      print*,('************************************************')
+      print*,('                  WARNING                       ')
+      print*,('       Number of Sediment Particles greater     ')
+      print*,('  Than the possible number (i.e., sedNumber> 3) ')
+      print*,('                EXITING MODEL                   ')
+      print*,('****************************************')
+      STOP 
+    end if
+   ALLOCATE(sed_diameter(sedNumber),sed_dens(sedNumber),sed_frac(sedNumber))
+   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_diameter(nn), nn = 1, sedNumber)
+   IF (ios /= 0) CALL input_error ( ios, 98 )
+   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_dens(nn), nn = 1, sedNumber)
+   IF (ios /= 0) CALL input_error ( ios, 99 )
+   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_frac(nn), nn = 1, sedNumber)
+   IF (ios /= 0) CALL input_error ( ios, 100 )
+  ELSE IF (sedNumber == 0) THEN
+   READ (UNIT=i5, FMT='(18X,5F)', IOSTAT=ios)
+   READ (UNIT=i5, FMT='(18X,5F)', IOSTAT=ios)
+   IF (ios /= 0) CALL input_error ( ios, 101 )
+  END IF
 
   !... Convert model rates [1/s]. Input file has 1/day values. WQ module is run every hour
   ! DO
@@ -473,18 +511,6 @@ SUBROUTINE WQinput
   R_settl =  R_settl/86400.0
   R_resusp =  R_resusp/86400.0
 
-  !. . . Read model temperature rates
-  READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) Theta_SOD, Theta_mu, Theta_mor, Theta_gr, &
-  &     Theta_decom, Theta_miner, Theta_sedflux, Theta_nitrif , Theta_denit 
-
-  IF (ios /= 0) CALL input_error ( ios, 95)
-
-  !. . . Read miscillaneous rates
-  READ (UNIT=i99,FMT='(///(14X,G20.2))',IOSTAT=ios) ATM_DON, ATM_NH4,    &
-  &    ATM_NO3, ATM_DOP, ATM_PO4,  ATM_DOC, SED_DON, SED_NH4, SED_NO3, &
-  &    SED_DOP, SED_PO4, SED_DOC
-  IF (ios /= 0) CALL input_error ( ios, 96)
-
   ATM_DON = ATM_DON/86400.0
   ATM_NH4 = ATM_NH4/86400.0
   ATM_NO3 = ATM_NO3/86400.0
@@ -503,7 +529,8 @@ SUBROUTINE WQinput
     PRINT*, "iPON = ", iPON, "iDON = ", iDON, "iNH4 = ", iNH4, "iNO3 = ", iNO3
     PRINT*, "iPOP = ", iPOP, "iDOP = ", iDOP, "iPO4 = ", iPO4
     PRINT*, "iALG1 = ", iALG1, "iALG2 = ", iALG2, "iALG3 = ", iALG3, "iALG4 = ", iALG4
-  
+    PRINT*, 'iMeHg = ', iMeHg, 'iHg(II) = ',iHg2, 'iHg(0) = ', iHg0, 'iSS = ', iSS
+    PRINT*, 'sed_diam',sed_diameter,'sed_dens',sed_dens 
   END IF
 
   CALL WQinit !ACortes 09/24/2021
@@ -531,6 +558,9 @@ SUBROUTINE WQinit
   LPOP=0; LDOP=0; LPO4=0
   LALG1=0; LALG2=0; LALG3=0; LALG4=0;
   LDOC=0; LPOC=0;
+  LSS1 = 0 
+  LSS2 = 0
+  LSS3 = 0
   
   !. . Assign Lxx to each constituent modeled
   !. . .. first need to define intermediate array tracerpplocal
@@ -606,10 +636,41 @@ SUBROUTINE WQinit
     i = i+1
   END IF
 
+  IF (iMeHg == 1) THEN
+    tracerpplocal(i) = 15
+    i = i+1
+  END IF
+
+  IF (iHg2 == 1) THEN
+    tracerpplocal(i) = 16
+    i = i+1
+  END IF
+
+  IF (iHg0 == 1) THEN
+    tracerpplocal(i) = 17
+    i = i+1
+  END IF
+
+  IF (iSS == 1) THEN
+    do j = 1, sedNumber
+      tracerpplocal(i) = 18 + (j-1)
+      i = i+1
+    end do 
+  END IF
+
+  PRINT*, 'i',i
+  PRINT*, 'tracerpplocal', tracerpplocal
+
   sumtr = 0
   DO j = 1, ntrmax
+    print*,'j',j
     IF (tracerpplocal(j)>0) sumtr = sumtr + 1
   END DO
+
+  IF (idbg == 1) THEN
+    PRINT*, "ntr = ", ntr
+    PRINT*, "sumtr = ", sumtr
+  END IF
 
   IF (sumtr .ne. ntr) THEN
     print*,('****************************************')
@@ -619,11 +680,6 @@ SUBROUTINE WQinit
     print*,('****************************************')
     STOP
   END IF
-
-IF (idbg == 1) THEN
-  PRINT*, "ntr = ", ntr
-  PRINT*, "sumtr = ", sumtr
-END IF
 
   !. . Next define Lxx
   DO i = 1, ntr
@@ -649,12 +705,24 @@ END IF
     LDOC = i
   ELSEIF (tracerpplocal(i) == 11) THEN
     LALG1 = i
-    ELSEIF (tracerpplocal(i) == 12) THEN
+  ELSEIF (tracerpplocal(i) == 12) THEN
     LALG2 = i   
-    ELSEIF (tracerpplocal(i) == 13) THEN
+  ELSEIF (tracerpplocal(i) == 13) THEN
     LALG3 = i 
-   ELSEIF (tracerpplocal(i) == 14) THEN
+  ELSEIF (tracerpplocal(i) == 14) THEN
     LALG4 = i 
+  ELSEIF (tracerpplocal(i) == 15) THEN
+    LMeHg = i
+  ELSEIF (tracerpplocal(i) == 16) THEN
+    LHg2 = i
+  ELSEIF (tracerpplocal(i) == 17) THEN
+    LHg0 = i
+  ELSEIF (tracerpplocal(i) == 18) THEN
+    LSS1 = i
+  ELSEIF (tracerpplocal(i) == 19) THEN
+    LSS2 = i
+  ELSEIF (tracerpplocal(i) == 20) THEN
+    LSS3 = i
   END IF
   END DO
 
@@ -663,6 +731,8 @@ END IF
     PRINT*, "LPON = ", LPON, "LDON = ", LDON, "LNH4 = ", LNH4, "LNO3 = ", LNO3
     PRINT*, "LPOP = ", LPOP, "LDOP = ", LDOP, "LPO4 = ", LPO4
     PRINT*, "LALG1 = ", LALG1, "LALG2 = ", LALG2, "LALG3 = ", LALG3, "LALG4 = ", LALG4
+    PRINT*, "LMeHg = ", LMeHg, "LHg2 = ", LHg2, "LHg0 = ", LHg0
+    PRINT*, "LSS1 = ", LSS1, 'LSS2',LSS2,'LSS3 = ', LSS3
   END IF
 
 END SUBROUTINE WQinit
@@ -736,7 +806,18 @@ SUBROUTINE srcsnkWQ(thrs)
       IF (iALG4 == 1) THEN
         CALL sourceALG4(k,l,thrs)
       END IF
-
+      IF (iMeHg == 1) THEN
+        ! CALL sourceALG4(k,l,thrs)
+      END IF
+      IF (iHg2 == 1) THEN
+        ! CALL sourceALG4(k,l,thrs)
+      END IF
+      IF (iHg0 == 1) THEN
+        ! CALL sourceALG4(k,l,thrs)
+      END IF
+      IF (iSS == 1) THEN
+        call sourceSS(k, l)
+      END IF
     END DO
   END DO
 

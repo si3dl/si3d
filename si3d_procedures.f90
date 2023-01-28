@@ -512,7 +512,7 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
        ELSE IF (ecomod == 0) THEN
          CALL srcsnk00
        ELSE IF (ecomod == 1) THEN
-         IF (idbg = 1) PRINT *, 'Before entry into SUB srcsnkWQ'
+         IF (idbg == 1) PRINT *, 'Before entry into SUB srcsnkWQ'
          IF ((ecomod == 1) .AND. (MOD(n,MAX(ipwq, 1)) == 0)) CALL srcsnkWQ(thrs) !! ACC 11/21/2022 added to run WQ at lower frequency than hydrodynamics
          ! CALL srcsnkWQ(thrs)
          IF (idbg == 1) PRINT *, ' After entry into SUB srcsnkWQ'
@@ -611,7 +611,7 @@ SUBROUTINE exmom ( ieq  )
 !      print *, "lEC127:",lEC(127),"maskij:",mask2d(l2i(127)+1,l2j(127))
 
       DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
-     l = id_column(liter)
+        l = id_column(liter)
 
         !.....Compute layer number for the bottom wet u-pt.......
         kmx = MIN(kmz(lEC(l)), kmz(l))
@@ -1224,8 +1224,6 @@ SUBROUTINE matmom ( ieq, t_matmom2,Bstart, Bend, Bex,Beagx,Bearx,Bagx,Barx,Beagy
    !                -----X-momentum equation-----
    CASE (1)
 
-
-
       !.....Loop over interior u-pts .....
 
       DO liter = lhiWCE(omp_get_thread_num ( )+1), lhfCE(omp_get_thread_num ( )+1)
@@ -1249,7 +1247,6 @@ SUBROUTINE matmom ( ieq, t_matmom2,Bstart, Bend, Bex,Beagx,Bearx,Bagx,Barx,Beagy
             k1x =                  k1u(l)
             nwlayers = (kmx-k1x) + 1
             IF(nwlayers < 1) CYCLE
-
 
             ! ... Compute eddy viscosity at interfaces vertically between u-pts
             Avx = 0.0
@@ -1373,7 +1370,7 @@ SUBROUTINE matmom ( ieq, t_matmom2,Bstart, Bend, Bex,Beagx,Bearx,Bagx,Barx,Beagy
                     aa(2,k) = aa(2,k) + Usource
                     gg(  k) = gg(  k) + Usource * Uhvalue
                   ENDDO
-				ENDIF
+			          ENDIF
                 IF (i == ipss(inn)-1    .AND. &
                     j == jpss(inn)    ) THEN
                   DO k = k1x,kmx
@@ -1583,8 +1580,7 @@ SUBROUTINE matmom ( ieq, t_matmom2,Bstart, Bend, Bex,Beagx,Bearx,Bagx,Barx,Beagy
                   ENDDO
                 ENDIF
               ENDDO
-
-	ENDIF
+	          ENDIF
 
             !.....Solve tridiagonal system for  [ag]  and  [ar]  arrays........
             SELECT CASE (nwlayers)
@@ -4386,7 +4382,6 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
          !.....Define scalars at new time step....
          tracer(k1s:kms  ,l,nt) = sal1(1:nwlayers)
          tracer(k1 :k1s-1,l,nt) = sal1(1         )
-
       END SELECT
 
    !.....End loop over scalar-pts.....

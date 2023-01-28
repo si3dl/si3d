@@ -175,10 +175,12 @@ SUBROUTINE input
    IF (ntr > 0) THEN
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) ecomod
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iotr
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) itspftr
      ! ipwq = Time step to run WQ modules. E.g. in idt = 100 s, and want to run WQ every 1 h, ipwq = 36;
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) ipwq 
      IF (ios  /= 0) CALL input_error ( ios, 9 )
    ELSE IF (ntr == 0) THEN
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
@@ -2129,13 +2131,11 @@ SUBROUTINE outh(n)
 !   REAL, ALLOCATABLE, DIMENSION(:,:) :: out_array
    INTEGER :: year_out, day_out, mon_out
    REAL    :: hour_out
-   print *,"a,"
    !.....Open spacefile on first entry and print initial conditions ....
    IF( n == 0 ) THEN
 
      ! ... Determine No. of time slices to output
      n_frames = (nts-itspfh)/MAX(iop,1)
-     print *,"aa,"
      DO j = 1, n_planes
        ! ... Check that plane no. is below 2
        IF ( p_out(j) < k1 ) THEN
@@ -2159,7 +2159,6 @@ SUBROUTINE outh(n)
        interior_plane_points (j) = ipoints
        WRITE(plane_id) ipoints
      END DO
-     print *,"bb,"
      ! ... Time stamp
      year_out = iyr
      mon_out  = imon
@@ -2168,7 +2167,6 @@ SUBROUTINE outh(n)
 
      ! ... Output planes
      DO k = 1, n_planes
-       print *,"ff"
        ipoints = interior_plane_points (k)
 !       ALLOCATE( out_array ( ipoints, 8 ), STAT=istat )
 !       IF (istat /= 0) THEN
@@ -2177,7 +2175,6 @@ SUBROUTINE outh(n)
 !       ENDIF
        kp = p_out(k)
        k_out = 0
-       print *,"fff"
        ! ... Bottom cell plane
        IF ( kp > km ) THEN
          DO c=1,cm1
@@ -2201,7 +2198,7 @@ SUBROUTINE outh(n)
            out_array(k_out,8) = s(l) ! Changed 12/2010 SWA
            !out_array(k_out,8) = hhs(i,j)
          END DO
-       print *,"bc,"
+
        ! ... Interior plane
        ELSE
          DO c=1,cm1
@@ -2229,14 +2226,13 @@ SUBROUTINE outh(n)
 
        ! ... Id # for plane file
        plane_id = plane_id0 + k
-        print *,"bh,"
+
        ! ... Print time stamp followed by the records
        WRITE(plane_id) n,year_out,mon_out,day_out,hour_out,          &
        &            ((out_array(m1,m2),m2=1,8),m1=1,ipoints)
 !       DEALLOCATE (out_array)
-        print *,"j"
+
      END DO
-     print *,"c,"
    ELSE
 
      ! ... Time stamp
@@ -2387,7 +2383,7 @@ SUBROUTINE outz(n)
      ENDDO
 
      DO j = 1, ntr
-       n_frames = nts/MAX(iotr,1)
+       n_frames = (nts-itspftr)/MAX(iotr,1)
        tracer_id = tracer_id0 + j
        tracer_file = "tracer_    "
        IF ( j < 10 ) WRITE ( tracer_file(8:11), FMT='(I1,"   ")' ) j
@@ -2649,13 +2645,12 @@ SUBROUTINE outp(n)
          out_array(kout,5) = up (k,l)
          out_array(kout,6) = vp (k,l)
          out_array(kout,7) = wp (k,l)
-         out_array(kout,8) = Dv (k,l)
-         out_array(kout,9) = salp (k,l)
+         out_array(kout,8) = salp (k,l)
        END DO;
      END DO
      ! ... Print time stamp followed by the records
      WRITE(ptrack_id) n,year_out,mon_out, day_out,hour_out,  &
-     &              ((out_array(m1,m2),m2=1,9),m1=1,ipoints)
+     &              ((out_array(m1,m2),m2=1,8),m1=1,ipoints)
 !     DEALLOCATE (out_array)
   ELSE
 
@@ -2676,13 +2671,12 @@ SUBROUTINE outp(n)
          out_array(kout,2) = up(k,l)
          out_array(kout,3) = vp(k,l)
          out_array(kout,4) = wp(k,l)
-         out_array(kout,5) = Dv(k,l)
-         out_array(kout,6) = salp (k,l)
+         out_array(kout,5) = salp (k,l)
        END DO;
      END DO
      ! ... Print time stamp followed by the records
      WRITE(ptrack_id) n,year_out,mon_out, day_out,hour_out,  &
-     &              ((out_array(m1,m2),m2=1,6),m1=1,ipoints)
+     &              ((out_array(m1,m2),m2=1,5),m1=1,ipoints)
      !DEALLOCATE (out_array)
  END IF
 
@@ -4424,7 +4418,7 @@ SUBROUTINE PointSourceSinkInput
       IF (ios /= 0) CALL input_error ( ios, 48 )
 
       ! Read type of source-sink simulated (plumes, boundary conditions, pumped inflows)
-      READ (UNIT=i52, FMT='(10X,G7.2)', IOSTAT=ios) ptype(nn)
+      READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) ptype(nn)
       IF (ios /= 0) CALL input_error ( ios, 48 )
 
       ! Read number of points in file (it has to be equal in all arrays)
