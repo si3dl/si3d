@@ -479,6 +479,7 @@ SUBROUTINE WQinput
   ELSE IF (sedNumber == 0) THEN
    READ (UNIT=i5, FMT='(18X,5F)', IOSTAT=ios)
    READ (UNIT=i5, FMT='(18X,5F)', IOSTAT=ios)
+   READ (UNIT=i5, FMT='(18X,5F)', IOSTAT=ios)
    IF (ios /= 0) CALL input_error ( ios, 101 )
   END IF
 

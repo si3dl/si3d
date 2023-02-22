@@ -8,6 +8,7 @@
 !-------------------------------------------------------------------------
 
   USE si3d_types
+  ! USE si3d_stwave
 
   IMPLICIT NONE
   SAVE
@@ -25,62 +26,82 @@ SUBROUTINE sourceSS(kwq,lwq)
 !
 ! --------------------------------------------------------------------
   ! Arguments of subroutine
-  integer, intent(in)   :: kwq               !< Layer index
-  integer, intent(in)   :: lwq               !< Column index
-  real                  :: taub              !< (Pa) Bottom shear stress
-  real                  :: ustarb            !< (m/s) Shear velocity
-  real                  :: w_dens            !< (kg/m3) Water density
-  real, dimension(sedNumber) :: settling_vel !< (m/s) Settling velocity of sediment
-  real, dimension(sedNumber) :: Rep          !< Explicity Particle Reynolds Number
-  real, dimension(sedNumber) :: tauCrt       !< Critical Shear Stress
-  real, dimension(sedNumber) :: erosionFlux  !<
-  real, dimension(sedNumber) :: depositionFlux  !<
-  real :: conc
-  integer :: pn
-  integer :: i
-  integer :: kms
+  integer, intent(in)        :: kwq               !< Layer index
+  integer, intent(in)        :: lwq               !< Column index
+  integer                    :: pn
+  integer                    :: kms
+  integer                    :: i
+  real                       :: taub              !< (Pa) Bottom shear stress
+  real                       :: ustarb            !< (m/s) Shear velocity
+  real                       :: w_dens            !< (kg/m3) Water density
+  real, dimension(sedNumber) :: settling_vel      !< (m/s) Settling velocity of sediment
+  real, dimension(sedNumber) :: Rep               !< Explicity Particle Reynolds Number
+  real, dimension(sedNumber) :: tauCrt            !< Critical Shear Stress
+  real, dimension(sedNumber) :: erosionFlux       !<
+  real, dimension(sedNumber) :: depositionFlux    !<
+  real                       :: conc
 
   kms = kmz(lwq)
+
+  if (kwq .eq. kms) then 
   
-  w_dens = rhop(kwq, lwq) + 1000
+    w_dens = rhop(kwq, lwq) + 1000
+    ! Estimate bottom shear stress
+    call tauBottom(taub, ustarb, kwq, lwq)
 
-  ! print*, '--------------------------'
-  ! print*, 'k =',kwq,'l =',lwq
+    ! if (lwq == 10) then
+    !   print*, '--------------------------'
+    !   print*, 'k =',kwq,'l =',lwq
+    !   print*, 'taub =',taub
+    !   print*, 'ustarb =',ustarb
+    ! end if
+    pn = 0
+    do i = 1, sedNumber
+      ! Estimate properties of sediment for a given water density at bottom cell
+      conc = tracerpp(kwq,lwq,LSS1 + pn)
+      
+      call get_sed_prop(settling_vel(i),Rep(i),tauCrt(i),sed_diameter(i),sed_dens(i),w_dens)
+      
+      ! Estimate erosion flux
+      ! if (taub .gt. tauCrt(i)) then
+      call erosion(erosionFlux(i), ustarb, Rep(i), settling_vel(i), sed_frac(i))
+      ! else
+      !   erosionFlux(i) = 0.0
+      ! end if 
+      if (conc .gt. 0.0) then
+        call deposition(depositionFlux(i), settling_vel(i), tauCrt(i), taub, conc, kwq, kms)
+      else
+        depositionFlux(i) = 0.0
+      end if 
 
-  ! Estimate properties of sediment for a given water density at bottom cell
-  call get_sed_prop(settling_vel,Rep,tauCrt,sed_diameter,sed_dens,w_dens)
-  ! Estimate bottom shear stress
-  call tauBottom(kwq, lwq, taub, ustarb)
-  ! print*, 'taub =',taub
-  ! Estimate erosion flux
-  pn = 0
+      sourcesink(kwq, lwq, LSS1 + pn) = (erosionFlux(i) - depositionFlux(i)) / hp(kwq, lwq)
 
-  do i = 1, sedNumber
-    ! print*, 'pn = ', pn + 1
-    if (kwq .eq. kms) then 
-      call erosion(erosionFlux(i), taub, ustarb, Rep(i), settling_vel(i), tauCrt(i))
-    else
-      erosionFlux(i) = 0.0
-    end if 
-    conc = tracerpp(kwq,lwq,LSS1 + pn)
-    ! print*, 'conc =',conc
+      ! if (lwq == 10) then 
+      !   print*, 'pn = ', pn + 1
+      !   print*, 'conc =',conc
+      !   print*, 'taucr = ',tauCrt(i)
+      !   print*, 'vs = ', settling_vel(i)
+      !   print*, 'erosionFlux =',erosionFlux(i)
+      !   print*, 'depositionFlux =',depositionFlux(i)
+      !   print*,'sourcesink LSS1 = ',sourcesink(kwq,lwq,LSS1)
+      !   print*,'sourcesink LSS2 = ',sourcesink(kwq,lwq,LSS2)
+      ! end if
 
-    call deposition(depositionFlux(i), settling_vel(i), tauCrt(i), taub, conc, kwq, kms)
-    ! print*, 'erosionFlux =',erosionFlux(i)
-    ! print*, 'depositionFlux =',depositionFlux(i)
+      pn = pn + 1
+    end do
 
-    sourcesink(kwq, lwq, LSS1 + pn) = (erosionFlux(i) - depositionFlux(i)) / hp(kwq, lwq)
-
-    ! print*,'sourcesink LSS1 = ',sourcesink(kwq,lwq,LSS1)
-    ! print*,'sourcesink LSS2 = ',sourcesink(kwq,lwq,LSS2)
-    pn = pn + 1
-    
-  end do
+  elseif (kwq .ne. kms) then 
+    pn = 0
+    do i = 1, sedNumber
+      sourcesink(kwq,lwq,LSS1 + pn) = 0
+      pn = pn + 1
+    end do
+  end if
 
 END SUBROUTINE sourceSS
 
 ! ********************************************************************
-SUBROUTINE erosion(erosionFlux, taub, ustarb, Rep, settling_vel, tauCrt)
+SUBROUTINE erosion(erosionFlux, ustarb, Rep, settling_vel, sed_frac)
 ! ********************************************************************
 !
 ! Purpose: To estimate the erosion caused by the flow at the bottom
@@ -89,14 +110,13 @@ SUBROUTINE erosion(erosionFlux, taub, ustarb, Rep, settling_vel, tauCrt)
 !
 ! --------------------------------------------------------------------
   ! Arguments
-  real, intent(in) :: taub
-  real, intent(in) :: ustarb
-  real, intent(in) :: tauCrt
-  real, intent(in) :: Rep !< Explicity Particle Reynolds Number
-  real, intent(in) :: settling_vel !< (m/s) Settling velocity of sediment
-  real   :: z_u 
-  real  :: E_s
-  real, intent(out) :: erosionFlux
+  real, intent(in)  :: ustarb       !< (m/s) Shear velocity at bottom
+  real, intent(in)  :: Rep          !< Explicit Particle Reynolds Number
+  real, intent(in)  :: settling_vel !< (m/s) Settling velocity of sediment
+  real, intent(in)  :: sed_frac     !< fraction of bed of a given sediment type
+  real              :: z_u          !< Similarity variable for uniform sediment
+  real              :: E_s          !< Dimensionless coefficient for sediment entrainment. Under quasi-equilibrium conditions (Garcia & Parker 1991)
+  real, intent(out) :: erosionFlux  !< Vertical erosion flux
 
   if (Rep .lt. 3.5) then
     z_u = 0.708 * ustarb * (Rep ** 0.6) / settling_vel
@@ -106,13 +126,8 @@ SUBROUTINE erosion(erosionFlux, taub, ustarb, Rep, settling_vel, tauCrt)
 
   ! Sediment entrainment coefficient
   E_s = Ased * (z_u ** 5) / (1 + (z_u ** 5) * Ased/0.3)
-  if (taub .gt. tauCrt) then 
-    erosionFlux = E_s * settling_vel
-  else
-    erosionFlux = 0
-  end if   
 
-  ! print*, 'E_s',E_s
+  erosionFlux = E_s * settling_vel * sed_frac
 
   return
 END SUBROUTINE erosion
@@ -135,7 +150,7 @@ SUBROUTINE deposition(depositionFlux, settling_vel, tauCrt, taub, conc, kwq, kms
   integer, intent(in) :: kms
   real, intent(out) :: depositionFlux
 
-    if ((taub .lt. tauCrt) .and. (kwq .eq. kms)) then
+    if (taub .lt. tauCrt) then
       depositionFlux = settling_vel * conc * (1 - taub/tauCrt)
     else
       depositionFlux = settling_vel * conc
@@ -154,16 +169,16 @@ SUBROUTINE get_sed_prop(settling_vel,Rep,tauCrt,sed_diameter,sed_dens,w_dens)
 ! --------------------------------------------------------------------
   implicit none
   ! Arguments
-  real, dimension(sedNumber), intent(in)  :: sed_diameter     !< (um) Sediment diameter
-  real, intent(in)                        :: w_dens           !< (kg/m3) water density
-  real, dimension(sedNumber), intent(in)  :: sed_dens         !< (kg/m3) sediment density
-  real, dimension(sedNumber), intent(out) :: settling_vel     !< (m/s) settling velocity
-  real, dimension(sedNumber), intent(out) :: Rep              !< Explicit Particle Reynolds Number
-  real, dimension(sedNumber), intent(out) :: tauCrt           !< (Pa) Critical shear stress 
-  real, dimension(sedNumber)              :: submerged_spec_g !< Sediment submerged specific gravity
-  real, dimension(sedNumber)              :: sed_diamm        !< (m) Sediment diameter
-  real, dimension(sedNumber)              :: sed_spec_g       !< specific sediment gravity
-  logical                                 :: ivanRijn         !< Flag for using van Rijn (1984) formula or Dietrich (1982). The default is van Rijn
+  real, intent(in)  :: sed_diameter     !< (um) Sediment diameter
+  real, intent(in)  :: w_dens           !< (kg/m3) water density
+  real, intent(in)  :: sed_dens         !< (kg/m3) sediment density
+  real, intent(out) :: settling_vel     !< (m/s) settling velocity
+  real, intent(out) :: Rep              !< Explicit Particle Reynolds Number
+  real, intent(out) :: tauCrt           !< (Pa) Critical shear stress 
+  real              :: submerged_spec_g !< Sediment submerged specific gravity
+  real              :: sed_diamm        !< (m) Sediment diameter
+  real              :: sed_spec_g       !< specific sediment gravity
+  logical           :: ivanRijn         !< Flag for using van Rijn (1984) formula or Dietrich (1982). The default is van Rijn
 
   ivanRijn = .true.
 
@@ -202,9 +217,9 @@ SUBROUTINE submergedSpecificGravity(submerged_spec_g, sed_dens, w_dens)
 !
 ! --------------------------------------------------------------------
   ! Arguments of subroutine
-  real, dimension(sedNumber), intent(in)  :: sed_dens         !< (kg/m3) Sediment density
-  real, intent(in)                        :: w_dens           !< (kg/m3) Water density
-  real, dimension(sedNumber), intent(out) :: submerged_spec_g !< Sediment submerged specific gravity
+  real, intent(in)  :: sed_dens         !< (kg/m3) Sediment density
+  real, intent(in)  :: w_dens           !< (kg/m3) Water density
+  real, intent(out) :: submerged_spec_g !< Sediment submerged specific gravity
 
   ! Estimate submerged specific gravity
   submerged_spec_g = sed_dens / w_dens - 1
@@ -224,10 +239,10 @@ SUBROUTINE partReynolds_Number(Rep, sed_diamm, kinematic_viscosity, submerged_sp
 ! --------------------------------------------------------------------
 
   ! Arguments of subroutine
-  real, dimension(sedNumber), intent(in)  :: sed_diamm            !< (m) Sediment diameter D50
-  real, intent(in)                        :: kinematic_viscosity  !< (m2/sec) kinematic viscosity of water
-  real, dimension(sedNumber), intent(in)  :: submerged_spec_g     !< Sediment submerged specific gravity
-  real, dimension(sedNumber), intent(out) :: Rep                  !< Explicit Particle Reynolds Number
+  real, intent(in)  :: sed_diamm            !< (m) Sediment diameter D50
+  real, intent(in)  :: kinematic_viscosity  !< (m2/sec) kinematic viscosity of water
+  real, intent(in)  :: submerged_spec_g     !< Sediment submerged specific gravity
+  real, intent(out) :: Rep                  !< Explicit Particle Reynolds Number
 
   Rep = sqrt(g * submerged_spec_g * sed_diamm ** 3) / kinematic_viscosity
 
@@ -244,24 +259,24 @@ SUBROUTINE settling_velocity(settling_vel, g, submerged_spec_g, sed_spec_g, &
 !
 ! --------------------------------------------------------------------
   ! Arguments of subroutine
-  real, intent(in)                        :: g                    !< (m/s2)Gravitational acceleration (m/s**2)
-  real, dimension(sedNumber), intent(in)  :: submerged_spec_g     !< Sediment submerged specific gravity
-  real, intent(in)                        :: kinematic_viscosity  !< (m2/s) Kinematic viscosity of water
-  real, dimension(sedNumber), intent(in)  :: sed_diamm            !< (m) Sediment Diameter
-  real, dimension(sedNumber), intent(in)  :: sed_spec_g           !< Sediment specific gravity
-  real, dimension(sedNumber), intent(in)  :: Rep                  !< Explicit Particle Reynolds Number
-  logical, optional                       :: ivanRijn             !< Flag for using van Rijn (1984) formula or Dietrich (1982). The default is van Rijn      
-  real                                    :: dimless_fall_vel     !< dimensionaless fall velocity
-  logical                                 :: vanRijnFlag
-  integer                                 :: i
+  real, intent(in)  :: g                    !< (m/s2)Gravitational acceleration (m/s**2)
+  real, intent(in)  :: submerged_spec_g     !< Sediment submerged specific gravity
+  real, intent(in)  :: kinematic_viscosity  !< (m2/s) Kinematic viscosity of water
+  real, intent(in)  :: sed_diamm            !< (m) Sediment Diameter
+  real, intent(in)  :: sed_spec_g           !< Sediment specific gravity
+  real, intent(in)  :: Rep                  !< Explicit Particle Reynolds Number
+  logical, optional :: ivanRijn             !< Flag for using van Rijn (1984) formula or Dietrich (1982). The default is van Rijn      
+  real              :: dimless_fall_vel     !< dimensionaless fall velocity
+  logical           :: vanRijnFlag
+  integer           :: i
   ! Parameter for Dietrich (1982) equation
   ! Commented values are from Bombardelli and Moreno 2012 found in Reardon et al., 2014
-  real                                    :: b_1 = 3.76715 ! 2.891394
-  real                                    :: b_2 = 1.92944 ! 0.95296
-  real                                    :: b_3 = 0.09815 ! 0.056835
-  real                                    :: b_4 = 0.00575 ! 0.002892
-  real                                    :: b_5 = 0.00056 ! 0.000245
-  real, dimension(sedNumber), intent(out) :: settling_vel         !< (m/s) Settling
+  real              :: b_1 = 3.76715 ! 2.891394
+  real              :: b_2 = 1.92944 ! 0.95296
+  real              :: b_3 = 0.09815 ! 0.056835
+  real              :: b_4 = 0.00575 ! 0.002892
+  real              :: b_5 = 0.00056 ! 0.000245
+  real, intent(out) :: settling_vel         !< (m/s) Settling
 
   if ( present(ivanRijn) ) then
     vanRijnFlag = ivanRijn
@@ -272,23 +287,23 @@ SUBROUTINE settling_velocity(settling_vel, g, submerged_spec_g, sed_spec_g, &
     SELECT CASE (vanRijnFlag)
       CASE (.true.)
         ! Van Rijn Formula
-        if (sed_diamm(i) .ge. 1.0d-3) then
-          settling_vel(i) = 1.1 * sqrt(submerged_spec_g(i) * g * sed_diamm(i))
-        elseif (sed_diamm(i) .gt. 1.0d-4 .and. sed_diamm(i) .le. 1.0d-3) then
-          settling_vel(i) = (10 * kinematic_viscosity / sed_diamm(i)) *        & 
-                         (sqrt(1 + 0.01 * (submerged_spec_g(i) * g       &
-                          * sed_diamm(i) **3) / kinematic_viscosity ** 2.) - 1)
-        elseif (sed_diamm(i) .gt. 6.5d-5 .and. sed_diamm(i) .le. 1.0d-4) then
+        if (sed_diamm .ge. 1.0d-3) then
+          settling_vel = 1.1 * sqrt(submerged_spec_g * g * sed_diamm)
+        elseif (sed_diamm .gt. 1.0d-4 .and. sed_diamm .le. 1.0d-3) then
+          settling_vel = (10 * kinematic_viscosity / sed_diamm) *        & 
+                         (sqrt(1 + 0.01 * (submerged_spec_g * g       &
+                          * sed_diamm **3) / kinematic_viscosity ** 2.) - 1)
+        elseif (sed_diamm .gt. 6.5d-5 .and. sed_diamm .le. 1.0d-4) then
           ! Stokes Law
-          settling_vel(i) = (submerged_spec_g(i) * g * sed_diamm(i) ** 2.) / (18.0 * kinematic_viscosity)
+          settling_vel = (submerged_spec_g * g * sed_diamm ** 2.) / (18.0 * kinematic_viscosity)
         end if
 
       CASE (.false.)
-        dimless_fall_vel = exp(-1.*b_1 + b_2 * log(Rep(i)) - b_3 * (log(Rep(i))) ** 2.0 - b_4 * (log(Rep(i))) ** 3. + b_5 * (log(Rep(i))) ** 4.)
-        if ( sed_diamm(i) .lt. 1.0d-5) then
-          settling_vel(i) = (submerged_spec_g(i) * g * sed_diamm(i)**2)/(18.*kinematic_viscosity)
+        dimless_fall_vel = exp(-1.*b_1 + b_2 * log(Rep) - b_3 * (log(Rep)) ** 2.0 - b_4 * (log(Rep)) ** 3. + b_5 * (log(Rep)) ** 4.)
+        if ( sed_diamm .lt. 1.0d-5) then
+          settling_vel = (submerged_spec_g * g * sed_diamm**2)/(18.*kinematic_viscosity)
         else
-          settling_vel(i) = dimless_fall_vel * sqrt(submerged_spec_g(i) * g * sed_diamm(i))
+          settling_vel = dimless_fall_vel * sqrt(submerged_spec_g * g * sed_diamm)
         end if
     END SELECT
   end do
@@ -305,14 +320,14 @@ SUBROUTINE tauCritical(tauCrt,g,sed_diamm,submerged_spec_g, sed_dens,kinematic_v
 !
 ! --------------------------------------------------------------------
   ! Arguments of subroutine
-  real, intent(in)                        :: g                   !< (m/s2) Gravitational acceleration (m/s**2)
-  real, dimension(sedNumber), intent(in)  :: sed_diamm           !< (m) Sediment Diameter
-  real, dimension(sedNumber), intent(in)  :: submerged_spec_g    !< Sediment submerged specific gravity
-  real, dimension(sedNumber), intent(in)  :: sed_dens            !< (kg/m3) Sediment density
-  real, intent(in)                        :: kinematic_viscosity !< (m2/s) Kinematic viscosity of water
-  real, dimension(sedNumber), intent(in)  :: Rep                 !< Explicit Particle Reynolds Number
-  real, dimension(sedNumber)              :: shields_param       !< Nondimensional Critical Shields Parameter
-  real, dimension(sedNumber), intent(out) :: tauCrt              !< (Pa) Critical shear stress
+  real, intent(in)  :: g                   !< (m/s2) Gravitational acceleration (m/s**2)
+  real, intent(in)  :: sed_diamm           !< (m) Sediment Diameter
+  real, intent(in)  :: submerged_spec_g    !< Sediment submerged specific gravity
+  real, intent(in)  :: sed_dens            !< (kg/m3) Sediment density
+  real, intent(in)  :: kinematic_viscosity !< (m2/s) Kinematic viscosity of water
+  real, intent(in)  :: Rep                 !< Explicit Particle Reynolds Number
+  real              :: shields_param       !< Nondimensional Critical Shields Parameter
+  real, intent(out) :: tauCrt              !< (Pa) Critical shear stress
 
   ! Estimate of the nondimensional critical Shields parameter
   shields_param = 0.5 * (0.22 * Rep ** (-0.6) &
@@ -325,7 +340,7 @@ SUBROUTINE tauCritical(tauCrt,g,sed_diamm,submerged_spec_g, sed_dens,kinematic_v
 END SUBROUTINE tauCritical
 
 ! ********************************************************************
-SUBROUTINE tauBottom(kwq,lwq,taub,ustarb)
+SUBROUTINE tauBottom(taub, ustarb,kwq,lwq)
 ! ********************************************************************
 !
 ! Purpose: If suspended sediments is modeled, this subroutine
@@ -373,86 +388,6 @@ SUBROUTINE tauBottom(kwq,lwq,taub,ustarb)
 
 END SUBROUTINE tauBottom
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-END MODULE si3d_sed
+!************************************************************************
+                        END MODULE si3d_sed
+!************************************************************************

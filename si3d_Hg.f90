@@ -3,12 +3,13 @@
 !************************************************************************
 !
 !  Purpose: Procedures that implement routines related to the modelling
-!           of ecological processees
+!           of ecological processees for mercury
 !
 !-------------------------------------------------------------------------
 
   USE si3d_types
   USE si3d_ecomod
+  USE si3d_sed
 
   IMPLICIT NONE
   SAVE
@@ -32,3 +33,15 @@ SUBROUTINE sourceHg(kwq,lwq)
   REAL		::	 Tk, lnOS, OS, ln_Pwv, Pwv, theta2, Patm
 
   !Try
+
+
+
+
+
+
+
+
+
+!************************************************************************
+                        END MODULE si3d_Hg
+!************************************************************************

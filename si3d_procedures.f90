@@ -4057,220 +4057,256 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
 !
 !-----------------------------------------------------------------------
 
-   ! ... Arguments
-   INTEGER, INTENT (IN) :: nt
-   REAL, INTENT(IN) :: thrs
-   INTEGER, INTENT(IN) :: Bstart,Bend
-   REAL, DIMENSION (1:km1,Bstart:Bend+1), INTENT(INOUT) :: Bhaxpp, Bhaypp,Bth3,Bth4,Bth2,Bex
-   INTEGER, DIMENSION (Bstart:Bend+1), INTENT(IN) :: lSCH,lNCH,lWCH,lECH
+  ! ... Arguments
+  INTEGER, INTENT (IN) :: nt
+  REAL, INTENT(IN) :: thrs
+  INTEGER, INTENT(IN) :: Bstart,Bend
+  REAL, DIMENSION (1:km1,Bstart:Bend+1), INTENT(INOUT) :: Bhaxpp, Bhaypp,Bth3,Bth4,Bth2,Bex
+  INTEGER, DIMENSION (Bstart:Bend+1), INTENT(IN) :: lSCH,lNCH,lWCH,lECH
 
-   ! ... Local variables
-   INTEGER :: i, j, k, l, k1s, kms, gamma1, istat,liter
-   REAL    :: vel, ratio, C_f, delz, twodt1, hd
-   REAL, DIMENSION (4          ) :: ss
+  ! ... Local variables
+  INTEGER :: i, j, k, l, k1s, kms, gamma1, istat,liter
+  REAL    :: vel, ratio, C_f, delz, twodt1, hd
+  REAL, DIMENSION (4          ) :: ss
 
+  real :: diameterSed
+  real :: densitySed
+  real :: settling_vel
+  real :: Rep
+  real :: tauCrt
 
-   !.....Timing.....
-   REAL, EXTERNAL :: TIMER
-   REAL :: btime, etime
-   btime = TIMER(0.0)
+  !.....Timing.....
+  REAL, EXTERNAL :: TIMER
+  REAL :: btime, etime
+  btime = TIMER(0.0)
 
-
-
-   ! ... Constants used in solution
-   twodt1 = twodt*tz
-
-   ! ... Calculate hdxpp & hdypp arrays for diffusion terms &
-   Bhaxpp(:,Bend+1) = 0.0; Bhaypp(:,Bend+1) = 0.0;
-   DO liter = lhiW(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
-      If(liter == 0) CYCLE
-
-      l = id_column(liter)
-
-      ! ... 3D-(i,j) indexes for l
-!      i = l2i(l); j = l2j(l);
-
-      ! ... Retrieve top & bottom wet sal-pts .................
-      kms = kmz(l)
-      k1s = k1z(l)
-
-      ! ... Calculate hdxpp & hdypp array at u-&v- pts ........
-      DO k = k1, kms
-        Bhaxpp(k,l) = Ax0*hupp(k,l)
-        Bhaypp(k,l) = Ay0*hvpp(k,l)
-      ENDDO
-
-   END DO
-
-   Bth3(:,Bend+1) = 0.0
-   ! ... Initialize ex & flux arrays to zeros
-   Bex(:,Bend+1) = 0.0; Bth2(:,Bend+1)= 0.0; Bth4(:,Bend+1) = 0.0;
-
-   DO liter = lhiW(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
-     If(liter == 0) CYCLE
-
-     l = id_column(liter)
-
-     ! ... Map l- into (i,j)-indexes .........................
-!     i = l2i(l); j = l2j(l);
-
-     ! ... Retrieve top & bottom wet sal-pts .................
-     kms = kmz(l)
-     k1s = k1z(l)
-
-     DO k = k1s, kms;
-
-       ! ... EW fluxes .......................................
-       IF (hup(k,l)> ZERO) THEN
-
-         ! ... Velocities at time n+1/2
-         vel  = (uhpp(k,l) + uh(k,l))/2.
-
-         ! ... Define stencil for scalar transport
-         ss(2)  = tracerpp(k,    l ,nt);
-         ss(3)  = tracerpp(k,lEC(l),nt);
-         IF (hpp(k,lWC(l))<=ZERO)THEN; ss(1)=ss(2);
-           ELSE; ss(1)=tracerpp(k,lWC(l),nt); ENDIF
-         IF (hpp(k,lEC(lEC(l)))<=ZERO)THEN; ss(4)=ss(3);
-           ELSE; ss(4)=tracerpp(k,lEC(lEC(l)),nt); ENDIF
-
-         ! ... Calculate Cf factor to use in flux calculations
-         gamma1 = -SIGN (1., vel)
-         C_f    = 0.0;
-         IF (ss(3) - ss(2) /= 0 ) THEN
-           ratio =(ss(3+gamma1)-ss(2+gamma1))/(ss(3)-ss(2))
-           ! MC flux limiter (VanLeer, 1977)
-           !C_f   = MAX(0., MIN( 2*ratio, (1+ratio)/2., 2. ))
-           ! ... Roe's Superbee Limiter
-           C_f = MAX(0., MIN(1.,2.*ratio),MIN(2.,ratio))
-         ENDIF
-
-         ! ... Calculate fluxes at x-faces
-         Bth2(k,l) = vel/2.*(ss(3)+ss(2))- &
-         & ((1.-C_f)*ABS(vel)+vel**2.*twodt1/dx*C_f)*(ss(3)-ss(2))/2.
-       ELSE
-         Bth2(k,l) = 0.0
-       ENDIF
-       ENDDO;
-   ENDDO;
-   DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
-
-     l = id_column(liter)
-
-     ! ... Map l- into (i,j)-indexes .........................
-!     i = l2i(l); j = l2j(l);
-
-     ! ... Retrieve top & bottom wet sal-pts .................
-     kms = kmz(l)
-     k1s = k1z(l)
-
-     DO k = k1s, kms;
-
-       ! ... NS fluxes .......................................
-       IF (hvp(k,l)> ZERO) THEN
-
-         ! ... Velocities at time n+1/2
-         vel  = (vhpp(k,l) + vh(k,l))/2.
-
-         ! ... Define stencil for scalar transport
-         ss(2)  = tracerpp(k,        l  ,nt );
-         ss(3)  = tracerpp(k,    lNC(l) ,nt );
-         IF (hpp(k,lSC(l))<=ZERO)THEN; ss(1)=ss(2);
-           ELSE; ss(1)=tracerpp(k,lSC(l),nt); ENDIF
-         IF (hpp(k,lNC(lNC(l)))<=ZERO)THEN; ss(4)=ss(3);
-           ELSE; ss(4)=tracerpp(k,lNC(lNC(l)),nt); ENDIF
-
-         ! ... Calculate Cf factor to use in flux calculations
-         C_f    = 0.0; ! Default value is for upwinding
-         gamma1 = -SIGN (1., vel)
-         IF (ss(3) - ss(2) /= 0 ) THEN
-           ratio =(ss(3+gamma1)-ss(2+gamma1))/(ss(3)-ss(2))
-           ! MC flux limiter (VanLeer, 1977)
-           !C_f   = MAX(0., MIN( 2*ratio, (1+ratio)/2., 2. ))
-           ! ... Roe's Superbee Limiter
-           C_f = MAX(0., MIN(1.,2.*ratio),MIN(2.,ratio))
-         ENDIF
-
-         ! ... Calculate fluxes at y-faces
-         Bth4(k,l) = vel/2.*(ss(3)+ss(2))- &
-         & ((1.-C_f)*ABS(vel)+vel**2.*twodt1/dx*C_f)*(ss(3)-ss(2))/2.
-       ELSE
-         Bth4(k,l) = 0.0
-       ENDIF
-
-       ! ... UD fluxes .......................................
-       IF (hp(k-1,l)> ZERO) THEN
-
-         ! ... Velocities at time n+1/2 (include settling velocity)
-         vel  = wp(k,l) ; IF (k == k1s) vel = 0.0;
-
-         ! ... Define stencil for scalar transport
-         ss(2)  = tracerpp(k,l,nt);
-         ss(3)  = tracerpp(k-1,l,nt)
-         IF(hpp(k-2,l)<=ZERO)THEN;ss(4)=ss(3);
-           ELSE;ss(4)=tracerpp(k-2,l,nt);ENDIF
-         IF(hpp(k+1,l)<=ZERO)THEN;ss(1)=ss(2);
-           ELSE;ss(1)=tracerpp(k+1,l,nt);ENDIF;
-         ! ... Calculate ratio of slope of solution across interfaces &
-         !     estimate flux limiter
-         C_f = 1.0 ! Default method is Lax-Wendroff
-         gamma1 = -SIGN (1., vel)
-         IF (ss(3) - ss(2) /= 0 ) THEN
-           ratio =(ss(3+gamma1)-ss(2+gamma1))/(ss(3)-ss(2))
-           ! MC flux limiter (VanLeer, 1977)
-           ! C_f   = MAX(0., MIN( 2*ratio, (1+ratio)/2., 2. ))
-           ! ... Roe's Superbee Limiter
-           C_f = MAX(0., MIN(1.,2.*ratio),MIN(2.,ratio))
-         ENDIF
-
-         ! ... Calculate fluxes at z-faces
-         delz = (hp(k,l) + hp(k-1,l))/2.
-         Bth3(k,l) = vel/2.*(ss(3)+ss(2))- &
-         & ((1.-C_f)*ABS(vel)+vel**2.*twodt1/delz*C_f)*(ss(3)-ss(2))/2.
-       ELSE
-         Bth3(k,l) = 0.0
-       ENDIF
-
-     ENDDO;
-   ENDDO;
-
-   ! ... Update ex array with divergence of advective fluxes & diffusion
-   DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
-
-     l = id_column(liter)
-
-     ! ... Map l- into (i,j)-indexes .........................
-!     i = l2i(l); j = l2j(l);
-
-     ! ... Retrieve top & bottom wet sal-pts .................
-     kms = kmz(l)
-     k1s = k1z(l)
-
-     DO k = k1s, kms;
-
-       !.....Horizontal diffusion.....
-       hd= (Bhaxpp(k,    l )*(tracerpp(k,lEC(l),nt) - tracerpp(k,    l ,nt))       &
-         & -Bhaxpp(k,lWCH(l))*(tracerpp(k,    l ,nt) - tracerpp(k,lWC(l),nt)))/dxdx &
-         &+(Bhaypp(k,    l )*(tracerpp(k,lNC(l),nt) - tracerpp(k,    l ,nt))       &
-         & -Bhaypp(k,lSCH(l))*(tracerpp(k,    l ,nt) - tracerpp(k,lSC(l),nt)))/dydy
-
-       Bex(k,l) =   hpp(k,l)*tracerpp(k,l,nt)/twodt1   &
-                - (Bth2(k,l) - Bth2(k,lWCH(l))) / dx &
-                - (Bth4(k,l) - Bth4(k,lSCH(l))) / dy &
-                - (Bth3(k,l) - Bth3(k+1,l   )) !+ hd * ihd
-       IF (ihd>0) Bex(k,l) = Bex(k,l) + hd   ! Changed 12/2010 SWA
-
-     ENDDO;
-   ENDDO
-
-   ! ... Modify explicit term to account for flow boundary conditions
-   CALL MODextracer4openbc (nt,Bstart,Bend,Bex,thrs)
+  
 
 
 
-   !.....Compute CPU time spent in subroutine.....
-   etime = TIMER(0.0)
-   t_exsal = t_exsal + (etime - btime)
+  ! ... Constants used in solution
+  twodt1 = twodt*tz
+
+  ! ... Calculate hdxpp & hdypp arrays for diffusion terms &
+  Bhaxpp(:,Bend+1) = 0.0; Bhaypp(:,Bend+1) = 0.0;
+  DO liter = lhiW(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
+    If(liter == 0) CYCLE
+
+    l = id_column(liter)
+
+    ! ... 3D-(i,j) indexes for l
+    !      i = l2i(l); j = l2j(l);
+
+    ! ... Retrieve top & bottom wet sal-pts .................
+    kms = kmz(l)
+    k1s = k1z(l)
+
+    ! ... Calculate hdxpp & hdypp array at u-&v- pts ........
+    DO k = k1, kms
+      Bhaxpp(k,l) = Ax0*hupp(k,l)
+      Bhaypp(k,l) = Ay0*hvpp(k,l)
+    ENDDO
+  END DO
+
+  ! ... Initialize ex & flux arrays to zeros
+  Bth3(:,Bend+1) = 0.0
+  Bex(:,Bend+1) = 0.0; Bth2(:,Bend+1)= 0.0; Bth4(:,Bend+1) = 0.0;
+
+  DO liter = lhiW(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
+    If(liter == 0) CYCLE
+
+    l = id_column(liter)
+
+    ! ... Map l- into (i,j)-indexes .........................
+    !     i = l2i(l); j = l2j(l);
+
+    ! ... Retrieve top & bottom wet sal-pts .................
+    kms = kmz(l)
+    k1s = k1z(l)
+
+    DO k = k1s, kms;
+
+      ! ... EW fluxes .......................................
+      IF (hup(k,l)> ZERO) THEN
+
+        ! ... Velocities at time n+1/2
+        vel  = (uhpp(k,l) + uh(k,l))/2.
+
+        ! ... Define stencil for scalar transport
+        ss(2)  = tracerpp(k,    l ,nt)
+        ss(3)  = tracerpp(k,lEC(l),nt)
+        IF (hpp(k,lWC(l))<=ZERO)THEN
+          ss(1)=ss(2);
+        ELSE
+          ss(1)=tracerpp(k,lWC(l),nt)
+        ENDIF
+        IF (hpp(k,lEC(lEC(l)))<=ZERO) THEN
+          ss(4)=ss(3);
+        ELSE
+          ss(4)=tracerpp(k,lEC(lEC(l)),nt)
+        ENDIF
+
+        ! ... Calculate Cf factor to use in flux calculations
+        gamma1 = -SIGN (1., vel)
+        C_f    = 0.0;
+        IF (ss(3) - ss(2) /= 0 ) THEN
+          ratio =(ss(3+gamma1)-ss(2+gamma1))/(ss(3)-ss(2))
+          ! MC flux limiter (VanLeer, 1977)
+          !C_f   = MAX(0., MIN( 2*ratio, (1+ratio)/2., 2. ))
+          ! ... Roe's Superbee Limiter
+          C_f = MAX(0., MIN(1.,2.*ratio),MIN(2.,ratio))
+        ENDIF
+        ! ... Calculate fluxes at x-faces
+        Bth2(k,l) = vel/2.*(ss(3)+ss(2))- &
+        & ((1.-C_f)*ABS(vel)+vel**2.*twodt1/dx*C_f)*(ss(3)-ss(2))/2.
+      ELSE
+        Bth2(k,l) = 0.0
+      ENDIF
+    ENDDO
+  ENDDO
+  DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
+
+    l = id_column(liter)
+
+    ! ... Map l- into (i,j)-indexes .........................
+    !     i = l2i(l); j = l2j(l);
+
+    ! ... Retrieve top & bottom wet sal-pts .................
+    kms = kmz(l)
+    k1s = k1z(l)
+
+    DO k = k1s, kms;
+
+      ! ... NS fluxes .......................................
+      IF (hvp(k,l)> ZERO) THEN
+
+        ! ... Velocities at time n+1/2
+        vel  = (vhpp(k,l) + vh(k,l))/2.
+
+        ! ... Define stencil for scalar transport
+        ss(2)  = tracerpp(k,        l  ,nt );
+        ss(3)  = tracerpp(k,    lNC(l) ,nt );
+        IF (hpp(k,lSC(l))<=ZERO) THEN
+          ss(1)=ss(2)
+        ELSE
+          ss(1)=tracerpp(k,lSC(l),nt)
+        ENDIF
+        IF (hpp(k,lNC(lNC(l)))<=ZERO) THEN
+          ss(4)=ss(3);
+        ELSE
+          ss(4)=tracerpp(k,lNC(lNC(l)),nt)
+        ENDIF
+
+        ! ... Calculate Cf factor to use in flux calculations
+        C_f    = 0.0; ! Default value is for upwinding
+        gamma1 = -SIGN (1., vel)
+        IF (ss(3) - ss(2) /= 0 ) THEN
+          ratio =(ss(3+gamma1)-ss(2+gamma1))/(ss(3)-ss(2))
+          ! MC flux limiter (VanLeer, 1977)
+          !C_f   = MAX(0., MIN( 2*ratio, (1+ratio)/2., 2. ))
+          ! ... Roe's Superbee Limiter
+          C_f = MAX(0., MIN(1.,2.*ratio),MIN(2.,ratio))
+        ENDIF
+
+        ! ... Calculate fluxes at y-faces
+        Bth4(k,l) = vel/2.*(ss(3)+ss(2))- &
+        & ((1.-C_f)*ABS(vel)+vel**2.*twodt1/dx*C_f)*(ss(3)-ss(2))/2.
+      ELSE
+        Bth4(k,l) = 0.0
+      ENDIF
+
+      ! ... UD fluxes .......................................
+      IF (hp(k-1,l) > ZERO) THEN
+
+        ! ... Velocities at time n+1/2 (include settling velocity)
+        if (iSS == 0) then
+          vel = wp(k,l)
+          if (k == k1s) then
+            vel = 0.0
+          end if
+        elseif (iSS == 1)  then
+          diameterSed = sed_diameter(nt - LSS1 + 1)
+          densitySed = sed_dens(nt - LSS1 + 1)       
+          call get_sed_prop(settling_vel,Rep,tauCrt,diameterSed,densitySed,rhop(k,l)+1000)
+          vel = wp(k,l) - settling_vel
+          if (k == k1s) then
+            vel = 0.0
+          end if
+        end if
+
+        ! ... Define stencil for scalar transport
+        ss(2)  = tracerpp(k,l,nt)
+        ss(3)  = tracerpp(k-1,l,nt)
+        IF(hpp(k-2,l)<=ZERO) THEN
+          ss(4)=ss(3)
+        ELSE
+          ss(4)=tracerpp(k-2,l,nt)
+        ENDIF
+        IF(hpp(k+1,l)<=ZERO)THEN
+          ss(1)=ss(2)
+        ELSE
+          ss(1)=tracerpp(k+1,l,nt)
+        ENDIF
+ 
+        ! ... Calculate ratio of slope of solution across interfaces &
+        !     estimate flux limiter
+        C_f = 1.0 ! Default method is Lax-Wendroff
+        gamma1 = -SIGN (1., vel)
+        IF (ss(3) - ss(2) /= 0 ) THEN
+          ratio =(ss(3+gamma1)-ss(2+gamma1))/(ss(3)-ss(2))
+          ! MC flux limiter (VanLeer, 1977)
+          ! C_f   = MAX(0., MIN( 2*ratio, (1+ratio)/2., 2. ))
+          ! ... Roe's Superbee Limiter
+          C_f = MAX(0., MIN(1.,2.*ratio),MIN(2.,ratio))
+        ENDIF
+
+        ! ... Calculate fluxes at z-faces
+        delz = (hp(k,l) + hp(k-1,l))/2.
+        Bth3(k,l) = vel/2.*(ss(3)+ss(2))- &
+        & ((1.-C_f)*ABS(vel)+vel**2.*twodt1/delz*C_f)*(ss(3)-ss(2))/2.
+      ELSE
+        Bth3(k,l) = 0.0
+      ENDIF
+
+    ENDDO
+  ENDDO
+
+  ! ... Update ex array with divergence of advective fluxes & diffusion
+  DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
+
+    l = id_column(liter)
+
+    ! ... Map l- into (i,j)-indexes .........................
+    !     i = l2i(l); j = l2j(l);
+
+    ! ... Retrieve top & bottom wet sal-pts .................
+    kms = kmz(l)
+    k1s = k1z(l)
+
+    DO k = k1s, kms;
+
+      !.....Horizontal diffusion.....
+      hd= (Bhaxpp(k,    l )*(tracerpp(k,lEC(l),nt) - tracerpp(k,    l ,nt))       &
+      & -Bhaxpp(k,lWCH(l))*(tracerpp(k,    l ,nt) - tracerpp(k,lWC(l),nt)))/dxdx &
+      &+(Bhaypp(k,    l )*(tracerpp(k,lNC(l),nt) - tracerpp(k,    l ,nt))       &
+      & -Bhaypp(k,lSCH(l))*(tracerpp(k,    l ,nt) - tracerpp(k,lSC(l),nt)))/dydy
+
+      Bex(k,l) =   hpp(k,l)*tracerpp(k,l,nt)/twodt1   &
+      - (Bth2(k,l) - Bth2(k,lWCH(l))) / dx &
+      - (Bth4(k,l) - Bth4(k,lSCH(l))) / dy &
+      - (Bth3(k,l) - Bth3(k+1,l   )) !+ hd * ihd
+      IF (ihd>0) THEN
+        Bex(k,l) = Bex(k,l) + hd   ! Changed 12/2010 SWA
+      ENDIF
+    ENDDO
+  ENDDO
+
+  ! ... Modify explicit term to account for flow boundary conditions
+  CALL MODextracer4openbc (nt,Bstart,Bend,Bex,thrs)
+
+  !.....Compute CPU time spent in subroutine.....
+  etime = TIMER(0.0)
+  t_exsal = t_exsal + (etime - btime)
 
 END SUBROUTINE ExTracer
 
