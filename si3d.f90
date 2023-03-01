@@ -442,7 +442,7 @@
 
       !.....End loop over time.....
       IF(n > maxcount) THEN
-         PRINT *, " ERROR--A maximum of 5 million time steps is allowed"
+         PRINT *, " ERROR--A maximum of 5E6 time steps is allowed"
          EXIT
       END IF
       TimeEnd = TIMER(0.0)

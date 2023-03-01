@@ -49,19 +49,12 @@ SUBROUTINE sourceSS(kwq,lwq)
     ! Estimate bottom shear stress
     call tauBottom(taub, ustarb, kwq, lwq)
 
-    ! if (lwq == 10) then
-    !   print*, '--------------------------'
-    !   print*, 'k =',kwq,'l =',lwq
-    !   print*, 'taub =',taub
-    !   print*, 'ustarb =',ustarb
-    ! end if
     pn = 0
     do i = 1, sedNumber
       ! Estimate properties of sediment for a given water density at bottom cell
       conc = tracerpp(kwq,lwq,LSS1 + pn)
       
       call get_sed_prop(settling_vel(i),Rep(i),tauCrt(i),sed_diameter(i),sed_dens(i),w_dens)
-      
       ! Estimate erosion flux
       ! if (taub .gt. tauCrt(i)) then
       call erosion(erosionFlux(i), ustarb, Rep(i), settling_vel(i), sed_frac(i))
@@ -69,23 +62,28 @@ SUBROUTINE sourceSS(kwq,lwq)
       !   erosionFlux(i) = 0.0
       ! end if 
       if (conc .gt. 0.0) then
-        call deposition(depositionFlux(i), settling_vel(i), tauCrt(i), taub, conc, kwq, kms)
+        call deposition(depositionFlux(i), settling_vel(i), tauCrt(i), taub, conc)
       else
         depositionFlux(i) = 0.0
       end if 
 
-      sourcesink(kwq, lwq, LSS1 + pn) = (erosionFlux(i) - depositionFlux(i)) / hp(kwq, lwq)
+      sourcesink(kwq, lwq, LSS1 + pn) = (erosionFlux(i) - depositionFlux(i))
 
-      ! if (lwq == 10) then 
-      !   print*, 'pn = ', pn + 1
-      !   print*, 'conc =',conc
-      !   print*, 'taucr = ',tauCrt(i)
-      !   print*, 'vs = ', settling_vel(i)
-      !   print*, 'erosionFlux =',erosionFlux(i)
-      !   print*, 'depositionFlux =',depositionFlux(i)
-      !   print*,'sourcesink LSS1 = ',sourcesink(kwq,lwq,LSS1)
-      !   print*,'sourcesink LSS2 = ',sourcesink(kwq,lwq,LSS2)
-      ! end if
+      ! if (lwq == 190) then
+      !   print*, '--------------------------'
+      !   print*, 'k =',kwq,'l =',lwq
+      !   print*, 'w_dens = ',w_dens
+      !   print*, 'conc = ',conc
+      !   print*, 'taub =',taub
+      !   print*, 'ustarb =',ustarb
+      !   print*, 'tauCr =', tauCrt
+      !   print*, 'Rep = ', Rep
+      !   print*, 'vs = ', settling_vel
+      !   print*, 'erosionFlux = ', erosionFlux
+      !   print*, 'depositionFlux = ', depositionFlux
+      !   print*, 'sourcesink = ', sourcesink(kwq, lwq, LSS1+pn)
+      !   print*, 'sourcesink -1 = ', sourcesink(kwq-1, lwq, LSS1+pn)
+      ! end if 
 
       pn = pn + 1
     end do
@@ -132,9 +130,8 @@ SUBROUTINE erosion(erosionFlux, ustarb, Rep, settling_vel, sed_frac)
   return
 END SUBROUTINE erosion
 
-
 ! ********************************************************************
-SUBROUTINE deposition(depositionFlux, settling_vel, tauCrt, taub, conc, kwq, kms)
+SUBROUTINE deposition(depositionFlux, settling_vel, tauCrt, taub, conc)
 ! ********************************************************************
 !
 ! Purpose: To estimate the suspended sediment deposition at the
@@ -146,8 +143,6 @@ SUBROUTINE deposition(depositionFlux, settling_vel, tauCrt, taub, conc, kwq, kms
   real, intent(in) :: taub
   real, intent(in) :: tauCrt
   real, intent(in) :: conc
-  integer, intent(in) :: kwq
-  integer, intent(in) :: kms
   real, intent(out) :: depositionFlux
 
     if (taub .lt. tauCrt) then
@@ -182,7 +177,6 @@ SUBROUTINE get_sed_prop(settling_vel,Rep,tauCrt,sed_diameter,sed_dens,w_dens)
 
   ivanRijn = .true.
 
-  ! print*, 'w_dens',w_dens,'sed_diameter',sed_diameter
   ! To estimate sediment diamenter in m
   sed_diamm = sed_diameter * 0.000001
 
@@ -199,11 +193,7 @@ SUBROUTINE get_sed_prop(settling_vel,Rep,tauCrt,sed_diameter,sed_dens,w_dens)
   call settling_velocity(settling_vel, g, submerged_spec_g, sed_spec_g, &
                          Rep, sed_diamm, kinematic_viscosity, ivanRijn)
 
-  ! print*, 'settling_vel',settling_vel
-
   call tauCritical(tauCrt,g,sed_diamm,submerged_spec_g, sed_dens,kinematic_viscosity, Rep)
-
-  ! print*, 'tauCrt',tauCrt
 
   return
 END SUBROUTINE get_sed_prop
