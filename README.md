@@ -1,5 +1,3 @@
-# psi3d
-Parallelized si3d source code
 # pSi3D
 
 
