@@ -7,9 +7,10 @@
 !
 !-------------------------------------------------------------------------
 
-   !USE si3d_ecomod
+   USE omp_lib
    USE si3d_types
    USE si3d_sed
+   USE si3d_stwave
 
    IMPLICIT NONE
    SAVE
@@ -739,26 +740,65 @@ SUBROUTINE WQinit
 END SUBROUTINE WQinit
 
 !************************************************************
-SUBROUTINE srcsnkWQ(thrs)
+SUBROUTINE srcsnkWQ(n)
 !***********************************************************
 !
 !   Purpose: to call all source subroutines for all cells
 !
 !------------------------------------------------------------
 
-
   !... Local variables
-  INTEGER:: i,j,k,l, k1s, kms,itr
-  REAL, INTENT(IN) :: thrs
+  INTEGER:: i, j, k, l, liter, k1s, kms, iteration
+  integer, intent(in) :: n 
+  REAL :: thrs1, Tif_stwave
+  real, dimension(jm1,im1) :: u_stwave
+  real, dimension(jm1,im1) :: udir_stwave
+  real, allocatable :: tau_stwave1(:,:)
 
   ! reset soursesink = 0
   sourcesink = 0;
+  Tif_stwave = 0.5
 
-  DO l = 1, lm;
+  ! STWAVE controlling section. (SergioValbuena 03-11-2023) 
+  ! Average of wind speed and direction is estimated and used in stwave for bottom shear stress and wave height calculations. 
+  thrs1 = n * dt / 3600
+  if (iSS == 1) then
+    if (n == 1) then
+      allocate( uair_tmp(jm1,im1,int(Tif_stwave*3600/dt)), udir_tmp(jm1,im1,int(Tif_stwave*3600/dt))) 
+      iteration = 1
+    elseif (mod(n,int(Tif_stwave*3600/dt)+1) == 0) then 
+      iteration = 1
+    elseif (mod(n,int(Tif_stwave*3600/dt)) == 0) then
+      iteration = mod(n,int(Tif_stwave*3600/dt)+1)
+    else
+      iteration = mod(n,int(Tif_stwave*3600/dt))
+    end if
 
-    ! ... Map l- into (i,j)-indexes .........................
-    !i = l2i(l); j = l2j(l);
+    do i = 1, im1
+      do j = 1, jm1
+        uair_tmp(j,i,iteration) = sqrt(uair_stwave(j,i)**2 + vair_stwave(j,i)**2)
+        udir_tmp(j,i,iteration) = mod(270. - atan2d(vair_stwave(j,i),uair_stwave(j,i)), 360.)
+        if (udir_tmp(j,i,iteration) .le. 270) then
+          udir_tmp(j,i,iteration) = -(90 + udir_tmp(j,i,iteration))
+        else
+          udir_tmp(j,i,iteration) = 270 - udir_tmp(j,i,iteration)
+        end if
+        if (mod(n,int(Tif_stwave*3600/dt)) == 0) then
+          u_stwave(j,i) = sum(uair_tmp(j,i,:)) / size(uair_tmp(j,i,:))
+          udir_stwave(j,i) = sum(udir_tmp(j,i,:)) / size(udir_tmp(j,i,:))
+        end if 
+      end do
+    end do
 
+    if (mod(n,int(Tif_stwave*3600/dt)) == 0) then
+      call stwave(im1,jm1,u_stwave,udir_stwave,tau_stwave1)
+      tau_stwave = transpose(tau_stwave1)
+    end if
+  end if
+  
+
+  DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
+    l = id_column(liter)
     ! ... Retrieve top & bottom wet sal-pts .................
     kms = kmz(l)
     k1s = k1z(l)
@@ -766,55 +806,55 @@ SUBROUTINE srcsnkWQ(thrs)
     DO k = k1s, kms;
 
       IF (iDO == 1) THEN
-        CALL sourceDO(k,l,thrs)
+        CALL sourceDO(k,l,thrs1)
       END IF
       IF (iPON == 1) THEN
-        CALL sourcePON(k,l,thrs)
+        CALL sourcePON(k,l,thrs1)
       END IF
       IF (iDON == 1) THEN
-        CALL sourceDON(k,l,thrs)
+        CALL sourceDON(k,l,thrs1)
       END IF
       IF (iNH4 == 1) THEN
-        CALL sourceNH4(k,l,thrs)
+        CALL sourceNH4(k,l,thrs1)
       END IF
       IF (iNO3 == 1) THEN
-        CALL sourceNO3(k,l,thrs)
+        CALL sourceNO3(k,l,thrs1)
       END IF
       IF (iPOP == 1) THEN
-        CALL sourcePOP(k,l,thrs)
+        CALL sourcePOP(k,l,thrs1)
       END IF
       IF (iDOP == 1) THEN
-        CALL sourceDOP(k,l,thrs)
+        CALL sourceDOP(k,l,thrs1)
       END IF
       IF (iPO4 == 1) THEN
-        CALL sourcePO4(k,l,thrs)
+        CALL sourcePO4(k,l,thrs1)
       END IF
       IF (iDOC == 1) THEN
-        CALL sourceDOC(k,l,thrs)
+        CALL sourceDOC(k,l,thrs1)
       END IF
       IF (iPOC == 1) THEN
-        CALL sourcePOC(k,l,thrs)
+        CALL sourcePOC(k,l,thrs1)
       END IF
       IF (iALG1 == 1) THEN
-        CALL sourceALG1(k,l,thrs)
+        CALL sourceALG1(k,l,thrs1)
       END IF
       IF (iALG2 == 1) THEN
-        CALL sourceALG2(k,l,thrs)
+        CALL sourceALG2(k,l,thrs1)
       END IF
       IF (iALG3 == 1) THEN
-        CALL sourceALG3(k,l,thrs)
+        CALL sourceALG3(k,l,thrs1)
       END IF
       IF (iALG4 == 1) THEN
-        CALL sourceALG4(k,l,thrs)
+        CALL sourceALG4(k,l,thrs1)
       END IF
       IF (iMeHg == 1) THEN
-        ! CALL sourceALG4(k,l,thrs)
+        ! CALL sourceALG4(k,l,thrs1)
       END IF
       IF (iHg2 == 1) THEN
-        ! CALL sourceALG4(k,l,thrs)
+        ! CALL sourceALG4(k,l,thrs1)
       END IF
       IF (iHg0 == 1) THEN
-        ! CALL sourceALG4(k,l,thrs)
+        ! CALL sourceALG4(k,l,thrs1)
       END IF
       IF (iSS == 1) THEN
         call sourceSS(k, l)

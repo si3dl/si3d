@@ -414,13 +414,21 @@
    REAL    :: SED_DON, SED_NH4, SED_NO3, SED_DOP, SED_PO4, SED_DOC
 
    ! Sediment Parameters
-   INTEGER                          :: sedMax = 3       !< Max number of sediments to model
-   INTEGER                          :: sedNumber        !< Number of sediments to model
-   REAL, ALLOCATABLE, DIMENSION (:) :: sed_diameter     !< (um) Sediment diameter D50 in micrometers
-   REAL, ALLOCATABLE, DIMENSION (:) :: sed_dens         !< (kg/m3) Sediment density
-   REAL, ALLOCATABLE, DIMENSION (:) :: sed_frac         !< Fraction of type of sediment in total suspended sediment
-   REAL, PARAMETER                  :: Ased = 1.3d-7    !< Constant value for estimates of sediment fluxes. Garcia and Parker 1991,1993, Reardon 2014, etc
-   REAL                             :: kinematic_viscosity = 1.3081d-6   !< Kinematic viscosity of water 10C         
+   integer                           :: sedMax = 3       !< Max number of sediments to model
+   integer                           :: sedNumber        !< Number of sediments to model
+   real, allocatable, dimension (:)  :: sed_diameter     !< (um) Sediment diameter D50 in micrometers
+   real, allocatable, dimension (:)  :: sed_dens         !< (kg/m3) Sediment density
+   real, allocatable, dimension (:)  :: sed_frac         !< Fraction of type of sediment in total suspended sediment
+   real, PARAMETER                   :: Ased = 1.3d-7    !< Constant value for estimates of sediment fluxes. Garcia and Parker 1991,1993, Reardon 2014, etc
+   real                              :: kinematic_viscosity = 1.3081d-6   !< Kinematic viscosity of water 10C
+   real, allocatable, dimension(:,:) :: dep_stwave
+   real, allocatable, dimension(:,:) :: uair_stwave
+   real, allocatable, dimension(:,:) :: vair_stwave
+   real, allocatable, dimension(:,:) :: tau_stwave
+   real, allocatable, dimension(:,:,:) :: uair_tmp
+   real, allocatable, dimension(:,:,:) :: udir_tmp
+
+
 !                        -----Data Dictionary-----
 
 END MODULE si3d_types

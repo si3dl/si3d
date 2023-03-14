@@ -8,7 +8,6 @@
 !-------------------------------------------------------------------------
 
   USE si3d_types
-  ! USE si3d_stwave
 
   IMPLICIT NONE
   SAVE
@@ -172,15 +171,15 @@ SUBROUTINE get_sed_prop(settling_vel,Rep,tauCrt,sed_diameter,sed_dens,w_dens)
   real, intent(out) :: tauCrt           !< (Pa) Critical shear stress 
   real              :: submerged_spec_g !< Sediment submerged specific gravity
   real              :: sed_diamm        !< (m) Sediment diameter
-  real              :: sed_spec_g       !< specific sediment gravity
+  ! real              :: sed_spec_g       !< specific sediment gravity
   logical           :: ivanRijn         !< Flag for using van Rijn (1984) formula or Dietrich (1982). The default is van Rijn
 
-  ivanRijn = .true.
+  ivanRijn = .false.
 
   ! To estimate sediment diamenter in m
   sed_diamm = sed_diameter * 0.000001
 
-  sed_spec_g = sed_dens/w_dens - 1.
+  ! sed_spec_g = sed_dens/w_dens
 
   call submergedSpecificGravity(submerged_spec_g, sed_dens, w_dens)
 
@@ -190,8 +189,7 @@ SUBROUTINE get_sed_prop(settling_vel,Rep,tauCrt,sed_diameter,sed_dens,w_dens)
 
   ! print*, 'Rep',Rep
 
-  call settling_velocity(settling_vel, g, submerged_spec_g, sed_spec_g, &
-                         Rep, sed_diamm, kinematic_viscosity, ivanRijn)
+  call settling_velocity(settling_vel, g, submerged_spec_g, Rep, sed_diamm, kinematic_viscosity, ivanRijn)
 
   call tauCritical(tauCrt,g,sed_diamm,submerged_spec_g, sed_dens,kinematic_viscosity, Rep)
 
@@ -240,8 +238,7 @@ SUBROUTINE partReynolds_Number(Rep, sed_diamm, kinematic_viscosity, submerged_sp
 END SUBROUTINE partReynolds_Number
 
 ! ********************************************************************
-SUBROUTINE settling_velocity(settling_vel, g, submerged_spec_g, sed_spec_g, &
-                             Rep, sed_diamm, kinematic_viscosity, ivanRijn)
+SUBROUTINE settling_velocity(settling_vel, g, submerged_spec_g, Rep, sed_diamm, kinematic_viscosity, ivanRijn)
 ! ********************************************************************
 !
 ! Purpose: To estimate the settling velocity for a given particle
@@ -253,19 +250,20 @@ SUBROUTINE settling_velocity(settling_vel, g, submerged_spec_g, sed_spec_g, &
   real, intent(in)  :: submerged_spec_g     !< Sediment submerged specific gravity
   real, intent(in)  :: kinematic_viscosity  !< (m2/s) Kinematic viscosity of water
   real, intent(in)  :: sed_diamm            !< (m) Sediment Diameter
-  real, intent(in)  :: sed_spec_g           !< Sediment specific gravity
+  ! real, intent(in)  :: sed_spec_g           !< Sediment specific gravity
   real, intent(in)  :: Rep                  !< Explicit Particle Reynolds Number
   logical, optional :: ivanRijn             !< Flag for using van Rijn (1984) formula or Dietrich (1982). The default is van Rijn      
   real              :: dimless_fall_vel     !< dimensionaless fall velocity
   logical           :: vanRijnFlag
   integer           :: i
   ! Parameter for Dietrich (1982) equation
-  ! Commented values are from Bombardelli and Moreno 2012 found in Reardon et al., 2014
-  real              :: b_1 = 3.76715 ! 2.891394
-  real              :: b_2 = 1.92944 ! 0.95296
-  real              :: b_3 = 0.09815 ! 0.056835
-  real              :: b_4 = 0.00575 ! 0.002892
-  real              :: b_5 = 0.00056 ! 0.000245
+  ! values are from Bombardelli and Moreno 2012 found in Reardon et al., 2014
+  ! Commented values are from dsm2
+  real              :: b_1 = 2.891394 !3.76715
+  real              :: b_2 = 0.95296  !1.92944 
+  real              :: b_3 = 0.056835 !0.09815 
+  real              :: b_4 = 0.002892 !0.00575 
+  real              :: b_5 = 0.000245 !0.00056 
   real, intent(out) :: settling_vel         !< (m/s) Settling
 
   if ( present(ivanRijn) ) then
@@ -290,11 +288,11 @@ SUBROUTINE settling_velocity(settling_vel, g, submerged_spec_g, sed_spec_g, &
 
       CASE (.false.)
         dimless_fall_vel = exp(-1.*b_1 + b_2 * log(Rep) - b_3 * (log(Rep)) ** 2.0 - b_4 * (log(Rep)) ** 3. + b_5 * (log(Rep)) ** 4.)
-        if ( sed_diamm .lt. 1.0d-5) then
-          settling_vel = (submerged_spec_g * g * sed_diamm**2)/(18.*kinematic_viscosity)
-        else
-          settling_vel = dimless_fall_vel * sqrt(submerged_spec_g * g * sed_diamm)
-        end if
+        ! if ( sed_diamm .lt. 1.0d-5) then
+        !   settling_vel = (submerged_spec_g * g * sed_diamm**2)/(18.*kinematic_viscosity)
+        ! else
+        settling_vel = dimless_fall_vel * sqrt(submerged_spec_g * g * sed_diamm)
+        ! end if
     END SELECT
   end do
   return
@@ -320,8 +318,7 @@ SUBROUTINE tauCritical(tauCrt,g,sed_diamm,submerged_spec_g, sed_dens,kinematic_v
   real, intent(out) :: tauCrt              !< (Pa) Critical shear stress
 
   ! Estimate of the nondimensional critical Shields parameter
-  shields_param = 0.5 * (0.22 * Rep ** (-0.6) &
-                  + 0.06 * 10 ** (-7.7 * Rep ** (-0.6)))
+  shields_param = 0.5 * (0.22 * Rep ** (-0.6) + 0.06 * 10 ** (-7.7 * Rep ** (-0.6)))
 
   ! Estimate of critical shear stress for given water and sediment properties
   tauCrt = shields_param * g * submerged_spec_g * sed_diamm * sed_dens
@@ -350,8 +347,11 @@ SUBROUTINE tauBottom(taub, ustarb,kwq,lwq)
   real                  :: vbott  ! (m/s) vel v at bottom cell
   real                  :: taubx  ! (Pa) bottom shear stress in x
   real                  :: tauby  ! (Pa) bottom shear stress in y
+  ! real, intent(in)      :: tauwbx !< (Pa) bottom shear stress induced by waves
+  ! real, intent(in)      :: tauwby !< (Pa) bottom shear stress induced by waves  
   real, intent(out)     :: taub   !< (Pa) Bottom shear stress
-  real, intent(out)     :: ustarb !< (m/s) Shear velocity      
+  real, intent(out)     :: ustarb !< (m/s) Shear velocity
+
 
   !.....Compute bottom layer numbers  ....
   ! kwq must be the bottom
@@ -362,16 +362,14 @@ SUBROUTINE tauBottom(taub, ustarb,kwq,lwq)
     kmxp= MIN( kmz( lEC(lwq)), kms)
     kmxm= MIN( kmz( lWC(lwq)), kms)
 
-    ! ....Compute Currend-Induced Bottom Shear Stress CIBSS (cd*rho*U^2)
+    ! ....Compute Currend-Induced Bottom Shear Stress
     ubott = ( uhp( kmxp, lwq ) + uhp( kmxm, lWC(lwq)) ) / 2. / hp(kms,lwq)
     vbott = ( vhp( kmyp, lwq ) + vhp( kmym, lSC(lwq)) )/2. / hp(kms,lwq)
     taubx = cd * (rhop(kms,lwq)+1000.) * ubott**2.
     tauby = cd * (rhop(kms,lwq)+1000.) * vbott**2.
 
     ! ... Add Wave-Induced Bottom Shear Stress & calculate friction velocity
-    ! taubx = taubx + wibssx(i,j)
-    ! tauby = tauby + wibssy(i,j)
-    taub  = sqrt(taubx**2.+tauby**2.)
+    taub  = sqrt((taubx)**2. + (tauby)**2.) + tau_stwave(l2i(lwq),l2j(lwq))
     ustarb = sqrt(taub/1000.)
 
   endif

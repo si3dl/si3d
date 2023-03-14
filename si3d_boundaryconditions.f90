@@ -4507,153 +4507,208 @@ SUBROUTINE surfbc(n,istep,thrs)
 !
 !------------------------------------------------------------------------
 
-   INTEGER,INTENT(IN) :: n,istep
-   REAL, INTENT(IN) :: thrs
+  INTEGER,INTENT(IN) :: n,istep
+  REAL, INTENT(IN) :: thrs
 
-   !.....Local variables.....
-   REAL    :: dthrs_surfbc
-   INTEGER :: i, j, k, ios, nn, is, ie, js, je, kb, isalin, itest, imet,liter,l
+  !.....Local variables.....
+  REAL    :: dthrs_surfbc
+  INTEGER :: i, j, k, ios, nn, is, ie, js, je, kb, isalin, itest, imet,liter,l
 
-   SELECT CASE (ifSurfBC)
+  SELECT CASE (ifSurfBC)
 
-   !               ----- No surface bc data----------------
-   CASE (0)
-
+    !               ----- No surface bc data----------------
+    CASE (0)
       DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
 
-       l = id_column(liter)
+        l = id_column(liter)
+        uair(l) = -wa * SIN(pi*phi/180.);
+        vair(l) = -wa * COS(pi*phi/180.);
+        cdw(l)  =  cw
+      END DO
+      if (iSS == 1) then
+        uair_stwave = -wa * sin(pi*phi/180)
+        vair_stwave = -wa * cos(pi*phi/180)
+      end if 
 
-      uair(l) = -wa * SIN(pi*phi/180.);
-      vair(l) = -wa * COS(pi*phi/180.);
-      cdw(l)  =  cw
-    END DO
+    !               ----- Use surface bc data from file ----
+    CASE(1) ! Heat budget on preprocess mode - shortwave radiative and
+            ! net heat fluxes (including longwave & sensible & latent) as input
+            ! Space uniform & time varying
 
-   !               ----- Use surface bc data from file ----
-   CASE(1) ! Heat budget on preprocess mode - shortwave radiative and
-           ! net heat fluxes (including longwave & sensible & latent) as input
-           ! Space uniform & time varying
+      !.....Return from subroutine on trapezoidal steps (except if n=1).....
+      IF (n > 1) THEN
+        IF (istep == 2) THEN
+          RETURN
+        END IF
+      END IF 
 
-     !.....Return from subroutine on trapezoidal steps (except if n=1).....
-     IF (n > 1) THEN; IF (istep == 2) RETURN; END IF
+      !.....Interpolate heat & momentum flux vars. to time n .....
+      dthrs_surfbc = dtSurfbc/3600.
+      eta = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
+      Qsw = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
+      Qn  = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
+      cdw = parab(0.,thrs,surfbc1(4,:),dthrs_surfbc)
+      uair= parab(0.,thrs,surfbc1(5,:),dthrs_surfbc)
+      vair= parab(0.,thrs,surfbc1(6,:),dthrs_surfbc)
 
-     !.....Interpolate heat & momentum flux vars. to time n .....
-     dthrs_surfbc = dtSurfbc/3600.
-     eta = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
-     Qsw = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
-     Qn  = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
-     cdw = parab(0.,thrs,surfbc1(4,:),dthrs_surfbc)
-     uair= parab(0.,thrs,surfbc1(5,:),dthrs_surfbc)
-     vair= parab(0.,thrs,surfbc1(6,:),dthrs_surfbc)
+      if (iSS == 1) then
+        uair_stwave = uair(1)
+        vair_stwave = vair(1)
+      end if 
 
-     ! ... Calculate 3D-spatially variable sources
-     CALL DistributeQswH
-     CALL DistributeMomentumHeatSourcesH(n,istep)
+      ! ... Calculate 3D-spatially variable sources
+      CALL DistributeQswH
+      CALL DistributeMomentumHeatSourcesH(n,istep)
 
-   CASE (2) ! Heat budget on run-time mode (I) - shortwave fluxes as input;
+    CASE (2)! Heat budget on run-time mode (I) - shortwave fluxes as input;
             ! longwave & latent & sensible heat fluxes calculated.
             ! space uniform & time varying
 
-     !.....Return from subroutine on trapezoidal steps (except if n=1).....
-     IF (n > 1) THEN; IF (istep == 2) RETURN; END IF
+      !.....Return from subroutine on trapezoidal steps (except if n=1).....
+      IF (n > 1) THEN
+        IF (istep == 2) THEN
+          RETURN
+        END IF
+      END IF
 
-     !.....Interpolate heat & momentum flux vars. values to present time step .....
-     dthrs_surfbc = dtSurfbc/3600.
-     eta = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
-     Qsw = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
-     Ta  = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
-     Pa  = parab(0.,thrs,surfbc1(4,:),dthrs_surfbc)
-     Rh  = parab(0.,thrs,surfbc1(5,:),dthrs_surfbc)
-     Cc  = parab(0.,thrs,surfbc1(6,:),dthrs_surfbc)
-     cdw = parab(0.,thrs,surfbc1(7,:),dthrs_surfbc)
-     uair= parab(0.,thrs,surfbc1(8,:),dthrs_surfbc)
-     vair= parab(0.,thrs,surfbc1(9,:),dthrs_surfbc)
+      !.....Interpolate heat & momentum flux vars. values to present time step .....
+      dthrs_surfbc = dtSurfbc/3600.
+      eta = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
+      Qsw = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
+      Ta  = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
+      Pa  = parab(0.,thrs,surfbc1(4,:),dthrs_surfbc)
+      Rh  = parab(0.,thrs,surfbc1(5,:),dthrs_surfbc)
+      Cc  = parab(0.,thrs,surfbc1(6,:),dthrs_surfbc)
+      cdw = parab(0.,thrs,surfbc1(7,:),dthrs_surfbc)
+      uair= parab(0.,thrs,surfbc1(8,:),dthrs_surfbc)
+      vair= parab(0.,thrs,surfbc1(9,:),dthrs_surfbc)
 
-     ! ... Calculate 3D-spatially variable heat sources
-     CALL DistributeQswH
-     CALL DistributeMomentumHeatSourcesH(n,istep)
+      if (iSS == 1) then
+        uair_stwave = uair(1)
+        vair_stwave = vair(1)
+      end if 
 
-   CASE (3) ! Heat budget on run-time mode (II) - radiative (short & longwave)
+      ! ... Calculate 3D-spatially variable heat sources
+      CALL DistributeQswH
+      CALL DistributeMomentumHeatSourcesH(n,istep)
+
+    CASE (3) ! Heat budget on run-time mode (II) - radiative (short & longwave)
             ! fluxes as input; latent & sensible heat fluxes calculated.
             ! Space uniform & time varying
 
-     !.....Return from subroutine on trapezoidal steps (except if n=1).....
-     IF (n > 1) THEN; IF (istep == 2) RETURN; END IF
+      !.....Return from subroutine on trapezoidal steps (except if n=1).....
+      IF (n > 1) THEN
+        IF (istep == 2) THEN
+          RETURN
+        END IF
+      END IF 
 
-     !.....Interpolate heat & momentum flux vars. values to present time step .....
-     dthrs_surfbc = dtSurfbc/3600.
-     eta = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
-     Qsw = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
-     Ta  = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
-     Pa  = parab(0.,thrs,surfbc1(4,:),dthrs_surfbc)
-     Rh  = parab(0.,thrs,surfbc1(5,:),dthrs_surfbc)
-     Qlw = parab(0.,thrs,surfbc1(6,:),dthrs_surfbc)
-     cdw = parab(0.,thrs,surfbc1(7,:),dthrs_surfbc)
-     uair= parab(0.,thrs,surfbc1(8,:),dthrs_surfbc)
-     vair= parab(0.,thrs,surfbc1(9,:),dthrs_surfbc)
+      !.....Interpolate heat & momentum flux vars. values to present time step .....
+      dthrs_surfbc = dtSurfbc/3600.
+      eta = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
+      Qsw = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
+      Ta  = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
+      Pa  = parab(0.,thrs,surfbc1(4,:),dthrs_surfbc)
+      Rh  = parab(0.,thrs,surfbc1(5,:),dthrs_surfbc)
+      Qlw = parab(0.,thrs,surfbc1(6,:),dthrs_surfbc)
+      cdw = parab(0.,thrs,surfbc1(7,:),dthrs_surfbc)
+      uair= parab(0.,thrs,surfbc1(8,:),dthrs_surfbc)
+      vair= parab(0.,thrs,surfbc1(9,:),dthrs_surfbc)
 
-     ! ... Calculate 3D-spatially variable heat sources
-     CALL DistributeQswH
-     CALL DistributeMomentumHeatSourcesH(n,istep)
+      if (iSS == 1) then
+        uair_stwave = uair(1)
+        vair_stwave = vair(1)
+      end if 
 
-   CASE (10) ! Spatially & time varying surface BC - Heat Budget calculated
-              ! on RUN-TIME (I) mode
+      ! ... Calculate 3D-spatially variable heat sources
+      CALL DistributeQswH
+      CALL DistributeMomentumHeatSourcesH(n,istep)
 
-     !.....Return from subroutine on trapezoidal steps (except if n=1).....
-     IF (n > 1) THEN; IF (istep == 2) RETURN; END IF
+    CASE (10) ! Spatially & time varying surface BC - Heat Budget calculated
+             ! on RUN-TIME (I) mode
 
-     !.....Interpolate heat & momentum flux vars. values to present time step .....
-     DO imet = 1, nmetstat
-       dthrs_surfbc  = dtSurfbc/3600.
-       eta           = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
-       Pa            = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
-       Qsw2D (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 3,:),dthrs_surfbc)
-       Ta2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 4,:),dthrs_surfbc)
-       RH2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 5,:),dthrs_surfbc)
-       Cc2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 6,:),dthrs_surfbc)
-       uair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 7,:),dthrs_surfbc)
-       vair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 8,:),dthrs_surfbc)
-     ENDDO
+      !.....Return from subroutine on trapezoidal steps (except if n=1).....
+      IF (n > 1) THEN
+        IF (istep == 2) THEN
+          RETURN
+        END IF
+      END IF
 
-     ! ... Distribute heat and momentum sources entering through free surface
-     CALL DistributeQswH
-     CALL DistributeMomentumHeatSourcesH(n,istep)
+      !.....Interpolate heat & momentum flux vars. values to present time step .....
+      DO imet = 1, nmetstat
+        dthrs_surfbc  = dtSurfbc/3600.
+        eta           = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
+        Pa            = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
+        Qsw2D (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 3,:),dthrs_surfbc)
+        Ta2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 4,:),dthrs_surfbc)
+        RH2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 5,:),dthrs_surfbc)
+        Cc2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 6,:),dthrs_surfbc)
+        uair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 7,:),dthrs_surfbc)
+        vair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 8,:),dthrs_surfbc)
+      ENDDO
 
+      if (iSS == 1) then
+        print*,'STOPPING MODEL STWAVE NOT DEVELOPED FOR 2D WIND FIELD'
+        stop
+      end if 
 
-   CASE (11) ! Spatially & time varying surface BC - Heat Budget calculated
+      ! ... Distribute heat and momentum sources entering through free surface
+      CALL DistributeQswH
+      CALL DistributeMomentumHeatSourcesH(n,istep)
+
+    CASE (11) ! Spatially & time varying surface BC - Heat Budget calculated
               ! on RUN-TIME (II) mode
 
-     !.....Return from subroutine on trapezoidal steps (except if n=1).....
-     IF (n > 1) THEN; IF (istep == 2) RETURN; END IF
+      !.....Return from subroutine on trapezoidal steps (except if n=1).....
+      IF (n > 1) THEN
+        IF (istep == 2) THEN
+          RETURN
+        END IF
+      END IF 
 
-     !.....Interpolate heat & momentum flux vars. values to present time step .....
-     DO imet = 1, nmetstat
-       dthrs_surfbc  = dtSurfbc/3600.
-       eta           = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
-       Pa            = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
-       Qsw2D (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 3,:),dthrs_surfbc)
-       Ta2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 4,:),dthrs_surfbc)
-       RH2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 5,:),dthrs_surfbc)
-       Qlw2D (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 6,:),dthrs_surfbc)
-       uair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 7,:),dthrs_surfbc)
-       vair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 8,:),dthrs_surfbc)
-     ENDDO
+      !.....Interpolate heat & momentum flux vars. values to present time step .....
+      DO imet = 1, nmetstat
+        dthrs_surfbc  = dtSurfbc/3600.
+        eta           = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
+        Pa            = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
+        Qsw2D (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 3,:),dthrs_surfbc)
+        Ta2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 4,:),dthrs_surfbc)
+        RH2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 5,:),dthrs_surfbc)
+        Qlw2D (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 6,:),dthrs_surfbc)
+        uair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 7,:),dthrs_surfbc)
+        vair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 8,:),dthrs_surfbc)
+      ENDDO
 
-     ! ... Distribute heat and momentum sources entering through free surface
-     CALL DistributeQswH
-     CALL DistributeMomentumHeatSourcesH(n,istep)
+      if (iSS == 1) then
+        print*,'STOPPING MODEL STWAVE NOT DEVELOPED FOR 2D WIND FIELD'
+        stop
+      end if
 
-   CASE (20)
-     !.....Return from subroutine on trapezoidal steps (except if n=1).....
-     IF (n > 1) THEN; IF (istep == 2) RETURN; END IF
-     !.....Interpolate heat & momentum flux vars. to time n .....
-     dthrs_surfbc = dtSurfbc/3600.
-     cdw = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
-     uair = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
-     vair = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
+      ! ... Distribute heat and momentum sources entering through free surface
+      CALL DistributeQswH
+      CALL DistributeMomentumHeatSourcesH(n,istep)
 
-     ! ... Calculate 3D-spatially variable sources
-     CALL DistributeQswH
-     CALL DistributeMomentumHeatSourcesH(n,istep)
+    CASE (20)
+      !.....Return from subroutine on trapezoidal steps (except if n=1).....
+      IF (n > 1) THEN
+        IF (istep == 2) THEN
+          RETURN
+        END IF
+      END IF 
+      !.....Interpolate heat & momentum flux vars. to time n .....
+      dthrs_surfbc = dtSurfbc/3600.
+      cdw = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
+      uair = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
+      vair = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
+
+      if (iSS == 1) then
+        uair_stwave = uair(1)
+        vair_stwave = vair(1)
+      end if 
+
+      ! ... Calculate 3D-spatially variable sources
+      CALL DistributeQswH
+      CALL DistributeMomentumHeatSourcesH(n,istep)
 
    END SELECT
 

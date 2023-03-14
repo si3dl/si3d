@@ -513,7 +513,7 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
          CALL srcsnk00
        ELSE IF (ecomod == 1) THEN
          IF (idbg == 1) PRINT *, 'Before entry into SUB srcsnkWQ'
-         IF ((ecomod == 1) .AND. (MOD(n,MAX(ipwq, 1)) == 0)) CALL srcsnkWQ(thrs) !! ACC 11/21/2022 added to run WQ at lower frequency than hydrodynamics
+         IF ((ecomod == 1) .AND. (MOD(n,MAX(ipwq, 1)) == 0)) CALL srcsnkWQ(n) !! ACC 11/21/2022 added to run WQ at lower frequency than hydrodynamics
          ! CALL srcsnkWQ(thrs)
          IF (idbg == 1) PRINT *, ' After entry into SUB srcsnkWQ'
        ELSE IF (ecomod == 2) THEN
@@ -2969,7 +2969,7 @@ SUBROUTINE exsal(Bstart,Bend,lSCH,lNCH,lECH,lWCH,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,Be
 
         ! ... Calculate fluxes
         Bth4(k,l) = vel/2.*(ss(3)+ss(2))- &
-        & ((1.-C_f)*ABS(vel)+vel**2.*twodt1/dx*C_f)*(ss(3)-ss(2))/2.
+        & ((1.-C_f)*ABS(vel)+vel**2.*twodt1/dy*C_f)*(ss(3)-ss(2))/2.
       ELSE
         Bth4(k,l) = 0.0
       ENDIF
