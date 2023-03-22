@@ -750,52 +750,20 @@ SUBROUTINE srcsnkWQ(n)
   !... Local variables
   INTEGER:: i, j, k, l, liter, k1s, kms, iteration
   integer, intent(in) :: n 
-  REAL :: thrs1, Tif_stwave
-  real, dimension(jm1,im1) :: u_stwave
-  real, dimension(jm1,im1) :: udir_stwave
-  real, allocatable :: tau_stwave1(:,:)
+  REAL :: thrs1
 
   ! reset soursesink = 0
-  sourcesink = 0;
-  Tif_stwave = 0.5
+  sourcesink = 0.0
+  thrs1 = n * dt / 3600
 
   ! STWAVE controlling section. (SergioValbuena 03-11-2023) 
-  ! Average of wind speed and direction is estimated and used in stwave for bottom shear stress and wave height calculations. 
-  thrs1 = n * dt / 3600
-  if (iSS == 1) then
-    if (n == 1) then
-      allocate( uair_tmp(jm1,im1,int(Tif_stwave*3600/dt)), udir_tmp(jm1,im1,int(Tif_stwave*3600/dt))) 
-      iteration = 1
-    elseif (mod(n,int(Tif_stwave*3600/dt)+1) == 0) then 
-      iteration = 1
-    elseif (mod(n,int(Tif_stwave*3600/dt)) == 0) then
-      iteration = mod(n,int(Tif_stwave*3600/dt)+1)
-    else
-      iteration = mod(n,int(Tif_stwave*3600/dt))
-    end if
+  if ((iSS == 1) .and. (iSTWAVE == 1)) then
+    call stwave_input(n)
+    print*,'tau'
+    print*,transpose(tau_stwave(2:im1-1,2:jm1-1))
+  end if 
 
-    do i = 1, im1
-      do j = 1, jm1
-        uair_tmp(j,i,iteration) = sqrt(uair_stwave(j,i)**2 + vair_stwave(j,i)**2)
-        udir_tmp(j,i,iteration) = mod(270. - atan2d(vair_stwave(j,i),uair_stwave(j,i)), 360.)
-        if (udir_tmp(j,i,iteration) .le. 270) then
-          udir_tmp(j,i,iteration) = -(90 + udir_tmp(j,i,iteration))
-        else
-          udir_tmp(j,i,iteration) = 270 - udir_tmp(j,i,iteration)
-        end if
-        if (mod(n,int(Tif_stwave*3600/dt)) == 0) then
-          u_stwave(j,i) = sum(uair_tmp(j,i,:)) / size(uair_tmp(j,i,:))
-          udir_stwave(j,i) = sum(udir_tmp(j,i,:)) / size(udir_tmp(j,i,:))
-        end if 
-      end do
-    end do
-
-    if (mod(n,int(Tif_stwave*3600/dt)) == 0) then
-      call stwave(im1,jm1,u_stwave,udir_stwave,tau_stwave1)
-      tau_stwave = transpose(tau_stwave1)
-    end if
-  end if
-  
+  !$omp barrier  
 
   DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
     l = id_column(liter)

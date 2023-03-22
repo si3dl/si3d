@@ -4525,10 +4525,6 @@ SUBROUTINE surfbc(n,istep,thrs)
         vair(l) = -wa * COS(pi*phi/180.);
         cdw(l)  =  cw
       END DO
-      if (iSS == 1) then
-        uair_stwave = -wa * sin(pi*phi/180)
-        vair_stwave = -wa * cos(pi*phi/180)
-      end if 
 
     !               ----- Use surface bc data from file ----
     CASE(1) ! Heat budget on preprocess mode - shortwave radiative and
@@ -4550,11 +4546,6 @@ SUBROUTINE surfbc(n,istep,thrs)
       cdw = parab(0.,thrs,surfbc1(4,:),dthrs_surfbc)
       uair= parab(0.,thrs,surfbc1(5,:),dthrs_surfbc)
       vair= parab(0.,thrs,surfbc1(6,:),dthrs_surfbc)
-
-      if (iSS == 1) then
-        uair_stwave = uair(1)
-        vair_stwave = vair(1)
-      end if 
 
       ! ... Calculate 3D-spatially variable sources
       CALL DistributeQswH
@@ -4583,11 +4574,6 @@ SUBROUTINE surfbc(n,istep,thrs)
       uair= parab(0.,thrs,surfbc1(8,:),dthrs_surfbc)
       vair= parab(0.,thrs,surfbc1(9,:),dthrs_surfbc)
 
-      if (iSS == 1) then
-        uair_stwave = uair(1)
-        vair_stwave = vair(1)
-      end if 
-
       ! ... Calculate 3D-spatially variable heat sources
       CALL DistributeQswH
       CALL DistributeMomentumHeatSourcesH(n,istep)
@@ -4614,11 +4600,6 @@ SUBROUTINE surfbc(n,istep,thrs)
       cdw = parab(0.,thrs,surfbc1(7,:),dthrs_surfbc)
       uair= parab(0.,thrs,surfbc1(8,:),dthrs_surfbc)
       vair= parab(0.,thrs,surfbc1(9,:),dthrs_surfbc)
-
-      if (iSS == 1) then
-        uair_stwave = uair(1)
-        vair_stwave = vair(1)
-      end if 
 
       ! ... Calculate 3D-spatially variable heat sources
       CALL DistributeQswH
@@ -4647,11 +4628,6 @@ SUBROUTINE surfbc(n,istep,thrs)
         vair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 8,:),dthrs_surfbc)
       ENDDO
 
-      if (iSS == 1) then
-        print*,'STOPPING MODEL STWAVE NOT DEVELOPED FOR 2D WIND FIELD'
-        stop
-      end if 
-
       ! ... Distribute heat and momentum sources entering through free surface
       CALL DistributeQswH
       CALL DistributeMomentumHeatSourcesH(n,istep)
@@ -4679,11 +4655,6 @@ SUBROUTINE surfbc(n,istep,thrs)
         vair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 8,:),dthrs_surfbc)
       ENDDO
 
-      if (iSS == 1) then
-        print*,'STOPPING MODEL STWAVE NOT DEVELOPED FOR 2D WIND FIELD'
-        stop
-      end if
-
       ! ... Distribute heat and momentum sources entering through free surface
       CALL DistributeQswH
       CALL DistributeMomentumHeatSourcesH(n,istep)
@@ -4700,11 +4671,6 @@ SUBROUTINE surfbc(n,istep,thrs)
       cdw = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
       uair = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
       vair = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
-
-      if (iSS == 1) then
-        uair_stwave = uair(1)
-        vair_stwave = vair(1)
-      end if 
 
       ! ... Calculate 3D-spatially variable sources
       CALL DistributeQswH

@@ -383,6 +383,7 @@
    INTEGER :: iHg2      !< Mercury
    INTEGER :: iHg0      !< Mercury
    INTEGER :: iSS       !< Suspended Sediments
+   INTEGER :: iSTWAVE = 1 !< Flag for using STWAVE in bottom shear stress calculations for suspended sediment transport
 
    ! ... Integer to determine constituent location
    INTEGER :: LDO , LPON, LDON, LNH4, LNO3, LPOP, LDOP, LPO4
@@ -427,6 +428,7 @@
    real, allocatable, dimension(:,:) :: tau_stwave
    real, allocatable, dimension(:,:,:) :: uair_tmp
    real, allocatable, dimension(:,:,:) :: udir_tmp
+   real                                :: Ti_4_stwave = 3.0 !< [hrs] 0.25Ti 1/4 of the internal wave period
 
 
 !                        -----Data Dictionary-----

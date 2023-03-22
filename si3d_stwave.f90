@@ -8,6 +8,7 @@
 !-------------------------------------------------------------------------
 
   USE si3d_types
+  USE omp_lib
 
   IMPLICIT NONE
   SAVE
@@ -95,6 +96,84 @@ CONTAINS
 !  tauy_stwave(:,:)  = Shield stress component in the y-direction, at the bottom bed, calculated per gridcell
 
 ! ********************************************************************
+SUBROUTINE stwave_input(n)
+! ********************************************************************
+!
+! Purpose: Estimate the mean for wind speed and direction. This is 
+!          then used in stwave for bottom shear stress and wave 
+!          height calculations.
+!
+! --------------------------------------------------------------------
+  ! Subroutine arguments
+  integer, intent(in) :: n
+  integer :: i,j,l,iteration,liter
+
+  real, dimension(jm1,im1) :: u_stwave
+  real, dimension(jm1,im1) :: udir_stwave
+  real, dimension(jm1,im1) :: tau_stwave1
+  real, dimension(jm1,im1) :: uair_stwave
+  real, dimension(jm1,im1) :: vair_stwave
+
+  select case (ifsurfbc)
+    case (0)
+      uair_stwave = -wa * sin(pi*phi/180)
+      vair_stwave = -wa * cos(pi*phi/180)
+    case (1:3,20)
+      uair_stwave = uair(1)
+      vair_stwave = vair(1)
+    case (10:11)
+      do liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
+        l = id_column(liter)
+        i = l2i(l)
+        j = l2j(l)
+        uair_stwave(j,i) = uair(l)
+        vair_stwave(j,i) = vair(l)
+      end do
+  end select
+
+  !$omp barrier
+
+  do liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
+    l = id_column(liter)
+
+    if (l == 1) then
+      if (n == 1) then 
+        iteration = 1
+      elseif (mod(n,int(Ti_4_stwave*3600/dt)+1) == 0) then 
+        iteration = 1
+      elseif (mod(n,int(Ti_4_stwave*3600/dt)) == 0) then
+        iteration = mod(n,int(Ti_4_stwave*3600/dt)+1)
+      else
+        iteration = mod(n,int(Ti_4_stwave*3600/dt))
+      end if
+
+      do i = 1, im1
+        do j = 1, jm1
+          uair_tmp(j,i,iteration) = sqrt(uair_stwave(j,i)**2 + vair_stwave(j,i)**2)
+          udir_tmp(j,i,iteration) = mod(270. - atan2d(vair_stwave(j,i),uair_stwave(j,i)), 360.)
+          if (udir_tmp(j,i,iteration) .le. 270) then
+            udir_tmp(j,i,iteration) = -(90 + udir_tmp(j,i,iteration))
+          else
+            udir_tmp(j,i,iteration) = 270 - udir_tmp(j,i,iteration)
+          end if
+          if (mod(n,int(Ti_4_stwave*3600/dt)) == 0) then
+            u_stwave(j,i) = sum(uair_tmp(j,i,:)) / size(uair_tmp(j,i,:))
+            udir_stwave(j,i) = sum(udir_tmp(j,i,:)) / size(udir_tmp(j,i,:))
+          end if 
+        end do
+      end do
+
+      if (mod(n,int(Ti_4_stwave*3600/dt)) == 0) then
+        tau_stwave1 = 0.0
+        call stwave(im1,jm1,u_stwave,udir_stwave,tau_stwave1)
+        tau_stwave = transpose(tau_stwave1)
+      end if
+    end if
+  end do
+
+END SUBROUTINE stwave_input
+
+! ********************************************************************
 SUBROUTINE stwave(im_stw,jm_stw,u_stwave,udir_stwave,tau_stwave1)
 ! ********************************************************************
 !
@@ -104,12 +183,11 @@ SUBROUTINE stwave(im_stw,jm_stw,u_stwave,udir_stwave,tau_stwave1)
 !
 ! --------------------------------------------------------------------
 
-  ! real, intent(in) :: dx
-  ! real, intent(in) :: dy
   integer, intent(in) :: im_stw
   integer, intent(in) :: jm_stw
   real, intent(in), dimension(jm_stw,im_stw):: u_stwave
   real, intent(in), dimension(jm_stw,im_stw):: udir_stwave
+  real, intent(inout), dimension(jm_stw,im_stw):: tau_stwave1
   real, allocatable :: angav_stw(:,:)
   real, allocatable:: angfac_stw(:)
   real, allocatable:: anglz_stw(:)
@@ -147,7 +225,6 @@ SUBROUTINE stwave(im_stw,jm_stw,u_stwave,udir_stwave,tau_stwave1)
   real, allocatable:: dadd_f_stw(:,:)
   real, allocatable:: cf_stw(:,:)
   real, allocatable:: Tmm1_stw(:,:)
-  real, allocatable, intent(out) :: tau_stwave1(:,:)
   real, allocatable:: taux_stwave(:,:)
   real, allocatable:: tauy_stwave(:,:)
   real, allocatable:: ubottom_stw(:, :)
@@ -294,9 +371,12 @@ SUBROUTINE stwave(im_stw,jm_stw,u_stwave,udir_stwave,tau_stwave1)
     iwind_stw = 0
   elseif ((ifsurfbc .ge. 10) .and. (ifsurfbc .lt. 20)) then
     iwind_stw = 1
-    print*,'STOPPING RUN, MODEL NEEDS DEVELOPEMENT FOR VARIABLE WINDFIELD'
-    stop
+    ! print*,'STOPPING RUN, MODEL NEEDS DEVELOPEMENT FOR VARIABLE WINDFIELD'
+    ! stop
   end if
+  print*,'iwind_stw = ',iwind_stw
+  print*,'tau_stwave1'
+  print*,tau_stwave1
 
   !SECOND LINE _JMS.STD
   idep_opt_stw = 0
@@ -399,7 +479,7 @@ SUBROUTINE stwave(im_stw,jm_stw,u_stwave,udir_stwave,tau_stwave1)
   e_stw(nfreq_stw,na_stw,nj_stw,ni_stw), e_bc_stw(nfreq_stw,na_stw,4), e_bc_sea_stw(nfreq_stw,na_stw,4),  &
   etot_stw(nj_stw,ni_stw), fm_sea_stw(nj_stw,ni_stw), fma_stw(nj_stw,ni_stw), H_stw(nj_stw,ni_stw), uairStwave(nj_stw,ni_stw), &
   uairdirStwave(nj_stw,ni_stw), sea_stw(nfreq_stw,na_stw,nj_stw,ni_stw), wangle_stw(nj_stw,ni_stw), wk_stw(nfreq_stw,nj_stw,ni_stw),        &
-  wt1_stw(na_4_stw,4), wt2_stw(na_4_stw,4), dadd_f_stw(nj_stw, ni_stw),Tmm1_stw(nj_stw,ni_stw), tau_stwave1(nj_stw,ni_stw), &
+  wt1_stw(na_4_stw,4), wt2_stw(na_4_stw,4), dadd_f_stw(nj_stw, ni_stw),Tmm1_stw(nj_stw,ni_stw), &
   taux_stwave(nj_stw,ni_stw), tauy_stwave(nj_stw,ni_stw), ubottom_stw(nj_stw,ni_stw))                               
   ! Added above by Patricio Moreno, 07/2010 (allocate tau_stwave1, taux_stwave , tauy_stwave and ubottom_stwave) 
     
@@ -464,8 +544,8 @@ SUBROUTINE stwave(im_stw,jm_stw,u_stwave,udir_stwave,tau_stwave1)
   endif
 
   if(iwind_stw .eq. 1)then
-    PRINT*, 'STOPPING PROGRAM SECTION NEES TO BE DEVELOPED'
-    stop
+    ! PRINT*, 'STOPPING PROGRAM SECTION NEES TO BE DEVELOPED'
+    ! stop
     ! open(20,file = WindFile,  status = 'old')
     ! read(20,*) ni_w, nj_w, dx_w, dy_w
     ! print *,ni_w,nj_w,dx_w,dy_w,ni_stw,nj_stw,dx,dy
@@ -521,8 +601,6 @@ SUBROUTINE stwave(im_stw,jm_stw,u_stwave,udir_stwave,tau_stwave1)
   dep_bc_stw(2) = dep_bc_stw(2)/ni_stw
   dep_bc_stw(4) = dep_bc_stw(4)/ni_stw
 
-  ! print*,'dep_bc_stw',dep_bc_stw
-
   dth_stw = 360. / na_stw
   dth_stw = dth_stw * radfac_stw
   do l_stw = 1, na_stw
@@ -551,18 +629,18 @@ SUBROUTINE stwave(im_stw,jm_stw,u_stwave,udir_stwave,tau_stwave1)
     dadd_f_stw(:,:) = dadd_stw
   endif
 
-  if(iwind_stw.eq.1)then
-    ! read (20,*,end=422)idd_wind
-    ! do j_stw = nj_stw, 1, -1
-    !   read (20,*) (uairStwave(j_stw,i_stw), i_stw=1,ni_stw)
-    ! enddo
-    ! do j_stw = nj_stw, 1, -1
-    !   read (20,*) (uairdirStwave(j_stw,i_stw), i_stw=1,ni_stw)
-    ! enddo
-  else
-    uairStwave = u_stwave
-    uairdirStwave = udir_stwave
-  endif
+  ! if(iwind_stw.eq.1)then
+  !   ! read (20,*,end=422)idd_wind
+  !   ! do j_stw = nj_stw, 1, -1
+  !   !   read (20,*) (uairStwave(j_stw,i_stw), i_stw=1,ni_stw)
+  !   ! enddo
+  !   ! do j_stw = nj_stw, 1, -1
+  !   !   read (20,*) (uairdirStwave(j_stw,i_stw), i_stw=1,ni_stw)
+  !   ! enddo
+  ! else
+  uairStwave = u_stwave
+  uairdirStwave = udir_stwave
+  ! endif
 
   if((isurge_stw .eq. 1) .and. (iwind_stw .eq. 1)) then 
     ! print *,idd_adcirc,idd_wind
@@ -2067,7 +2145,7 @@ SUBROUTINE friction (i_stw, j_stw, k_stw, ni_stw, nj_stw, na_4_stw, e_stw, sea_s
     ubottom_stw(j_stw,i_stw) = urms_stw !added ubottom_stw(j_stw,i_stw). MODIFIED BY PM 07,2010
 
     !added by PM 07/2011: calculate tau_stwave1 for water depths greater than zero.
-    if (dep_stwave(j_stw,i_stw) .lE. 0) then
+    if (dep_stwave(j_stw,i_stw) .le. 0) then
       tau_stwave1(j_stw,i_stw) = 0.0
     else
       tau_stwave1(j_stw,i_stw) = 1000*9.81*cf_stw(j_stw,i_stw)**2*dep_stwave(j_stw,i_stw)**(-0.3333)*ubottom_stw(j_stw,i_stw)*abs(ubottom_stw(j_stw,i_stw))

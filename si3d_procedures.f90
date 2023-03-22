@@ -4436,17 +4436,13 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
          tracer(k1 :k1s-1,l,nt) = sal1(1         )
          tracer(k1-1,l,nt) = sal1(1)
          tracer(kms+1,l,nt) = tracer(kms,l,nt)
-      END SELECT
 
-      ! if (l == 50) then
-      !   print*,'k1 = ',k1,'k1s = ',k1s,'kms = ',kms
-      !   print*,'conc k1s = ',tracer(k1s,l,nt)
-      !   print*,'conc k1s-1 = ',tracer(k1s-1,l,nt)
-      !   print*,'conc kms = ',tracer(kms,l,nt)
-      !   print*,'conc kms+1 = ',tracer(kms+1,l,nt)
-      !   print*,'conc = ',tracer(:,l,nt)
-      !   print*,'nlayers = ', nwlayers
-      ! end if 
+         do k = k1-1, kms+1
+            if (tracer(k,l,nt) .lt. 0.0) then
+              tracer(k,l,nt) = 0.0
+            end if 
+         end do
+      END SELECT
 
    !.....End loop over scalar-pts.....
    END DO

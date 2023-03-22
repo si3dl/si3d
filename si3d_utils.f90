@@ -563,8 +563,9 @@ SUBROUTINE AllocateSpace2
    IF (istat /= 0) CALL allocate_error ( istat, 21 )
 
    ! .... Allocate arrays used in STWAVE
-  if (iSS == 1) then
-    allocate(uair_stwave(jm1,im1), vair_stwave(jm1,im1),tau_stwave(im1,jm1))
+  if ((iSS == 1) .and. (iSTWAVE == 1)) then
+    allocate(tau_stwave(im1,jm1))
+    allocate(uair_tmp(jm1,im1,int(Ti_4_stwave*3600/dt)), udir_tmp(jm1,im1,int(Ti_4_stwave*3600/dt)))
   end if 
 
 
@@ -624,8 +625,8 @@ SUBROUTINE bathy
   ALLOCATE ( h4(1:im1, 1:jm1), STAT=istat )
   IF (istat /= 0) CALL allocate_error ( istat, 15 )
   !.....Allocate space for bathymetry array for stwave.....
-  if (iSS == 1) then
-    allocate (dep_stwave(jm-1, im-1))
+  if ((iSS == 1) .and. (iSTWAVE == 1)) then
+    allocate (dep_stwave(jm1, im1))
   end if
   IF (istat /= 0) CALL allocate_error ( istat, 15 )
   
@@ -699,7 +700,7 @@ SUBROUTINE bathy
   h4(  1,  1) = h4( 2, 2); h4(  1,jm1) = h4( 2,jm)
   h4(im1,jm1) = h4(im,jm); h4(im1,  1) = h4(im, 2)
 
-  if (iSS == 1) then
+  if ((iSS == 1) .and. (iSTWAVE == 1)) then
     dep_stwave = transpose(h4)
     do j = 1, jm1
       do i = 1,im1

@@ -55,7 +55,6 @@ SUBROUTINE sourceSS(kwq,lwq)
       
       call get_sed_prop(settling_vel(i),Rep(i),tauCrt(i),sed_diameter(i),sed_dens(i),w_dens)
       ! Estimate erosion flux
-      ! if (taub .gt. tauCrt(i)) then
       call erosion(erosionFlux(i), ustarb, Rep(i), settling_vel(i), sed_frac(i))
       ! else
       !   erosionFlux(i) = 0.0
@@ -68,21 +67,28 @@ SUBROUTINE sourceSS(kwq,lwq)
 
       sourcesink(kwq, lwq, LSS1 + pn) = (erosionFlux(i) - depositionFlux(i))
 
-      ! if (lwq == 190) then
+      ! if ((tauCrt(i) .lt. taub)) then
       !   print*, '--------------------------'
-      !   print*, 'k =',kwq,'l =',lwq
-      !   print*, 'w_dens = ',w_dens
+      !   print*, 'k =',kwq,'l =',lwq,'i = ',l2i(lwq),'j = ',l2j(lwq)
+      !   print*, 'dt = ',dt,'h = ',hp(kwq,lwq)
       !   print*, 'conc = ',conc
       !   print*, 'taub =',taub
-      !   print*, 'ustarb =',ustarb
-      !   print*, 'tauCr =', tauCrt
-      !   print*, 'Rep = ', Rep
-      !   print*, 'vs = ', settling_vel
-      !   print*, 'erosionFlux = ', erosionFlux
-      !   print*, 'depositionFlux = ', depositionFlux
+      !   print*, 'tauCr =', tauCrt(i)
+      !   print*, 'erosionFlux = ', erosionFlux(i)
+      !   print*, 'depositionFlux = ', depositionFlux(i)
       !   print*, 'sourcesink = ', sourcesink(kwq, lwq, LSS1+pn)
-      !   print*, 'sourcesink -1 = ', sourcesink(kwq-1, lwq, LSS1+pn)
-      ! end if 
+      !   print*, 'sourcesinklim = ', -conc * hp(kwq,lwq) / dt 
+      ! end if
+
+      if (sourcesink(kwq,lwq,LSS1+pn) .lt. (-1*conc * hp(kwq,lwq) / dt)) then
+        sourcesink(kwq, lwq, LSS1 + pn) = -1* conc * hp(kwq,lwq) / dt
+      end if 
+
+      ! if (tauCrt(i) .lt. taub) then
+      !   print*, 'sourcesinkNEW = ', sourcesink(kwq, lwq, LSS1+pn)        
+      !   print*, 'sourcesinklim = ', -conc * hp(kwq,lwq) / dt 
+      !   print*, 'conc in/out = ', sourcesink(kwq, lwq, LSS1+pn) * dt / hp(kwq,lwq)
+      ! end if
 
       pn = pn + 1
     end do
