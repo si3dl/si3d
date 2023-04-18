@@ -91,7 +91,7 @@ CONTAINS
 !___________________________________________________________________________________________________
 !ADDED BY PATRICIO MORENO (04/2010)
 !___________________________________________________________________________________________________
-!   tau_stwave1(:,:)  = Shield stress magnitude at the bottom bed, value calculated per gridcell
+!  tau_stwave1(:,:)  = Shield stress magnitude at the bottom bed, value calculated per gridcell
 !  taux_stwave(:,:)  = Shield stress component in the x-direction, at the bottom bed, calculated per gridcell
 !  tauy_stwave(:,:)  = Shield stress component in the y-direction, at the bottom bed, calculated per gridcell
 
@@ -113,6 +113,10 @@ SUBROUTINE stwave_input(n)
   real, dimension(jm1,im1) :: tau_stwave1
   real, dimension(jm1,im1) :: uair_stwave
   real, dimension(jm1,im1) :: vair_stwave
+
+  ! Initialize the wind arrays
+  uair_stwave = 0.0
+  vair_stwave = 0.0
 
   select case (ifsurfbc)
     case (0)
@@ -137,7 +141,9 @@ SUBROUTINE stwave_input(n)
     l = id_column(liter)
 
     if (l == 1) then
-      if (n == 1) then 
+      if (n == 1) then
+        uair_tmp = 0.0
+        udir_tmp = 0.0
         iteration = 1
       elseif (mod(n,int(Ti_4_stwave*3600/dt)+1) == 0) then 
         iteration = 1
@@ -330,12 +336,8 @@ SUBROUTINE stwave(im_stw,jm_stw,u_stwave,udir_stwave,tau_stwave1)
   real :: e_all_stw
   real :: local_wind_stw
 
-
-
 ! -----------------------------------------------------------------------
-
   print*,'  Running Stwave'
-
 
   ! Initialize constant parameters.
   epsd_stw = 1.0e-2
@@ -371,12 +373,7 @@ SUBROUTINE stwave(im_stw,jm_stw,u_stwave,udir_stwave,tau_stwave1)
     iwind_stw = 0
   elseif ((ifsurfbc .ge. 10) .and. (ifsurfbc .lt. 20)) then
     iwind_stw = 1
-    ! print*,'STOPPING RUN, MODEL NEEDS DEVELOPEMENT FOR VARIABLE WINDFIELD'
-    ! stop
   end if
-  print*,'iwind_stw = ',iwind_stw
-  print*,'tau_stwave1'
-  print*,tau_stwave1
 
   !SECOND LINE _JMS.STD
   idep_opt_stw = 0
@@ -480,10 +477,7 @@ SUBROUTINE stwave(im_stw,jm_stw,u_stwave,udir_stwave,tau_stwave1)
   etot_stw(nj_stw,ni_stw), fm_sea_stw(nj_stw,ni_stw), fma_stw(nj_stw,ni_stw), H_stw(nj_stw,ni_stw), uairStwave(nj_stw,ni_stw), &
   uairdirStwave(nj_stw,ni_stw), sea_stw(nfreq_stw,na_stw,nj_stw,ni_stw), wangle_stw(nj_stw,ni_stw), wk_stw(nfreq_stw,nj_stw,ni_stw),        &
   wt1_stw(na_4_stw,4), wt2_stw(na_4_stw,4), dadd_f_stw(nj_stw, ni_stw),Tmm1_stw(nj_stw,ni_stw), &
-  taux_stwave(nj_stw,ni_stw), tauy_stwave(nj_stw,ni_stw), ubottom_stw(nj_stw,ni_stw))                               
-  ! Added above by Patricio Moreno, 07/2010 (allocate tau_stwave1, taux_stwave , tauy_stwave and ubottom_stwave) 
-    
-
+  taux_stwave(nj_stw,ni_stw), tauy_stwave(nj_stw,ni_stw), ubottom_stw(nj_stw,ni_stw))
   allocate (i1_stw(na_4_stw,4), i2_stw(na_4_stw,4), iout_stw(nselct_stw), isweep_order_stw(5), &
    j1_stw(na_4_stw,4), j2_stw(na_4_stw,4), jout_stw(nselct_stw), l_sweep_stw(na_4_stw,4), &
    ibr_stw(nj_stw,ni_stw) )
@@ -1449,170 +1443,86 @@ SUBROUTINE gen(nj_stw,ni_stw,na_4_stw,anglz_stw,e_stw,sea_stw,delf_stw,wk_stw,c_
                  fma_stw,fm_sea_stw,i_stw,j_stw,m_stw,n_wind_stw,wt1_stw,wt2_stw,i1_stw,i2_stw,j1_stw,j2_stw,idd_stw,uairStwave,uairdirStwave,na_stw, epsd_stw, nfreq_stw, dth_stw,pi2_stw, twopi_stw, epse_stw,angfac_stw)
 ! ********************************************************************
 !
-! Purpose: 
+! Purpose: subroutine to solve energy source terms in arbitrary depth
+!          water (steady state version) flxcon_stw is the constant
+!          epsilon in  eq. 36 -- resio (1987) ucon_stw is the 
+!          "universal" equilibrium range constant alpha with a
+!          subscript of uairStwave -- see figure 2 -- resio 1988
+!          sigb_stw is the jonswap spectral width pararmeter (rear face)
+!          rofac_stw is the ration_stw of the density of air to water
+!          pwaves_stw is the partitioning constant which defines the
+!          percentage of total momemtum entering directly into the wave
+!          field to the total momentum transferred from the air to the
+!          water. ftchcon_stw is the jonswap coefficient in the
+!          nodimensional energy vs fetch relationship (using a friction
+!          velocity scaling). zconst_stw is an empirical constant used
+!          in limiting how high a peak frequency can be as a function of
+!          the total energy. it is totally unimportant except in
+!          situations where the peak frequency is such that it no longer
+!          represents the energy-containing region of the spectrum. In
+!          this case the peak frequency is lowered until the steepness
+!          value of hmo divided by the deep-water wavelength is less than
+!          2pi/zconst_stw. 
 !
 ! --------------------------------------------------------------------
   ! Subroutine arguments
+  integer, intent(in)                                             :: nj_stw
+  integer, intent(in)                                             :: ni_stw
+  integer, intent(in)                                             :: na_4_stw
+  integer, intent(in)                                             :: i_stw
+  integer, intent(in)                                             :: j_stw
+  integer, intent(in)                                             :: m_stw
+  integer, intent(in)                                             :: n_wind_stw
+  integer, intent(in), dimension(na_4_stw,4)                      :: i1_stw
+  integer, intent(in), dimension(na_4_stw,4)                      :: i2_stw
+  integer, intent(in), dimension(na_4_stw,4)                      :: j1_stw
+  integer, intent(in), dimension(na_4_stw,4)                      :: j2_stw
+  integer, intent(in)                                             :: idd_stw
+  integer, intent(in)                                             :: na_stw
+  integer, intent(in)                                             :: nfreq_stw
+  real, intent(in), dimension(na_stw)                             :: anglz_stw
+  real, intent(in), dimension(nfreq_stw)                          :: delf_stw
+  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw)            :: wk_stw
+  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw)            :: c_stwave
+  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw)            :: cg_stwave
+  real, intent(in), dimension(nfreq_stw)                          :: freq_stw
+  real, intent(in)                                                :: epsd_stw
+  real, intent(in), dimension(nj_stw,ni_stw)                      :: uairStwave
+  real, intent(in), dimension(nj_stw,ni_stw)                      :: uairdirStwave
+  real, intent(in), dimension(na_4_stw,4)                         :: wt1_stw
+  real, intent(in), dimension(na_4_stw,4)                         :: wt2_stw  
+  real, intent(in)                                                :: dth_stw
+  real, intent(in)                                                :: pi2_stw
+  real, intent(in)                                                :: twopi_stw
+  real, intent(in)                                                :: epse_stw
+  real, intent(inout), dimension(nj_stw,ni_stw)                   :: etot_stw
+  real, intent(inout), dimension(nj_stw,ni_stw)                   :: angav_stw
+  real, intent(inout), dimension(nj_stw,ni_stw)                   :: fma_stw
+  real, intent(inout), dimension(nj_stw,ni_stw)                   :: fm_sea_stw
+  real, intent(inout), dimension(nfreq_stw,na_stw,nj_stw,ni_stw)  :: e_stw
+  real, intent(inout), dimension(nfreq_stw,na_stw,nj_stw,ni_stw)  :: sea_stw
 
-  !     subroutine to solve energy source terms in arbitrary
-  !     depth water (steady state version)
-  !     flxcon_stw is the constant epsilon in  eq. 36 -- resio (1987)
-  !     ucon_stw is the "universal" equilibrium range constant alpha with
-  !     a subscript of uairStwave  -- see figure 2 -- resio 1988
-  !     sigb_stw is the jonswap spectral width pararmeter (rear face)
-  !     rofac_stw is the ration_stw of the density of air to water
-  !     pwaves_stw is the partitioning constant which defines the percentage of
-  !     total momemtum entering directly into the wave field to
-  !     the total momentum transferred from the air to the water.
-  !     ftchcon_stw is the jonswap coefficient in the nodimensional energy vs fetch
-  !     relationship (using a friction velocity scaling).
-  !     zconst_stw is an empirical constant used in limiting how high a peak
-  !     frequency can be as a function of the total energy.
-  !     it is totally unimportant except in situations where the
-  !     peak frequency is such that it no longer represents the
-  !     energy-containing region of the spectrum.  in this case the
-  !     peak frequency is lowered until the steepness value of hmo
-  !     divided by the deep-water wavelength is less than 2pi/zconst_stw.
-
-  !     check on zero depth
-
-
-  ! Subroutine arguments
-  integer, intent(in) :: nj_stw
-  integer, intent(in) :: ni_stw
-  integer, intent(in) :: na_4_stw
-  real, intent(in), dimension(na_stw) :: anglz_stw
-  real, intent(inout), dimension(nfreq_stw,na_stw,nj_stw,ni_stw) :: e_stw
-  real, intent(inout), dimension(nfreq_stw,na_stw,nj_stw,ni_stw) :: sea_stw
-  real, intent(in), dimension(nfreq_stw) :: delf_stw
-  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw) :: wk_stw
-  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw) :: c_stwave
-  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw) :: cg_stwave
-  real, intent(in), dimension(nfreq_stw) :: freq_stw
-  real, intent(inout), dimension(nj_stw,ni_stw) :: etot_stw
-  real, intent(inout), dimension(nj_stw,ni_stw) :: angav_stw
-  real, intent(inout), dimension(nj_stw,ni_stw) :: fma_stw
-  real, intent(inout), dimension(nj_stw,ni_stw) :: fm_sea_stw
-  integer, intent(in) :: i_stw
-  integer, intent(in) :: j_stw
-  integer, intent(in) :: m_stw
-  integer, intent(in) :: n_wind_stw
-  real, intent(in), dimension(na_4_stw,4) :: wt1_stw
-  real, intent(in), dimension(na_4_stw,4) :: wt2_stw  
-  integer, intent(in), dimension(na_4_stw,4)  :: i1_stw
-  integer, intent(in), dimension(na_4_stw,4)  :: i2_stw
-  integer, intent(in), dimension(na_4_stw,4)  :: j1_stw
-  integer, intent(in), dimension(na_4_stw,4)  :: j2_stw
-  integer, intent(in) :: idd_stw
-  real, intent(in), dimension(nj_stw,ni_stw) :: uairStwave
-  real, intent(in), dimension(nj_stw,ni_stw) :: uairdirStwave
-  integer, intent(in) :: na_stw
-  real, intent(in) :: epsd_stw
-  integer, intent(in) :: nfreq_stw
-  
-  real, intent(in) :: dth_stw
-  real, intent(in) :: pi2_stw
-  real, intent(in) :: twopi_stw
-  real, intent(in) :: epse_stw
-
-
-
-  integer :: k_stw
-  integer :: l_stw
-  real :: fmn_stw
-  real :: flxcon_stw
-  real :: ucon_stw
-  real :: sigb_stw
-  real :: rofac_stw
-  real :: pwaves_stw
-  real :: ftchcon_stw
-  real :: zconst_stw
-  real :: sqrtg_stw
-  real :: cdrag_stw
-  real :: gamma_stw
-  real :: ust_stw
-  real :: xlam_stw
-  real :: alpstr_stw
-  real :: zxx_stw
-  real :: etotzz_stw
-  real :: xsum_stw 
-  real :: ysum_stw
-  real :: emax_stw
-  real :: kmax_stw
+  integer :: k_stw, l_stw, i_angdif_stw, iwind_band_stw, iband1_stw
+  integer :: iband2_stw, l1_stw, l2_stw, l3_stw, l4_stw, mm_stw
+  integer :: nn_stw, ii1_stw, ii2_stw, jj1_stw, jj2_stw
+  real :: fmn_stw, flxcon_stw, ucon_stw, sigb_stw, rofac_stw, pwaves_stw
+  real :: ftchcon_stw, zconst_stw, sqrtg_stw, cdrag_stw, gamma_stw
+  real :: ust_stw, xlam_stw, alpstr_stw, zxx_stw, etotzz_stw, xsum_stw 
+  real :: ysum_stw, emax_stw, kmax_stw
+  real :: e1sum_stw, angav_sea_stw, ang_calc_stw, angdif_stw, wkdp_stw
+  real :: bconst_stw, udtmp_stw, depij_stw, fm_stw, zfm_stw, tmn_stw
+  real :: wkm_stw, cm_stw, tkd_stw, cgm_stw, delta_stw, time_stw, wkh_stw
+  real :: flux_stw, eout_stw, uocm_stw, fmbar_stw, afact_stw, efcon_stw
+  real :: btermz_stw, weight1_stw, ee2o_stw, dep_up_stw, ee2_stw, sum_stw
+  real :: einpt_stw, e_upwind_stw, efin_stw, xxx_stw, equil_stw, zzz_stw
+  real :: zzz2_stw, yyy_stw, equilz_stw, xxo_stw, yyo_stw, equilo_stw
+  real :: dele1_stw, dele_stw, sum_test_stw, sum_test2_stw, ration_stw
+  real :: ein_stw, ediff_stw, eee_stw, exx_stw, depfac_stw, ratt_stw, sume1_stw
   real, dimension(nfreq_stw) :: e1_stw
   real, dimension(nfreq_stw,na_stw) :: edens_stw
-  real :: e1sum_stw
-  real :: angav_sea_stw
-  real :: ang_calc_stw
-  real :: angdif_stw
-  integer :: i_angdif_stw
-  integer :: iwind_band_stw
-  integer :: iband1_stw
-  integer :: iband2_stw
-  integer :: l1_stw
-  integer :: l2_stw
-  integer :: l3_stw
-  integer :: l4_stw
-  real :: wkdp_stw
   real, dimension(nfreq_stw) :: zjac_stw
   real, dimension(nfreq_stw) :: fka_stw
-  real :: bconst_stw
-  real :: udtmp_stw
-  real :: depij_stw
-  integer :: mm_stw
-  integer :: nn_stw
-  integer :: ii1_stw
-  integer :: ii2_stw
-  integer :: jj1_stw
-  integer :: jj2_stw
-  real :: fm_stw
-  real :: zfm_stw
-  real :: tmn_stw
-  real :: wkm_stw
-  real :: cm_stw
-  real :: tkd_stw
-  real :: cgm_stw
-  real :: delta_stw
-  real :: time_stw
-  real :: wkh_stw
-  real :: flux_stw
-  real :: eout_stw
-  real :: uocm_stw
-  real :: fmbar_stw
-  real :: afact_stw
-  real :: efcon_stw
-  real :: btermz_stw
-  real :: weight1_stw
-  real :: ee2o_stw
-  real :: dep_up_stw
-  real :: ee2_stw
   real, intent(inout), dimension(na_stw) :: angfac_stw
-  real :: sum_stw
-  real :: einpt_stw
-  real :: e_upwind_stw
-  real :: efin_stw
-  real :: xxx_stw
-  real :: equil_stw
-  real :: zzz_stw
-  real :: zzz2_stw
-  real :: yyy_stw
-  real :: equilz_stw
-  real :: xxo_stw
-  real :: yyo_stw
-  real :: equilo_stw
-  real :: dele1_stw
-  real :: dele_stw
-  real :: sum_test_stw
-  real :: sum_test2_stw
-  real :: ration_stw
-  real :: ein_stw
-  real :: ediff_stw
-  real :: eee_stw
-  real :: exx_stw
-  real :: depfac_stw
-  real :: ratt_stw
-  real :: sume1_stw
-
 
   ! check on zero depth
   fmn_stw = freq_stw(nfreq_stw)
@@ -2085,49 +1995,41 @@ SUBROUTINE friction (i_stw, j_stw, k_stw, ni_stw, nj_stw, na_4_stw, e_stw, sea_s
                            wk_stw, cg_stwave, cf_stw, ifric_stw, delr_stw, l_sweep_stw, m_stw, tau_stwave1, ubottom_stw, dth_stw,epsd_stw,nfreq_stw,twopi_stw,pi2_stw,epse_stw,na_stw)
 ! ********************************************************************
 !
-! Purpose: 
+! Purpose: To estimate the bottom friction induced by waves
+!          Modified by Patricio Moreno 04/05/2010 (added tau_stwave1
+!          to subroutine friction)
 !
 ! --------------------------------------------------------------------
   ! Subroutine arguments
-  !______________________________________________________________________________________
-  !   Modified by Patricio Moreno 04/05/2010 (added tau_stwave1 to subroutine friction)
-  !______________________________________________________________________________________
-  integer, intent(in) :: i_stw
-  integer, intent(in) :: j_stw
-  integer, intent(in) :: k_stw
-  integer, intent(in) :: ni_stw
-  integer, intent(in) :: nj_stw
-  integer, intent(in) :: na_4_stw
-  real, intent(inout), dimension(nfreq_stw,na_stw,nj_stw,ni_stw) :: e_stw
-  real, intent(inout), dimension(nfreq_stw,na_stw,nj_stw,ni_stw) :: sea_stw
-  real, intent(in), dimension(nfreq_stw) :: freq_stw
-  real, intent(in), dimension(nfreq_stw) :: delf_stw
-  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw) :: wk_stw
-  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw) :: cg_stwave
-  real, intent(in), dimension(nj_stw,ni_stw) :: cf_stw
-  integer, intent(in) :: ifric_stw
-  real, intent(in), dimension(na_4_stw,4) :: delr_stw
-  integer, intent(in), dimension(na_4_stw,4)  :: l_sweep_stw
-  integer, intent(in) :: m_stw
-  real, intent(inout), dimension(nj_stw,ni_stw) :: tau_stwave1
-  real, intent(inout), dimension(nj_stw,ni_stw)  :: ubottom_stw
-  
-  real, intent(in) :: dth_stw
-  real, intent(in) :: epsd_stw
-  integer, intent(in) :: nfreq_stw
-  real, intent(in) :: twopi_stw
-  real, intent(in) :: pi2_stw
-  real , intent(in) :: epse_stw
-  integer, intent(in) :: na_stw
+  integer, intent(in)                                             :: i_stw
+  integer, intent(in)                                             :: j_stw
+  integer, intent(in)                                             :: k_stw
+  integer, intent(in)                                             :: ni_stw
+  integer, intent(in)                                             :: nj_stw
+  integer, intent(in)                                             :: na_4_stw
+  integer, intent(in)                                             :: nfreq_stw
+  integer, intent(in)                                             :: na_stw
+  integer, intent(in)                                             :: ifric_stw
+  integer, intent(in), dimension(na_4_stw,4)                      :: l_sweep_stw
+  integer, intent(in)                                             :: m_stw
+  real, intent(in)                                                :: dth_stw
+  real, intent(in)                                                :: epsd_stw
+  real, intent(in)                                                :: twopi_stw
+  real, intent(in)                                                :: pi2_stw
+  real , intent(in)                                               :: epse_stw
+  real, intent(in), dimension(nfreq_stw)                          :: freq_stw
+  real, intent(in), dimension(nfreq_stw)                          :: delf_stw
+  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw)            :: wk_stw
+  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw)            :: cg_stwave
+  real, intent(in), dimension(nj_stw,ni_stw)                      :: cf_stw
+  real, intent(in), dimension(na_4_stw,4)                         :: delr_stw
+  real, intent(inout), dimension(nj_stw,ni_stw)                   :: tau_stwave1
+  real, intent(inout), dimension(nj_stw,ni_stw)                   :: ubottom_stw
+  real, intent(inout), dimension(nfreq_stw,na_stw,nj_stw,ni_stw)  :: e_stw
+  real, intent(inout), dimension(nfreq_stw,na_stw,nj_stw,ni_stw)  :: sea_stw
 
-  integer :: l_stw
-  integer :: n_stw
-  integer :: kk_stw
-  real :: urms_stw
-  real :: wkd_stw
-  real :: sigma_stw
-  real :: b_stw
-
+  integer :: l_stw, n_stw, kk_stw
+  real :: urms_stw, wkd_stw, sigma_stw, b_stw
 
   ! Calculate bottom friction.
   ! epse_stw (a small value of energy) = 1.0e-8
@@ -2181,69 +2083,45 @@ subroutine prop(nj_stw,ni_stw,na_stw,na_4_stw,anglz_stw,l_sweep_stw,i1_stw,i2_st
 !
 ! --------------------------------------------------------------------
   ! Subroutine arguments
-  integer, intent(in) :: nj_stw
-  integer, intent(in) :: ni_stw
-  integer, intent(in) :: na_stw
-  integer, intent(in) :: na_4_stw
-  real, intent(in), dimension(na_stw) :: anglz_stw
-  integer, intent(in), dimension(na_4_stw,4)  :: l_sweep_stw
-  integer, intent(in), dimension(na_4_stw,4)  :: i1_stw
-  integer, intent(in), dimension(na_4_stw,4)  :: i2_stw
-  integer, intent(in), dimension(na_4_stw,4)  :: j1_stw
-  integer, intent(in), dimension(na_4_stw,4)  :: j2_stw
-  real, intent(in), dimension(na_4_stw,4) :: wt1_stw
-  real, intent(in), dimension(na_4_stw,4) :: wt2_stw
+  integer, intent(in)                                            :: nj_stw
+  integer, intent(in)                                            :: ni_stw
+  integer, intent(in)                                            :: na_stw
+  integer, intent(in)                                            :: na_4_stw
+  integer, intent(in), dimension(na_4_stw,4)                     :: l_sweep_stw
+  integer, intent(in), dimension(na_4_stw,4)                     :: i1_stw
+  integer, intent(in), dimension(na_4_stw,4)                     :: i2_stw
+  integer, intent(in), dimension(na_4_stw,4)                     :: j1_stw
+  integer, intent(in), dimension(na_4_stw,4)                     :: j2_stw
+  integer, intent(in)                                            :: i_stw
+  integer, intent(in)                                            :: j_stw
+  integer, intent(in)                                            :: m_stw
+  integer, intent(in)                                            :: nfreq_stw
+  real, intent(in), dimension(na_stw)                            :: anglz_stw
+  real, intent(in), dimension(na_4_stw,4)                        :: wt1_stw
+  real, intent(in), dimension(na_4_stw,4)                        :: wt2_stw
+  real, intent(in)                                               :: dth_stw
+  real, intent(in), dimension(na_4_stw,4)                        :: delr_stw
+  real, intent(in), dimension(na_4_stw,4)                        :: delr_m_stw
+  real, intent(in), dimension(na_4_stw,4)                        :: delr_p_stw
+  real, intent(in), dimension(na_stw,nj_stw,ni_stw)              :: ddepdx_stw
+  real, intent(in), dimension(na_stw,nj_stw,ni_stw)              :: ddepdy_stw
+  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw)           :: wk_stw
+  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw)           :: c_stwave
+  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw)           :: cg_stwave
+  real, intent(in), dimension(nfreq_stw)                         :: freq_stw
+  real, intent(in)                                               :: epsd_stw
+  real, intent(in)                                               :: pi2_stw
+  real, intent(in)                                               :: twopi_stw
+  real, intent(in)                                               :: epse_stw
   real, intent(inout), dimension(nfreq_stw,na_stw,nj_stw,ni_stw) :: e_stw
   real, intent(inout), dimension(nfreq_stw,na_stw,nj_stw,ni_stw) :: sea_stw
-  real, intent(in) :: dth_stw
-  real, intent(in), dimension(na_4_stw,4) :: delr_stw
-  real, intent(in), dimension(na_4_stw,4) :: delr_m_stw
-  real, intent(in), dimension(na_4_stw,4) :: delr_p_stw
-  real, intent(in), dimension(na_stw,nj_stw,ni_stw) :: ddepdx_stw
-  real, intent(in), dimension(na_stw,nj_stw,ni_stw) :: ddepdy_stw
-  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw) :: wk_stw
-  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw) :: c_stwave
-  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw) :: cg_stwave
-  real, intent(in), dimension(nfreq_stw) :: freq_stw
-  integer, intent(in) :: i_stw
-  integer, intent(in) :: j_stw
-  integer, intent(in) :: m_stw
-  real, intent(in) :: epsd_stw
-  real, intent(in) :: pi2_stw
-  integer, intent(in) :: nfreq_stw
-  real, intent(in) :: twopi_stw
-  real , intent(in) :: epse_stw
 
-  real :: dth2_stw
-  integer :: n_stw
-  integer :: l_stw
-  integer :: jj1_stw
-  integer :: ii1_stw
-  integer :: jj2_stw
-  integer :: ii2_stw
-  integer :: k_stw
-  real :: d1_stw
-  real :: dddn_stw
-  real :: dddn_m_stw
-  real :: dddn_p_stw
-  real :: tkd_stw
-  real :: ang_turn
-  real :: ang1_stw
-  real :: ang1_m_stw
-  real :: ang1_p_stw
-  real ::  del_ang_stw
-  integer :: lm_stw
-  integer :: lp_stw
-  real :: e1_stw
-  real :: wk1_stw
-  real :: cg1_stw
-  real :: c1_stw
-  real :: tkd1_stw
-  real :: dang_m_stw
-  real :: dang_p_stw
-  integer :: ll_stw
-  real :: fac_stw
-
+  integer :: n_stw, l_stw, jj1_stw, ii1_stw, jj2_stw, ii2_stw, k_stw
+  integer :: lm_stw, lp_stw, ll_stw
+  real :: dth2_stw, d1_stw, dddn_stw, dddn_m_stw, dddn_p_stw, tkd_stw
+  real :: ang_turn, ang1_stw, ang1_m_stw, ang1_p_stw, del_ang_stw
+  real :: e1_stw, wk1_stw, cg1_stw, c1_stw, tkd1_stw, dang_m_stw
+  real :: dang_p_stw, fac_stw
 
   ! dth2_stw is half the direction bin (represents edge of the bin)
   dth2_stw = 0.5 * dth_stw
@@ -2342,60 +2220,40 @@ SUBROUTINE one_d_prop (nj_stw,ni_stw,na_4_stw,anglz_stw,l_sweep_stw,e_stw,sea_st
 !
 ! --------------------------------------------------------------------
   ! Subroutine arguments
-  integer, intent(in) :: nj_stw
-  integer, intent(in) :: ni_stw
-  integer, intent(in) :: na_4_stw
-  real, intent(in), dimension(na_stw) :: anglz_stw
-  integer, intent(in), dimension(na_4_stw,4)  :: l_sweep_stw
+  integer, intent(in)                                            :: nj_stw
+  integer, intent(in)                                            :: ni_stw
+  integer, intent(in)                                            :: na_4_stw
+  integer, intent(in)                                            :: i_stw
+  integer, intent(in)                                            :: j_stw
+  integer, intent(in)                                            :: i_in
+  integer, intent(in)                                            :: j_in
+  integer, intent(in)                                            :: m_stw
+  integer, intent(in)                                            :: ifric_stw
+  integer, intent(in)                                            :: nfreq_stw
+  integer, intent(in)                                            :: na_stw
+  integer, intent(in), dimension(na_4_stw,4)                     :: l_sweep_stw
+  real, intent(in), dimension(na_stw)                            :: anglz_stw
+  real, intent(in), dimension(na_4_stw,4)                        :: delr_stw
+  real, intent(in), dimension(na_4_stw,4)                        :: delr_m_stw
+  real, intent(in), dimension(na_4_stw,4)                        :: delr_p_stw
+  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw)           :: wk_stw
+  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw)           :: c_stwave
+  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw)           :: cg_stwave
+  real, intent(in), dimension(nfreq_stw)                         :: freq_stw
+  real, intent(in), dimension(nj_stw,ni_stw)                     :: cf_stw
+  real, intent(in)                                               :: dth_stw
+  real, intent(in)                                               :: epsd_stw
+  real, intent(in)                                               :: twopi_stw
+  real, intent(in)                                               :: pi2_stw
+  real, intent(in)                                               :: radfac_stw  
+  real, intent(in)                                               :: epse_stw
   real, intent(inout), dimension(nfreq_stw,na_stw,nj_stw,ni_stw) :: e_stw
   real, intent(inout), dimension(nfreq_stw,na_stw,nj_stw,ni_stw) :: sea_stw
-  real, intent(in), dimension(na_4_stw,4) :: delr_stw
-  real, intent(in), dimension(na_4_stw,4) :: delr_m_stw
-  real, intent(in), dimension(na_4_stw,4) :: delr_p_stw
-  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw) :: wk_stw
-  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw) :: c_stwave
-  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw) :: cg_stwave
-  real, intent(in), dimension(nfreq_stw) :: freq_stw
-  integer, intent(in) :: i_stw
-  integer, intent(in) :: j_stw
-  integer, intent(in) :: i_in
-  integer, intent(in) :: j_in
-  integer, intent(in) :: m_stw
-  integer, intent(in) :: ifric_stw
-  real, intent(in), dimension(nj_stw,ni_stw) :: cf_stw
-  real, intent(in) :: dth_stw
 
-  real, intent(in) :: epsd_stw
-  integer, intent(in) :: nfreq_stw
-  integer, intent(in) :: na_stw
-  real, intent(in) :: twopi_stw
-  real, intent(in) :: pi2_stw
-  real, intent(in) :: radfac_stw  
-  real , intent(in) :: epse_stw
-
-  real :: dth2_stw
-  real :: ddepdx_stw
-  real :: ddepdy_stw
-  integer :: l_stw
-  integer :: n_stw
-  integer :: k_stw
-  real :: dddn_stw
-  real :: dddn_m_stw
-  real :: dddn_p_stw
-  real :: tkd_stw
-  real :: ang_turn
-  real :: ang1_stw
-  real :: ang1_m_stw
-  real :: ang1_p_stw
-  real :: del_ang_stw
-  integer :: lm_stw
-  integer :: lp_stw
-  integer :: dang_m_stw
-  integer :: dang_p_stw
-  real :: e1_stw
-  real :: b_stw
-  real :: sigma_stw
-  integer :: ll_stw
+  integer :: l_stw, n_stw, k_stw, lm_stw, lp_stw, dang_m_stw, dang_p_stw, ll_stw
+  real :: dth2_stw, ddepdx_stw, ddepdy_stw, dddn_stw, dddn_m_stw, dddn_p_stw
+  real :: tkd_stw, ang_turn, ang1_stw, ang1_m_stw, ang1_p_stw, del_ang_stw
+  real :: e1_stw, b_stw, sigma_stw
 
 ! dth2_stw is half the direction bin (represents edge of the bin)
   dth2_stw = 0.5 * dth_stw
@@ -2492,33 +2350,26 @@ SUBROUTINE break(ni_stw,nj_stw,i_stw,j_stw,e_stw,sea_stw,delf_stw,wk_stw,ibr_stw
 !
 ! --------------------------------------------------------------------
   ! Subroutine arguments
-  integer, intent(in) :: nj_stw
-  integer, intent(in) :: ni_stw
-  integer, intent(in) :: i_stw
-  integer, intent(in) :: j_stw
+  integer, intent(in)                                            :: nj_stw
+  integer, intent(in)                                            :: ni_stw
+  integer, intent(in)                                            :: i_stw
+  integer, intent(in)                                            :: j_stw
+  integer, intent(in)                                            :: na_stw
+  integer, intent(in)                                            :: nfreq_stw
+  integer, intent(inout), dimension(nj_stw,ni_stw)               :: ibr_stw
+  integer, intent(inout)                                         :: kmax_stw
+  real, intent(in), dimension(nfreq_stw)                         :: delf_stw
+  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw)           :: wk_stw
+  real, intent(in)                                               :: twopi_stw
+  real, intent(in)                                               :: pi2_stw
+  real, intent(in)                                               :: radfac_stw  
+  real, intent(in)                                               :: epse_stw
+  real, intent(in)                                               :: dth_stw
   real, intent(inout), dimension(nfreq_stw,na_stw,nj_stw,ni_stw) :: e_stw
   real, intent(inout), dimension(nfreq_stw,na_stw,nj_stw,ni_stw) :: sea_stw
-  real, intent(in), dimension(nfreq_stw) :: delf_stw
-  real, intent(in), dimension(nfreq_stw,nj_stw,ni_stw) :: wk_stw
-  integer, intent(inout), dimension(nj_stw,ni_stw) :: ibr_stw
-  integer, intent(inout) :: kmax_stw
-  integer, intent(in) :: na_stw
-  real, intent(in) :: twopi_stw
-  real, intent(in) :: pi2_stw
-  real, intent(in) :: radfac_stw  
-  real , intent(in) :: epse_stw
-  integer, intent(in) :: nfreq_stw
-  real, intent(in) :: dth_stw
   
-  real :: sum_e_stw
-  real :: emax_stw
-  integer :: k_stw
-  real :: sum_ef_stw
-  real :: edplim_stw
-  real :: wkpeak_stw
-  real :: estlim_stw
-  real :: ration_stw
-  integer :: l_stw
+  integer :: k_stw, l_stw
+  real :: sum_e_stw, emax_stw, sum_ef_stw, edplim_stw, wkpeak_stw, estlim_stw, ration_stw
 
 ! Check for breaking.
 
@@ -2570,14 +2421,11 @@ SUBROUTINE celerity_(nfreq_stw,ni_stw,nj_stw,wk_stw,c_stwave,cg_stwave,freq_stw)
   real, intent(inout), dimension(nfreq_stw,nj_stw,ni_stw) :: c_stwave
   real, intent(inout), dimension(nfreq_stw,nj_stw,ni_stw) :: wk_stw
   real, intent(inout), dimension(nfreq_stw,nj_stw,ni_stw) :: cg_stwave
-  real, intent(in), dimension(nfreq_stw) :: freq_stw
-  integer, intent(in) :: ni_stw
-  integer, intent(in) :: nj_stw
-  integer, intent(in) :: nfreq_stw
-
-  integer :: i_stw
-  integer :: j_stw
-  integer :: k_stw
+  real, intent(in), dimension(nfreq_stw)                  :: freq_stw
+  integer, intent(in)                                     :: ni_stw
+  integer, intent(in)                                     :: nj_stw
+  integer, intent(in)                                     :: nfreq_stw
+  integer :: i_stw, j_stw, k_stw
   real :: tkd_stw
   real :: twopi_stw = 2.0e0*pi
 
@@ -2610,20 +2458,20 @@ REAL FUNCTION wkfnc_stw(fm_stw, d_stw)
 !
 ! --------------------------------------------------------------------
   ! Subroutine arguments
-  real :: y
+  real             :: y
   real, intent(in) :: fm_stw
   real, intent(in) :: d_stw
-  real :: sum_stw
-  real :: coe1_stw = 0.66667e0
-  real :: coe2_stw = 0.35550e0
-  real :: coe3_stw = 0.16084e0
-  real :: coe4_stw = 0.06320e0
-  real :: coe5_stw = 0.02174e0
-  real :: coe6_stw = 0.00654e0
-  real :: coe7_stw = 0.00171e0
-  real :: coe8_stw = 0.00039e0
-  real :: coe9_stw = 0.00011e0
-  real :: twopi_stw = 2.0e0*pi
+  real             :: sum_stw
+  real             :: coe1_stw = 0.66667e0
+  real             :: coe2_stw = 0.35550e0
+  real             :: coe3_stw = 0.16084e0
+  real             :: coe4_stw = 0.06320e0
+  real             :: coe5_stw = 0.02174e0
+  real             :: coe6_stw = 0.00654e0
+  real             :: coe7_stw = 0.00171e0
+  real             :: coe8_stw = 0.00039e0
+  real             :: coe9_stw = 0.00011e0
+  real             :: twopi_stw = 2.0e0*pi
 
   y = (twopi_stw*twopi_stw*fm_stw*fm_stw)*d_stw/g
 
@@ -2637,9 +2485,6 @@ REAL FUNCTION wkfnc_stw(fm_stw, d_stw)
   return
 
 END FUNCTION wkfnc_stw
-
-
-
 ! ********************************************************************
 SUBROUTINE depgrad(nj_stw,ni_stw,na_stw,na_4_stw,l_sweep_stw,i1_stw,i2_stw,j1_stw,j2_stw,anglz_stw,delr_stw,ddepdx_stw,ddepdy_stw)
 ! ********************************************************************
@@ -2648,36 +2493,23 @@ SUBROUTINE depgrad(nj_stw,ni_stw,na_stw,na_4_stw,l_sweep_stw,i1_stw,i2_stw,j1_st
 !
 ! --------------------------------------------------------------------
   ! Subroutine arguments
-  integer, intent(in) :: nj_stw
-  integer, intent(in) :: ni_stw
-  integer, intent(in) :: na_4_stw
-  integer, intent(in) :: na_stw
-  integer, intent(in), dimension(na_4_stw,4)  :: i1_stw
-  integer, intent(in), dimension(na_4_stw,4)  :: i2_stw
-  integer, intent(in), dimension(na_4_stw,4)  :: j1_stw
-  integer, intent(in), dimension(na_4_stw,4)  :: j2_stw
-  integer, intent(in), dimension(na_4_stw,4)  :: l_sweep_stw
+  integer, intent(in)                                  :: nj_stw
+  integer, intent(in)                                  :: ni_stw
+  integer, intent(in)                                  :: na_4_stw
+  integer, intent(in)                                  :: na_stw
+  integer, intent(in), dimension(na_4_stw,4)           :: i1_stw
+  integer, intent(in), dimension(na_4_stw,4)           :: i2_stw
+  integer, intent(in), dimension(na_4_stw,4)           :: j1_stw
+  integer, intent(in), dimension(na_4_stw,4)           :: j2_stw
+  integer, intent(in), dimension(na_4_stw,4)           :: l_sweep_stw
   real, intent(inout), dimension(na_stw,nj_stw,ni_stw) :: ddepdx_stw
   real, intent(inout), dimension(na_stw,nj_stw,ni_stw) :: ddepdy_stw
-  real, intent(in), dimension(na_stw) :: anglz_stw
-  real, intent(in), dimension(na_4_stw,4) :: delr_stw
+  real, intent(in), dimension(na_stw)                  :: anglz_stw
+  real, intent(in), dimension(na_4_stw,4)              :: delr_stw
 
-  integer :: m_stw
-  integer :: n_stw
-  integer :: l_stw
-  integer :: i_stw
-  integer :: j_stw
-
-  real :: atan_ang_stw
-  integer :: ix1_stw
-  integer :: ix2_stw
-  integer :: jx1_stw
-  integer :: jx2_stw
-  real :: delx_stw
-  real :: dely_stw 
-  integer :: jy1_stw
-  integer :: jy2_stw
-
+  integer :: m_stw, n_stw, l_stw, i_stw, j_stw, ix1_stw, ix2_stw
+  integer :: jx1_stw, jx2_stw, jy1_stw, jy2_stw
+  real :: atan_ang_stw, delx_stw, dely_stw
 
   do m_stw = 1, 4
     do n_stw = 1, na_4_stw
@@ -2745,27 +2577,24 @@ SUBROUTINE sweeps(na_4_stw,na_stw,dth_stw,nj_stw,ni_stw,anglz_stw,l_sweep_stw,i1
 !
 ! --------------------------------------------------------------------
   ! Subroutine arguments
-  integer, intent(in) :: na_4_stw
-  integer, intent(in) :: na_stw
-  integer, intent(in) :: ni_stw
-  integer, intent(in) :: nj_stw
-  real, intent(in) :: dth_stw
+  integer, intent(in)                           :: na_4_stw
+  integer, intent(in)                           :: na_stw
+  integer, intent(in)                           :: ni_stw
+  integer, intent(in)                           :: nj_stw
   integer, intent(inout), dimension(na_4_stw,4) :: i1_stw
   integer, intent(inout), dimension(na_4_stw,4) :: i2_stw
   integer, intent(inout), dimension(na_4_stw,4) :: j1_stw
   integer, intent(inout), dimension(na_4_stw,4) :: j2_stw
   integer, intent(inout), dimension(na_4_stw,4) :: l_sweep_stw
-  real, intent(inout), dimension(na_4_stw,4) :: wt1_stw
-  real, intent(inout), dimension(na_4_stw,4) :: wt2_stw
-  real, intent(inout), dimension(na_4_stw,4) :: delr_stw
-  real, intent(inout), dimension(na_4_stw,4) :: delr_m_stw
-  real, intent(inout), dimension(na_4_stw,4) :: delr_p_stw
-  real, intent(inout), dimension(na_stw) :: anglz_stw
+  real, intent(inout), dimension(na_4_stw,4)    :: wt1_stw
+  real, intent(inout), dimension(na_4_stw,4)    :: wt2_stw
+  real, intent(inout), dimension(na_4_stw,4)    :: delr_stw
+  real, intent(inout), dimension(na_4_stw,4)    :: delr_m_stw
+  real, intent(inout), dimension(na_4_stw,4)    :: delr_p_stw
+  real, intent(inout), dimension(na_stw)        :: anglz_stw
+  real, intent(in)                              :: dth_stw
 
-  integer :: m_stw
-  integer :: n_stw
-  integer :: l_stw
-
+  integer :: m_stw, n_stw, l_stw
   real :: atan_ang_stw
 
   do m_stw = 1, 4
@@ -2842,14 +2671,14 @@ SUBROUTINE setsweeps(i_st_stw,i_en_stw,i_inc_stw,j_st_stw,j_en_stw,j_inc_stw,ni_
 !
 ! --------------------------------------------------------------------
   ! Subroutine arguments
-  integer, intent(inout), dimension(4) :: i_st_stw
+  integer, intent(inout), dimension(4)  :: i_st_stw
   integer, intent(inout), dimension(4)  :: i_en_stw
   integer, intent(inout), dimension(4)  :: i_inc_stw
   integer, intent(inout), dimension(4)  :: j_st_stw
   integer, intent(inout), dimension(4)  :: j_en_stw
   integer, intent(inout), dimension(4)  :: j_inc_stw
-  integer, intent(in) :: ni_stw
-  integer, intent(in) :: nj_stw
+  integer, intent(in)                   :: ni_stw
+  integer, intent(in)                   :: nj_stw
 
   i_st_stw(1) = 2
   i_st_stw(2) = ni_stw-1
@@ -2877,9 +2706,6 @@ SUBROUTINE setsweeps(i_st_stw,i_en_stw,i_inc_stw,j_st_stw,j_en_stw,j_inc_stw,ni_
   j_inc_stw(4) = -1
 
 END SUBROUTINE setsweeps
-
-
 !************************************************************************
                         END MODULE si3d_stwave
 !************************************************************************
-

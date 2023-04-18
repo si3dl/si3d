@@ -467,7 +467,7 @@ SUBROUTINE WQinput
       print*,('       Number of Sediment Particles greater     ')
       print*,('  Than the possible number (i.e., sedNumber> 3) ')
       print*,('                EXITING MODEL                   ')
-      print*,('****************************************')
+      print*,('************************************************')
       STOP 
     end if
    ALLOCATE(sed_diameter(sedNumber),sed_dens(sedNumber),sed_frac(sedNumber))
@@ -759,8 +759,6 @@ SUBROUTINE srcsnkWQ(n)
   ! STWAVE controlling section. (SergioValbuena 03-11-2023) 
   if ((iSS == 1) .and. (iSTWAVE == 1)) then
     call stwave_input(n)
-    print*,'tau'
-    print*,transpose(tau_stwave(2:im1-1,2:jm1-1))
   end if 
 
   !$omp barrier  

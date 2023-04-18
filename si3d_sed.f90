@@ -38,7 +38,7 @@ SUBROUTINE sourceSS(kwq,lwq)
   real, dimension(sedNumber) :: tauCrt            !< Critical Shear Stress
   real, dimension(sedNumber) :: erosionFlux       !<
   real, dimension(sedNumber) :: depositionFlux    !<
-  real                       :: conc
+  real                       :: cb
 
   kms = kmz(lwq)
 
@@ -51,44 +51,50 @@ SUBROUTINE sourceSS(kwq,lwq)
     pn = 0
     do i = 1, sedNumber
       ! Estimate properties of sediment for a given water density at bottom cell
-      conc = tracerpp(kwq,lwq,LSS1 + pn)
+      cb = tracerpp(kwq,lwq,LSS1 + pn)
       
       call get_sed_prop(settling_vel(i),Rep(i),tauCrt(i),sed_diameter(i),sed_dens(i),w_dens)
       ! Estimate erosion flux
+      ! if (taub .ge. tauCrt(i)) then
       call erosion(erosionFlux(i), ustarb, Rep(i), settling_vel(i), sed_frac(i))
       ! else
       !   erosionFlux(i) = 0.0
       ! end if 
-      if (conc .gt. 0.0) then
-        call deposition(depositionFlux(i), settling_vel(i), tauCrt(i), taub, conc)
+      if (cb .gt. 0.0) then
+        call deposition(depositionFlux(i), settling_vel(i), tauCrt(i), taub, cb)
       else
         depositionFlux(i) = 0.0
       end if 
 
       sourcesink(kwq, lwq, LSS1 + pn) = (erosionFlux(i) - depositionFlux(i))
 
-      ! if ((tauCrt(i) .lt. taub)) then
-      !   print*, '--------------------------'
-      !   print*, 'k =',kwq,'l =',lwq,'i = ',l2i(lwq),'j = ',l2j(lwq)
-      !   print*, 'dt = ',dt,'h = ',hp(kwq,lwq)
-      !   print*, 'conc = ',conc
-      !   print*, 'taub =',taub
-      !   print*, 'tauCr =', tauCrt(i)
-      !   print*, 'erosionFlux = ', erosionFlux(i)
-      !   print*, 'depositionFlux = ', depositionFlux(i)
-      !   print*, 'sourcesink = ', sourcesink(kwq, lwq, LSS1+pn)
-      !   print*, 'sourcesinklim = ', -conc * hp(kwq,lwq) / dt 
-      ! end if
+      if ((tauCrt(i) .lt. taub)) then
+        print*, '--------------------------'
+        print*, 'k =',kwq,'l =',lwq,'i = ',l2i(lwq),'j = ',l2j(lwq)
+        print*, 'dt = ',dt,'h = ',hp(kwq,lwq)
+        print*, 'cb = ',cb
+        print*, 'taub =',taub
+        print*, 'tauCr =', tauCrt(i)
+        print*, 'erosionFlux = ', erosionFlux(i)
+        print*, 'depositionFlux = ', depositionFlux(i)
+        print*, 'sourcesink = ', sourcesink(kwq, lwq, LSS1+pn)
+        print*, 'sourcesinklim = ', -cb * hp(kwq,lwq) / dt 
+      end if
 
-      if (sourcesink(kwq,lwq,LSS1+pn) .lt. (-1*conc * hp(kwq,lwq) / dt)) then
-        sourcesink(kwq, lwq, LSS1 + pn) = -1* conc * hp(kwq,lwq) / dt
-      end if 
+      if (sourcesink(kwq,lwq,LSS1+pn) .lt. (-1*cb * hp(kwq,lwq) / dt)) then
+        sourcesink(kwq, lwq, LSS1 + pn) = -1* cb * hp(kwq,lwq) / dt
+      end if
 
-      ! if (tauCrt(i) .lt. taub) then
-      !   print*, 'sourcesinkNEW = ', sourcesink(kwq, lwq, LSS1+pn)        
-      !   print*, 'sourcesinklim = ', -conc * hp(kwq,lwq) / dt 
-      !   print*, 'conc in/out = ', sourcesink(kwq, lwq, LSS1+pn) * dt / hp(kwq,lwq)
-      ! end if
+      if (tauCrt(i) .lt. taub) then
+        print*, 'sourcesinkNEW = ', sourcesink(kwq, lwq, LSS1+pn)        
+        print*, 'sourcesinklim = ', -cb * hp(kwq,lwq) / dt 
+        print*, 'cb in/out = ', sourcesink(kwq, lwq, LSS1+pn) * dt / hp(kwq,lwq)
+      end if
+
+      ! Estimate source and sink for the sediment cell.
+      sourcesink(kwq+1,lwq,LSS1+pn) = depositionFlux(i) - erosionFlux(i)
+
+
 
       pn = pn + 1
     end do
@@ -136,7 +142,7 @@ SUBROUTINE erosion(erosionFlux, ustarb, Rep, settling_vel, sed_frac)
 END SUBROUTINE erosion
 
 ! ********************************************************************
-SUBROUTINE deposition(depositionFlux, settling_vel, tauCrt, taub, conc)
+SUBROUTINE deposition(depositionFlux, settling_vel, tauCrt, taub, cb)
 ! ********************************************************************
 !
 ! Purpose: To estimate the suspended sediment deposition at the
@@ -147,13 +153,13 @@ SUBROUTINE deposition(depositionFlux, settling_vel, tauCrt, taub, conc)
   real, intent(in) :: settling_vel
   real, intent(in) :: taub
   real, intent(in) :: tauCrt
-  real, intent(in) :: conc
+  real, intent(in) :: cb
   real, intent(out) :: depositionFlux
 
     if (taub .lt. tauCrt) then
-      depositionFlux = settling_vel * conc * (1 - taub/tauCrt)
+      depositionFlux = settling_vel * cb * (1 - taub/tauCrt)
     else
-      depositionFlux = settling_vel * conc
+      depositionFlux = settling_vel * cb
     end if
 
   return

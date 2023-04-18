@@ -331,7 +331,15 @@ SUBROUTINE InitializeScalarFields
       ELSE
         DO  nn = 1, ntr
           DO k = 1, km1
-            tracer(k,:,nn) = Scalardepthile(k,nn+1)
+            IF ((nn .ge. LSS1) .and. (nn .le. LSS1 + sedNumber)) then
+              if (k == km1) then
+                tracer(k,:,nn) = 0.6
+              else
+                tracer(k,:,nn) = Scalardepthile(k,nn+1) / sed_dens(LSS1 + 1 - nn)
+              end if
+            ELSE
+              tracer(k,:,nn) = Scalardepthile(k,nn+1)
+            END IF
           ENDDO
         END DO ! ... End loop over tracers
       END IF
@@ -4383,6 +4391,11 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
         hn(k1s+1) = hpp(k1s+1,l)
       ENDIF
 
+      if (l == 50) then 
+        print*,'tracer'
+        print*,tracer(:,l,nt)
+      end if 
+
       !.....Calculate active scalar for case of a single layer.....
       SELECT CASE (nwlayers)
       CASE (1)
@@ -4435,7 +4448,7 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
          tracer(k1s:kms  ,l,nt) = sal1(1:nwlayers)
          tracer(k1 :k1s-1,l,nt) = sal1(1         )
          tracer(k1-1,l,nt) = sal1(1)
-         tracer(kms+1,l,nt) = tracer(kms,l,nt)
+         ! tracer(kms+1,l,nt) = tracer(kms,l,nt)
 
          do k = k1-1, kms+1
             if (tracer(k,l,nt) .lt. 0.0) then
@@ -4443,6 +4456,30 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
             end if 
          end do
       END SELECT
+
+      ! Adding solution to sediment layer 
+      IF (iSS == 1) THEN
+        hn(kms+1) = h(kms,l)
+        aa( 2,kms+1) = hn(kms+1)/twodt1
+        tracer(kms+1,l,nt) = sourcesink(kms+1,l,nt)/aa(2,kms+1) + tracerpp(kms+1,l,nt)
+      END IF
+
+
+      if (l == 50) then
+        print*,'km1 = ',km1,'kms = ',kms,'km = ',km
+        print*,'h'
+        print*,h(:,l)
+        print*,'hn'
+        print*,hn
+        print*,'aa'
+        print*,aa
+        print*,'ds'
+        print*,ds
+        print*,'sourcesink'
+        print*,sourcesink(:,l,nt)
+        print*,'tracer'
+        print*,tracer(:,l,nt)
+      end if
 
    !.....End loop over scalar-pts.....
    END DO

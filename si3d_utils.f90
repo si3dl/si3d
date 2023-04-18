@@ -1022,6 +1022,7 @@ SUBROUTINE outt(n,thrs)
    INTEGER :: nn, i, j, k, l, kkk, itdays, ios, nchar, it, laux
    INTEGER, SAVE :: i10, i30, i60
    LOGICAL, SAVE :: first_entry = .TRUE.
+   REAL, DIMENSION(km1) :: zlevel_export
 
    !.....Timing.....
    REAL, EXTERNAL :: TIMER
@@ -1109,8 +1110,8 @@ SUBROUTINE outt(n,thrs)
       scout = -99.0
       trout = -99.0
 
-      DO k  = k1, kmz(l)
-        IF (h(k,l)<=ZERO) CYCLE
+      DO k  = k1, kmz(l) + 1
+        ! IF (h(k,l)<=ZERO) CYCLE
         !uout(k)  = 0.5 * (u  (k,l) + u  (k,lWC(l)))
         !vout(k)  = 0.5 * (v  (k,l) + v  (k,lSC(l)))
         !wout(k)  = 0.5 * (wp (k,l) + wp (k+1,l   ))
@@ -1123,18 +1124,26 @@ SUBROUTINE outt(n,thrs)
         scout(k) = sal(k,l)
         IF (ntr>0) THEN
           DO it = 1, ntr
-            trout(k,it) = tracer(k,l,it)
+            IF ((it .ge. LSS1) .and. (it .le. LSS1 + sedNumber)) then
+              trout(k,it) = tracer(k,l,it) * sed_dens(LSS1 + 1 - it)
+            ELSE
+              trout(k,it) = tracer(k,l,it)
+            END IF
           ENDDO
         ENDIF
+        zlevel_export(k) = zlevel(k+1)
+        if (k == km1) then
+          zlevel_export(k) = zlevel(k) + ddz
+        end if
      END DO
 
      ! ... Write variables to output file
      IF (ntr <= 0) THEN
-       WRITE (UNIT=i60, FMT=4) thrs, n, s(l), (zlevel(k+1),     &
+       WRITE (UNIT=i60, FMT=4) thrs, n, s(l), (zlevel_export(k),     &
            & uout (k), vout(k), wout(k), Avout(k), Dvout(k),      &
-           & scout(k), k =k1,kmz(l))
+           & scout(k), k =k1,kmz(l)+1)
      ELSE
-       WRITE (UNIT=i60, FMT=5) thrs, n, s(l), (zlevel(k+1) ,     &
+       WRITE (UNIT=i60, FMT=5) thrs, n, s(l), (zlevel_export(k) ,     &
             & uout (k), vout(k) , wout(k), Avout(k), Dvout(k),     &
             & scout(k  ),                                          &
             & trout(k,1),                                          &
@@ -1162,7 +1171,7 @@ SUBROUTINE outt(n,thrs)
             & trout(k,23),                                         &
             & trout(k,24),                                         &
             & trout(k,25),                                         &
-            & k = k1,kmz(l))
+            & k = k1,kmz(l)+1)
      ENDIF
 
    4 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PE15.7 / &
