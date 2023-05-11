@@ -27,7 +27,6 @@ SUBROUTINE sourceSS(kwq,lwq)
   ! Arguments of subroutine
   integer, intent(in)        :: kwq               !< Layer index
   integer, intent(in)        :: lwq               !< Column index
-  integer                    :: pn
   integer                    :: kms
   integer                    :: i
   real                       :: taub              !< (Pa) Bottom shear stress
@@ -47,70 +46,106 @@ SUBROUTINE sourceSS(kwq,lwq)
     w_dens = rhop(kwq, lwq) + 1000
     ! Estimate bottom shear stress
     call tauBottom(taub, ustarb, kwq, lwq)
+    call totalMass(sed_frac, kwq, lwq)
 
-    pn = 0
     do i = 1, sedNumber
       ! Estimate properties of sediment for a given water density at bottom cell
-      cb = tracerpp(kwq,lwq,LSS1 + pn)
+      cb = tracerpp(kwq,lwq,LSS1 + i - 1)
       
       call get_sed_prop(settling_vel(i),Rep(i),tauCrt(i),sed_diameter(i),sed_dens(i),w_dens)
       ! Estimate erosion flux
-      ! if (taub .ge. tauCrt(i)) then
-      call erosion(erosionFlux(i), ustarb, Rep(i), settling_vel(i), sed_frac(i))
-      ! else
-      !   erosionFlux(i) = 0.0
-      ! end if 
+      if (taub .ge. tauCrt(i)) then
+        call erosion(erosionFlux(i), ustarb, Rep(i), settling_vel(i), sed_frac(i),sed_dens(i))
+      else
+        erosionFlux(i) = 0.0
+      end if 
       if (cb .gt. 0.0) then
         call deposition(depositionFlux(i), settling_vel(i), tauCrt(i), taub, cb)
       else
         depositionFlux(i) = 0.0
-      end if 
+      end if
 
-      sourcesink(kwq, lwq, LSS1 + pn) = (erosionFlux(i) - depositionFlux(i))
+      sourcesink(kwq, lwq, LSS1 + i - 1) = erosionFlux(i) - depositionFlux(i)
 
-      if ((tauCrt(i) .lt. taub)) then
+      ! if ((tauCrt(i) .lt. taub)) then
+      if (lwq == 50) then
         print*, '--------------------------'
         print*, 'k =',kwq,'l =',lwq,'i = ',l2i(lwq),'j = ',l2j(lwq)
-        print*, 'dt = ',dt,'h = ',hp(kwq,lwq)
-        print*, 'cb = ',cb
-        print*, 'taub =',taub
-        print*, 'tauCr =', tauCrt(i)
-        print*, 'erosionFlux = ', erosionFlux(i)
-        print*, 'depositionFlux = ', depositionFlux(i)
-        print*, 'sourcesink = ', sourcesink(kwq, lwq, LSS1+pn)
-        print*, 'sourcesinklim = ', -cb * hp(kwq,lwq) / dt 
+        ! print*, 'dt = ',dt,'h = ',hp(kwq,lwq)
+      !   print*, 'cb = ',cb
+      !   ! print*, 'taub =',taub
+      !   ! print*, 'tauCr =', tauCrt(i)
+      !   ! print*, 'erosionFlux = ', erosionFlux(i)
+      !   ! print*, 'depositionFlux = ', depositionFlux(i)
+        print*, 'sourcesink = ', sourcesink(kwq, lwq, LSS1+i-1)
+      !   ! print*, 'sourcesinklim = ', -cb * hp(kwq,lwq) / dt 
       end if
 
-      if (sourcesink(kwq,lwq,LSS1+pn) .lt. (-1*cb * hp(kwq,lwq) / dt)) then
-        sourcesink(kwq, lwq, LSS1 + pn) = -1* cb * hp(kwq,lwq) / dt
+      if (sourcesink(kwq,lwq,LSS1 + i - 1) .lt. (-1*cb * hp(kwq,lwq) / dt)) then
+        sourcesink(kwq, lwq, LSS1 + i - 1) = -1 * cb * hp(kwq,lwq) / dt
       end if
 
-      if (tauCrt(i) .lt. taub) then
-        print*, 'sourcesinkNEW = ', sourcesink(kwq, lwq, LSS1+pn)        
-        print*, 'sourcesinklim = ', -cb * hp(kwq,lwq) / dt 
-        print*, 'cb in/out = ', sourcesink(kwq, lwq, LSS1+pn) * dt / hp(kwq,lwq)
-      end if
+      ! if (tauCrt(i) .lt. taub) then
+      ! if (lwq == 50) then
+      !   ! print*, 'sourcesinkNEW = ', sourcesink(kwq, lwq, LSS1+pn)        
+      !   ! print*, 'sourcesinklim = ', -cb * hp(kwq,lwq) / dt 
+      !   print*, 'cb in/out = ', sourcesink(kwq, lwq, LSS1+pn) * dt / hp(kwq,lwq)
+      ! end if
 
       ! Estimate source and sink for the sediment cell.
-      sourcesink(kwq+1,lwq,LSS1+pn) = depositionFlux(i) - erosionFlux(i)
+      sourcesink(kwq+1,lwq,LSS1 + i - 1) = depositionFlux(i) - erosionFlux(i)
 
 
 
-      pn = pn + 1
     end do
 
   elseif (kwq .ne. kms) then 
-    pn = 0
     do i = 1, sedNumber
-      sourcesink(kwq,lwq,LSS1 + pn) = 0
-      pn = pn + 1
+      sourcesink(kwq,lwq,LSS1 + i - 1) = 0
     end do
   end if
 
 END SUBROUTINE sourceSS
 
 ! ********************************************************************
-SUBROUTINE erosion(erosionFlux, ustarb, Rep, settling_vel, sed_frac)
+SUBROUTINE totalMass(sed_frac, kwq, lwq)
+! ********************************************************************
+!
+! Purpose: To estimate the total mass in the sediment layer and
+!         estimate the sediment fraction in the bed for each type
+!         of sediment.
+!
+! --------------------------------------------------------------------
+  ! Arguments
+  real, intent(inout), dimension(sedNumber) :: sed_frac
+  integer, intent(in)                       :: kwq
+  integer, intent(in)                       :: lwq
+  real , dimension(sedNumber)               :: massSed
+  real                                      :: totalMass_bed
+  integer                                   :: i
+
+  totalMass_bed = 0.0
+  do i = 1, sedNumber
+    massSed(i) = tracerpp(kwq+1,lwq,LSS1 + i - 1) * dx * dy * h(kwq,lwq)
+    if (lwq == 50) then
+    print*,'i = ',i,'h = ',h(kwq,lwq),'dx = ',dx,'dy = ',dy
+    print*,'LSS1 + i -1 = ',LSS1 + i - 1
+    print*,'tracer LSS1 + i -1 = ', tracerpp(kwq+1,lwq,LSS1 + i - 1)
+    print*,'massSed = ',massSed(i)
+    end if 
+  end do
+  totalMass_bed = sum(massSed)
+  do i = 1, sedNumber
+    sed_frac(i) = massSed(i) / totalMass_bed
+    if (lwq == 50) then
+    print*,'sed_frac(i) = ',sed_frac(i)
+    end if 
+  end do
+
+END SUBROUTINE totalMass
+
+! ********************************************************************
+SUBROUTINE erosion(erosionFlux, ustarb, Rep, settling_vel, sed_frac, sed_dens)
 ! ********************************************************************
 !
 ! Purpose: To estimate the erosion caused by the flow at the bottom
@@ -123,6 +158,7 @@ SUBROUTINE erosion(erosionFlux, ustarb, Rep, settling_vel, sed_frac)
   real, intent(in)  :: Rep          !< Explicit Particle Reynolds Number
   real, intent(in)  :: settling_vel !< (m/s) Settling velocity of sediment
   real, intent(in)  :: sed_frac     !< fraction of bed of a given sediment type
+  real, intent(in)  :: sed_dens     !< Sediment density to keep units consistent
   real              :: z_u          !< Similarity variable for uniform sediment
   real              :: E_s          !< Dimensionless coefficient for sediment entrainment. Under quasi-equilibrium conditions (Garcia & Parker 1991)
   real, intent(out) :: erosionFlux  !< Vertical erosion flux
@@ -136,7 +172,7 @@ SUBROUTINE erosion(erosionFlux, ustarb, Rep, settling_vel, sed_frac)
   ! Sediment entrainment coefficient
   E_s = Ased * (z_u ** 5) / (1 + (z_u ** 5) * Ased/0.3)
 
-  erosionFlux = E_s * settling_vel * sed_frac
+  erosionFlux = E_s * settling_vel * sed_frac * sed_dens
 
   return
 END SUBROUTINE erosion
@@ -167,7 +203,6 @@ END SUBROUTINE deposition
 
 ! ********************************************************************
 SUBROUTINE get_sed_prop(settling_vel,Rep,tauCrt,sed_diameter,sed_dens,w_dens)
-! SUBROUTINE get_sed_prop(settling_vel,Rep,tauCrt,sed_diameter,sed_dens,w_dens)
 ! ********************************************************************
 !
 ! Purpose: Estimate particle dependent parameters / properties
@@ -183,7 +218,6 @@ SUBROUTINE get_sed_prop(settling_vel,Rep,tauCrt,sed_diameter,sed_dens,w_dens)
   real, intent(out) :: tauCrt           !< (Pa) Critical shear stress 
   real              :: submerged_spec_g !< Sediment submerged specific gravity
   real              :: sed_diamm        !< (m) Sediment diameter
-  ! real              :: sed_spec_g       !< specific sediment gravity
   logical           :: ivanRijn         !< Flag for using van Rijn (1984) formula or Dietrich (1982). The default is van Rijn
 
   ivanRijn = .false.
@@ -269,13 +303,18 @@ SUBROUTINE settling_velocity(settling_vel, g, submerged_spec_g, Rep, sed_diamm, 
   logical           :: vanRijnFlag
   integer           :: i
   ! Parameter for Dietrich (1982) equation
+  ! Values are from dsm2
+  real              :: b_1 = 3.76715
+  real              :: b_2 = 1.92944 
+  real              :: b_3 = 0.09815 
+  real              :: b_4 = 0.00575
+  real              :: b_5 = 0.00056
   ! values are from Bombardelli and Moreno 2012 found in Reardon et al., 2014
-  ! Commented values are from dsm2
-  real              :: b_1 = 2.891394 !3.76715
-  real              :: b_2 = 0.95296  !1.92944 
-  real              :: b_3 = 0.056835 !0.09815 
-  real              :: b_4 = 0.002892 !0.00575 
-  real              :: b_5 = 0.000245 !0.00056 
+  ! real              :: b_1 = 2.891394
+  ! real              :: b_2 = 0.95296 
+  ! real              :: b_3 = 0.056835 
+  ! real              :: b_4 = 0.002892
+  ! real              :: b_5 = 0.000245 
   real, intent(out) :: settling_vel         !< (m/s) Settling
 
   if ( present(ivanRijn) ) then
@@ -287,14 +326,17 @@ SUBROUTINE settling_velocity(settling_vel, g, submerged_spec_g, Rep, sed_diamm, 
     SELECT CASE (vanRijnFlag)
       CASE (.true.)
         ! Van Rijn Formula
-        if (sed_diamm .ge. 1.0d-3) then
+        if (sed_diamm .gt. 1.0d-3) then
           settling_vel = 1.1 * sqrt(submerged_spec_g * g * sed_diamm)
         elseif (sed_diamm .gt. 1.0d-4 .and. sed_diamm .le. 1.0d-3) then
           settling_vel = (10 * kinematic_viscosity / sed_diamm) *        & 
                          (sqrt(1 + 0.01 * (submerged_spec_g * g       &
                           * sed_diamm **3) / kinematic_viscosity ** 2.) - 1)
-        elseif (sed_diamm .gt. 6.5d-5 .and. sed_diamm .le. 1.0d-4) then
-          ! Stokes Law
+        ! elseif (sed_diamm .gt. 6.5d-5 .and. sed_diamm .le. 1.0d-4) then
+        !   ! Stokes Law
+        !   settling_vel = (submerged_spec_g * g * sed_diamm ** 2.) / (18.0 * kinematic_viscosity)
+        else
+        ! Stokes Law
           settling_vel = (submerged_spec_g * g * sed_diamm ** 2.) / (18.0 * kinematic_viscosity)
         end if
 
@@ -354,11 +396,11 @@ SUBROUTINE tauBottom(taub, ustarb,kwq,lwq)
   integer               :: kmyp   !< min bottom layer btwn cell on north and point
   integer               :: kmxm   !< min bottom layer btwn cell on west and point
   integer               :: kmym   !< min bottom layer btwn cell on south and point
-  integer               :: kms    ! bottom layer
-  real                  :: ubott  ! (m/s) vel u at bottom cell
-  real                  :: vbott  ! (m/s) vel v at bottom cell
-  real                  :: taubx  ! (Pa) bottom shear stress in x
-  real                  :: tauby  ! (Pa) bottom shear stress in y
+  integer               :: kms    !< bottom layer
+  real                  :: ubott  !< (m/s) vel u at bottom cell
+  real                  :: vbott  !< (m/s) vel v at bottom cell
+  real                  :: taubx  !< (Pa) bottom shear stress in x
+  real                  :: tauby  !< (Pa) bottom shear stress in y
   ! real, intent(in)      :: tauwbx !< (Pa) bottom shear stress induced by waves
   ! real, intent(in)      :: tauwby !< (Pa) bottom shear stress induced by waves  
   real, intent(out)     :: taub   !< (Pa) Bottom shear stress

@@ -699,7 +699,7 @@ SUBROUTINE stwave(im_stw,jm_stw,u_stwave,udir_stwave,tau_stwave1)
   i_case_stw = i_case_stw + 1
 
   !if (i_case_stw .eq. 1  .or.  dadd_stw .ne. dadd_old_stw) then
-  call celerity_ (nfreq_stw, ni_stw, nj_stw, wk_stw, c_stwave, cg_stwave, freq_stw)
+  call celerity (nfreq_stw, ni_stw, nj_stw, wk_stw, c_stwave, cg_stwave, freq_stw)
   ! endif
   dadd_old_stw = dadd_stw
 
@@ -2411,7 +2411,7 @@ SUBROUTINE break(ni_stw,nj_stw,i_stw,j_stw,e_stw,sea_stw,delf_stw,wk_stw,ibr_stw
 END SUBROUTINE break
 
 ! ********************************************************************
-SUBROUTINE celerity_(nfreq_stw,ni_stw,nj_stw,wk_stw,c_stwave,cg_stwave,freq_stw)
+SUBROUTINE celerity(nfreq_stw,ni_stw,nj_stw,wk_stw,c_stwave,cg_stwave,freq_stw)
 ! ********************************************************************
 !
 ! Purpose: 
@@ -2448,7 +2448,7 @@ SUBROUTINE celerity_(nfreq_stw,ni_stw,nj_stw,wk_stw,c_stwave,cg_stwave,freq_stw)
     end do
   end do
 
-END SUBROUTINE celerity_
+END SUBROUTINE celerity
 
 ! ********************************************************************
 REAL FUNCTION wkfnc_stw(fm_stw, d_stw)

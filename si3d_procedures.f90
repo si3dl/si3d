@@ -192,181 +192,181 @@ SUBROUTINE InitializeScalarFields
 !
 !-------------------------------------------------------------------------
 
-   !.....Local variables.....
-   INTEGER :: i, j, k, l, ios, imm1, jmm1, kmm1, ncols, ncols1, nc, &
-              nsets, ia, ib, nn, ntr1
-   REAL    :: Vamp, rhoamp, Ts, Tb,   &  ! Used to initialize IW-problem
-              NBV, meandepth, length, &
-              rhohere, x, z, rhos, rhob
-   CHARACTER(LEN=18)  :: initfmt
-   INTEGER, PARAMETER :: InitProc = 4
-   REAL, ALLOCATABLE, DIMENSION(:,:) :: Scalardepthile
+  !.....Local variables.....
+  INTEGER :: i, j, k, l, ios, imm1, jmm1, kmm1, ncols, ncols1, nc, &
+            nsets, ia, ib, nn, ntr1
+  REAL    :: Vamp, rhoamp, Ts, Tb,   &  ! Used to initialize IW-problem
+            NBV, meandepth, length, &
+            rhohere, x, z, rhos, rhob
+  CHARACTER(LEN=18)  :: initfmt
+  INTEGER, PARAMETER :: InitProc = 4
+  REAL, ALLOCATABLE, DIMENSION(:,:) :: Scalardepthile
 
-   SELECT CASE (initproc)
+  SELECT CASE (initproc)
 
-   ! ... OPTION 1 - Surface Seiche (use uniform temperatures) ------
-   CASE (1)
+  ! ... OPTION 1 - Surface Seiche (use uniform temperatures) ------
+  CASE (1)
 
-     salp  = 15.
-     sal   = salp;
-     salpp = salp;
+    salp  = 15.
+    sal   = salp;
+    salpp = salp;
 
-     ! ... Initialize Non-active scalar fields
-     IF (ntr > 0) THEN
-       DO nn = 1, ntr;
-         tracer(:,:,nn) = sal;
-       ENDDO
-       tracerpp = tracer;
-     ENDIF
+    ! ... Initialize Non-active scalar fields
+    IF (ntr > 0) THEN
+      DO nn = 1, ntr;
+        tracer(:,:,nn) = sal;
+      END DO
+    tracerpp = tracer;
+    END IF
 
-   ! ... OPTION 2 - Internal Seiche (use analytical solution) ------
-   CASE (2)
+  ! ... OPTION 2 - Internal Seiche (use analytical solution) ------
+  CASE (2)
 
-     Vamp =  0.10;
-     Ts   = 25.00;
-     Tb   = 15.00; ! Parameters used to define the solution
-     meandepth = zl; ! FLOAT(km-k1+1)*ddz
-     length    = FLOAT(im-i1+1)*dx
-     rhos = 1028.*(1.-1.7E-4*(Ts-10.));		! Surface density
-     rhob = 1028.*(1.-1.7E-4*(Tb-10.));		! Bottom  density
-     drho = rhos - rhob;		        ! Change in density from top to bottom
-     NBV=SQRT(-g/rhos*drho/meandepth);          ! Brunt-Vaisala frequency
-     rhoamp=rhos*Vamp*NBV/g;
-     DO l = 1, lm
-       i = l2i(l); j = l2j(l);
-       x = FLOAT(i) * dx - 1.5 * dx
-       DO k = k1, km
-          z = zlevel(k+1) - 0.5 * hp(k,l); ! FLOAT(km-k1+1)*ddz
-          rhohere = rhos -z*drho/meandepth+rhoamp*COS(pi*x/length)*SIN(pi*z/meandepth);
-          salp(k,l)= 10.-((rhohere-1028.)/1028.)/1.7E-4;
-       ENDDO
-     END DO
-     sal = salp;
-     salpp = salp;
+    Vamp =  0.10;
+    Ts   = 25.00;
+    Tb   = 15.00; ! Parameters used to define the solution
+    meandepth = zl; ! FLOAT(km-k1+1)*ddz
+    length    = FLOAT(im-i1+1)*dx
+    rhos = 1028.*(1.-1.7E-4*(Ts-10.));		! Surface density
+    rhob = 1028.*(1.-1.7E-4*(Tb-10.));		! Bottom  density
+    drho = rhos - rhob;		        ! Change in density from top to bottom
+    NBV=SQRT(-g/rhos*drho/meandepth);          ! Brunt-Vaisala frequency
+    rhoamp=rhos*Vamp*NBV/g;
+    DO l = 1, lm
+      i = l2i(l); j = l2j(l);
+      x = FLOAT(i) * dx - 1.5 * dx
+      DO k = k1, km
+        z = zlevel(k+1) - 0.5 * hp(k,l); ! FLOAT(km-k1+1)*ddz
+        rhohere = rhos -z*drho/meandepth+rhoamp*COS(pi*x/length)*SIN(pi*z/meandepth);
+        salp(k,l)= 10.-((rhohere-1028.)/1028.)/1.7E-4;
+      END DO
+    END DO
+    sal = salp;
+    salpp = salp;
 
-     ! ... Initialize Non-active scalar fields
-     IF (ntr > 0) THEN
-       DO nn = 1, ntr;
-         tracer(:,:,nn) = sal;
-       ENDDO
-       tracerpp = tracer;
-     ENDIF
-     PRINT *, '**** Scalar field initilized for IW test case ****'
+    ! ... Initialize Non-active scalar fields
+    IF (ntr > 0) THEN
+      DO nn = 1, ntr;
+        tracer(:,:,nn) = sal;
+      END DO
+      tracerpp = tracer;
+    END IF
+    PRINT *, '**** Scalar field initilized for IW test case ****'
 
-   ! ... OPTION 3 - Use analytical solution in half a closed basin to test
-   !                the nesting algorithms nesting. All variables defining the basin
-   !                & the IW need to be the same in the fine & coarse grid -
-   !                In the fine grid we only modify the length and x.
-   CASE (3)
+  ! ... OPTION 3 - Use analytical solution in half a closed basin to test
+  !                the nesting algorithms nesting. All variables defining the basin
+  !                & the IW need to be the same in the fine & coarse grid -
+  !                In the fine grid we only modify the length and x.
+  CASE (3)
 
-     Vamp = 0.10; Ts = 25.00; Tb = 15.0; ! Make sure these constants are as in CASE (1)
-     meandepth = zl; ! FLOAT(km-k1+1)*ddz
-     length    = FLOAT(im-i1+1)*dx; length = length * 2.;
-     rhos = 1028.*(1.-1.7E-4*(Ts-10.));		! Surface density
-     rhob = 1028.*(1.-1.7E-4*(Tb-10.));		! Bottom  density
-     drho = rhos - rhob;		! Change in density from top to bottom
-     NBV=SQRT(-g/rhos*drho/meandepth);
-     rhoamp=rhos*Vamp*NBV/g;
-     DO l = 1, lm
-       i = l2i(l); j = l2j(l);
-       x = FLOAT(i) * dx - 1.5 * dx; x = x + length/2.;
-       DO k = k1, km
-          z = zlevel(k+1) - 0.5 * hp(k,l); ! z = FLOAT(k) * ddz - 1.5 * ddz
-          rhohere = rhos -z*drho/meandepth+rhoamp*COS(pi*x/length)*SIN(pi*z/meandepth);
-          salp(k,l)= 10.-((rhohere-1028.)/1028.)/1.7E-4;
-       ENDDO
-     END DO
-     sal = salp;
-     salpp = salp;
+    Vamp = 0.10; Ts = 25.00; Tb = 15.0; ! Make sure these constants are as in CASE (1)
+    meandepth = zl; ! FLOAT(km-k1+1)*ddz
+    length    = FLOAT(im-i1+1)*dx; length = length * 2.;
+    rhos = 1028.*(1.-1.7E-4*(Ts-10.));		! Surface density
+    rhob = 1028.*(1.-1.7E-4*(Tb-10.));		! Bottom  density
+    drho = rhos - rhob;		! Change in density from top to bottom
+    NBV=SQRT(-g/rhos*drho/meandepth);
+    rhoamp=rhos*Vamp*NBV/g;
+    DO l = 1, lm
+      i = l2i(l); j = l2j(l);
+      x = FLOAT(i) * dx - 1.5 * dx; x = x + length/2.;
+      DO k = k1, km
+        z = zlevel(k+1) - 0.5 * hp(k,l); ! z = FLOAT(k) * ddz - 1.5 * ddz
+        rhohere = rhos -z*drho/meandepth+rhoamp*COS(pi*x/length)*SIN(pi*z/meandepth);
+        salp(k,l)= 10.-((rhohere-1028.)/1028.)/1.7E-4;
+      END DO
+    END DO
+    sal = salp;
+    salpp = salp;
 
-     ! ... Initialize Non-active scalar fields
-     IF (ntr > 0) THEN
-       DO nn = 1, ntr;
-         tracer(:,:,nn) = sal;
-       ENDDO
-       tracerpp = tracer;
-     ENDIF
+    ! ... Initialize Non-active scalar fields
+    IF (ntr > 0) THEN
+      DO nn = 1, ntr;
+        tracer(:,:,nn) = sal;
+      END DO
+      tracerpp = tracer;
+    ENDIF
 
-   ! ... All other options - Initialize from file ---------------------
-   CASE DEFAULT
+  ! ... All other options - Initialize from file ---------------------
+  CASE DEFAULT
 
-     !.....Open initial condition file.....
-     sal_ic_file = 'si3d_init.txt'
-     OPEN (UNIT=i4, FILE='si3d_init.txt', STATUS="OLD", FORM="FORMATTED", IOSTAT=ios)
-     IF(ios /= 0) CALL open_error ( "Error opening "//sal_ic_file, ios )
+    !.....Open initial condition file.....
+    sal_ic_file = 'si3d_init.txt'
+    OPEN (UNIT=i4, FILE='si3d_init.txt', STATUS="OLD", FORM="FORMATTED", IOSTAT=ios)
+    IF(ios /= 0) CALL open_error ( "Error opening "//sal_ic_file, ios )
 
-     !.....Allocate space for local variables used to read IC ...
-     ALLOCATE ( Scalardepthile (km1, ntr+1), STAT = ios )
-     IF (ios /= 0) THEN; PRINT *, 'Error alloc. init. arrays'; STOP; ENDIF
+    !.....Allocate space for local variables used to read IC ...
+    ALLOCATE ( Scalardepthile (km1, ntr+1), STAT = ios )
+    IF (ios /= 0) THEN; PRINT *, 'Error alloc. init. arrays'; STOP; ENDIF
 
-     ! Skip over first five header records in open boundary condition file
-     READ (UNIT=i4, FMT='(/////)', IOSTAT=ios)
-     IF (ios /= 0) CALL input_error ( ios, 13 )
+    ! Skip over first five header records in open boundary condition file
+    READ (UNIT=i4, FMT='(/////)', IOSTAT=ios)
+    IF (ios /= 0) CALL input_error ( ios, 13 )
 
-     ! Write the format of the data records into an internal file
-     WRITE (UNIT=initfmt, FMT='("(10X,",I3,"G11.2)")') ntr+1
+    ! Write the format of the data records into an internal file
+    WRITE (UNIT=initfmt, FMT='("(10X,",I3,"G11.2)")') ntr+1
 
-     ! Read data array and store it in array Scalardepthile
-     print *,"km1:",km1
-     DO k = 1, km1
-       print *,"leo:",k
-       READ (UNIT=i4, FMT=initfmt, IOSTAT=ios) &
-            (Scalardepthile(k,nn), nn = 1, ntr+1)
-       IF (ios /= 0) CALL input_error ( ios, 14 )
-     END DO
+    ! Read data array and store it in array Scalardepthile
+    DO k = 1, km1
+      READ (UNIT=i4, FMT=initfmt, IOSTAT=ios) &
+      (Scalardepthile(k,nn), nn = 1, ntr+1)
+    IF (ios /= 0) CALL input_error ( ios, 14 )
+    END DO
 
-     ! ... Initialize the active scalar field (allways)
-     salp = 0.0
-     DO k = 1, km1;
-        salp(k,:) = Scalardepthile(k,1)
-     END DO;
-     sal = salp;
-     salpp = salp;
+    ! ... Initialize the active scalar field (allways)
+    salp = 0.0
+    DO k = 1, km1;
+    salp(k,:) = Scalardepthile(k,1)
+    END DO;
+    sal = salp;
+    salpp = salp;
 
-     ! ... Initialize non-active scalar fields (if requested)
-     IF (ntr > 0) THEN
-      tracer = 0.0;
+    ! ... Initialize non-active scalar fields (if requested)
+    IF (ntr > 0) THEN
+      tracer = 0.0
       IF (ecomod < 0 ) THEN
         CALL InitTracerCloud
       ELSE
         DO  nn = 1, ntr
           DO k = 1, km1
-            IF ((nn .ge. LSS1) .and. (nn .le. LSS1 + sedNumber)) then
-              if (k == km1) then
-                tracer(k,:,nn) = 0.6
+            if (k == km1) then
+              if (nn .eq. LSS1) then
+                tracer(k,:,nn) = 0.6 * sed_dens(LSS1 + 1 - nn) * sed_frac(LSS1 + 1 - nn)
+              elseif (nn .eq. LSS2) then
+                tracer(k,:,nn) = 0.6 * sed_dens(LSS2 + 2 - nn) * sed_frac(LSS2 + 2 - nn)
+              elseif (nn .eq. LSS3) then
+                tracer(k,:,nn) = 0.6 * sed_dens(LSS3 + 3 - nn) * sed_frac(LSS3 + 3 - nn)
               else
-                tracer(k,:,nn) = Scalardepthile(k,nn+1) / sed_dens(LSS1 + 1 - nn)
+                tracer(k,:,nn) = tracer(k-1,:,nn)
               end if
-            ELSE
-              tracer(k,:,nn) = Scalardepthile(k,nn+1)
-            END IF
-          ENDDO
+            else
+              tracer(k,:,nn) = Scalardepthile(k,nn+1) !/ sed_dens(LSS1 + 1 - nn)
+            end if
+          END DO
         END DO ! ... End loop over tracers
       END IF
       tracerpp = tracer;
-     ENDIF
+    END IF
 
-     ! ... Deallocate array holding scalar concs.
-     DEALLOCATE ( Scalardepthile )
+  ! ... Deallocate array holding scalar concs.
+  DEALLOCATE ( Scalardepthile )
 
-     ! ... Close io file
-     CLOSE (i4)
+  ! ... Close io file
+  CLOSE (i4)
 
+  END SELECT
 
-
-   END SELECT
-
-   ! ... Initialize density field at time n-1 & n
-   DO l = 1, lm1;
-     DO k = k1, km1;
-       IF (zlevel(k) == -100) THEN
-         z = 0.5*hp(k,l)
-       ELSE
-         z = zlevel(k) + 0.5 * hp(k,l)
-       ENDIF
-       rhop(k,l) = densty_s ( salp(k,l), 0.00004, z) - 1000.
-     END DO
-   END DO
+  ! ... Initialize density field at time n-1 & n
+  DO l = 1, lm1;
+    DO k = k1, km1;
+      IF (zlevel(k) == -100) THEN
+        z = 0.5*hp(k,l)
+      ELSE
+        z = zlevel(k) + 0.5 * hp(k,l)
+      END IF
+      rhop(k,l) = densty_s ( salp(k,l), 0.00004, z) - 1000.
+    END DO
+  END DO
 
 END SUBROUTINE InitializeScalarFields
 
@@ -444,8 +444,6 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
    CALL exmom(2)
 
    !$omp barrier
-   !print *,"hihihi8:",omp_get_thread_num()
-   !$omp barrier
 !!   if(omp_get_thread_num() .EQ. 0) THEN
 !!   print *,"ex2:",sum(ex(:,:))
 !!   end if
@@ -471,6 +469,7 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
    !CALL SolverBlock ! Original formulation writen by P.E. Smith
    CALL SolverSparse(n,Bstart,Bend,lWCH,lSCH,Bsx,Bsy,Bqq,Brr,iter,istep,thrs) ! Formulation by F.J. Rueda
    !print *,"hihihi11:",omp_get_thread_num()
+   !$omp barrier
    !.....Reassign new values of s or u/v along open boundaries.....
    CALL openbcUVH(thrs)
    !
@@ -508,8 +507,7 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
      CALL openbcSCA(thrs)
    END IF
 
-   !print *,"hihihi13:",omp_get_thread_num()
-
+   !$omp barrier
 
    !.....Solve for non-active scalar transport
    IF (ntr      >  0 .AND. &
@@ -522,18 +520,21 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
        ELSE IF (ecomod == 1) THEN
          IF (idbg == 1) PRINT *, 'Before entry into SUB srcsnkWQ'
          IF ((ecomod == 1) .AND. (MOD(n,MAX(ipwq, 1)) == 0)) CALL srcsnkWQ(n) !! ACC 11/21/2022 added to run WQ at lower frequency than hydrodynamics
-         ! CALL srcsnkWQ(thrs)
          IF (idbg == 1) PRINT *, ' After entry into SUB srcsnkWQ'
        ELSE IF (ecomod == 2) THEN
          CALL srcsnkSZ
        ELSE IF (ecomod == 3) THEN
          CALL srcsnkSD
        ENDIF
+       !$omp barrier
        DO itr = 1, ntr
          IF (ecomod < 0 .AND. ( trct0(itr) > n .OR. trctn(itr) < n ) ) CYCLE
          CALL exTracer (itr,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH,lWCH,Bex,thrs)
+         !$omp barrier
          CALL imTracer (itr,Bstart,Bend,Bex)
+         !$omp barrier
          CALL openbctracer (itr,thrs)
+         !$omp barrier
        ENDDO
    ENDIF
    !$omp barrier
@@ -555,6 +556,8 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
    !print *,"hihihi14:",omp_get_thread_num()
    !.....Smooth solution on leapfrog step if ismooth>=1.........
    IF (ismooth >= 1 .AND. istep == 1) CALL smooth
+
+   !$omp barrier
 
    !.....Assing eddy viscosity and diffusivity at n+1 ...........
    CALL UpdateMixingCoefficients(Bstart,Bend,istep,uairB,vairB,cdwB, &
@@ -3055,6 +3058,7 @@ SUBROUTINE exsal(Bstart,Bend,lSCH,lNCH,lECH,lWCH,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,Be
     ENDDO
   ENDDO
 
+  !$omp barrier
   CALL MODexsal4openbc(Bstart,Bend,Bex,thrs)
 
   !.....Compute CPU time spent in subroutine.....
@@ -3179,6 +3183,9 @@ SUBROUTINE imsal(Bstart,Bend,Bex,heatSourceB)
          !.....Define scalars at new time step....
          sal(k1s:kms  ,l) = sal1(1:nwlayers)
          sal(k1 :k1s-1,l) = sal1(1         )
+         ! Change temperature of sediment layer to be equal to water on top
+         ! No temperature changes happen within the sediment layer
+         sal(kms+1,l) = sal(kms,l)
 
       END SELECT
 
@@ -4103,10 +4110,6 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
   REAL :: btime, etime
   btime = TIMER(0.0)
 
-  
-
-
-
   ! ... Constants used in solution
   twodt1 = twodt*tz
 
@@ -4178,15 +4181,15 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
           !C_f   = MAX(0., MIN( 2*ratio, (1+ratio)/2., 2. ))
           ! ... Roe's Superbee Limiter
           C_f = MAX(0., MIN(1.,2.*ratio),MIN(2.,ratio))
-        ENDIF
+        END IF
         ! ... Calculate fluxes at x-faces
         Bth2(k,l) = vel/2.*(ss(3)+ss(2))- &
         & ((1.-C_f)*ABS(vel)+vel**2.*twodt1/dx*C_f)*(ss(3)-ss(2))/2.
       ELSE
         Bth2(k,l) = 0.0
-      ENDIF
-    ENDDO
-  ENDDO
+      END IF
+    END DO
+  END DO
   DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
 
     l = id_column(liter)
@@ -4248,7 +4251,7 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
           else
             vel = wp(k,l)
           end if
-        elseif ((iSS == 1) .and. (tracerpp(k,l,nt) .gt. 0.0))  then
+        elseif (iSS == 1) then
           diameterSed = sed_diameter(nt - LSS1 + 1)
           densitySed = sed_dens(nt - LSS1 + 1)       
           call get_sed_prop(settling_vel,Rep,tauCrt,diameterSed,densitySed,rhop(k,l)+1000)
@@ -4309,21 +4312,26 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
 
     DO k = k1s, kms;
 
-      !.....Horizontal diffusion.....
-      hd= (Bhaxpp(k,    l )*(tracerpp(k,lEC(l),nt) - tracerpp(k,    l ,nt))       &
-      & -Bhaxpp(k,lWCH(l))*(tracerpp(k,    l ,nt) - tracerpp(k,lWC(l),nt)))/dxdx &
-      &+(Bhaypp(k,    l )*(tracerpp(k,lNC(l),nt) - tracerpp(k,    l ,nt))       &
-      & -Bhaypp(k,lSCH(l))*(tracerpp(k,    l ,nt) - tracerpp(k,lSC(l),nt)))/dydy
-
       Bex(k,l) =   hpp(k,l)*tracerpp(k,l,nt)/twodt1   &
-      - (Bth2(k,l) - Bth2(k,lWCH(l))) / dx &
-      - (Bth4(k,l) - Bth4(k,lSCH(l))) / dy &
-      - (Bth3(k,l) - Bth3(k+1,l   ))
-      IF (ihd>0) THEN
+        - (Bth2(k,l) - Bth2(k,lWCH(l))) / dx &
+        - (Bth4(k,l) - Bth4(k,lSCH(l))) / dy &
+        - (Bth3(k,l) - Bth3(k+1,l   ))
+
+      !.....Horizontal diffusion.....
+      IF (ihd .gt. 0) THEN
+        hd= (Bhaxpp(k,    l )*(tracerpp(k,lEC(l),nt) - tracerpp(k,    l ,nt))       &
+        & -Bhaxpp(k,lWCH(l))*(tracerpp(k,    l ,nt) - tracerpp(k,lWC(l),nt)))/dxdx &
+        &+(Bhaypp(k,    l )*(tracerpp(k,lNC(l),nt) - tracerpp(k,    l ,nt))       &
+        & -Bhaypp(k,lSCH(l))*(tracerpp(k,    l ,nt) - tracerpp(k,lSC(l),nt)))/dydy
         Bex(k,l) = Bex(k,l) + hd   ! Changed 12/2010 SWA
       ENDIF
     ENDDO
+
+    Bex(kms+1,l) = hpp(kms,l)*tracerpp(kms+1,l,nt)/twodt1
+
   ENDDO
+
+  !$omp barrier
 
   ! ... Modify explicit term to account for flow boundary conditions
   CALL MODextracer4openbc (nt,Bstart,Bend,Bex,thrs)
@@ -4391,11 +4399,6 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
         hn(k1s+1) = hpp(k1s+1,l)
       ENDIF
 
-      if (l == 50) then 
-        print*,'tracer'
-        print*,tracer(:,l,nt)
-      end if 
-
       !.....Calculate active scalar for case of a single layer.....
       SELECT CASE (nwlayers)
       CASE (1)
@@ -4448,7 +4451,6 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
          tracer(k1s:kms  ,l,nt) = sal1(1:nwlayers)
          tracer(k1 :k1s-1,l,nt) = sal1(1         )
          tracer(k1-1,l,nt) = sal1(1)
-         ! tracer(kms+1,l,nt) = tracer(kms,l,nt)
 
          do k = k1-1, kms+1
             if (tracer(k,l,nt) .lt. 0.0) then
@@ -4459,27 +4461,11 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
 
       ! Adding solution to sediment layer 
       IF (iSS == 1) THEN
-        hn(kms+1) = h(kms,l)
+        hn(kms+1) = hn(kms)
         aa( 2,kms+1) = hn(kms+1)/twodt1
-        tracer(kms+1,l,nt) = sourcesink(kms+1,l,nt)/aa(2,kms+1) + tracerpp(kms+1,l,nt)
+        ds(kms+1) = Bex(kms+1,l) + sourcesink(kms+1,l,nt)
+        tracer(kms+1,l,nt) = ds(kms+1) / aa(2,kms+1)
       END IF
-
-
-      if (l == 50) then
-        print*,'km1 = ',km1,'kms = ',kms,'km = ',km
-        print*,'h'
-        print*,h(:,l)
-        print*,'hn'
-        print*,hn
-        print*,'aa'
-        print*,aa
-        print*,'ds'
-        print*,ds
-        print*,'sourcesink'
-        print*,sourcesink(:,l,nt)
-        print*,'tracer'
-        print*,tracer(:,l,nt)
-      end if
 
    !.....End loop over scalar-pts.....
    END DO

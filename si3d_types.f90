@@ -430,7 +430,6 @@
    real, allocatable, dimension(:,:,:) :: udir_tmp
    real                                :: Ti_4_stwave = 3.0 !< [hrs] 0.25Ti 1/4 of the internal wave period
 
-
 !                        -----Data Dictionary-----
 
 END MODULE si3d_types

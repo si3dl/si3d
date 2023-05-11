@@ -1125,7 +1125,7 @@ SUBROUTINE outt(n,thrs)
         IF (ntr>0) THEN
           DO it = 1, ntr
             IF ((it .ge. LSS1) .and. (it .le. LSS1 + sedNumber)) then
-              trout(k,it) = tracer(k,l,it) * sed_dens(LSS1 + 1 - it)
+              trout(k,it) = tracer(k,l,it) !* sed_dens(LSS1 + 1 - it)
             ELSE
               trout(k,it) = tracer(k,l,it)
             END IF

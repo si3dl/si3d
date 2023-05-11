@@ -532,7 +532,7 @@ SUBROUTINE WQinput
     PRINT*, "iPOP = ", iPOP, "iDOP = ", iDOP, "iPO4 = ", iPO4
     PRINT*, "iALG1 = ", iALG1, "iALG2 = ", iALG2, "iALG3 = ", iALG3, "iALG4 = ", iALG4
     PRINT*, 'iMeHg = ', iMeHg, 'iHg(II) = ',iHg2, 'iHg(0) = ', iHg0, 'iSS = ', iSS
-    PRINT*, 'sed_diam',sed_diameter,'sed_dens',sed_dens 
+    PRINT*, 'sed_diam',sed_diameter,'sed_dens',sed_dens,'sed_frac',sed_frac 
   END IF
 
   CALL WQinit !ACortes 09/24/2021
