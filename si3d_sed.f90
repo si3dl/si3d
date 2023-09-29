@@ -41,8 +41,7 @@ SUBROUTINE sourceSS(kwq,lwq)
 
   kms = kmz(lwq)
 
-  if (kwq .eq. kms) then 
-  
+  if (kwq .eq. kms) then  
     w_dens = rhop(kwq, lwq) + 1000
     ! Estimate bottom shear stress
     call tauBottom(taub, ustarb, kwq, lwq)
@@ -55,12 +54,37 @@ SUBROUTINE sourceSS(kwq,lwq)
       call get_sed_prop(settling_vel(i),Rep(i),tauCrt(i),sed_diameter(i),sed_dens(i),w_dens)
       ! Estimate erosion flux
       if (taub .ge. tauCrt(i)) then
-        call erosion(erosionFlux(i), ustarb, Rep(i), settling_vel(i), sed_frac(i),sed_dens(i))
+        if (sed_type(i) == 0) then
+          call erosion_noncohesive(erosionFlux(i), ustarb, Rep(i), settling_vel(i), sed_frac(i),sed_dens(i))
+          if (lwq == 50) then
+            print*,'Erosion Flux for noncohesive'
+            print*,'diameter = ',sed_diameter(i),'fraction = ', sed_frac(i)
+          end if
+        else if (sed_type(i) == 1) then
+          call erosion_cohesive(erosionFlux(i),taub, tauCrt(i), sed_frac(i), sed_dens(i))
+          if (lwq == 50) then
+            print*,'Erosion Flux for cohesive'
+            print*,'diameter = ',sed_diameter(i),'fraction = ', sed_frac(i)
+          end if
+        end if 
       else
         erosionFlux(i) = 0.0
       end if 
+      ! Estimate deposition flux
       if (cb .gt. 0.0) then
-        call deposition(depositionFlux(i), settling_vel(i), tauCrt(i), taub, cb)
+        if (sed_type(i) == 0) then
+          call deposition_noncohesive(depositionFlux(i), settling_vel(i), tauCrt(i), taub, cb)
+          if (lwq == 50) then
+            print*,'Deposition Flux for noncohesive'
+            print*,'diameter = ',sed_diameter(i),'fraction = ', sed_frac(i)
+          end if
+        else if (sed_type(i) == 1) then
+          call deposition_cohesive(depositionFlux(i), settling_vel(i), tauCrt(i), taub, cb)
+          if (lwq == 50) then
+            print*,'Deposition Flux for cohesive'
+            print*,'diameter = ',sed_diameter(i),'fraction = ', sed_frac(i)
+          end if
+        end if 
       else
         depositionFlux(i) = 0.0
       end if
@@ -68,18 +92,18 @@ SUBROUTINE sourceSS(kwq,lwq)
       sourcesink(kwq, lwq, LSS1 + i - 1) = erosionFlux(i) - depositionFlux(i)
 
       ! if ((tauCrt(i) .lt. taub)) then
-      if (lwq == 50) then
-        print*, '--------------------------'
-        print*, 'k =',kwq,'l =',lwq,'i = ',l2i(lwq),'j = ',l2j(lwq)
+      ! if (lwq == 50) then
+      !   print*, '--------------------------'
+      !   print*, 'k =',kwq,'l =',lwq,'i = ',l2i(lwq),'j = ',l2j(lwq)
         ! print*, 'dt = ',dt,'h = ',hp(kwq,lwq)
       !   print*, 'cb = ',cb
       !   ! print*, 'taub =',taub
       !   ! print*, 'tauCr =', tauCrt(i)
       !   ! print*, 'erosionFlux = ', erosionFlux(i)
       !   ! print*, 'depositionFlux = ', depositionFlux(i)
-        print*, 'sourcesink = ', sourcesink(kwq, lwq, LSS1+i-1)
+        ! print*, 'sourcesink = ', sourcesink(kwq, lwq, LSS1+i-1)
       !   ! print*, 'sourcesinklim = ', -cb * hp(kwq,lwq) / dt 
-      end if
+      ! end if
 
       if (sourcesink(kwq,lwq,LSS1 + i - 1) .lt. (-1*cb * hp(kwq,lwq) / dt)) then
         sourcesink(kwq, lwq, LSS1 + i - 1) = -1 * cb * hp(kwq,lwq) / dt
@@ -94,9 +118,6 @@ SUBROUTINE sourceSS(kwq,lwq)
 
       ! Estimate source and sink for the sediment cell.
       sourcesink(kwq+1,lwq,LSS1 + i - 1) = depositionFlux(i) - erosionFlux(i)
-
-
-
     end do
 
   elseif (kwq .ne. kms) then 
@@ -127,25 +148,25 @@ SUBROUTINE totalMass(sed_frac, kwq, lwq)
   totalMass_bed = 0.0
   do i = 1, sedNumber
     massSed(i) = tracerpp(kwq+1,lwq,LSS1 + i - 1) * dx * dy * h(kwq,lwq)
-    if (lwq == 50) then
-    print*,'i = ',i,'h = ',h(kwq,lwq),'dx = ',dx,'dy = ',dy
-    print*,'LSS1 + i -1 = ',LSS1 + i - 1
-    print*,'tracer LSS1 + i -1 = ', tracerpp(kwq+1,lwq,LSS1 + i - 1)
-    print*,'massSed = ',massSed(i)
-    end if 
+    ! if (lwq == 50) then
+    ! print*,'i = ',i,'h = ',h(kwq,lwq),'dx = ',dx,'dy = ',dy
+    ! print*,'LSS1 + i -1 = ',LSS1 + i - 1
+    ! print*,'tracer LSS1 + i -1 = ', tracerpp(kwq+1,lwq,LSS1 + i - 1)
+    ! print*,'massSed = ',massSed(i)
+    ! end if 
   end do
   totalMass_bed = sum(massSed)
   do i = 1, sedNumber
     sed_frac(i) = massSed(i) / totalMass_bed
     if (lwq == 50) then
-    print*,'sed_frac(i) = ',sed_frac(i)
+    print*,'i = ',i,' sed_frac(i) = ',sed_frac(i)
     end if 
   end do
 
 END SUBROUTINE totalMass
 
 ! ********************************************************************
-SUBROUTINE erosion(erosionFlux, ustarb, Rep, settling_vel, sed_frac, sed_dens)
+SUBROUTINE erosion_noncohesive(erosionFlux, ustarb, Rep, settling_vel, sed_frac, sed_dens)
 ! ********************************************************************
 !
 ! Purpose: To estimate the erosion caused by the flow at the bottom
@@ -175,10 +196,35 @@ SUBROUTINE erosion(erosionFlux, ustarb, Rep, settling_vel, sed_frac, sed_dens)
   erosionFlux = E_s * settling_vel * sed_frac * sed_dens
 
   return
-END SUBROUTINE erosion
+END SUBROUTINE erosion_noncohesive
 
 ! ********************************************************************
-SUBROUTINE deposition(depositionFlux, settling_vel, tauCrt, taub, cb)
+SUBROUTINE erosion_cohesive(erosionFlux, taub, tauCrt, sed_frac, sed_dens)
+! ********************************************************************
+!
+! Purpose: To estimate the erosion caused by the flow at the bottom
+!         cell. It follows the erosion method for cohesive particles
+!         by Raudkivi 2020.
+! --------------------------------------------------------------------
+  ! Arguments
+  real, intent(in)  :: taub         !< (Pa) Shear stress at bottom
+  real, intent(in)  :: tauCrt       !< Critical shear stress for sediment type
+  real, intent(in)  :: sed_frac     !< fraction of bed of a given sediment type
+  real, intent(in)  :: sed_dens     !< Sediment density to keep units consistent
+  real              :: M_param      !< Surface erosion rate 
+  real              :: Beta         !< Dimensionless coefficient for method
+  real, intent(out) :: erosionFlux  !< Vertical erosion flux
+
+  M_param = 1
+  Beta = 1
+  ! Sediment entrainment flux
+  erosionFlux = M_param * (taub / tauCrt - 1) ** Beta * sed_frac * sed_dens
+
+  return
+END SUBROUTINE erosion_cohesive
+
+! ********************************************************************
+SUBROUTINE deposition_noncohesive(depositionFlux, settling_vel, tauCrt, taub, cb)
 ! ********************************************************************
 !
 ! Purpose: To estimate the suspended sediment deposition at the
@@ -192,14 +238,38 @@ SUBROUTINE deposition(depositionFlux, settling_vel, tauCrt, taub, cb)
   real, intent(in) :: cb
   real, intent(out) :: depositionFlux
 
-    if (taub .lt. tauCrt) then
+    if (taub .le. tauCrt) then
       depositionFlux = settling_vel * cb * (1 - taub/tauCrt)
     else
       depositionFlux = settling_vel * cb
     end if
 
   return
-END SUBROUTINE deposition
+END SUBROUTINE deposition_noncohesive
+
+! ********************************************************************
+SUBROUTINE deposition_cohesive(depositionFlux, settling_vel, tauCrt, taub, cb)
+! ********************************************************************
+!
+! Purpose: To estimate the suspended sediment deposition at the
+!         bottom layer for each wet column
+!
+! --------------------------------------------------------------------
+  ! Arguments
+  real, intent(in) :: settling_vel
+  real, intent(in) :: taub
+  real, intent(in) :: tauCrt
+  real, intent(in) :: cb
+  real, intent(out) :: depositionFlux
+
+    if (taub .le. tauCrt) then
+      depositionFlux = settling_vel * cb * (1 - taub/tauCrt)
+    else
+      depositionFlux = 0
+    end if
+
+  return
+END SUBROUTINE deposition_cohesive
 
 ! ********************************************************************
 SUBROUTINE get_sed_prop(settling_vel,Rep,tauCrt,sed_diameter,sed_dens,w_dens)
@@ -423,9 +493,12 @@ SUBROUTINE tauBottom(taub, ustarb,kwq,lwq)
     tauby = cd * (rhop(kms,lwq)+1000.) * vbott**2.
 
     ! ... Add Wave-Induced Bottom Shear Stress & calculate friction velocity
-    taub  = sqrt((taubx)**2. + (tauby)**2.) + tau_stwave(l2i(lwq),l2j(lwq))
+    if (iSTWAVE == 1) then
+      taub  = sqrt((taubx)**2. + (tauby)**2.) + tau_stwave(l2i(lwq),l2j(lwq))
+    else
+      taub  = sqrt((taubx)**2. + (tauby)**2.)
+    end if
     ustarb = sqrt(taub/1000.)
-
   endif
 
 END SUBROUTINE tauBottom

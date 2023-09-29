@@ -11,6 +11,7 @@
    USE si3d_types
    USE si3d_sed
    USE si3d_stwave
+   !USE si3d_Hg
 
    IMPLICIT NONE
    SAVE
@@ -426,7 +427,7 @@ SUBROUTINE WQinput
 
   READ (UNIT=i99,FMT='(///(18X,I20))',IOSTAT=ios) iDO,  &
       iPON, iDON, iNH4, iNO3, iPOP, iDOP, iPO4, iPOC,   &
-      iDOC, iALG1, iALG2, iALG3, iALG4, iMeHg, iHg2,    &
+      iDOC, iALG1, iALG2, iALG3, iALG4, iMeHg, iHgII,    &
       iHg0, iSS 
   IF (ios /= 0) CALL input_error ( ios, 92)
 
@@ -470,18 +471,21 @@ SUBROUTINE WQinput
       print*,('************************************************')
       STOP 
     end if
-   ALLOCATE(sed_diameter(sedNumber),sed_dens(sedNumber),sed_frac(sedNumber))
+   ALLOCATE(sed_diameter(sedNumber), sed_dens(sedNumber), sed_frac(sedNumber), sed_type(sedNumber))
    READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_diameter(nn), nn = 1, sedNumber)
-   IF (ios /= 0) CALL input_error ( ios, 98 )
+   IF (ios /= 0) CALL input_error ( ios, 98)
    READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_dens(nn), nn = 1, sedNumber)
-   IF (ios /= 0) CALL input_error ( ios, 99 )
+   IF (ios /= 0) CALL input_error ( ios, 99)
    READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_frac(nn), nn = 1, sedNumber)
-   IF (ios /= 0) CALL input_error ( ios, 100 )
+   IF (ios /= 0) CALL input_error ( ios, 100)
+   READ (UNIT=i99,FMT='(18X,20I)', IOSTAT=ios) (sed_type(nn), nn = 1, sedNumber)
+   IF (ios /= 0) CALL input_error ( ios, 101)
   ELSE IF (sedNumber == 0) THEN
    READ (UNIT=i5, FMT='(18X,5F)', IOSTAT=ios)
    READ (UNIT=i5, FMT='(18X,5F)', IOSTAT=ios)
    READ (UNIT=i5, FMT='(18X,5F)', IOSTAT=ios)
-   IF (ios /= 0) CALL input_error ( ios, 101 )
+   READ (UNIT=i5, FMT='(18X,20I)', IOSTAT=ios)
+   IF (ios /= 0) CALL input_error ( ios, 102)
   END IF
 
   !... Convert model rates [1/s]. Input file has 1/day values. WQ module is run every hour
@@ -531,8 +535,9 @@ SUBROUTINE WQinput
     PRINT*, "iPON = ", iPON, "iDON = ", iDON, "iNH4 = ", iNH4, "iNO3 = ", iNO3
     PRINT*, "iPOP = ", iPOP, "iDOP = ", iDOP, "iPO4 = ", iPO4
     PRINT*, "iALG1 = ", iALG1, "iALG2 = ", iALG2, "iALG3 = ", iALG3, "iALG4 = ", iALG4
-    PRINT*, 'iMeHg = ', iMeHg, 'iHg(II) = ',iHg2, 'iHg(0) = ', iHg0, 'iSS = ', iSS
-    PRINT*, 'sed_diam',sed_diameter,'sed_dens',sed_dens,'sed_frac',sed_frac 
+    PRINT*, 'iMeHg = ', iMeHg, 'iHg(II) = ',iHgII, 'iHg(0) = ', iHg0, 'iSS = ', iSS
+    PRINT*, 'sed_diam',sed_diameter,'sed_dens',sed_dens,'sed_frac',sed_frac
+    PRINT*, 'sed_type',sed_type 
   END IF
 
   CALL WQinit !ACortes 09/24/2021
@@ -643,7 +648,7 @@ SUBROUTINE WQinit
     i = i+1
   END IF
 
-  IF (iHg2 == 1) THEN
+  IF (iHgII == 1) THEN
     tracerpplocal(i) = 16
     i = i+1
   END IF
@@ -816,7 +821,7 @@ SUBROUTINE srcsnkWQ(n)
       IF (iMeHg == 1) THEN
         ! CALL sourceALG4(k,l,thrs1)
       END IF
-      IF (iHg2 == 1) THEN
+      IF (iHgII == 1) THEN
         ! CALL sourceALG4(k,l,thrs1)
       END IF
       IF (iHg0 == 1) THEN

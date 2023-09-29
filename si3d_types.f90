@@ -380,10 +380,10 @@
    INTEGER :: iALG3     !< Algae-3, PhytoC3
    INTEGER :: iALG4     !< Algae-4, PhytoC4
    INTEGER :: iMeHg     !< Methylmercury
-   INTEGER :: iHg2      !< Mercury
+   INTEGER :: iHgII     !< Mercury
    INTEGER :: iHg0      !< Mercury
    INTEGER :: iSS       !< Suspended Sediments
-   INTEGER :: iSTWAVE = 1 !< Flag for using STWAVE in bottom shear stress calculations for suspended sediment transport
+   INTEGER :: iSTWAVE = 0 !< Flag for using STWAVE in bottom shear stress calculations for suspended sediment transport
 
    ! ... Integer to determine constituent location
    INTEGER :: LDO , LPON, LDON, LNH4, LNO3, LPOP, LDOP, LPO4
@@ -420,6 +420,7 @@
    real, allocatable, dimension (:)  :: sed_diameter     !< (um) Sediment diameter D50 in micrometers
    real, allocatable, dimension (:)  :: sed_dens         !< (kg/m3) Sediment density
    real, allocatable, dimension (:)  :: sed_frac         !< Fraction of type of sediment in total suspended sediment
+   integer, allocatable, dimension (:)  :: sed_type         !< Type of sediment 0 for non-cohesive and 1 for cohesive
    real, PARAMETER                   :: Ased = 1.3d-7    !< Constant value for estimates of sediment fluxes. Garcia and Parker 1991,1993, Reardon 2014, etc
    real                              :: kinematic_viscosity = 1.3081d-6   !< Kinematic viscosity of water 10C
    real, allocatable, dimension(:,:) :: dep_stwave

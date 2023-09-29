@@ -18,7 +18,7 @@ List of tracers simulated
  iALG3           !       0            ! Algae-3, PhytoC3, 	            ALG3
  iALG4           !       0            ! Algae-4, PhytoC4, 	            ALG4
  iMeHg           !       0            ! Mercury                         MeHg
- iHg2            !       0            ! Mercury                         Hg(II)
+ iHgII           !       0            ! Mercury                         Hg(II)
  iHg0            !       0            ! Mercury                         Hg(0)
  iSS             !       1            ! Suspended Sediments             SS
 --------------------------------------------------------------------------------------------------------
@@ -99,5 +99,6 @@ Sediment Parameters
  SedNumber       !         2          ! Number of Particles to simulate
  Diameter (um)   !  100., 353.     
  Density (kg/m3) ! 1200., 1850.
- ParticleFrac    !   0.5, 0.5
+ Vol_Part_Frac   !   0.5, 0.5
+ Cohesive        !     0, 0
 --------------------------------------------------------------------------------------------------------
