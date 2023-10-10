@@ -472,20 +472,23 @@ SUBROUTINE WQinput
       STOP 
     end if
    ALLOCATE(sed_diameter(sedNumber), sed_dens(sedNumber), sed_frac(sedNumber), sed_type(sedNumber))
-   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_diameter(nn), nn = 1, sedNumber)
+   READ (UNIT=i99,FMT='(18X,I20)',IOSTAT=ios) iSTWAVE
    IF (ios /= 0) CALL input_error ( ios, 98)
-   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_dens(nn), nn = 1, sedNumber)
+   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_diameter(nn), nn = 1, sedNumber)
    IF (ios /= 0) CALL input_error ( ios, 99)
-   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_frac(nn), nn = 1, sedNumber)
+   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_dens(nn), nn = 1, sedNumber)
    IF (ios /= 0) CALL input_error ( ios, 100)
-   READ (UNIT=i99,FMT='(18X,20I)', IOSTAT=ios) (sed_type(nn), nn = 1, sedNumber)
+   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_frac(nn), nn = 1, sedNumber)
    IF (ios /= 0) CALL input_error ( ios, 101)
+   READ (UNIT=i99,FMT='(18X,20I)', IOSTAT=ios) (sed_type(nn), nn = 1, sedNumber)
+   IF (ios /= 0) CALL input_error ( ios, 102)
   ELSE IF (sedNumber == 0) THEN
+   READ (UNIT=i5, FMT='(18X,20I)', IOSTAT=ios)
    READ (UNIT=i5, FMT='(18X,5F)', IOSTAT=ios)
    READ (UNIT=i5, FMT='(18X,5F)', IOSTAT=ios)
    READ (UNIT=i5, FMT='(18X,5F)', IOSTAT=ios)
    READ (UNIT=i5, FMT='(18X,20I)', IOSTAT=ios)
-   IF (ios /= 0) CALL input_error ( ios, 102)
+   IF (ios /= 0) CALL input_error ( ios, 103)
   END IF
 
   !... Convert model rates [1/s]. Input file has 1/day values. WQ module is run every hour

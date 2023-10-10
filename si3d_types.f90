@@ -383,7 +383,7 @@
    INTEGER :: iHgII     !< Mercury
    INTEGER :: iHg0      !< Mercury
    INTEGER :: iSS       !< Suspended Sediments
-   INTEGER :: iSTWAVE = 0 !< Flag for using STWAVE in bottom shear stress calculations for suspended sediment transport
+   INTEGER :: iSTWAVE   !< Flag for using STWAVE in bottom shear stress calculations for suspended sediment transport
 
    ! ... Integer to determine constituent location
    INTEGER :: LDO , LPON, LDON, LNH4, LNO3, LPOP, LDOP, LPO4

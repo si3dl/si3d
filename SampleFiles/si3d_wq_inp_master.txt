@@ -97,8 +97,9 @@ Fluxes (atmospheric and sediments)
 Sediment Parameters
 --------------------------------------------------------------------------------------------------------
  SedNumber       !         2          ! Number of Particles to simulate
+ istwave         !         0          ! 1 = STWAVE runs, 0 = STWAVE bottom shear stress not added
  Diameter (um)   !  100., 353.     
  Density (kg/m3) ! 1200., 1850.
  Vol_Part_Frac   !   0.5, 0.5
- Cohesive        !     0, 0
+ Cohesive        !     0, 0           ! 1 = Cohesive, 0 = non-cohesive
 --------------------------------------------------------------------------------------------------------

@@ -115,23 +115,23 @@ SUBROUTINE stwave_input(n)
   real, dimension(jm1,im1) :: vair_stwave
 
   ! Initialize the wind arrays
-  uair_stwave = 0.0
-  vair_stwave = 0.0
+  uair_stwave(:, :) = 0.0
+  vair_stwave(:, :) = 0.0
 
   select case (ifsurfbc)
     case (0)
       uair_stwave = -wa * sin(pi*phi/180)
       vair_stwave = -wa * cos(pi*phi/180)
     case (1:3,20)
-      uair_stwave = uair(1)
-      vair_stwave = vair(1)
+      uair_stwave(:, :) = uair(1)
+      vair_stwave(:, :) = vair(1)
     case (10:11)
       do liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
         l = id_column(liter)
         i = l2i(l)
         j = l2j(l)
-        uair_stwave(j,i) = uair(l)
-        vair_stwave(j,i) = vair(l)
+        uair_stwave(j, i) = uair(l)
+        vair_stwave(j, i) = vair(l)
       end do
   end select
 
