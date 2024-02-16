@@ -17,10 +17,10 @@ List of tracers simulated
  iALG2           !       0            ! Algae-2, PhytoC2, 	            ALG2
  iALG3           !       0            ! Algae-3, PhytoC3, 	            ALG3
  iALG4           !       0            ! Algae-4, PhytoC4, 	            ALG4
- iMeHg           !       0            ! Mercury                         MeHg
- iHgII           !       0            ! Mercury                         Hg(II)
- iHg0            !       0            ! Mercury                         Hg(0)
- iSS             !       1            ! Suspended Sediments             SS
+ iMeHg           !       0            ! Methylmercury,                  MeHg
+ iHgII           !       0            ! Divalent Mercury,               HgII
+ iHg0            !       0            ! Elemental Mercury,              Hg0
+ iSS             !       1            ! Suspended Sediments,            SS
 --------------------------------------------------------------------------------------------------------
 Model Constants 
 --------------------------------------------------------------------------------------------------------
@@ -66,6 +66,8 @@ Model rates: Four algae groups, oxygen, SOD, and Nutrientes
  R_miner_doc     !      0.000         ! (1/d) Rate of mineralization of DOC
  R_settl         !      0.0000        ! (m/d) Rate of settling of nutrients         
  R_resusp        !      0.0000        ! (m/d) Rate of resuspension of nutrients
+ vspa            !      0.0000        ! [] Settling velocity of algae
+ vspom           !      0.0000        ! [] Settling velocity of Particulate Organic Matter
 --------------------------------------------------------------------------------------------------------
 Temperature Correction Factors
 --------------------------------------------------------------------------------------------------------
@@ -96,10 +98,41 @@ Fluxes (atmospheric and sediments)
 --------------------------------------------------------------------------------------------------------
 Sediment Parameters
 --------------------------------------------------------------------------------------------------------
- SedNumber       !         2          ! Number of Particles to simulate
+ SedNumber       !         0          ! Number of Particles to simulate
  istwave         !         0          ! 1 = STWAVE runs, 0 = STWAVE bottom shear stress not added
  Diameter (um)   !  100., 353.     
  Density (kg/m3) ! 1200., 1850.
  Vol_Part_Frac   !   0.5, 0.5
- Cohesive        !     0, 0           ! 1 = Cohesive, 0 = non-cohesive
+ Cohesive1 non=0 !     0, 0           ! 1 = Cohesive, 0 = non-cohesive
 --------------------------------------------------------------------------------------------------------
+MeHg Parameters
+--------------------------------------------------------------------------------------------------------
+ inst_eq         !      1             ! 1 = instantaneous equilibrium 0 = Kinetics model for adsorption desorption
+ kw31            !      1.0           ! [m2/W 1/s] Reduction rate constant for MeHg_to_Hg0
+ atm_MeHg        !      0.0005        ! [ng/m2/d] Mercury deposition rate
+ k_MeHgw         !      1.0           ! [m/d] Mass transfer coefficient for MeHg in water
+ k_MeHgatm       !      2.            ! [m/d] Mass transfer coefficient for MeHg in atmosphere
+ MeHgatm         !      3.            ! [ng/L] concentration of Hg0 in the atmosphere
+ K_H_MeHgw       !      4.            ! [-] Henry's law constant for MeHg
+ kw32            !      5.            ! [1/d] Demethylation rate constant for MeHg in water
+ ks32            !      6.            ! [1/d] Demethylation rate constant for MeHg in sediment 
+ kws             !       0.01         ! [m/s] Mass transfer for mercury diffusion
+--------------------------------------------------------------------------------------------------------
+HgII Parameters
+--------------------------------------------------------------------------------------------------------
+ kw21            !   0.000001         ! [m2/W 1/s] Photodegradation rate constant for MeHg_to_Hg0
+ atm_HgII        !   0.001            ! [ng/m2/d] Mercury deposition rate
+ kw23            !     7.             ! [1/d] Methylation rate constant for HgII in water
+ ks23            !     8.             ! [1/d] Methylation rate constant for HgII in sediment
+ KDO             !     0.5            ! [-] Half saturation constant for DO in water column
+ KSO4			 !					  ! [mg-O2 / L] Half saturation constant for SO4 in porewater
+ SO4 			 !					  ! [mg-O2 / L] Sediment pore water sulfate concentration
+ miu_so4 		 ! 					  ! [L / mg] Ratio of sediment methylation rate and sulfate reduction rate
+--------------------------------------------------------------------------------------------------------
+Hg0 Parameters
+--------------------------------------------------------------------------------------------------------
+ DGMra           !       1.0          ! [-] Desired ratio from DOC and PH relatonship (Method in DSM2 model) 
+ k_Hg0w          !      10.           ! [m/d] Mass transfer coefficient for Hg0 in water
+ k_Hg0atm        !      11.           ! [m/d] Mass transfer coefficient for Hg0 in atmosphere
+ Hg0atm          !      12.           ! [ng/L] concentration of Hg0 in the atmosphere
+ K_H_Hg0w        !      13.           ! [-] Henry's law constant for Hg0

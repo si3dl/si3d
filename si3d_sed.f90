@@ -32,17 +32,17 @@ SUBROUTINE sourceSS(kwq,lwq)
   real                       :: taub              !< (Pa) Bottom shear stress
   real                       :: ustarb            !< (m/s) Shear velocity
   real                       :: w_dens            !< (kg/m3) Water density
-  real, dimension(sedNumber) :: settling_vel      !< (m/s) Settling velocity of sediment
+  ! real, dimension(sedNumber) :: settling_vel      !< (m/s) Settling velocity of sediment
   real, dimension(sedNumber) :: Rep               !< Explicity Particle Reynolds Number
   real, dimension(sedNumber) :: tauCrt            !< Critical Shear Stress
-  real, dimension(sedNumber) :: erosionFlux       !<
-  real, dimension(sedNumber) :: depositionFlux    !<
+  real, dimension(sedNumber) :: erosion_flux      !<
+  real, dimension(sedNumber) :: deposition_flux    !<
   real                       :: cb
 
   kms = kmz(lwq)
+  w_dens = rhop(kwq, lwq) + 1000
 
-  if (kwq .eq. kms) then  
-    w_dens = rhop(kwq, lwq) + 1000
+  if (kwq .eq. kms) then
     ! Estimate bottom shear stress
     call tauBottom(taub, ustarb, kwq, lwq)
     call totalMass(sed_frac, kwq, lwq)
@@ -55,74 +55,83 @@ SUBROUTINE sourceSS(kwq,lwq)
       ! Estimate erosion flux
       if (taub .ge. tauCrt(i)) then
         if (sed_type(i) == 0) then
-          call erosion_noncohesive(erosionFlux(i), ustarb, Rep(i), settling_vel(i), sed_frac(i),sed_dens(i))
+          call erosion_noncohesive(erosion_flux(i), ustarb, Rep(i), settling_vel(i), sed_frac(i),sed_dens(i))
           if (lwq == 50) then
             print*,'Erosion Flux for noncohesive'
             print*,'diameter = ',sed_diameter(i),'fraction = ', sed_frac(i)
           end if
         else if (sed_type(i) == 1) then
-          call erosion_cohesive(erosionFlux(i),taub, tauCrt(i), sed_frac(i), sed_dens(i))
+          call erosion_cohesive(erosion_flux(i),taub, tauCrt(i), sed_frac(i), sed_dens(i))
           if (lwq == 50) then
             print*,'Erosion Flux for cohesive'
             print*,'diameter = ',sed_diameter(i),'fraction = ', sed_frac(i)
           end if
         end if 
       else
-        erosionFlux(i) = 0.0
-      end if 
+        erosion_flux(i) = 0.0
+      end if
+
       ! Estimate deposition flux
       if (cb .gt. 0.0) then
         if (sed_type(i) == 0) then
-          call deposition_noncohesive(depositionFlux(i), settling_vel(i), tauCrt(i), taub, cb)
+          call deposition_noncohesive(deposition_flux(i), settling_vel(i), tauCrt(i), taub, cb)
           if (lwq == 50) then
             print*,'Deposition Flux for noncohesive'
             print*,'diameter = ',sed_diameter(i),'fraction = ', sed_frac(i)
           end if
         else if (sed_type(i) == 1) then
-          call deposition_cohesive(depositionFlux(i), settling_vel(i), tauCrt(i), taub, cb)
+          call deposition_cohesive(deposition_flux(i), settling_vel(i), tauCrt(i), taub, cb)
           if (lwq == 50) then
             print*,'Deposition Flux for cohesive'
             print*,'diameter = ',sed_diameter(i),'fraction = ', sed_frac(i)
           end if
-        end if 
+        end if
+        ! To correct deposition flux as it can not remove more sediment than what is in the water layer on top of sediment
+        if (deposition_flux(i) .gt. (cb * hp(kwq, lwq) / dt)) then
+          deposition_flux(i) = cb * hp(kwq, lwq) / dt
+        end if
       else
-        depositionFlux(i) = 0.0
+        deposition_flux(i) = 0.0
       end if
 
-      sourcesink(kwq, lwq, LSS1 + i - 1) = erosionFlux(i) - depositionFlux(i)
+      sourcesink(kwq, lwq, LSS1 + i - 1) = erosion_flux(i) - deposition_flux(i)
 
       ! if ((tauCrt(i) .lt. taub)) then
-      ! if (lwq == 50) then
-      !   print*, '--------------------------'
-      !   print*, 'k =',kwq,'l =',lwq,'i = ',l2i(lwq),'j = ',l2j(lwq)
-        ! print*, 'dt = ',dt,'h = ',hp(kwq,lwq)
-      !   print*, 'cb = ',cb
-      !   ! print*, 'taub =',taub
-      !   ! print*, 'tauCr =', tauCrt(i)
-      !   ! print*, 'erosionFlux = ', erosionFlux(i)
-      !   ! print*, 'depositionFlux = ', depositionFlux(i)
-        ! print*, 'sourcesink = ', sourcesink(kwq, lwq, LSS1+i-1)
-      !   ! print*, 'sourcesinklim = ', -cb * hp(kwq,lwq) / dt 
-      ! end if
+      if (lwq == 50) then
+        print*, '--------------------------'
+        print*, 'k =',kwq,'l =',lwq,'i = ',l2i(lwq),'j = ',l2j(lwq)
+        print*, 'dt = ',dt,'h = ',hp(kwq,lwq)
+        print*, 'cb = ',cb
+        print*, 'taub =',taub
+        print*, 'tauCr =', tauCrt(i)
+        print*, 'erosion_flux = ', erosion_flux(i)
+        print*, 'depositionFlux = ', deposition_flux(i)
+        print*, 'sourcesink = ', sourcesink(kwq, lwq, LSS1+i-1)
+        print*, 'sourcesinklim = ', -cb * hp(kwq,lwq) / dt
+        print*, 'Rep = ', Rep(i)
+      end if
 
       if (sourcesink(kwq,lwq,LSS1 + i - 1) .lt. (-1*cb * hp(kwq,lwq) / dt)) then
         sourcesink(kwq, lwq, LSS1 + i - 1) = -1 * cb * hp(kwq,lwq) / dt
       end if
 
       ! if (tauCrt(i) .lt. taub) then
-      ! if (lwq == 50) then
-      !   ! print*, 'sourcesinkNEW = ', sourcesink(kwq, lwq, LSS1+pn)        
-      !   ! print*, 'sourcesinklim = ', -cb * hp(kwq,lwq) / dt 
-      !   print*, 'cb in/out = ', sourcesink(kwq, lwq, LSS1+pn) * dt / hp(kwq,lwq)
-      ! end if
+      if (lwq == 50) then
+        print*, 'sourcesinkNEW = ', sourcesink(kwq, lwq, LSS1+i-1)        
+        print*, 'sourcesinklim = ', -cb * hp(kwq,lwq) / dt 
+        print*, 'cb in/out = ', sourcesink(kwq, lwq, LSS1+i-1) * dt / hp(kwq,lwq)
+      end if
 
       ! Estimate source and sink for the sediment cell.
-      sourcesink(kwq+1,lwq,LSS1 + i - 1) = depositionFlux(i) - erosionFlux(i)
+      sourcesink(kwq+1,lwq,LSS1 + i - 1) = deposition_flux(i) - erosion_flux(i)
+      ! Estimate erosion for mercury
+      erosion_Hgpn(i) = erosion_flux(i) / (sed_dens(i) * sed_frac(i))
     end do
 
   elseif (kwq .ne. kms) then 
     do i = 1, sedNumber
-      sourcesink(kwq,lwq,LSS1 + i - 1) = 0
+      sourcesink(kwq,lwq,LSS1 + i - 1) = 0.0
+      erosion_Hgpn(i) = 0.0
     end do
   end if
 
@@ -148,17 +157,18 @@ SUBROUTINE totalMass(sed_frac, kwq, lwq)
   totalMass_bed = 0.0
   do i = 1, sedNumber
     massSed(i) = tracerpp(kwq+1,lwq,LSS1 + i - 1) * dx * dy * h(kwq,lwq)
-    ! if (lwq == 50) then
-    ! print*,'i = ',i,'h = ',h(kwq,lwq),'dx = ',dx,'dy = ',dy
-    ! print*,'LSS1 + i -1 = ',LSS1 + i - 1
-    ! print*,'tracer LSS1 + i -1 = ', tracerpp(kwq+1,lwq,LSS1 + i - 1)
-    ! print*,'massSed = ',massSed(i)
-    ! end if 
+    if (lwq == 50) then
+    print*,'i = ',i,'h = ',h(kwq,lwq),'dx = ',dx,'dy = ',dy
+    print*,'LSS1 + i -1 = ',LSS1 + i - 1
+    print*,'tracer LSS1 + i -1 = ', tracerpp(kwq+1,lwq,LSS1 + i - 1)
+    print*,'massSed = ',massSed(i)
+    end if 
   end do
   totalMass_bed = sum(massSed)
   do i = 1, sedNumber
     sed_frac(i) = massSed(i) / totalMass_bed
     if (lwq == 50) then
+    print*,'total_mass = ',totalMass_bed
     print*,'i = ',i,' sed_frac(i) = ',sed_frac(i)
     end if 
   end do
@@ -166,7 +176,7 @@ SUBROUTINE totalMass(sed_frac, kwq, lwq)
 END SUBROUTINE totalMass
 
 ! ********************************************************************
-SUBROUTINE erosion_noncohesive(erosionFlux, ustarb, Rep, settling_vel, sed_frac, sed_dens)
+SUBROUTINE erosion_noncohesive(erosion_flux, ustarb, Rep, settling_vel, sed_frac, sed_dens)
 ! ********************************************************************
 !
 ! Purpose: To estimate the erosion caused by the flow at the bottom
@@ -182,24 +192,26 @@ SUBROUTINE erosion_noncohesive(erosionFlux, ustarb, Rep, settling_vel, sed_frac,
   real, intent(in)  :: sed_dens     !< Sediment density to keep units consistent
   real              :: z_u          !< Similarity variable for uniform sediment
   real              :: E_s          !< Dimensionless coefficient for sediment entrainment. Under quasi-equilibrium conditions (Garcia & Parker 1991)
-  real, intent(out) :: erosionFlux  !< Vertical erosion flux
+  real, intent(out) :: erosion_flux  !< Vertical erosion flux
 
-  if (Rep .lt. 3.5) then
-    z_u = 0.708 * ustarb * (Rep ** 0.6) / settling_vel
-  else
-    z_u = ustarb * (Rep ** 0.6) / settling_vel
-  end if 
+  if ((Rep .gt. 0.4) .and. (Rep .le. 1)) then
+    z_u = 1 * ustarb * (Rep ** 3.75) / settling_vel
+  else if ((Rep .gt. 1.0) .and. (Rep .le. 3.5)) then
+    z_u = 0.586 * ustarb * (Rep ** 1.23) / settling_vel
+  else if (Rep .gt. 3.5) then
+    z_u = 1 * ustarb * (Rep ** 0.6) / settling_vel
+  end if
 
   ! Sediment entrainment coefficient
   E_s = Ased * (z_u ** 5) / (1 + (z_u ** 5) * Ased/0.3)
 
-  erosionFlux = E_s * settling_vel * sed_frac * sed_dens
+  erosion_flux = E_s * settling_vel * sed_frac * sed_dens
 
   return
 END SUBROUTINE erosion_noncohesive
 
 ! ********************************************************************
-SUBROUTINE erosion_cohesive(erosionFlux, taub, tauCrt, sed_frac, sed_dens)
+SUBROUTINE erosion_cohesive(erosion_flux, taub, tauCrt, sed_frac, sed_dens)
 ! ********************************************************************
 !
 ! Purpose: To estimate the erosion caused by the flow at the bottom
@@ -213,18 +225,21 @@ SUBROUTINE erosion_cohesive(erosionFlux, taub, tauCrt, sed_frac, sed_dens)
   real, intent(in)  :: sed_dens     !< Sediment density to keep units consistent
   real              :: M_param      !< Surface erosion rate 
   real              :: Beta         !< Dimensionless coefficient for method
-  real, intent(out) :: erosionFlux  !< Vertical erosion flux
+  real, intent(out) :: erosion_flux  !< Vertical erosion flux
 
-  M_param = 1
-  Beta = 1
+  !Beta CAN BE BETWEEN 1 AND 3.6 
+  M_param = 3.6e-4
+
+  print*, 'M =', M_param
+  Beta = 3
   ! Sediment entrainment flux
-  erosionFlux = M_param * (taub / tauCrt - 1) ** Beta * sed_frac * sed_dens
+  erosion_flux = M_param * (taub / tauCrt - 1) ** Beta * sed_frac * sed_dens
 
   return
 END SUBROUTINE erosion_cohesive
 
 ! ********************************************************************
-SUBROUTINE deposition_noncohesive(depositionFlux, settling_vel, tauCrt, taub, cb)
+SUBROUTINE deposition_noncohesive(deposition_flux, settling_vel, tauCrt, taub, cb)
 ! ********************************************************************
 !
 ! Purpose: To estimate the suspended sediment deposition at the
@@ -236,19 +251,19 @@ SUBROUTINE deposition_noncohesive(depositionFlux, settling_vel, tauCrt, taub, cb
   real, intent(in) :: taub
   real, intent(in) :: tauCrt
   real, intent(in) :: cb
-  real, intent(out) :: depositionFlux
+  real, intent(out) :: deposition_flux
 
     if (taub .le. tauCrt) then
-      depositionFlux = settling_vel * cb * (1 - taub/tauCrt)
+      deposition_flux = settling_vel * cb * (1 - taub/tauCrt)
     else
-      depositionFlux = settling_vel * cb
+      deposition_flux = settling_vel * cb
     end if
 
   return
 END SUBROUTINE deposition_noncohesive
 
 ! ********************************************************************
-SUBROUTINE deposition_cohesive(depositionFlux, settling_vel, tauCrt, taub, cb)
+SUBROUTINE deposition_cohesive(deposition_flux, settling_vel, tauCrt, taub, cb)
 ! ********************************************************************
 !
 ! Purpose: To estimate the suspended sediment deposition at the
@@ -260,12 +275,12 @@ SUBROUTINE deposition_cohesive(depositionFlux, settling_vel, tauCrt, taub, cb)
   real, intent(in) :: taub
   real, intent(in) :: tauCrt
   real, intent(in) :: cb
-  real, intent(out) :: depositionFlux
+  real, intent(out) :: deposition_flux
 
     if (taub .le. tauCrt) then
-      depositionFlux = settling_vel * cb * (1 - taub/tauCrt)
+      deposition_flux = settling_vel * cb * (1 - taub/tauCrt)
     else
-      depositionFlux = 0
+      deposition_flux = 0
     end if
 
   return
@@ -299,11 +314,7 @@ SUBROUTINE get_sed_prop(settling_vel,Rep,tauCrt,sed_diameter,sed_dens,w_dens)
 
   call submergedSpecificGravity(submerged_spec_g, sed_dens, w_dens)
 
-  ! print*, 'R',submerged_spec_g
-
   call partReynolds_Number(Rep, sed_diamm, kinematic_viscosity, submerged_spec_g)
-
-  ! print*, 'Rep',Rep
 
   call settling_velocity(settling_vel, g, submerged_spec_g, Rep, sed_diamm, kinematic_viscosity, ivanRijn)
 
@@ -311,6 +322,40 @@ SUBROUTINE get_sed_prop(settling_vel,Rep,tauCrt,sed_diameter,sed_dens,w_dens)
 
   return
 END SUBROUTINE get_sed_prop
+
+! ********************************************************************
+SUBROUTINE fvs_ss(vs_ss,sed_diameter,sed_dens,w_dens)
+! ********************************************************************
+!
+! Purpose: Estimate particle dependent parameters / properties
+!
+! --------------------------------------------------------------------
+  implicit none
+  ! Arguments
+  real, intent(in)  :: sed_diameter     !< (um) Sediment diameter
+  real, intent(in)  :: w_dens           !< (kg/m3) water density
+  real, intent(in)  :: sed_dens         !< (kg/m3) sediment density
+  real, intent(out) :: vs_ss            !< (m/s) settling velocity
+  real              :: Rep              !< Explicit Particle Reynolds Number
+  real              :: submerged_spec_g !< Sediment submerged specific gravity
+  real              :: sed_diamm        !< (m) Sediment diameter
+  logical           :: ivanRijn         !< Flag for using van Rijn (1984) formula or Dietrich (1982). The default is van Rijn
+
+  ivanRijn = .true.
+
+  ! To estimate sediment diamenter in m
+  sed_diamm = sed_diameter * 0.000001
+
+  ! sed_spec_g = sed_dens/w_dens
+
+  call submergedSpecificGravity(submerged_spec_g, sed_dens, w_dens)
+
+  call partReynolds_Number(Rep, sed_diamm, kinematic_viscosity, submerged_spec_g)
+
+  call settling_velocity(vs_ss, g, submerged_spec_g, Rep, sed_diamm, kinematic_viscosity, ivanRijn)
+
+  return
+END SUBROUTINE fvs_ss
 
 ! ********************************************************************
 SUBROUTINE submergedSpecificGravity(submerged_spec_g, sed_dens, w_dens)

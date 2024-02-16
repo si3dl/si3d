@@ -300,28 +300,37 @@ SUBROUTINE InitializeScalarFields
     IF (ios /= 0) THEN; PRINT *, 'Error alloc. init. arrays'; STOP; ENDIF
 
     ! Skip over first five header records in open boundary condition file
-    READ (UNIT=i4, FMT='(/////)', IOSTAT=ios)
+    READ (UNIT=i4, FMT='(////)', IOSTAT=ios)
     IF (ios /= 0) CALL input_error ( ios, 13 )
 
+    READ (UNIT=i4, FMT='(A)', IOSTAT=ios) tracer_line
+    
+    READ (UNIT=i4, FMT='(A)', IOSTAT=ios)
+    IF (ios /= 0) CALL input_error ( ios, 13 )
+    
     ! Write the format of the data records into an internal file
-    WRITE (UNIT=initfmt, FMT='("(10X,",I3,"G11.2)")') ntr+1
+    WRITE (UNIT=initfmt, FMT='("(10X,",I3,"G11.5)")') ntr+1
 
     ! Read data array and store it in array Scalardepthile
     DO k = 1, km1
-      READ (UNIT=i4, FMT=initfmt, IOSTAT=ios) &
-      (Scalardepthile(k,nn), nn = 1, ntr+1)
+      READ (UNIT=i4, FMT=initfmt, IOSTAT=ios) (Scalardepthile(k,nn), nn = 1, ntr+1)
     IF (ios /= 0) CALL input_error ( ios, 14 )
     END DO
 
     ! ... Initialize the active scalar field (allways)
     salp = 0.0
-    DO k = 1, km1;
+    DO k = 1, km1
     salp(k,:) = Scalardepthile(k,1)
-    END DO;
-    sal = salp;
-    salpp = salp;
+    END DO
+    sal = salp
+    salpp = salp
 
     ! ... Initialize non-active scalar fields (if requested)
+    SELECT CASE (ecomod)
+      CASE(1)
+        CALL WQinit
+    END SELECT
+
     IF (ntr > 0) THEN
       tracer = 0.0
       IF (ecomod < 0 ) THEN
@@ -337,10 +346,10 @@ SUBROUTINE InitializeScalarFields
               elseif (nn .eq. LSS3) then
                 tracer(k,:,nn) = 0.6 * sed_dens(LSS3 + 3 - nn) * sed_frac(LSS3 + 3 - nn)
               else
-                tracer(k,:,nn) = tracer(k-1,:,nn)
+                tracer(k,:,nn) = Scalardepthile(k,nn+1)
               end if
             else
-              tracer(k,:,nn) = Scalardepthile(k,nn+1) !/ sed_dens(LSS1 + 1 - nn)
+              tracer(k,:,nn) = Scalardepthile(k,nn+1)
             end if
           END DO
         END DO ! ... End loop over tracers
@@ -4096,14 +4105,8 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
 
   ! ... Local variables
   INTEGER :: i, j, k, l, k1s, kms, gamma1, istat,liter
-  REAL    :: vel, ratio, C_f, delz, twodt1, hd
+  REAL    :: vel, ratio, C_f, delz, twodt1, hd, vs_ss
   REAL, DIMENSION (4          ) :: ss
-
-  real :: diameterSed
-  real :: densitySed
-  real :: settling_vel
-  real :: Rep
-  real :: tauCrt
 
   !.....Timing.....
   REAL, EXTERNAL :: TIMER
@@ -4245,19 +4248,36 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
       IF (hp(k-1,l) > ZERO) THEN
 
         ! ... Velocities at time n+1/2 (include settling velocity)
-        if (iSS == 0) then
-          if (k == k1s) then
+        if (k == k1s) then
             vel = 0.0
+        else
+          if (nt .eq. LSS1) then
+            call fvs_ss(vs_ss,sed_diameter(nt - LSS1 + 1),sed_dens(nt - LSS1 + 1),rhop(k,l)+1000)
+            vel = wp(k,l) - vs_ss
+          elseif (nt .eq. LSS2) then
+            call fvs_ss(vs_ss,sed_diameter(nt - LSS2 + 1),sed_dens(nt - LSS2 + 1),rhop(k,l)+1000)
+            vel = wp(k,l) - vs_ss
+          elseif (nt .eq. LSS3) then
+            call fvs_ss(vs_ss,sed_diameter(nt - LSS3 + 1),sed_dens(nt - LSS3 + 1),rhop(k,l)+1000)
+            vel = wp(k,l) - vs_ss
+          elseif (nt .eq. LPON) then
+            vel = wp(k,l) - R_settl
+          elseif (nt .eq. LPOP) then
+            vel = wp(k,l) - R_settl
+          elseif (nt .eq. LPO4) then
+            vel = wp(k,l) - R_settl
+          elseif (nt .eq. LPOC) then
+            vel = wp(k,l) - vspom
+          elseif (nt .eq. LALG1) then
+            vel = wp(k,l) - vspa
+          elseif (nt .eq. LALG2) then
+            vel = wp(k,l) - vspa
+          elseif (nt .eq. LALG3) then
+            vel = wp(k,l) - vspa
+          elseif (nt .eq. LALG4) then
+            vel = wp(k,l) - vspa
           else
             vel = wp(k,l)
-          end if
-        elseif (iSS == 1) then
-          diameterSed = sed_diameter(nt - LSS1 + 1)
-          densitySed = sed_dens(nt - LSS1 + 1)       
-          call get_sed_prop(settling_vel,Rep,tauCrt,diameterSed,densitySed,rhop(k,l)+1000)
-          vel = wp(k,l) - settling_vel
-          if (k == k1s) then
-            vel = 0.0
           end if
         end if
 
@@ -4460,12 +4480,11 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
       END SELECT
 
       ! Adding solution to sediment layer 
-      IF (iSS == 1) THEN
         hn(kms+1) = hn(kms)
         aa( 2,kms+1) = hn(kms+1)/twodt1
         ds(kms+1) = Bex(kms+1,l) + sourcesink(kms+1,l,nt)
         tracer(kms+1,l,nt) = ds(kms+1) / aa(2,kms+1)
-      END IF
+
 
    !.....End loop over scalar-pts.....
    END DO

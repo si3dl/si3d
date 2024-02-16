@@ -770,14 +770,12 @@ SUBROUTINE bathy
       l2c(c)=l
       END IF
     END DO
-  END DO;
-
-
+  END DO
 
   ! ... Assign E,W,N,S colums for each l-column in the 2D-l space
   l = 0
   DO i = i1, im
-    DO j = j1, jm;
+    DO j = j1, jm
       IF(.NOT. mask2d(i,j)) CYCLE
       l = l + 1
       lEC(l) = ij2l(i+1,j); ! Defines water column East  of l
@@ -791,7 +789,7 @@ SUBROUTINE bathy
 
   !.....Define layer No. for bottom cell (kmz) &
   !     bottom depth from datum at zeta-points (hhs).....
-  hhs = ZERO;
+  hhs = ZERO
   DO j = 1,jm1
     DO i = 1,im1
 

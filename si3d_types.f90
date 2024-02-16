@@ -288,7 +288,7 @@
    !          ----- Active & Non-active Scalar transport models  **********************
    INTEGER :: iotr       ! No. steps between output to file
    INTEGER :: ntr        ! No. of tracers requested for simulation
-   INTEGER, PARAMETER  :: ntrmax = 25 ! Max. No. of tracers that can be simulated
+   INTEGER, PARAMETER  :: ntrmax = 30 ! Max. No. of tracers that can be simulated
    REAL   , ALLOCATABLE, DIMENSION(:,:)  :: fluxX, fluxY, fluxZ
    REAL   , ALLOCATABLE, DIMENSION(:,:)  :: fluxXtr, fluxY2, fluxZ2, fluxXsal
    REAL   , ALLOCATABLE, DIMENSION(:,:,:):: tracer, tracerpp, sourcesink
@@ -296,6 +296,7 @@
    INTEGER, ALLOCATABLE, DIMENSION(:  )  :: trct0, trctn
    REAL   , ALLOCATABLE, DIMENSION(:  )  :: trcx0, trcy0, trcz0, &
                                             trcsx, trcsy, trcsz, trcpk
+   character(330) :: tracer_line
 
    !          ----- Point Sources & Sinks Eqs. Vars. & Arrays *********************
    ! ... Variables used specificallly to model plumes -
@@ -362,8 +363,8 @@
    REAL, ALLOCATABLE, DIMENSION (:,:) :: wibssIOy, wibssIOyp
    REAL, ALLOCATABLE, DIMENSION (:,:) :: wibssx  , wibssy
 
-   !         ------- ECOMOD - Water Quality   ******************************************
-
+   ! **************************** ECOMOD - Si3D ******************************************
+   ! ---------------------- Water Quality Module (WQM) -----------------------------------
    ! ... Integer switches to deterimine if constituent is modeled
    INTEGER :: iDO       !< Dissolved Oxygen
    INTEGER :: iPON      !< Particulate Organic Nitrogen
@@ -379,16 +380,10 @@
    INTEGER :: iALG2     !< Algae-2, PhytoC2
    INTEGER :: iALG3     !< Algae-3, PhytoC3
    INTEGER :: iALG4     !< Algae-4, PhytoC4
-   INTEGER :: iMeHg     !< Methylmercury
-   INTEGER :: iHgII     !< Mercury
-   INTEGER :: iHg0      !< Mercury
-   INTEGER :: iSS       !< Suspended Sediments
-   INTEGER :: iSTWAVE   !< Flag for using STWAVE in bottom shear stress calculations for suspended sediment transport
 
-   ! ... Integer to determine constituent location
+   ! ... Integer to determine index of constituent within tracer matrix
    INTEGER :: LDO , LPON, LDON, LNH4, LNO3, LPOP, LDOP, LPO4
    INTEGER :: LDOC, LPOC, LALG1, LALG2, LALG3, LALG4
-   INTEGER :: LMeHg, LHg2, LHg0, LSS1, LSS2, LSS3
 
    ! ... Model Constants - read from input file and many used for calibration
    ! - Stochiometeric constants
@@ -414,22 +409,75 @@
    ! Sediment release rates
    REAL    :: SED_DON, SED_NH4, SED_NO3, SED_DOP, SED_PO4, SED_DOC
 
-   ! Sediment Parameters
-   integer                           :: sedMax = 3       !< Max number of sediments to model
-   integer                           :: sedNumber        !< Number of sediments to model
-   real, allocatable, dimension (:)  :: sed_diameter     !< (um) Sediment diameter D50 in micrometers
-   real, allocatable, dimension (:)  :: sed_dens         !< (kg/m3) Sediment density
-   real, allocatable, dimension (:)  :: sed_frac         !< Fraction of type of sediment in total suspended sediment
+   ! ------------------------ Suspended Sediment Module (SSM) ----------------------------
+   ! Parameters
+   integer                              :: iSS              !< integer switch to model Suspended Sediments (SS)
+   integer                              :: iSTWAVE          !< Flag for using STWAVE in bottom shear stress calculations for suspended sediment transport
+   integer                              :: LSS1, LSS2, LSS3 !< integers that determine the index of the constituent within tracer matrix
+   integer                              :: sedMax = 3       !< Max number of sediments to model
+   integer                              :: sedNumber        !< Number of sediments to model
+   real, allocatable, dimension (:)     :: sed_diameter     !< (um) Sediment diameter D50 in micrometers
+   real, allocatable, dimension (:)     :: sed_dens         !< (kg/m3) Sediment density
+   real, allocatable, dimension (:)     :: sed_frac         !< Fraction of type of sediment in total suspended sediment
    integer, allocatable, dimension (:)  :: sed_type         !< Type of sediment 0 for non-cohesive and 1 for cohesive
-   real, PARAMETER                   :: Ased = 1.3d-7    !< Constant value for estimates of sediment fluxes. Garcia and Parker 1991,1993, Reardon 2014, etc
-   real                              :: kinematic_viscosity = 1.3081d-6   !< Kinematic viscosity of water 10C
-   real, allocatable, dimension(:,:) :: dep_stwave
-   real, allocatable, dimension(:,:) :: uair_stwave
-   real, allocatable, dimension(:,:) :: vair_stwave
-   real, allocatable, dimension(:,:) :: tau_stwave
-   real, allocatable, dimension(:,:,:) :: uair_tmp
-   real, allocatable, dimension(:,:,:) :: udir_tmp
-   real                                :: Ti_4_stwave = 3.0 !< [hrs] 0.25Ti 1/4 of the internal wave period
+   real, parameter                      :: Ased = 1.3d-7    !< Constant value for estimates of sediment fluxes. Garcia and Parker 1991,1993, Reardon 2014, etc
+   real                                 :: kinematic_viscosity = 1.3081d-6   !< Kinematic viscosity of water 10C
+   real, allocatable, dimension(:,:)    :: dep_stwave
+   real, allocatable, dimension(:,:)    :: uair_stwave
+   real, allocatable, dimension(:,:)    :: vair_stwave
+   real, allocatable, dimension(:,:)    :: tau_stwave
+   real, allocatable, dimension(:,:,:)  :: uair_tmp
+   real, allocatable, dimension(:,:,:)  :: udir_tmp
+   real                                 :: Ti_4_stwave = 3.0 !< [hrs] 0.25Ti 1/4 of the internal wave period
+   real, allocatable, dimension(:) :: settling_vel     !< (m/s) Settling velocity of sediment
+   real, allocatable, dimension(:) :: erosion_Hgpn     !<
+
+   
+   ! ----------------------------- Mercury module (HgM) ----------------------------------
+   ! Parameters
+   integer  :: iMeHg     !< integer switch to model Methylmercury
+   integer  :: iHgII     !< integer switch to model Divalent Mercury
+   integer  :: iHg0      !< integer switch to model Elemental Mercury
+   integer  :: LMeHg, LHgII, LHg0 !< Integers that determine index of the constituent within tracer matrix
+   integer  :: inst_eq   !< integer to swithc if instantaneous equilibrium or kinetics are used for adsorption and desorption
+   real     :: kw31      !< [m2/W 1/s] Reduction rate constant for HgII_to_Hg0
+   real     :: atm_MeHg !< [ng/m2/d] Mercury deposition rate
+   real     :: k_MeHgw   !< [m/d] Mass transfer coefficient for Hg0 in water
+   real     :: k_MeHgatm !< [m/d] Mass transfer coefficient for Hg0 in atmosphere
+   real     :: MeHgatm   !< [ng/L] concentration of Hg0 in the atmosphere
+   real     :: K_H_MeHgw !< [-] Henry's law constant for Hg0
+   real     :: kw32      !< [1/d] Demethylation rate constant for MeHg in water
+   real     :: ks32      !< [1/d] Demethylation rate constant for MeHg in sediment 
+   real     :: kws       !< [m/s] Mass transfer for mercury diffusion
+   real     :: kw21      !< [m2/W 1/s] Photodegradation rate constant for MeHg_to_Hg0
+   real     :: atm_HgII  !< [ng/m2/d] Mercury deposition rate
+   real     :: kw23      !< [1/d] Methylation rate constant for HgII in water
+   real     :: ks23      !< [1/d] Methylation rate constant for HgII in sediment
+   real     :: KDO       !< [-] Half saturation constant for DO in water column
+   real     :: KSO4      !< [mg-O2 / L] Half saturation constant for SO4 in porewater
+   real     :: SO4       !< [mg-O2 / L] Sediment pore water sulfate concentration
+   real     :: miu_so4   !< [L / mg] Ratio of sediment methylation rate and sulfate reduction rate
+   real     :: DGMra     !< [-] Desired ratio from DOC and PH relatonship (Method in DSM2 model) 
+   real     :: k_Hg0w    !< [m/d] Mass transfer coefficient for Hg0 in water
+   real     :: k_Hg0atm  !< [m/d] Mass transfer coefficient for Hg0 in atmosphere
+   real     :: Hg0atm    !< [ng/L] concentration of Hg0 in the atmosphere
+   real     :: K_H_Hg0w  !< [-] Henry's law constant for Hg0
+   real     :: vspa      !< [m/T] settling velocity of algae
+   real     :: vspom     !< [m/T] settling velocity of POM or POC
+   real :: kd_wdoc2
+   real :: kd_wpa2
+   real :: kd_wpom2
+   real :: kd_sdoc2
+   real :: kd_spom2
+   real, allocatable, dimension(:)     :: kd_wpn2
+   real, allocatable, dimension(:)     :: kd_spn2
+   real :: kd_wdoc3
+   real :: kd_wpa3
+   real :: kd_wpom3
+   real :: kd_sdoc3
+   real :: kd_spom3
+   real, allocatable, dimension(:)     :: kd_wpn3
+   real, allocatable, dimension(:)     :: kd_spn3
 
 !                        -----Data Dictionary-----
 
