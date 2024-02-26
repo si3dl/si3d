@@ -4164,8 +4164,8 @@ SUBROUTINE surfbc0
    CASE (1)
 
      !               ----- Open files with heatflux surface bc data-----
-     OPEN (UNIT=i53, FILE='surfbc.txt', STATUS="OLD", IOSTAT=ios)
-     IF (ios /= 0) CALL open_error ( "Error opening surfbc.txt", ios )
+     OPEN (UNIT=i53, FILE='si3d_surfbc.txt', STATUS="OLD", IOSTAT=ios)
+     IF (ios /= 0) CALL open_error ( "Error opening si3d_surfbc.txt", ios )
 
      !               -----Read files with heatflux surface bc data-----
      ! Skip over first six header records in salinity boundary condition file
@@ -4208,8 +4208,8 @@ SUBROUTINE surfbc0
    CASE (2)
 
      !               ----- Open files with heatflux surface bc data-----
-     OPEN (UNIT=i53, FILE='surfbc.txt', STATUS="OLD", IOSTAT=ios)
-     IF (ios /= 0) CALL open_error ( "Error opening surfbc.txt", ios )
+     OPEN (UNIT=i53, FILE='si3d_surfbc.txt', STATUS="OLD", IOSTAT=ios)
+     IF (ios /= 0) CALL open_error ( "Error opening si3d_surfbc.txt", ios )
 
      !               -----Read files with heatflux surface bc data-----
      ! Skip over first six header records in salinity boundary condition file
@@ -4255,8 +4255,8 @@ SUBROUTINE surfbc0
    CASE (3)
 
      !               ----- Open files with heatflux surface bc data-----
-     OPEN (UNIT=i53, FILE='surfbc.txt', STATUS="OLD", IOSTAT=ios)
-     IF (ios /= 0) CALL open_error ( "Error opening surfbc.txt", ios )
+     OPEN (UNIT=i53, FILE='si3d_surfbc.txt', STATUS="OLD", IOSTAT=ios)
+     IF (ios /= 0) CALL open_error ( "Error opening si3d_surfbc.txt", ios )
 
      !               -----Read files with heatflux surface bc data-----
      ! Skip over first six header records in salinity boundary condition file
@@ -4301,8 +4301,8 @@ SUBROUTINE surfbc0
    CASE (10) ! Space & Time varying met. variables - Heat budget on run-time (I) mode
 
      !               ----- Open files with heatflux surface bc data-----
-     OPEN (UNIT=i53, FILE='surfbc.txt', STATUS="OLD", IOSTAT=ios)
-     IF (ios /= 0) CALL open_error ( "Error opening surfbc.txt", ios )
+     OPEN (UNIT=i53, FILE='si3d_surfbc.txt', STATUS="OLD", IOSTAT=ios)
+     IF (ios /= 0) CALL open_error ( "Error opening si3d_surfbc.txt", ios )
 
      !               -----Read files with heatflux surface bc data-----
 
@@ -4377,8 +4377,8 @@ SUBROUTINE surfbc0
    CASE (11) ! Space & Time varying met. variables - Heat budget on run-time (II) mode
 
      !               ----- Open files with heatflux surface bc data-----
-     OPEN (UNIT=i53, FILE='surfbc.txt', STATUS="OLD", IOSTAT=ios)
-     IF (ios /= 0) CALL open_error ( "Error opening surfbc.txt", ios )
+     OPEN (UNIT=i53, FILE='si3d_surfbc.txt', STATUS="OLD", IOSTAT=ios)
+     IF (ios /= 0) CALL open_error ( "Error opening si3d_surfbc.txt", ios )
 
      !               -----Read files with heatflux surface bc data-----
 
@@ -4457,8 +4457,8 @@ SUBROUTINE surfbc0
      print *,"hola7"
    CASE (20)
      !               ----- Open files with wind velocity bc data-----
-     OPEN (UNIT=i53, FILE='surfbcW.txt', STATUS="OLD", IOSTAT=ios)
-     IF (ios /= 0) CALL open_error ( "Error opening surfbc.txt", ios )
+     OPEN (UNIT=i53, FILE='si3d_surfbc_W.txt', STATUS="OLD", IOSTAT=ios)
+     IF (ios /= 0) CALL open_error ( "Error opening si3d_surfbc.txt", ios )
 
      !               -----Read files with heatflux surface bc data-----
      ! Skip over first six header records in salinity boundary condition file
