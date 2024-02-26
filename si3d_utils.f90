@@ -175,10 +175,14 @@ SUBROUTINE input
    IF (ntr > 0) THEN
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) ecomod
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iotr
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) itspftr
      ! ipwq = Time step to run WQ modules. E.g. in idt = 100 s, and want to run WQ every 1 h, ipwq = 36;
-     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) ipwq 
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) ipwq
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) nswq 
      IF (ios  /= 0) CALL input_error ( ios, 9 )
    ELSE IF (ntr == 0) THEN
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
@@ -560,6 +564,12 @@ SUBROUTINE AllocateSpace2
             Rpss(km1,iopss,ntr), ioph2iop(iopss,num_threads),STAT=istat)
    IF (istat /= 0) CALL allocate_error ( istat, 21 )
 
+   ! .... Allocate arrays used in STWAVE
+  if ((iSS == 1) .and. (iSTWAVE == 1)) then
+    allocate(tau_stwave(im1,jm1))
+    allocate(uair_tmp(jm1,im1,int(Ti_4_stwave*3600/dt)), udir_tmp(jm1,im1,int(Ti_4_stwave*3600/dt)))
+  end if 
+
 
 END SUBROUTINE AllocateSpace2
 
@@ -580,259 +590,269 @@ SUBROUTINE bathy
 !
 !-------------------------------------------------------------------------
 
-   !.....Local variables.....
-   CHARACTER(LEN=50) :: bathymetry_file = "h"
-   INTEGER :: i, j, k, l, c, ios, istat, kb, is, ie, js, je
-   INTEGER :: imm, jmm, ncols, ncols1, nc, nn, ia, ib
-   REAL :: hs1, udepth, vdepth, ztop
-   CHARACTER(LEN=14) :: fmt
-   REAL, DIMENSION(:,:), POINTER :: h4
+  !.....Local variables.....
+  CHARACTER(LEN=50) :: bathymetry_file = "si3d_bathy"
+  INTEGER :: i, j, k, l, c, ios, istat, kb, is, ie, js, je
+  INTEGER :: imm, jmm, ncols, ncols1, nc, nn, ia, ib
+  REAL :: hs1, udepth, vdepth, ztop
+  CHARACTER(LEN=14) :: fmt
+  REAL, DIMENSION(:,:), POINTER :: h4
 
-   !.....Open bathymetry file.....
-   OPEN (UNIT=i5, FILE=bathymetry_file, STATUS="OLD", IOSTAT=ios)
-   IF(ios /= 0) CALL open_error ( "Error opening "//bathymetry_file, ios )
+  !.....Open bathymetry file.....
+  OPEN (UNIT=i5, FILE=bathymetry_file, STATUS="OLD", IOSTAT=ios)
+  IF(ios /= 0) CALL open_error ( "Error opening "//bathymetry_file, ios )
 
-   !.....Read header information.....
-   READ (UNIT=i5, FMT='(37X,I5,6X,I5,8X,I5//)', IOSTAT=ios) imm, jmm, ncols  ! Changed to I5 12/2010 SWA
-   IF (ios /= 0) CALL input_error ( ios, 11 )
+  !.....Read header information.....
+  READ (UNIT=i5, FMT='(37X,I5,6X,I5,8X,I5//)', IOSTAT=ios) imm, jmm, ncols  ! Changed to I5 12/2010 SWA
+  IF (ios /= 0) CALL input_error ( ios, 11 )
 
-   !.....Check grid dimensions against input parameters.....
-   IF ((im /= imm+1) .OR. (jm /= jmm+1)) THEN
-      PRINT *, " ****ERROR -- Grid size computed from input file does not"
-      PRINT *, "              agree with the header in the bathymetry file"
-      PRINT '(4(A,I5))', " im=", im, " imm+1=", imm+1, " jm=", jm, " jmm+1=", jmm+1
-      PRINT '(A/)', " "
-      PRINT *, " ****STOPPING si3d in SUBROUTINE bathy"
-      STOP
-   END IF
+  !.....Check grid dimensions against input parameters.....
+  IF ((im /= imm+1) .OR. (jm /= jmm+1)) THEN
+    PRINT *, " ****ERROR -- Grid size computed from input file does not"
+    PRINT *, "              agree with the header in the bathymetry file"
+    PRINT '(4(A,I5))', " im=", im, " imm+1=", imm+1, " jm=", jm, " jmm+1=", jmm+1
+    PRINT '(A/)', " "
+    PRINT *, " ****STOPPING si3d in SUBROUTINE bathy"
+    STOP
+  END IF
 
-   !.....Write data format to an internal file.....
-   IF (ibathyf == 1) THEN ! Stockton
-     WRITE (UNIT=fmt, FMT='("(5X,", I4, "G5.0)")') ncols
-   ELSE                   !General case (Deeper lakes > 100 m)
-     WRITE (UNIT=fmt, FMT='("(5X,", I4, "G5.0)")') ncols
-   ENDIF
+  !.....Write data format to an internal file.....
+  IF (ibathyf == 1) THEN ! Stockton
+    WRITE (UNIT=fmt, FMT='("(5X,", I4, "G5.0)")') ncols
+  ELSE                   !General case (Deeper lakes > 100 m)
+    WRITE (UNIT=fmt, FMT='("(5X,", I4, "G5.0)")') ncols
+  ENDIF
 
-   !.....Allocate space for bathymetry array.....
-   ALLOCATE ( h4(1:im1, 1:jm1), STAT=istat )
-   IF (istat /= 0) CALL allocate_error ( istat, 15 )
+  !.....Allocate space for bathymetry array.....
+  ALLOCATE ( h4(1:im1, 1:jm1), STAT=istat )
+  IF (istat /= 0) CALL allocate_error ( istat, 15 )
+  !.....Allocate space for bathymetry array for stwave.....
+  if ((iSS == 1) .and. (iSTWAVE == 1)) then
+    allocate (dep_stwave(jm1, im1))
+  end if
+  IF (istat /= 0) CALL allocate_error ( istat, 15 )
+  
 
-   !.....Allocate logical mask arrays.....
-   ALLOCATE ( mask2d(im1,jm1    ), STAT=istat )
-   IF (istat /= 0) CALL allocate_error ( istat, 1 )
+  !.....Allocate logical mask arrays.....
+  ALLOCATE ( mask2d(im1,jm1    ), STAT=istat )
+  IF (istat /= 0) CALL allocate_error ( istat, 1 )
 
-   !.....Allocate logical mask arrays 1D.....
-   ALLOCATE ( mask(im1*jm1    ), STAT=istat )
-   IF (istat /= 0) CALL allocate_error ( istat, 1 )
+  !.....Allocate logical mask arrays 1D.....
+  ALLOCATE ( mask(im1*jm1    ), STAT=istat )
+  IF (istat /= 0) CALL allocate_error ( istat, 1 )
 
 
-   !.....Read bathymetry.....
-   ncols1 = ncols     - 1;
-   nc     = imm/ncols + 1;
-   ia     = -ncols1   + 1;
-   DO nn = 1, nc
-      ia = ia + ncols
-      ib = ia + ncols1
-      IF ( ia > im ) EXIT
-      IF ( ib > im ) ib = im
-      DO j = jm, j1, -1 ! change 1 to j1
-         !print *,"jjjj:",j
-         READ (UNIT=i5, FMT=fmt, IOSTAT=ios) (h4(i,j), i = ia, ib)
-         IF (ios /= 0) CALL input_error ( ios, 12 )
-      END DO
-   END DO
+  !.....Read bathymetry.....
+  ncols1 = ncols     - 1;
+  nc     = imm/ncols + 1;
+  ia     = -ncols1   + 1;
+  DO nn = 1, nc
+    ia = ia + ncols
+    ib = ia + ncols1
+    IF ( ia > im ) EXIT
+    IF ( ib > im ) ib = im
+    DO j = jm, j1, -1 ! change 1 to j1
+      READ (UNIT=i5, FMT=fmt, IOSTAT=ios) (h4(i,j), i = ia, ib)
+      IF (ios /= 0) CALL input_error ( ios, 12 )
+    END DO
+  END DO
 
-   !.....Close bathymetry file.....
-   CLOSE (UNIT=i5)
+  !.....Close bathymetry file.....
+  CLOSE (UNIT=i5)
 
-   !.....Change units (from dm to m) and adjust bathymetry datum.....
-   h4 = h4*0.1 + datadj
+  !.....Change units (from dm to m) and adjust bathymetry datum.....
+  h4 = h4*0.1 + datadj
 
-   !.....Be sure mask is false in the fictitious
-   !     row/column around the outer edge of the grid.....
-   h4(  1,1:jm1) = 0.0; h4(1:im1,jm1) = 0.0
-   h4(im1,1:jm1) = 0.0; h4(1:im1,  1) = 0.0
+  !.....Be sure mask is false in the fictitious
+  !     row/column around the outer edge of the grid.....
+  h4(  1,1:jm1) = 0.0; h4(1:im1,jm1) = 0.0
+  h4(im1,1:jm1) = 0.0; h4(1:im1,  1) = 0.0
 
-   !.....Define mask2d array.....
-   DO j = 1, jm1; DO i = 1, im1
-     IF ( h4(i,j) > 0.0 ) THEN
+  !.....Define mask2d array.....
+  DO j = 1, jm1
+    DO i = 1, im1
+      IF ( h4(i,j) > 0.0 ) THEN
         mask2d(i,j) = .TRUE.
-     ELSE
+      ELSE
         mask2d(i,j) = .FALSE.
-     END IF
-   END DO; END DO
+      END IF
+    END DO
+  END DO
 
-   !.....Define mask array.....
-   cm1=0.0
-   DO i = 1, im1; DO j = 1, jm1
-   cm1=cm1+1
-     IF ( h4(i,j) > 0.0 ) THEN
+  !.....Define mask array.....
+  cm1=0.0
+  DO i = 1, im1
+    DO j = 1, jm1
+      cm1=cm1+1
+      IF ( h4(i,j) > 0.0 ) THEN
         mask(cm1) = .TRUE.
-     ELSE
+      ELSE
         mask(cm1) = .FALSE.
-     END IF
-   END DO; END DO
+      END IF
+    END DO
+  END DO
 
 
-   !.....Add fictitious row/column of depths around grid.....
-   h4(1,j1:jm  ) = h4(2,j1:jm )         ! west side
-   h4(i1:im,jm1) = h4(i1:im,jm)         ! north side
-   h4(im1,j1:jm) = h4(im,j1:jm)         ! east side
-   h4(i1:im,1  ) = h4(i1:im,2 )         ! south side
-   ! Take care of corners
-   h4(  1,  1) = h4( 2, 2); h4(  1,jm1) = h4( 2,jm)
-   h4(im1,jm1) = h4(im,jm); h4(im1,  1) = h4(im, 2)
+  !.....Add fictitious row/column of depths around grid.....
+  h4(1,j1:jm  ) = h4(2,j1:jm )         ! west side
+  h4(i1:im,jm1) = h4(i1:im,jm)         ! north side
+  h4(im1,j1:jm) = h4(im,j1:jm)         ! east side
+  h4(i1:im,1  ) = h4(i1:im,2 )         ! south side
+  ! Take care of corners
+  h4(  1,  1) = h4( 2, 2); h4(  1,jm1) = h4( 2,jm)
+  h4(im1,jm1) = h4(im,jm); h4(im1,  1) = h4(im, 2)
 
-   !.....Compute the first and last column and row of grid
-   !     with wet points. Variables used in subr. solver
-   ifirst = im; ilast = i1; jfirst = jm; jlast = j1
-   DO j = j1, jm; DO i = i1, im
-     IF ( .NOT. mask2d(i,j) ) CYCLE   ! Ignore dry points
-     IF ( i < ifirst ) ifirst = i
-     IF ( i > ilast  ) ilast  = i
-     IF ( j < jfirst ) jfirst = j
-     IF ( j > jlast  ) jlast  = j
-   END DO; END DO
+  if ((iSS == 1) .and. (iSTWAVE == 1)) then
+    dep_stwave = transpose(h4)
+    do j = 1, jm1
+      do i = 1,im1
+        if (dep_stwave(j,i) < 0.0) then
+          dep_stwave(j,i) = -10.
+        end if
+      end do
+    end do
+  end if
 
-   !.....Compute the first and last column and row of grid
-   !     with wet points. Variables used in subr. solver
-   lfirst = cm1; llast = 1;
-   DO c = 1, cm1
-     IF ( .NOT. mask(c) ) CYCLE   ! Ignore dry points
-     IF ( c < lfirst ) lfirst = c
-     IF ( c > llast  ) llast  = c
-   END DO
+  !.....Compute the first and last column and row of grid
+  !     with wet points. Variables used in subr. solver
+  ifirst = im; ilast = i1; jfirst = jm; jlast = j1
+  DO j = j1, jm
+    DO i = i1, im
+      IF ( .NOT. mask2d(i,j) ) CYCLE   ! Ignore dry points
+      IF ( i < ifirst ) ifirst = i
+      IF ( i > ilast  ) ilast  = i
+      IF ( j < jfirst ) jfirst = j
+      IF ( j > jlast  ) jlast  = j
+    END DO
+  END DO
 
-   ! ... Find dimensions for 2D-lk arrays
-   l = 0
-   DO c = 1, cm1
-     IF ( .NOT. mask(c) ) CYCLE
-     l = l + 1
-   END DO
-   lm = l ; lm1 = lm + 1;
+  !.....Compute the first and last column and row of grid
+  !     with wet points. Variables used in subr. solver
+  lfirst = cm1; llast = 1;
+  DO c = 1, cm1
+    IF ( .NOT. mask(c) ) CYCLE   ! Ignore dry points
+    IF ( c < lfirst ) lfirst = c
+    IF ( c > llast  ) llast  = c
+  END DO
 
-   !.....Allocate
-   ALLOCATE ( c2l(lm1    ), STAT=istat )
-   IF (istat /= 0) CALL allocate_error ( istat, 1 )
+  ! ... Find dimensions for 2D-lk arrays
+  l = 0
+  DO c = 1, cm1
+    IF ( .NOT. mask(c) ) CYCLE
+    l = l + 1
+  END DO
+  lm = l ; lm1 = lm + 1;
 
-   !.....Allocate
-   ALLOCATE ( l2c(im1*jm1    ), STAT=istat )
-   IF (istat /= 0) CALL allocate_error ( istat, 1 )
+  !.....Allocate
+  ALLOCATE ( c2l(lm1    ), STAT=istat )
+  IF (istat /= 0) CALL allocate_error ( istat, 1 )
 
-!   l = 0
-!   c2l = cm1
-!   l2c = lm1
-!   DO c = 1, cm1
-!     IF ( .NOT. mask(c) ) CYCLE
-!     l = l + 1
-!     c2l(l)=c
-!     l2c(c)=l
-!   END DO
+  !.....Allocate
+  ALLOCATE ( l2c(im1*jm1    ), STAT=istat )
+  IF (istat /= 0) CALL allocate_error ( istat, 1 )
+
+  ! ... Allocate space for arrays in 2D-lk coordinates
+  CALL AllocateSpace2
+
+  ! ... Mapping functions from/to 3D-(i,j)- to/from 2D-l-indexes
+  l = 0
+  c2l = cm1
+  l2c = lm1
+  c = 0
+  ij2l = lm1; ! For dry(i,j) the map function ij2l will yield lm1
+  DO i = 1, im1
+    DO j = 1, jm1;
+      c = c + 1
+      IF(mask2d(i,j)) THEN
+      l = l + 1
+      l2i (l  ) = i ; ! Goes from ipl to index i in the i,j plane
+      l2j (l  ) = j ; ! Goes from ipl to index j in the i,j plane
+      ij2l(i,j) = l ; ! Goes from i,j to the ipl index in the ipl line
+      c2l(l)=c
+      l2c(c)=l
+      END IF
+    END DO
+  END DO
+
+  ! ... Assign E,W,N,S colums for each l-column in the 2D-l space
+  l = 0
+  DO i = i1, im
+    DO j = j1, jm
+      IF(.NOT. mask2d(i,j)) CYCLE
+      l = l + 1
+      lEC(l) = ij2l(i+1,j); ! Defines water column East  of l
+      lWC(l) = ij2l(i-1,j); ! Defines water column West  of l
+      lNC(l) = ij2l(i,j+1); ! Defines water column North of l
+      lSC(l) = ij2l(i,j-1); ! Defines water column South of l
+    END DO
+  END DO;
+  !.....Allocate space for arrays.....
+  CALL AllocateSpace
+
+  !.....Define layer No. for bottom cell (kmz) &
+  !     bottom depth from datum at zeta-points (hhs).....
+  hhs = ZERO
+  DO j = 1,jm1
+    DO i = 1,im1
+
+      SELECT CASE (mask2d(i,j))
+
+      CASE (.FALSE.)      ! Cells with all dry layers
 
 
-   ! ... Allocate space for arrays in 2D-lk coordinates
-   CALL AllocateSpace2
+      CASE (.TRUE.)      ! Cells with wet layers
 
-   ! ... Mapping functions from/to 3D-(i,j)- to/from 2D-l-indexes
-   l = 0
-   c2l = cm1
-   l2c = lm1
-   c = 0
-   ij2l = lm1; ! For dry(i,j) the map function ij2l will yield lm1
-   DO i = 1, im1; DO j = 1, jm1;
-   c = c + 1
-     IF(mask2d(i,j)) THEN
-     l = l + 1
-     l2i (l  ) = i ; ! Goes from ipl to index i in the i,j plane
-     l2j (l  ) = j ; ! Goes from ipl to index j in the i,j plane
-     ij2l(i,j) = l ; ! Goes from i,j to the ipl index in the ipl line
-!     print *,"i",i,"j",j,"l",l
-     c2l(l)=c
-     l2c(c)=l
-     END IF
-   END DO; END DO;
+        l=ij2l(i,j)
+        ! ... Take depth at zeta-point as given in h file
+        hs1 = h4(i,j)
 
+        ! ... Compute No. of wet layers & depths at zeta-points
+        ! --- A. constant layer thickness (ibathyf >= 0)
+        IF (ibathyf >= 0) THEN
+          kmz(l) = FLOOR(hs1/ddz)
+          IF( (hs1-kmz(l)*ddz) > dzmin ) THEN
+            kmz(l) = kmz(l) + 1;
+            hhs(l) = hs1
+          ELSE
+            hhs(l) = kmz(l)*ddz
+          ENDIF
+          ! Add the fictitious first layer above the water surface
+          kmz(l) = kmz(l) + 1
 
+        ! --- B. Variable layer thickness (ibathyf < 0)
+        ELSE
+          DO k = k1, km
+            IF (zlevel(k+1)>=hs1) THEN
+              ! ... Option 1 - it works
+              hhs(l) = zlevel(k)+MAX(dzmin,(hs1-zlevel(k)));
+              kmz(l) = k
+              EXIT
+              !! ... Option 2 - preferable from a theoretical stand point
+              !IF ( hs1-zlevel(k) > dzmin) THEN
+              !  hhs(i,j) = hs1
+              !  kmz(i,j) = k
+              !ELSE
+              !  hhs(i,j) = zlevel(k)
+              !  kmz(i,j) = k - 1
+              !  IF ( kmz(i,j) == 1 ) THEN
+              !     hhs(i,j) = dzmin
+              !     kmz(i,j) = k1
+              !  ENDIF
+              !ENDIF
+              !EXIT
+            ENDIF
+          ENDDO
+        ENDIF
+      END SELECT
+    END DO
+  END DO
+  kmz(lm1) = km1
+  !.....Define bottom depths from datum at u- and v- points
+  hhu = ZERO;
+  hhv = ZERO;
 
-   ! ... Assign E,W,N,S colums for each l-column in the 2D-l space
-   l = 0
-   DO i = i1, im; DO j = j1, jm;
-     IF(.NOT. mask2d(i,j)) CYCLE
-     l = l + 1
-     lEC(l) = ij2l(i+1,j); ! Defines water column East  of l
-     lWC(l) = ij2l(i-1,j); ! Defines water column West  of l
-     lNC(l) = ij2l(i,j+1); ! Defines water column North of l
-     lSC(l) = ij2l(i,j-1); ! Defines water column South of l
-   END DO; END DO;
-!.....Allocate space for arrays.....
-   CALL AllocateSpace
-
-   !.....Define layer No. for bottom cell (kmz) &
-   !     bottom depth from datum at zeta-points (hhs).....
-   hhs = ZERO;
-   DO j = 1,jm1; DO i = 1,im1
-
-     SELECT CASE (mask2d(i,j))
-
-     CASE (.FALSE.)      ! Cells with all dry layers
-
-!       kmz(i,j) = km1
-
-     CASE (.TRUE.)      ! Cells with wet layers
-
-!            i = l2i(l);
-!           j = l2j(l);
-            l=ij2l(i,j)
-       ! ... Take depth at zeta-point as given in h file
-       hs1 = h4(i,j)
-
-       ! ... Compute No. of wet layers & depths at zeta-points
-       ! --- A. constant layer thickness (ibathyf >= 0)
-       IF (ibathyf >= 0) THEN
-         kmz(l) = FLOOR(hs1/ddz)
-         IF( (hs1-kmz(l)*ddz) > dzmin ) THEN
-           kmz(l) = kmz(l) + 1;
-           hhs(l) = hs1
-         ELSE
-           hhs(l) = kmz(l)*ddz
-         ENDIF
-         ! Add the fictitious first layer above the water surface
-         kmz(l) = kmz(l) + 1
-
-       ! --- B. Variable layer thickness (ibathyf < 0)
-       ELSE
-         DO k = k1, km
-           IF (zlevel(k+1)>=hs1) THEN
-             ! ... Option 1 - it works
-             hhs(l) = zlevel(k)+MAX(dzmin,(hs1-zlevel(k)));
-             kmz(l) = k
-             EXIT
-             !! ... Option 2 - preferable from a theoretical stand point
-             !IF ( hs1-zlevel(k) > dzmin) THEN
-             !  hhs(i,j) = hs1
-             !  kmz(i,j) = k
-             !ELSE
-             !  hhs(i,j) = zlevel(k)
-             !  kmz(i,j) = k - 1
-             !  IF ( kmz(i,j) == 1 ) THEN
-             !     hhs(i,j) = dzmin
-             !     kmz(i,j) = k1
-             !  ENDIF
-             !ENDIF
-             !EXIT
-           ENDIF
-         ENDDO
-       ENDIF
-
-     END SELECT
-
-   END DO;END DO
-   kmz(lm1) = km1
-   !.....Define bottom depths from datum at u- and v- points
-   hhu = ZERO;
-   hhv = ZERO;
-
-   DO j = 1,jm; DO i = 1,im;
+  DO j = 1,jm
+    DO i = 1,im
       IF(mask2d(i+1,j) .AND. mask2d(i,j)) THEN
         l=ij2l(i,j)
         hhu(l) = MIN(hhs(lEC(l)), hhs(l))
@@ -841,15 +861,15 @@ SUBROUTINE bathy
         l=ij2l(i,j)
         hhv(l) = MIN(hhs(lNC(l)), hhs(l))
       ENDIF
+    END DO
+  END DO
 
-   END DO;END DO
+  !.....Process and output the bathymetry needed for
+  !     graphics and particle tracking if ioutg=1.....
+  IF ( ipxml > 0 ) CALL outg ( h4 )
 
-   !.....Process and output the bathymetry needed for
-   !     graphics and particle tracking if ioutg=1.....
-   IF ( ipxml > 0 ) CALL outg ( h4 )
-
-   !.....Deallocate h4 pointer array.....
-   DEALLOCATE ( h4 )
+  !.....Deallocate h4 pointer array.....
+  DEALLOCATE ( h4 )
 
 END SUBROUTINE bathy
 
@@ -1002,6 +1022,7 @@ SUBROUTINE outt(n,thrs)
    INTEGER :: nn, i, j, k, l, kkk, itdays, ios, nchar, it, laux
    INTEGER, SAVE :: i10, i30, i60
    LOGICAL, SAVE :: first_entry = .TRUE.
+   REAL, DIMENSION(km1) :: zlevel_export
 
    !.....Timing.....
    REAL, EXTERNAL :: TIMER
@@ -1089,7 +1110,7 @@ SUBROUTINE outt(n,thrs)
       scout = -99.0
       trout = -99.0
 
-      DO k  = k1, kmz(l)
+      DO k  = k1, kmz(l) + 1
         IF (h(k,l)<=ZERO) CYCLE
         !uout(k)  = 0.5 * (u  (k,l) + u  (k,lWC(l)))
         !vout(k)  = 0.5 * (v  (k,l) + v  (k,lSC(l)))
@@ -1103,18 +1124,26 @@ SUBROUTINE outt(n,thrs)
         scout(k) = sal(k,l)
         IF (ntr>0) THEN
           DO it = 1, ntr
-            trout(k,it) = tracer(k,l,it)
+            IF ((it .ge. LSS1) .and. (it .le. LSS1 + sedNumber)) then
+              trout(k,it) = tracer(k,l,it) !* sed_dens(LSS1 + 1 - it)
+            ELSE
+              trout(k,it) = tracer(k,l,it)
+            END IF
           ENDDO
         ENDIF
+        zlevel_export(k) = zlevel(k+1)
+        if (k == km1) then
+          zlevel_export(k) = zlevel(k) + ddz
+        end if
      END DO
 
      ! ... Write variables to output file
      IF (ntr <= 0) THEN
-       WRITE (UNIT=i60, FMT=4) thrs, n, s(l), (zlevel(k+1),     &
+       WRITE (UNIT=i60, FMT=4) thrs, n, s(l), (zlevel_export(k),     &
            & uout (k), vout(k), wout(k), Avout(k), Dvout(k),      &
-           & scout(k), k =k1,kmz(l))
+           & scout(k), k =k1,kmz(l)+1)
      ELSE
-       WRITE (UNIT=i60, FMT=5) thrs, n, s(l), (zlevel(k+1) ,     &
+       WRITE (UNIT=i60, FMT=5) thrs, n, s(l), (zlevel_export(k) ,     &
             & uout (k), vout(k) , wout(k), Avout(k), Dvout(k),     &
             & scout(k  ),                                          &
             & trout(k,1),                                          &
@@ -1142,7 +1171,7 @@ SUBROUTINE outt(n,thrs)
             & trout(k,23),                                         &
             & trout(k,24),                                         &
             & trout(k,25),                                         &
-            & k = k1,kmz(l))
+            & k = k1,kmz(l)+1)
      ENDIF
 
    4 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PE15.7 / &
@@ -2129,13 +2158,11 @@ SUBROUTINE outh(n)
 !   REAL, ALLOCATABLE, DIMENSION(:,:) :: out_array
    INTEGER :: year_out, day_out, mon_out
    REAL    :: hour_out
-   print *,"a,"
    !.....Open spacefile on first entry and print initial conditions ....
    IF( n == 0 ) THEN
 
      ! ... Determine No. of time slices to output
      n_frames = (nts-itspfh)/MAX(iop,1)
-     print *,"aa,"
      DO j = 1, n_planes
        ! ... Check that plane no. is below 2
        IF ( p_out(j) < k1 ) THEN
@@ -2159,7 +2186,6 @@ SUBROUTINE outh(n)
        interior_plane_points (j) = ipoints
        WRITE(plane_id) ipoints
      END DO
-     print *,"bb,"
      ! ... Time stamp
      year_out = iyr
      mon_out  = imon
@@ -2168,7 +2194,6 @@ SUBROUTINE outh(n)
 
      ! ... Output planes
      DO k = 1, n_planes
-       print *,"ff"
        ipoints = interior_plane_points (k)
 !       ALLOCATE( out_array ( ipoints, 8 ), STAT=istat )
 !       IF (istat /= 0) THEN
@@ -2177,7 +2202,6 @@ SUBROUTINE outh(n)
 !       ENDIF
        kp = p_out(k)
        k_out = 0
-       print *,"fff"
        ! ... Bottom cell plane
        IF ( kp > km ) THEN
          DO c=1,cm1
@@ -2201,7 +2225,7 @@ SUBROUTINE outh(n)
            out_array(k_out,8) = s(l) ! Changed 12/2010 SWA
            !out_array(k_out,8) = hhs(i,j)
          END DO
-       print *,"bc,"
+
        ! ... Interior plane
        ELSE
          DO c=1,cm1
@@ -2229,14 +2253,13 @@ SUBROUTINE outh(n)
 
        ! ... Id # for plane file
        plane_id = plane_id0 + k
-        print *,"bh,"
+
        ! ... Print time stamp followed by the records
        WRITE(plane_id) n,year_out,mon_out,day_out,hour_out,          &
        &            ((out_array(m1,m2),m2=1,8),m1=1,ipoints)
 !       DEALLOCATE (out_array)
-        print *,"j"
+
      END DO
-     print *,"c,"
    ELSE
 
      ! ... Time stamp
@@ -2387,7 +2410,7 @@ SUBROUTINE outz(n)
      ENDDO
 
      DO j = 1, ntr
-       n_frames = nts/MAX(iotr,1)
+       n_frames = (nts-itspftr)/MAX(iotr,1)
        tracer_id = tracer_id0 + j
        tracer_file = "tracer_    "
        IF ( j < 10 ) WRITE ( tracer_file(8:11), FMT='(I1,"   ")' ) j
@@ -2649,13 +2672,12 @@ SUBROUTINE outp(n)
          out_array(kout,5) = up (k,l)
          out_array(kout,6) = vp (k,l)
          out_array(kout,7) = wp (k,l)
-         out_array(kout,8) = Dv (k,l)
-         out_array(kout,9) = salp (k,l)
+         out_array(kout,8) = salp (k,l)
        END DO;
      END DO
      ! ... Print time stamp followed by the records
      WRITE(ptrack_id) n,year_out,mon_out, day_out,hour_out,  &
-     &              ((out_array(m1,m2),m2=1,9),m1=1,ipoints)
+     &              ((out_array(m1,m2),m2=1,8),m1=1,ipoints)
 !     DEALLOCATE (out_array)
   ELSE
 
@@ -2676,13 +2698,12 @@ SUBROUTINE outp(n)
          out_array(kout,2) = up(k,l)
          out_array(kout,3) = vp(k,l)
          out_array(kout,4) = wp(k,l)
-         out_array(kout,5) = Dv(k,l)
-         out_array(kout,6) = salp (k,l)
+         out_array(kout,5) = salp (k,l)
        END DO;
      END DO
      ! ... Print time stamp followed by the records
      WRITE(ptrack_id) n,year_out,mon_out, day_out,hour_out,  &
-     &              ((out_array(m1,m2),m2=1,6),m1=1,ipoints)
+     &              ((out_array(m1,m2),m2=1,5),m1=1,ipoints)
      !DEALLOCATE (out_array)
  END IF
 

@@ -27,7 +27,7 @@
    REAL :: utime, stime, utime1, stime1, utime2, stime2, utime3, stime3,  &
          & ttime1, ttime2, atime, ltime1, ltime2
    REAL :: TimeStart, TimeEnd
-   INTEGER :: maxcount = 5E6,nn,is,ie,js,je,noH,isH,ieH,la,laaux,contBC,istat,iboid,lcon,lcon2,ifrontera
+   INTEGER :: maxcount = 10E6,nn,is,ie,js,je,noH,isH,ieH,la,laaux,contBC,istat,iboid,lcon,lcon2,ifrontera
    INTEGER :: iter, itemp, i, j, niter1, p, Bstart, Bend, ide_thread, depth, mincol,liter,k,aux_la,ios
    CHARACTER (LEN = 12) :: Ifile
 
@@ -326,6 +326,9 @@
       thrs = its/3600.
       IF(omp_get_thread_num ( )==0)THEN
       TimeStart = TIMER(0.0)
+        IF ((ecomod .eq. 1) .AND. (n .eq. nswq)) THEN
+            CALL InitializeScalarFields  ! ACC 06/16/2023 added to restart scalars after warmup
+        END IF
       CALL compute_date (idt)
       END IF
 
@@ -442,7 +445,7 @@
 
       !.....End loop over time.....
       IF(n > maxcount) THEN
-         PRINT *, " ERROR--A maximum of 5 million time steps is allowed"
+         PRINT *, " ERROR--A maximum of 10E6 time steps is allowed"
          EXIT
       END IF
       TimeEnd = TIMER(0.0)

@@ -1,0 +1,147 @@
+********************************************************************************************************
+Water Quality Input File for Model Parameters
+========================================================================================================
+List of tracers simulated 
+--------------------------------------------------------------------------------------------------------
+ iDO             !       0            ! Dissolved Oxygen,               DO
+ iPON            !       0            ! Particulate Organic Nitrogen,   PON
+ iDON            !       0            ! Dissolved Organic Nitrogen,     DON 
+ iNH4            !       0            ! Ammonia,                        NH4
+ iNO3            !       0            ! Nitrate and Nitrite,            NO3
+ iPOP            !       0            ! Particulate Organic Phosphours, POP
+ iDOP            !       0            ! Dissolved Organic Phosphorus,   DOP
+ iPO4            !       0            ! Orthophospate,                  PO4
+ iPOC            !       0            ! Particulate Organic Carbon,     POC 
+ iDOC            !       0            ! Dissolved Organic Carbon,       DOC
+ iALG1           !       0            ! Algae-1, PhytoC1, 	            ALG1
+ iALG2           !       0            ! Algae-2, PhytoC2, 	            ALG2
+ iALG3           !       0            ! Algae-3, PhytoC3, 	            ALG3
+ iALG4           !       0            ! Algae-4, PhytoC4, 	            ALG4
+ iALG5           !       0            ! Algae-5, PhytoC5, 	            ALG5
+ iMeHg           !       0            ! Methylmercury,                  MeHg
+ iHgII           !       0            ! Divalent Mercury,               HgII
+ iHg0            !       0            ! Elemental Mercury,              Hg0
+ iSS             !       1            ! Suspended Sediments,            SS
+--------------------------------------------------------------------------------------------------------
+Model Constants 
+--------------------------------------------------------------------------------------------------------
+ rnc             !      0.151         ! Ratio N:C (16:106)
+ rpc             !      0.030         ! Ratio P:C  (1:106)
+ roc             !      0.001         ! Ratio of O:C in photosynthesis and respiration (32/12)
+ ron             !      0.001         ! Ratio of O:N in nitrification (32/14). 
+ KSOD            !      0.001         ! Half-saturation const. for sediment oxygen demand (mg/L)
+ KDECMIN         !      0.001         ! Half-saturation const. for decomposition adn mineralization (mg/L)
+ KSED            !      0.001         ! Half-saturation const. for nutrient sediment flux (mg/L)
+ KNIT            !      0.001         ! Half-saturation const. for nitrification (mg/L)
+ KSN             !      0.070         ! Half-saturation const. for N uptake by algae (mg/L)
+ KSP             !      0.020         ! Half-saturation const. for P uptake by algae mg/L)
+ FNH4            !      0.250         ! Algae preference factor for NH4
+ light_sat1      !     50.000         ! Light saturation for Algae-1 (microE/m2/s)
+ light_sat2      !    100.000         ! Light saturation for Algae-2 (microE/m2/s)
+ light_sat3      !    100.000         ! Light saturation for Algae-3 (microE/m2/s)
+ light_sat4      !    100.000         ! Light saturation for Algae-4 (microE/m2/s)
+ light_sat5      !    100.000         ! Light saturation for Algae-5 (microE/m2/s)
+--------------------------------------------------------------------------------------------------------
+Model rates: Four algae groups, oxygen, SOD, and Nutrientes
+--------------------------------------------------------------------------------------------------------
+ mu_max1         !      0.5           ! [1/d] Maximum growth rate of algae  - 1
+ R_mor1          !      0.05          ! [1/d] Mortality rate of algae       - 1
+ R_gr1           !      0.00          ! [1/d] Zoop Grazing rate of algae    - 1
+ mu_max2         !      0.00          ! [1/d] Maximum growth rate of algae  - 2
+ R_mor2          !      0.00          ! [1/d] Mortality rate of algae       - 2    
+ R_gr2           !      0.00          ! [1/d] Zoop Grazing rate of algae    - 2
+ mu_max3         !      0.00          ! [1/d] Maximum growth rate of algae  - 3
+ R_mor3          !      0.00          ! [1/d] Mortality rate of algae       - 3
+ R_gr3           !      0.00          ! [1/d] Zoop Grazing rate of algae    - 3
+ mu_max4         !      0.00          ! [1/d] Maximum growth rate of algae  - 4
+ R_mor4          !      0.00          ! [1/d] Mortality rate of algae       - 4
+ R_gr4           !      0.00          ! [1/d] Zoop Grazing rate of algae    - 4
+ mu_max5         !      0.00          ! [1/d] Maximum growth rate of algae  - 5
+ R_mor5          !      0.00          ! [1/d] Mortality rate of algae       - 5
+ R_gr5           !      0.00          ! [1/d] Zoop Grazing rate of algae    - 5
+ R_decom_pon     !      0.01          ! [1/d] Rate of decomposition of PON 
+ R_miner_don     !      0.01          ! [1/d] Rate of mineralization of DON   
+ R_nitrif        !      0.01          ! [1/d] Rate of Nitrification      
+ R_denit         !      0.0           ! [1/d] Rate of denitrification 
+ R_decom_pop     !      0.01          ! [1/d] Rate of decomposition of POP 
+ R_miner_dop     !      0.01          ! [1/d] Mineralization rate of DOP 
+ R_decom_poc     !      0.01          ! [1/d] Rate of decomposition of POC
+ R_miner_doc     !      0.000         ! [1/d] Rate of mineralization of DOC
+ R_reaer         !      0.1           ! [1/d] Reaeration rate
+ R_settl         !      0.0000        ! [m/d] Rate of settling of nutrients         
+ R_resusp        !      0.0000        ! [m/d] Rate of resuspension of nutrients
+ vspa            !      0.0000        ! [m/d] Settling velocity of algae
+ vspoc           !      0.0000        ! [m/d] Settling velocity of Particulate Organic Matter
+--------------------------------------------------------------------------------------------------------
+Temperature Correction Factors
+--------------------------------------------------------------------------------------------------------
+ Topt1           !      0.000         ! [C] Optimal temperature for growth of algea - 1
+ Topt2           !      0.000         ! [C] Optimal temperature for growth of algea - 2
+ Topt3           !      0.000         ! [C] Optimal temperature for growth of algea - 3
+ Topt4           !      0.000         ! [C] Optimal temperature for growth of algea - 4
+ Topt5           !      0.000         ! [C] Optimal temperature for growth of algea - 5
+ Theta_SOD       !      1.050         ! [-] Tw dependence for sediment oxygen demand
+ Theta_mor       !      1.050         ! [-] Tw dependence for phytoplankton mortality	 
+ Theta_gr        !      1.050         ! [-] Tw dependence for phytoplankton grazing 
+ Theta_decom     !      1.080         ! [-] Tw dependence for decomposition 
+ Theta_miner     !      1.080         ! [-] Tw dependence for mineralization
+ Theta_sedfl     !      1.050         ! [-] Tw dependence for nutrient sediment flux
+ Theta_nitri     !      1.080         ! [-] Tw dependence for nitrification
+ Theta_denit     !      1.045         ! [-] Tw dependence for denitrification
+--------------------------------------------------------------------------------------------------------
+Fluxes (atmospheric and sediments)
+--------------------------------------------------------------------------------------------------------
+ R_SOD           !      0.03          ! [1/d] Sediment oxygen demand rate
+ ATM_DON         !      0.0           ! [mg/m2/day] Atmospheric deposition of DON
+ ATM_NH4         !      0.0           ! [mg/m2/day] Atmospheric deposition of NH4
+ ATM_NO3         !      0.0           ! [mg/m2/day] Atmospheric deposition of NO3
+ ATM_DOP         !      0.0           ! [mg/m2/day] Atmospheric deposition of DOP
+ ATM_PO4         !      0.0           ! [mg/m2/day] Atmospheric deposition of PO4
+ ATM_DOC         !      0.0           ! [mg/m2/day] Atmospheric deposition of DOC
+ SED_DON         !      0.0           ! [mg/m2/day] Sediment release of DON
+ SED_NH4         !      0.001         ! [mg/m2/day] Sediment release of NH4
+ SED_NO3         !      0.0           ! [mg/m2/day] Sediment release of NO3
+ SED_DOP         !      0.0           ! [mg/m2/day] Sediment release of DOP
+ SED_PO4         !      0.005         ! [mg/m2/day] Sediment release of PO4
+ SED_DOC         !      0.0           ! [mg/m2/day] Sediment release of DOC
+--------------------------------------------------------------------------------------------------------
+Sediment Parameters
+--------------------------------------------------------------------------------------------------------
+ SedNumber       !         0          ! Number of Particles to simulate
+ istwave         !         0          ! 1 = STWAVE runs, 0 = STWAVE bottom shear stress not added
+ Diameter (um)   !  100., 353.     
+ Density (kg/m3) ! 1200., 1850.
+ Vol_Part_Frac   !   0.5, 0.5
+ Cohesive1 non=0 !     0, 0           ! 1 = Cohesive, 0 = non-cohesive
+--------------------------------------------------------------------------------------------------------
+MeHg Parameters
+--------------------------------------------------------------------------------------------------------
+ inst_eq         !      1             ! 1 = instantaneous equilibrium 0 = Kinetics model for adsorption desorption
+ kw31            !      1.0           ! [m2/W 1/s] Reduction rate constant for MeHg_to_Hg0
+ atm_MeHg        !      0.0005        ! [ng/m2/d] Mercury deposition rate
+ k_MeHgw         !      1.0           ! [m/d] Mass transfer coefficient for MeHg in water
+ k_MeHgatm       !      2.            ! [m/d] Mass transfer coefficient for MeHg in atmosphere
+ MeHgatm         !      3.            ! [ng/L] concentration of Hg0 in the atmosphere
+ K_H_MeHgw       !      4.            ! [-] Henry's law constant for MeHg
+ kw32            !      5.            ! [1/d] Demethylation rate constant for MeHg in water
+ ks32            !      6.            ! [1/d] Demethylation rate constant for MeHg in sediment 
+ kws             !       0.01         ! [m/s] Mass transfer for mercury diffusion
+--------------------------------------------------------------------------------------------------------
+HgII Parameters
+--------------------------------------------------------------------------------------------------------
+ kw21            !   0.000001         ! [m2/W 1/s] Photodegradation rate constant for MeHg_to_Hg0
+ atm_HgII        !   0.001            ! [ng/m2/d] Mercury deposition rate
+ kw23            !     7.             ! [1/d] Methylation rate constant for HgII in water
+ ks23            !     8.             ! [1/d] Methylation rate constant for HgII in sediment
+ KDO             !     0.5            ! [-] Half saturation constant for DO in water column
+ KSO4			 !					  ! [mg-O2 / L] Half saturation constant for SO4 in porewater
+ SO4 			 !					  ! [mg-O2 / L] Sediment pore water sulfate concentration
+ miu_so4 		 ! 					  ! [L / mg] Ratio of sediment methylation rate and sulfate reduction rate
+--------------------------------------------------------------------------------------------------------
+Hg0 Parameters
+--------------------------------------------------------------------------------------------------------
+ DGMra           !       1.0          ! [-] Desired ratio from DOC and PH relatonship (Method in DSM2 model) 
+ k_Hg0w          !      10.           ! [m/d] Mass transfer coefficient for Hg0 in water
+ k_Hg0atm        !      11.           ! [m/d] Mass transfer coefficient for Hg0 in atmosphere
+ Hg0atm          !      12.           ! [ng/L] concentration of Hg0 in the atmosphere
+ K_H_Hg0w        !      13.           ! [-] Henry's law constant for Hg0

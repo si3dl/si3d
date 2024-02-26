@@ -1514,137 +1514,134 @@ SUBROUTINE MODqqddrr4openBC(Bstart,Bend,Bqq,Bsx,Bsy)
 !
 !------------------------------------------------------------------------
 
-   INTEGER, INTENT(IN) :: Bstart,Bend
-   REAL, DIMENSION (Bstart:Bend+1), INTENT(INOUT) :: Bqq,Bsx,Bsy
+  INTEGER, INTENT(IN) :: Bstart,Bend
+  REAL, DIMENSION (Bstart:Bend+1), INTENT(INOUT) :: Bqq,Bsx,Bsy
 
+  !.....Local variables.....
+  INTEGER :: i, j, nn, is, ie, js, je, ks, ke,laux,iaux,jaux
+  REAL    :: dt1, dtdx1, dtdy1,no,ide_t
 
-   !.....Local variables.....
-   INTEGER :: i, j, nn, is, ie, js, je, ks, ke,laux,iaux,jaux
-   REAL    :: dt1, dtdx1, dtdy1,no,ide_t
-
-   !.....Constants.....
-   dtdx1 = dtdx*tz;
-   dtdy1 = dtdy*tz;
-!   print *,"dtdx1:",dtdx1,"dtdy1:",dtdy1
-   ide_t = omp_get_thread_num()+1
-   !.....Loop over open boundaries.....
-   DO nn = 1, nopenH(ide_t)
-      no = noh2no(nn,ide_t)
-      SELECT CASE ( itype(no) )
+  !.....Constants.....
+  dtdx1 = dtdx*tz;
+  dtdy1 = dtdy*tz;
+  !   print *,"dtdx1:",dtdx1,"dtdy1:",dtdy1
+  ide_t = omp_get_thread_num()+1
+  !.....Loop over open boundaries.....
+  DO nn = 1, nopenH(ide_t)
+    no = noh2no(nn,ide_t)
+    SELECT CASE ( itype(no) )
 
       !.....Case 1 -- wse specified.....
       CASE (1)
-
-         ! Identify wse boundary as on the west, north, east, or south
-         SELECT CASE ( iside(no) )
-         ! West boundary
-         CASE (1)
+      ! Identify wse boundary as on the west, north, east, or south
+        SELECT CASE ( iside(no) )
+          ! West boundary
+          CASE (1)
             i = isbcHH(no,ide_t); js = jsbcH(no,ide_t); je = jebcH(no,ide_t)
             ! Adjust [qq] array for column of nodes just inside boundary
             DO jaux=js,je
-            	Bqq(ij2l(i+1,jaux)) = Bqq(ij2l(i+1,jaux)) + Bsx(ij2l(i,jaux))*s(ij2l(i,jaux))
+              Bqq(ij2l(i+1,jaux)) = Bqq(ij2l(i+1,jaux)) + Bsx(ij2l(i,jaux))*s(ij2l(i,jaux))
             END DO
             ! Set sx(i,js:je) to zero in matrix (not really necessary)
             DO jaux=js,je
-            	Bsx(ij2l(i,jaux)) = 0.0
+              Bsx(ij2l(i,jaux)) = 0.0
             END DO
 
-         ! North boundary
-         CASE (2)
+          ! North boundary
+          CASE (2)
             j = jsbcH(no,ide_t); is = isbcHH(no,ide_t); ie = iebcHH(no,ide_t)
             ! Adjust [qq] array for row of nodes just inside boundary
             DO iaux=is,ie
-            	Bqq(ij2l(iaux,j-1)) = Bqq(ij2l(iaux,j-1)) + Bsy(ij2l(iaux,j-1))*s(ij2l(iaux,j))
+              Bqq(ij2l(iaux,j-1)) = Bqq(ij2l(iaux,j-1)) + Bsy(ij2l(iaux,j-1))*s(ij2l(iaux,j))
             END DO
             ! Set sy(is:ie,j-1) to zero in matrix (necessary)
             DO iaux=is,ie
-            	Bsy(ij2l(iaux,j-1)) = 0.0
+              Bsy(ij2l(iaux,j-1)) = 0.0
             END DO
 
-         ! East boundary
-         CASE (3)
+          ! East boundary
+          CASE (3)
             i = isbcHH(no,ide_t); js = jsbcH(no,ide_t); je = jebcH(no,ide_t)
             DO jaux=js,je
-            	Bqq(ij2l(i-1,jaux)) = Bqq(ij2l(i-1,jaux)) + Bsx(ij2l(i-1,jaux))*s(ij2l(i,jaux))
+              Bqq(ij2l(i-1,jaux)) = Bqq(ij2l(i-1,jaux)) + Bsx(ij2l(i-1,jaux))*s(ij2l(i,jaux))
             END DO
             ! Set sx(i,js:je) to zero in matrix (not really necessary)
             DO jaux=js,je
-            	Bsx(ij2l(i-1,jaux)) = 0.0
+              Bsx(ij2l(i-1,jaux)) = 0.0
             END DO
 
-         ! South boundary
-         CASE (4)
+          ! South boundary
+          CASE (4)
             j = jsbcH(no,ide_t); is = isbcHH(no,ide_t); ie = iebcHH(no,ide_t)
             ! Adjust [qq] array for row of nodes just inside boundary
             DO iaux=is,ie
-            	Bqq(ij2l(iaux,j+1)) = Bqq(ij2l(iaux,j+1)) + Bsy(ij2l(iaux,j))*s(ij2l(iaux,j))
+              Bqq(ij2l(iaux,j+1)) = Bqq(ij2l(iaux,j+1)) + Bsy(ij2l(iaux,j))*s(ij2l(iaux,j))
             END DO
             ! Set sy(is:ie,j-1) to zero in matrix (necessary)
             DO iaux=is,ie
-            	Bsy(ij2l(iaux,j)) = 0.0
+              Bsy(ij2l(iaux,j)) = 0.0
             END DO
-
-         END SELECT
+        END SELECT
 
       !.....Case 2,4  -- Free surface flow specified.....
       CASE (2,4)
 
-         ! Identify flow boundary as on the west, north, east, or south
-         SELECT CASE ( iside(no) )
+        ! Identify flow boundary as on the west, north, east, or south
+        SELECT CASE ( iside(no) )
 
-         ! West boundary
-         CASE (1)
+          ! West boundary
+          CASE (1)
             i = isbcHH(no,ide_t); js = jsbcH(no,ide_t); je = jebcH(no,ide_t)
             ! Adjust [qq] array for flow rate into the
             ! column of nodes just inside the boundary
             DO j = js, je
-               laux = ij2l(i,j)
-               Bqq(laux) = Bqq(laux) + dtdx1*SUM(uhWB  (k1:kmz(laux),j)) &
-                                     + dtdx1*SUM(uhWBpp(k1:kmz(laux),j))
+              laux = ij2l(i,j)
+              Bqq(laux) = Bqq(laux) + dtdx1*SUM(uhWB  (k1:kmz(laux),j)) &
+                          + dtdx1*SUM(uhWBpp(k1:kmz(laux),j))
             END DO
 
-         ! North boundary
-         CASE (2)
+          ! North boundary
+          CASE (2)
             j = jsbcH(no,ide_t); is = isbcHH(no,ide_t); ie = iebcHH(no,ide_t)
             ! Adjust [qq] array for flow rate into the
             ! row of nodes just inside the boundary
             DO i = is, ie
-               laux = ij2l(i,j)
-               Bqq(laux) = Bqq(laux) - dtdy1*SUM(vhNB  (k1:kmz(laux),i)) &
-                                     - dtdy1*SUM(vhNBpp(k1:kmz(laux),i))
+              laux = ij2l(i,j)
+              Bqq(laux) = Bqq(laux) - dtdy1*SUM(vhNB  (k1:kmz(laux),i)) &
+                          - dtdy1*SUM(vhNBpp(k1:kmz(laux),i))
             END DO
 
-         ! East boundary
-         CASE (3)
+          ! East boundary
+          CASE (3)
             i = isbcHH(no,ide_t); js = jsbcH(no,ide_t); je = jebcH(no,ide_t)
             ! Adjust [qq] array for flow rate into the
             ! column of nodes just inside the boundary
             DO j = js, je
-               laux = ij2l(i,j)
-               Bqq(laux) = Bqq(laux) - dtdx1*SUM(uhEB  (k1:kmz(laux),j)) &
-                                     - dtdx1*SUM(uhEBpp(k1:kmz(laux),j))
+              laux = ij2l(i,j)
+              Bqq(laux) = Bqq(laux) - dtdx1*SUM(uhEB  (k1:kmz(laux),j)) &
+                          - dtdx1*SUM(uhEBpp(k1:kmz(laux),j))
             END DO
 
-         ! South boundary
-         CASE (4)
+          ! South boundary
+          CASE (4)
             j = jsbcH(no,ide_t); is = isbcHH(no,ide_t); ie = iebcHH(no,ide_t)
             ! Adjust [qq] array for flow rate into the
             ! row of nodes just inside the boundary
             DO i = is, ie
-               laux = ij2l(i,j)
-               Bqq(laux) = Bqq(laux) + dtdy1*SUM(vhSB  (k1:kmz(laux),i)) &
-                                     + dtdy1*SUM(vhSBpp(k1:kmz(laux),i))
+              laux = ij2l(i,j)
+              Bqq(laux) = Bqq(laux) + dtdy1*SUM(vhSB  (k1:kmz(laux),i)) &
+                          + dtdy1*SUM(vhSBpp(k1:kmz(laux),i))
             END DO
-         END SELECT
+        END SELECT
 
       !.....Case 3 -- Submerged flow specified.....
       CASE (3)
 
-         ! Identify flow boundary as on the west, north, east, or south
-         SELECT CASE ( iside(no) )
+        ! Identify flow boundary as on the west, north, east, or south
+        SELECT CASE ( iside(no) )
 
-         ! West boundary
-         CASE (1)
+          ! West boundary
+          CASE (1)
             i  = isbc(no);
             j  = jsbc(no);
             ks = iebc(no);
@@ -1652,10 +1649,10 @@ SUBROUTINE MODqqddrr4openBC(Bstart,Bend,Bqq,Bsx,Bsy)
             ! Adjust [qq] array for flow rate into the
             ! column of nodes just inside the boundary
             Bqq(laux) = Bqq(laux) + dtdx1*SUM(uhWB  (ks:ke,j)) &
-                                  + dtdx1*SUM(uhWBpp(ks:ke,j))
+                        + dtdx1*SUM(uhWBpp(ks:ke,j))
 
-         ! North boundary
-         CASE (2)
+          ! North boundary
+          CASE (2)
             j  = jsbc(no);
             i  = isbc(no);
             ks = iebc(no);
@@ -1663,10 +1660,10 @@ SUBROUTINE MODqqddrr4openBC(Bstart,Bend,Bqq,Bsx,Bsy)
             ! Adjust [qq] array for flow rate into the
             ! row of nodes just inside the boundary
             Bqq(laux) = Bqq(laux) - dtdy1*SUM(vhNB  (ks:ke,i)) &
-                                  - dtdy1*SUM(vhNBpp(ks:ke,i))
+                        - dtdy1*SUM(vhNBpp(ks:ke,i))
 
-         ! East boundary
-         CASE (3)
+          ! East boundary
+          CASE (3)
             i  = isbc(no);
             j  = jsbc(no);
             ks = iebc(no);
@@ -1674,10 +1671,10 @@ SUBROUTINE MODqqddrr4openBC(Bstart,Bend,Bqq,Bsx,Bsy)
             ! Adjust [qq] array for flow rate into the
             ! column of nodes just inside the boundary
             Bqq(laux) = Bqq(laux) - dtdx1*SUM(uhEB  (ks:ke,j)) &
-                                  - dtdx1*SUM(uhEBpp(ks:ke,j))
+                        - dtdx1*SUM(uhEBpp(ks:ke,j))
 
-         ! South boundary
-         CASE (4)
+          ! South boundary
+          CASE (4)
             j  = jsbc(no);
             i  = isbc(no);
             ks = iebc(no);
@@ -1685,11 +1682,10 @@ SUBROUTINE MODqqddrr4openBC(Bstart,Bend,Bqq,Bsx,Bsy)
             ! Adjust [qq] array for flow rate into the
             ! row of nodes just inside the boundary
             Bqq(laux) = Bqq(laux) + dtdy1*SUM(vhSB  (ks:ke,i)) &
-                                  + dtdy1*SUM(vhSBpp(ks:ke,i))
-         END SELECT
-
+                        + dtdy1*SUM(vhSBpp(ks:ke,i))
+        END SELECT
       END SELECT
-   END DO
+  END DO
 
 END SUBROUTINE MODqqddrr4openBC
 
@@ -4168,8 +4164,8 @@ SUBROUTINE surfbc0
    CASE (1)
 
      !               ----- Open files with heatflux surface bc data-----
-     OPEN (UNIT=i53, FILE='surfbc.txt', STATUS="OLD", IOSTAT=ios)
-     IF (ios /= 0) CALL open_error ( "Error opening surfbc.txt", ios )
+     OPEN (UNIT=i53, FILE='si3d_surfbc.txt', STATUS="OLD", IOSTAT=ios)
+     IF (ios /= 0) CALL open_error ( "Error opening si3d_surfbc.txt", ios )
 
      !               -----Read files with heatflux surface bc data-----
      ! Skip over first six header records in salinity boundary condition file
@@ -4212,8 +4208,8 @@ SUBROUTINE surfbc0
    CASE (2)
 
      !               ----- Open files with heatflux surface bc data-----
-     OPEN (UNIT=i53, FILE='surfbc.txt', STATUS="OLD", IOSTAT=ios)
-     IF (ios /= 0) CALL open_error ( "Error opening surfbc.txt", ios )
+     OPEN (UNIT=i53, FILE='si3d_surfbc.txt', STATUS="OLD", IOSTAT=ios)
+     IF (ios /= 0) CALL open_error ( "Error opening si3d_surfbc.txt", ios )
 
      !               -----Read files with heatflux surface bc data-----
      ! Skip over first six header records in salinity boundary condition file
@@ -4259,8 +4255,8 @@ SUBROUTINE surfbc0
    CASE (3)
 
      !               ----- Open files with heatflux surface bc data-----
-     OPEN (UNIT=i53, FILE='surfbc.txt', STATUS="OLD", IOSTAT=ios)
-     IF (ios /= 0) CALL open_error ( "Error opening surfbc.txt", ios )
+     OPEN (UNIT=i53, FILE='si3d_surfbc.txt', STATUS="OLD", IOSTAT=ios)
+     IF (ios /= 0) CALL open_error ( "Error opening si3d_surfbc.txt", ios )
 
      !               -----Read files with heatflux surface bc data-----
      ! Skip over first six header records in salinity boundary condition file
@@ -4305,8 +4301,8 @@ SUBROUTINE surfbc0
    CASE (10) ! Space & Time varying met. variables - Heat budget on run-time (I) mode
 
      !               ----- Open files with heatflux surface bc data-----
-     OPEN (UNIT=i53, FILE='surfbc.txt', STATUS="OLD", IOSTAT=ios)
-     IF (ios /= 0) CALL open_error ( "Error opening surfbc.txt", ios )
+     OPEN (UNIT=i53, FILE='si3d_surfbc.txt', STATUS="OLD", IOSTAT=ios)
+     IF (ios /= 0) CALL open_error ( "Error opening si3d_surfbc.txt", ios )
 
      !               -----Read files with heatflux surface bc data-----
 
@@ -4381,8 +4377,8 @@ SUBROUTINE surfbc0
    CASE (11) ! Space & Time varying met. variables - Heat budget on run-time (II) mode
 
      !               ----- Open files with heatflux surface bc data-----
-     OPEN (UNIT=i53, FILE='surfbc.txt', STATUS="OLD", IOSTAT=ios)
-     IF (ios /= 0) CALL open_error ( "Error opening surfbc.txt", ios )
+     OPEN (UNIT=i53, FILE='si3d_surfbc.txt', STATUS="OLD", IOSTAT=ios)
+     IF (ios /= 0) CALL open_error ( "Error opening si3d_surfbc.txt", ios )
 
      !               -----Read files with heatflux surface bc data-----
 
@@ -4461,8 +4457,8 @@ SUBROUTINE surfbc0
      print *,"hola7"
    CASE (20)
      !               ----- Open files with wind velocity bc data-----
-     OPEN (UNIT=i53, FILE='surfbcW.txt', STATUS="OLD", IOSTAT=ios)
-     IF (ios /= 0) CALL open_error ( "Error opening surfbc.txt", ios )
+     OPEN (UNIT=i53, FILE='si3d_surfbc_W.txt', STATUS="OLD", IOSTAT=ios)
+     IF (ios /= 0) CALL open_error ( "Error opening si3d_surfbc.txt", ios )
 
      !               -----Read files with heatflux surface bc data-----
      ! Skip over first six header records in salinity boundary condition file
@@ -4507,153 +4503,174 @@ SUBROUTINE surfbc(n,istep,thrs)
 !
 !------------------------------------------------------------------------
 
-   INTEGER,INTENT(IN) :: n,istep
-   REAL, INTENT(IN) :: thrs
+  INTEGER,INTENT(IN) :: n,istep
+  REAL, INTENT(IN) :: thrs
 
-   !.....Local variables.....
-   REAL    :: dthrs_surfbc
-   INTEGER :: i, j, k, ios, nn, is, ie, js, je, kb, isalin, itest, imet,liter,l
+  !.....Local variables.....
+  REAL    :: dthrs_surfbc
+  INTEGER :: i, j, k, ios, nn, is, ie, js, je, kb, isalin, itest, imet,liter,l
 
-   SELECT CASE (ifSurfBC)
+  SELECT CASE (ifSurfBC)
 
-   !               ----- No surface bc data----------------
-   CASE (0)
-
+    !               ----- No surface bc data----------------
+    CASE (0)
       DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
 
-       l = id_column(liter)
+        l = id_column(liter)
+        uair(l) = -wa * SIN(pi*phi/180.);
+        vair(l) = -wa * COS(pi*phi/180.);
+        cdw(l)  =  cw
+      END DO
 
-      uair(l) = -wa * SIN(pi*phi/180.);
-      vair(l) = -wa * COS(pi*phi/180.);
-      cdw(l)  =  cw
-    END DO
+    !               ----- Use surface bc data from file ----
+    CASE(1) ! Heat budget on preprocess mode - shortwave radiative and
+            ! net heat fluxes (including longwave & sensible & latent) as input
+            ! Space uniform & time varying
 
-   !               ----- Use surface bc data from file ----
-   CASE(1) ! Heat budget on preprocess mode - shortwave radiative and
-           ! net heat fluxes (including longwave & sensible & latent) as input
-           ! Space uniform & time varying
+      !.....Return from subroutine on trapezoidal steps (except if n=1).....
+      IF (n > 1) THEN
+        IF (istep == 2) THEN
+          RETURN
+        END IF
+      END IF 
 
-     !.....Return from subroutine on trapezoidal steps (except if n=1).....
-     IF (n > 1) THEN; IF (istep == 2) RETURN; END IF
+      !.....Interpolate heat & momentum flux vars. to time n .....
+      dthrs_surfbc = dtSurfbc/3600.
+      eta = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
+      Qsw = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
+      Qn  = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
+      cdw = parab(0.,thrs,surfbc1(4,:),dthrs_surfbc)
+      uair= parab(0.,thrs,surfbc1(5,:),dthrs_surfbc)
+      vair= parab(0.,thrs,surfbc1(6,:),dthrs_surfbc)
 
-     !.....Interpolate heat & momentum flux vars. to time n .....
-     dthrs_surfbc = dtSurfbc/3600.
-     eta = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
-     Qsw = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
-     Qn  = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
-     cdw = parab(0.,thrs,surfbc1(4,:),dthrs_surfbc)
-     uair= parab(0.,thrs,surfbc1(5,:),dthrs_surfbc)
-     vair= parab(0.,thrs,surfbc1(6,:),dthrs_surfbc)
+      ! ... Calculate 3D-spatially variable sources
+      CALL DistributeQswH
+      CALL DistributeMomentumHeatSourcesH(n,istep)
 
-     ! ... Calculate 3D-spatially variable sources
-     CALL DistributeQswH
-     CALL DistributeMomentumHeatSourcesH(n,istep)
-
-   CASE (2) ! Heat budget on run-time mode (I) - shortwave fluxes as input;
+    CASE (2)! Heat budget on run-time mode (I) - shortwave fluxes as input;
             ! longwave & latent & sensible heat fluxes calculated.
             ! space uniform & time varying
 
-     !.....Return from subroutine on trapezoidal steps (except if n=1).....
-     IF (n > 1) THEN; IF (istep == 2) RETURN; END IF
+      !.....Return from subroutine on trapezoidal steps (except if n=1).....
+      IF (n > 1) THEN
+        IF (istep == 2) THEN
+          RETURN
+        END IF
+      END IF
 
-     !.....Interpolate heat & momentum flux vars. values to present time step .....
-     dthrs_surfbc = dtSurfbc/3600.
-     eta = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
-     Qsw = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
-     Ta  = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
-     Pa  = parab(0.,thrs,surfbc1(4,:),dthrs_surfbc)
-     Rh  = parab(0.,thrs,surfbc1(5,:),dthrs_surfbc)
-     Cc  = parab(0.,thrs,surfbc1(6,:),dthrs_surfbc)
-     cdw = parab(0.,thrs,surfbc1(7,:),dthrs_surfbc)
-     uair= parab(0.,thrs,surfbc1(8,:),dthrs_surfbc)
-     vair= parab(0.,thrs,surfbc1(9,:),dthrs_surfbc)
+      !.....Interpolate heat & momentum flux vars. values to present time step .....
+      dthrs_surfbc = dtSurfbc/3600.
+      eta = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
+      Qsw = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
+      Ta  = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
+      Pa  = parab(0.,thrs,surfbc1(4,:),dthrs_surfbc)
+      Rh  = parab(0.,thrs,surfbc1(5,:),dthrs_surfbc)
+      Cc  = parab(0.,thrs,surfbc1(6,:),dthrs_surfbc)
+      cdw = parab(0.,thrs,surfbc1(7,:),dthrs_surfbc)
+      uair= parab(0.,thrs,surfbc1(8,:),dthrs_surfbc)
+      vair= parab(0.,thrs,surfbc1(9,:),dthrs_surfbc)
 
-     ! ... Calculate 3D-spatially variable heat sources
-     CALL DistributeQswH
-     CALL DistributeMomentumHeatSourcesH(n,istep)
+      ! ... Calculate 3D-spatially variable heat sources
+      CALL DistributeQswH
+      CALL DistributeMomentumHeatSourcesH(n,istep)
 
-   CASE (3) ! Heat budget on run-time mode (II) - radiative (short & longwave)
+    CASE (3) ! Heat budget on run-time mode (II) - radiative (short & longwave)
             ! fluxes as input; latent & sensible heat fluxes calculated.
             ! Space uniform & time varying
 
-     !.....Return from subroutine on trapezoidal steps (except if n=1).....
-     IF (n > 1) THEN; IF (istep == 2) RETURN; END IF
+      !.....Return from subroutine on trapezoidal steps (except if n=1).....
+      IF (n > 1) THEN
+        IF (istep == 2) THEN
+          RETURN
+        END IF
+      END IF 
 
-     !.....Interpolate heat & momentum flux vars. values to present time step .....
-     dthrs_surfbc = dtSurfbc/3600.
-     eta = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
-     Qsw = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
-     Ta  = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
-     Pa  = parab(0.,thrs,surfbc1(4,:),dthrs_surfbc)
-     Rh  = parab(0.,thrs,surfbc1(5,:),dthrs_surfbc)
-     Qlw = parab(0.,thrs,surfbc1(6,:),dthrs_surfbc)
-     cdw = parab(0.,thrs,surfbc1(7,:),dthrs_surfbc)
-     uair= parab(0.,thrs,surfbc1(8,:),dthrs_surfbc)
-     vair= parab(0.,thrs,surfbc1(9,:),dthrs_surfbc)
+      !.....Interpolate heat & momentum flux vars. values to present time step .....
+      dthrs_surfbc = dtSurfbc/3600.
+      eta = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
+      Qsw = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
+      Ta  = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
+      Pa  = parab(0.,thrs,surfbc1(4,:),dthrs_surfbc)
+      Rh  = parab(0.,thrs,surfbc1(5,:),dthrs_surfbc)
+      Qlw = parab(0.,thrs,surfbc1(6,:),dthrs_surfbc)
+      cdw = parab(0.,thrs,surfbc1(7,:),dthrs_surfbc)
+      uair= parab(0.,thrs,surfbc1(8,:),dthrs_surfbc)
+      vair= parab(0.,thrs,surfbc1(9,:),dthrs_surfbc)
 
-     ! ... Calculate 3D-spatially variable heat sources
-     CALL DistributeQswH
-     CALL DistributeMomentumHeatSourcesH(n,istep)
+      ! ... Calculate 3D-spatially variable heat sources
+      CALL DistributeQswH
+      CALL DistributeMomentumHeatSourcesH(n,istep)
 
-   CASE (10) ! Spatially & time varying surface BC - Heat Budget calculated
-              ! on RUN-TIME (I) mode
+    CASE (10) ! Spatially & time varying surface BC - Heat Budget calculated
+             ! on RUN-TIME (I) mode
 
-     !.....Return from subroutine on trapezoidal steps (except if n=1).....
-     IF (n > 1) THEN; IF (istep == 2) RETURN; END IF
+      !.....Return from subroutine on trapezoidal steps (except if n=1).....
+      IF (n > 1) THEN
+        IF (istep == 2) THEN
+          RETURN
+        END IF
+      END IF
 
-     !.....Interpolate heat & momentum flux vars. values to present time step .....
-     DO imet = 1, nmetstat
-       dthrs_surfbc  = dtSurfbc/3600.
-       eta           = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
-       Pa            = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
-       Qsw2D (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 3,:),dthrs_surfbc)
-       Ta2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 4,:),dthrs_surfbc)
-       RH2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 5,:),dthrs_surfbc)
-       Cc2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 6,:),dthrs_surfbc)
-       uair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 7,:),dthrs_surfbc)
-       vair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 8,:),dthrs_surfbc)
-     ENDDO
+      !.....Interpolate heat & momentum flux vars. values to present time step .....
+      DO imet = 1, nmetstat
+        dthrs_surfbc  = dtSurfbc/3600.
+        eta           = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
+        Pa            = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
+        Qsw2D (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 3,:),dthrs_surfbc)
+        Ta2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 4,:),dthrs_surfbc)
+        RH2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 5,:),dthrs_surfbc)
+        Cc2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 6,:),dthrs_surfbc)
+        uair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 7,:),dthrs_surfbc)
+        vair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 8,:),dthrs_surfbc)
+      ENDDO
 
-     ! ... Distribute heat and momentum sources entering through free surface
-     CALL DistributeQswH
-     CALL DistributeMomentumHeatSourcesH(n,istep)
+      ! ... Distribute heat and momentum sources entering through free surface
+      CALL DistributeQswH
+      CALL DistributeMomentumHeatSourcesH(n,istep)
 
-
-   CASE (11) ! Spatially & time varying surface BC - Heat Budget calculated
+    CASE (11) ! Spatially & time varying surface BC - Heat Budget calculated
               ! on RUN-TIME (II) mode
 
-     !.....Return from subroutine on trapezoidal steps (except if n=1).....
-     IF (n > 1) THEN; IF (istep == 2) RETURN; END IF
+      !.....Return from subroutine on trapezoidal steps (except if n=1).....
+      IF (n > 1) THEN
+        IF (istep == 2) THEN
+          RETURN
+        END IF
+      END IF 
 
-     !.....Interpolate heat & momentum flux vars. values to present time step .....
-     DO imet = 1, nmetstat
-       dthrs_surfbc  = dtSurfbc/3600.
-       eta           = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
-       Pa            = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
-       Qsw2D (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 3,:),dthrs_surfbc)
-       Ta2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 4,:),dthrs_surfbc)
-       RH2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 5,:),dthrs_surfbc)
-       Qlw2D (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 6,:),dthrs_surfbc)
-       uair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 7,:),dthrs_surfbc)
-       vair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 8,:),dthrs_surfbc)
-     ENDDO
+      !.....Interpolate heat & momentum flux vars. values to present time step .....
+      DO imet = 1, nmetstat
+        dthrs_surfbc  = dtSurfbc/3600.
+        eta           = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
+        Pa            = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
+        Qsw2D (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 3,:),dthrs_surfbc)
+        Ta2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 4,:),dthrs_surfbc)
+        RH2D  (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 5,:),dthrs_surfbc)
+        Qlw2D (imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 6,:),dthrs_surfbc)
+        uair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 7,:),dthrs_surfbc)
+        vair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 8,:),dthrs_surfbc)
+      ENDDO
 
-     ! ... Distribute heat and momentum sources entering through free surface
-     CALL DistributeQswH
-     CALL DistributeMomentumHeatSourcesH(n,istep)
+      ! ... Distribute heat and momentum sources entering through free surface
+      CALL DistributeQswH
+      CALL DistributeMomentumHeatSourcesH(n,istep)
 
-   CASE (20)
-     !.....Return from subroutine on trapezoidal steps (except if n=1).....
-     IF (n > 1) THEN; IF (istep == 2) RETURN; END IF
-     !.....Interpolate heat & momentum flux vars. to time n .....
-     dthrs_surfbc = dtSurfbc/3600.
-     cdw = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
-     uair = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
-     vair = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
+    CASE (20)
+      !.....Return from subroutine on trapezoidal steps (except if n=1).....
+      IF (n > 1) THEN
+        IF (istep == 2) THEN
+          RETURN
+        END IF
+      END IF 
+      !.....Interpolate heat & momentum flux vars. to time n .....
+      dthrs_surfbc = dtSurfbc/3600.
+      cdw = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
+      uair = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
+      vair = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
 
-     ! ... Calculate 3D-spatially variable sources
-     CALL DistributeQswH
-     CALL DistributeMomentumHeatSourcesH(n,istep)
+      ! ... Calculate 3D-spatially variable sources
+      CALL DistributeQswH
+      CALL DistributeMomentumHeatSourcesH(n,istep)
 
    END SELECT
 
