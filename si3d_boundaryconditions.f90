@@ -1514,137 +1514,134 @@ SUBROUTINE MODqqddrr4openBC(Bstart,Bend,Bqq,Bsx,Bsy)
 !
 !------------------------------------------------------------------------
 
-   INTEGER, INTENT(IN) :: Bstart,Bend
-   REAL, DIMENSION (Bstart:Bend+1), INTENT(INOUT) :: Bqq,Bsx,Bsy
+  INTEGER, INTENT(IN) :: Bstart,Bend
+  REAL, DIMENSION (Bstart:Bend+1), INTENT(INOUT) :: Bqq,Bsx,Bsy
 
+  !.....Local variables.....
+  INTEGER :: i, j, nn, is, ie, js, je, ks, ke,laux,iaux,jaux
+  REAL    :: dt1, dtdx1, dtdy1,no,ide_t
 
-   !.....Local variables.....
-   INTEGER :: i, j, nn, is, ie, js, je, ks, ke,laux,iaux,jaux
-   REAL    :: dt1, dtdx1, dtdy1,no,ide_t
-
-   !.....Constants.....
-   dtdx1 = dtdx*tz;
-   dtdy1 = dtdy*tz;
-!   print *,"dtdx1:",dtdx1,"dtdy1:",dtdy1
-   ide_t = omp_get_thread_num()+1
-   !.....Loop over open boundaries.....
-   DO nn = 1, nopenH(ide_t)
-      no = noh2no(nn,ide_t)
-      SELECT CASE ( itype(no) )
+  !.....Constants.....
+  dtdx1 = dtdx*tz;
+  dtdy1 = dtdy*tz;
+  !   print *,"dtdx1:",dtdx1,"dtdy1:",dtdy1
+  ide_t = omp_get_thread_num()+1
+  !.....Loop over open boundaries.....
+  DO nn = 1, nopenH(ide_t)
+    no = noh2no(nn,ide_t)
+    SELECT CASE ( itype(no) )
 
       !.....Case 1 -- wse specified.....
       CASE (1)
-
-         ! Identify wse boundary as on the west, north, east, or south
-         SELECT CASE ( iside(no) )
-         ! West boundary
-         CASE (1)
+      ! Identify wse boundary as on the west, north, east, or south
+        SELECT CASE ( iside(no) )
+          ! West boundary
+          CASE (1)
             i = isbcHH(no,ide_t); js = jsbcH(no,ide_t); je = jebcH(no,ide_t)
             ! Adjust [qq] array for column of nodes just inside boundary
             DO jaux=js,je
-            	Bqq(ij2l(i+1,jaux)) = Bqq(ij2l(i+1,jaux)) + Bsx(ij2l(i,jaux))*s(ij2l(i,jaux))
+              Bqq(ij2l(i+1,jaux)) = Bqq(ij2l(i+1,jaux)) + Bsx(ij2l(i,jaux))*s(ij2l(i,jaux))
             END DO
             ! Set sx(i,js:je) to zero in matrix (not really necessary)
             DO jaux=js,je
-            	Bsx(ij2l(i,jaux)) = 0.0
+              Bsx(ij2l(i,jaux)) = 0.0
             END DO
 
-         ! North boundary
-         CASE (2)
+          ! North boundary
+          CASE (2)
             j = jsbcH(no,ide_t); is = isbcHH(no,ide_t); ie = iebcHH(no,ide_t)
             ! Adjust [qq] array for row of nodes just inside boundary
             DO iaux=is,ie
-            	Bqq(ij2l(iaux,j-1)) = Bqq(ij2l(iaux,j-1)) + Bsy(ij2l(iaux,j-1))*s(ij2l(iaux,j))
+              Bqq(ij2l(iaux,j-1)) = Bqq(ij2l(iaux,j-1)) + Bsy(ij2l(iaux,j-1))*s(ij2l(iaux,j))
             END DO
             ! Set sy(is:ie,j-1) to zero in matrix (necessary)
             DO iaux=is,ie
-            	Bsy(ij2l(iaux,j-1)) = 0.0
+              Bsy(ij2l(iaux,j-1)) = 0.0
             END DO
 
-         ! East boundary
-         CASE (3)
+          ! East boundary
+          CASE (3)
             i = isbcHH(no,ide_t); js = jsbcH(no,ide_t); je = jebcH(no,ide_t)
             DO jaux=js,je
-            	Bqq(ij2l(i-1,jaux)) = Bqq(ij2l(i-1,jaux)) + Bsx(ij2l(i-1,jaux))*s(ij2l(i,jaux))
+              Bqq(ij2l(i-1,jaux)) = Bqq(ij2l(i-1,jaux)) + Bsx(ij2l(i-1,jaux))*s(ij2l(i,jaux))
             END DO
             ! Set sx(i,js:je) to zero in matrix (not really necessary)
             DO jaux=js,je
-            	Bsx(ij2l(i-1,jaux)) = 0.0
+              Bsx(ij2l(i-1,jaux)) = 0.0
             END DO
 
-         ! South boundary
-         CASE (4)
+          ! South boundary
+          CASE (4)
             j = jsbcH(no,ide_t); is = isbcHH(no,ide_t); ie = iebcHH(no,ide_t)
             ! Adjust [qq] array for row of nodes just inside boundary
             DO iaux=is,ie
-            	Bqq(ij2l(iaux,j+1)) = Bqq(ij2l(iaux,j+1)) + Bsy(ij2l(iaux,j))*s(ij2l(iaux,j))
+              Bqq(ij2l(iaux,j+1)) = Bqq(ij2l(iaux,j+1)) + Bsy(ij2l(iaux,j))*s(ij2l(iaux,j))
             END DO
             ! Set sy(is:ie,j-1) to zero in matrix (necessary)
             DO iaux=is,ie
-            	Bsy(ij2l(iaux,j)) = 0.0
+              Bsy(ij2l(iaux,j)) = 0.0
             END DO
-
-         END SELECT
+        END SELECT
 
       !.....Case 2,4  -- Free surface flow specified.....
       CASE (2,4)
 
-         ! Identify flow boundary as on the west, north, east, or south
-         SELECT CASE ( iside(no) )
+        ! Identify flow boundary as on the west, north, east, or south
+        SELECT CASE ( iside(no) )
 
-         ! West boundary
-         CASE (1)
+          ! West boundary
+          CASE (1)
             i = isbcHH(no,ide_t); js = jsbcH(no,ide_t); je = jebcH(no,ide_t)
             ! Adjust [qq] array for flow rate into the
             ! column of nodes just inside the boundary
             DO j = js, je
-               laux = ij2l(i,j)
-               Bqq(laux) = Bqq(laux) + dtdx1*SUM(uhWB  (k1:kmz(laux),j)) &
-                                     + dtdx1*SUM(uhWBpp(k1:kmz(laux),j))
+              laux = ij2l(i,j)
+              Bqq(laux) = Bqq(laux) + dtdx1*SUM(uhWB  (k1:kmz(laux),j)) &
+                          + dtdx1*SUM(uhWBpp(k1:kmz(laux),j))
             END DO
 
-         ! North boundary
-         CASE (2)
+          ! North boundary
+          CASE (2)
             j = jsbcH(no,ide_t); is = isbcHH(no,ide_t); ie = iebcHH(no,ide_t)
             ! Adjust [qq] array for flow rate into the
             ! row of nodes just inside the boundary
             DO i = is, ie
-               laux = ij2l(i,j)
-               Bqq(laux) = Bqq(laux) - dtdy1*SUM(vhNB  (k1:kmz(laux),i)) &
-                                     - dtdy1*SUM(vhNBpp(k1:kmz(laux),i))
+              laux = ij2l(i,j)
+              Bqq(laux) = Bqq(laux) - dtdy1*SUM(vhNB  (k1:kmz(laux),i)) &
+                          - dtdy1*SUM(vhNBpp(k1:kmz(laux),i))
             END DO
 
-         ! East boundary
-         CASE (3)
+          ! East boundary
+          CASE (3)
             i = isbcHH(no,ide_t); js = jsbcH(no,ide_t); je = jebcH(no,ide_t)
             ! Adjust [qq] array for flow rate into the
             ! column of nodes just inside the boundary
             DO j = js, je
-               laux = ij2l(i,j)
-               Bqq(laux) = Bqq(laux) - dtdx1*SUM(uhEB  (k1:kmz(laux),j)) &
-                                     - dtdx1*SUM(uhEBpp(k1:kmz(laux),j))
+              laux = ij2l(i,j)
+              Bqq(laux) = Bqq(laux) - dtdx1*SUM(uhEB  (k1:kmz(laux),j)) &
+                          - dtdx1*SUM(uhEBpp(k1:kmz(laux),j))
             END DO
 
-         ! South boundary
-         CASE (4)
+          ! South boundary
+          CASE (4)
             j = jsbcH(no,ide_t); is = isbcHH(no,ide_t); ie = iebcHH(no,ide_t)
             ! Adjust [qq] array for flow rate into the
             ! row of nodes just inside the boundary
             DO i = is, ie
-               laux = ij2l(i,j)
-               Bqq(laux) = Bqq(laux) + dtdy1*SUM(vhSB  (k1:kmz(laux),i)) &
-                                     + dtdy1*SUM(vhSBpp(k1:kmz(laux),i))
+              laux = ij2l(i,j)
+              Bqq(laux) = Bqq(laux) + dtdy1*SUM(vhSB  (k1:kmz(laux),i)) &
+                          + dtdy1*SUM(vhSBpp(k1:kmz(laux),i))
             END DO
-         END SELECT
+        END SELECT
 
       !.....Case 3 -- Submerged flow specified.....
       CASE (3)
 
-         ! Identify flow boundary as on the west, north, east, or south
-         SELECT CASE ( iside(no) )
+        ! Identify flow boundary as on the west, north, east, or south
+        SELECT CASE ( iside(no) )
 
-         ! West boundary
-         CASE (1)
+          ! West boundary
+          CASE (1)
             i  = isbc(no);
             j  = jsbc(no);
             ks = iebc(no);
@@ -1652,10 +1649,10 @@ SUBROUTINE MODqqddrr4openBC(Bstart,Bend,Bqq,Bsx,Bsy)
             ! Adjust [qq] array for flow rate into the
             ! column of nodes just inside the boundary
             Bqq(laux) = Bqq(laux) + dtdx1*SUM(uhWB  (ks:ke,j)) &
-                                  + dtdx1*SUM(uhWBpp(ks:ke,j))
+                        + dtdx1*SUM(uhWBpp(ks:ke,j))
 
-         ! North boundary
-         CASE (2)
+          ! North boundary
+          CASE (2)
             j  = jsbc(no);
             i  = isbc(no);
             ks = iebc(no);
@@ -1663,10 +1660,10 @@ SUBROUTINE MODqqddrr4openBC(Bstart,Bend,Bqq,Bsx,Bsy)
             ! Adjust [qq] array for flow rate into the
             ! row of nodes just inside the boundary
             Bqq(laux) = Bqq(laux) - dtdy1*SUM(vhNB  (ks:ke,i)) &
-                                  - dtdy1*SUM(vhNBpp(ks:ke,i))
+                        - dtdy1*SUM(vhNBpp(ks:ke,i))
 
-         ! East boundary
-         CASE (3)
+          ! East boundary
+          CASE (3)
             i  = isbc(no);
             j  = jsbc(no);
             ks = iebc(no);
@@ -1674,10 +1671,10 @@ SUBROUTINE MODqqddrr4openBC(Bstart,Bend,Bqq,Bsx,Bsy)
             ! Adjust [qq] array for flow rate into the
             ! column of nodes just inside the boundary
             Bqq(laux) = Bqq(laux) - dtdx1*SUM(uhEB  (ks:ke,j)) &
-                                  - dtdx1*SUM(uhEBpp(ks:ke,j))
+                        - dtdx1*SUM(uhEBpp(ks:ke,j))
 
-         ! South boundary
-         CASE (4)
+          ! South boundary
+          CASE (4)
             j  = jsbc(no);
             i  = isbc(no);
             ks = iebc(no);
@@ -1685,11 +1682,10 @@ SUBROUTINE MODqqddrr4openBC(Bstart,Bend,Bqq,Bsx,Bsy)
             ! Adjust [qq] array for flow rate into the
             ! row of nodes just inside the boundary
             Bqq(laux) = Bqq(laux) + dtdy1*SUM(vhSB  (ks:ke,i)) &
-                                  + dtdy1*SUM(vhSBpp(ks:ke,i))
-         END SELECT
-
+                        + dtdy1*SUM(vhSBpp(ks:ke,i))
+        END SELECT
       END SELECT
-   END DO
+  END DO
 
 END SUBROUTINE MODqqddrr4openBC
 

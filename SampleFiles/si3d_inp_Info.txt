@@ -3,7 +3,7 @@ LAKE MODELING RUN ##  ---------------------------------
 =======================================================
 ----THIS FILE IS EXCLUSIVELY TO PROVIDE INFORMATION----
 ----ON HOW EDIT THE INPUT FILE. PLEASE USE THE---------
-----si3d_inp_master.txt AS THE SAMPLE INPUT FILE FOR---
+----si3d_inp.txt AS THE SAMPLE INPUT FILE FOR----------
 ----PSI3D.--------------------------------------------- 
 =======================================================
 Start date and time for simulations
@@ -104,10 +104,12 @@ Open boundary conditions for nesting procedures
  ------------------------------------------------------    
 Specification for tracer (other than oxygen) simulation 
 -------------------------------------------------------     
- ntr         !        0           ! No. of tracers sim. 
- ecomod      !       -1           !
- iotr        !      300           ! (10 min) 
+ ntr         !        2           ! No. of tracers sim. 
+ ecomod      !        1           !
+ iotr        !       60           ! (10 min)
+ itspftr     !        0           ! No. of time steps before first output to 3D tracer space file
  ipwq        !       36           ! Frequency to run WQ module in time steps - Currently testing 1 h (don't change)
+ nswq        !        1           ! Time Steps to Restore WQ field values.
 -------------------------------------------------------       
 Specification for oxgygenation system simulations
 -------------------------------------------------------            

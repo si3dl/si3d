@@ -428,32 +428,33 @@ SUBROUTINE WQinput
 
   READ (UNIT=i99,FMT='(///(18X,I20))',IOSTAT=ios) iDO,  &
       iPON, iDON, iNH4, iNO3, iPOP, iDOP, iPO4, iPOC,   &
-      iDOC, iALG1, iALG2, iALG3, iALG4, iMeHg, iHgII,    &
+      iDOC, iALG1, iALG2, iALG3, iALG4, iALG5, iMeHg, iHgII,    &
       iHg0, iSS 
   IF (ios /= 0) CALL input_error ( ios, 92)
 
   !. . . Read model stochiometeric constants and other constants
   READ (UNIT=i99,FMT='(///(18X,G20.3))',IOSTAT=ios) rnc, rpc, roc, ron, &
   &     KSOD, KDECMIN, KSED, KNIT, KSN, KSP, FNH4,  &
-  &     light_sat1, light_sat2, light_sat3, light_sat4
+  &     light_sat1, light_sat2, light_sat3, light_sat4, light_sat5
   IF (ios /= 0) CALL input_error ( ios, 93)
 
   !. . . Read model rates
-  READ (UNIT=i99,FMT='(///(18X,G20.2))',IOSTAT=ios) R_reaer, R_SOD, &
-  &    mu_max1, R_mor1, R_gr1, mu_max2, R_mor2, R_gr2, mu_max3, R_mor3, R_gr3, mu_max4, R_mor4, R_gr4, &
+  READ (UNIT=i99,FMT='(///(18X,G20.2))',IOSTAT=ios)  mu_max1, R_mor1, R_gr1,  &
+  &    mu_max2, R_mor2, R_gr2, mu_max3, R_mor3, R_gr3, mu_max4, R_mor4, R_gr4, mu_max5, R_mor5, R_gr5, &
   &    R_decom_pon, R_miner_don, R_nitrif, R_denit, &
   &    R_decom_pop, R_miner_dop, R_decom_poc, R_miner_doc, &
-  &    R_settl, R_resusp, vspa, vspom
+  &    R_reaer, R_settl, R_resusp, vspa, vspoc
   IF (ios /= 0) CALL input_error ( ios, 94)
 
-  !. . . Read model temperature rates
-  READ (UNIT=i99,FMT='(///(18X,G20.2))',IOSTAT=ios) Theta_SOD, Theta_mu, Theta_mor, Theta_gr, &
-  &     Theta_decom, Theta_miner, Theta_sedflux, Theta_nitrif , Theta_denit 
+  !. . . Read model temperature correction factors [-]
+  READ (UNIT=i99,FMT='(///(18X,G20.2))',IOSTAT=ios) Topt1, Topt2, Topt3, Topt4, Topt5, &
+  &     Theta_SOD, Theta_mor, Theta_gr, &
+  &     Theta_decom, Theta_miner, Theta_sedflux, Theta_nitrif , Theta_denit
 
   IF (ios /= 0) CALL input_error ( ios, 95)
 
-  !. . . Read miscillaneous rates
-  READ (UNIT=i99,FMT='(///(18X,G20.2))',IOSTAT=ios) ATM_DON, ATM_NH4,    &
+  !. . . Read miscillaneous fluxes in mg/m2/d
+  READ (UNIT=i99,FMT='(///(18X,G20.2))',IOSTAT=ios) R_SOD, ATM_DON, ATM_NH4,    &
   &    ATM_NO3, ATM_DOP, ATM_PO4,  ATM_DOC, SED_DON, SED_NH4, SED_NO3, &
   &    SED_DOP, SED_PO4, SED_DOC
   IF (ios /= 0) CALL input_error ( ios, 96)
@@ -550,10 +551,7 @@ SUBROUTINE WQinput
   !.....Close wq input file.....
    CLOSE (UNIT=i99)
 
-  !... Convert model rates [1/s]. Input file has 1/day values. WQ module is run every hour
-  ! DO
-  R_reaer   =  R_reaer/86400.0
-  R_SOD     =  R_SOD/86400.0
+  !... Convert model rates [1/s] and [m/s]. Input file has 1/day values. WQ module is run every hour
   ! ALG 
   mu_max1 =  mu_max1/86400.0
   R_mor1 =  R_mor1/86400.0
@@ -567,6 +565,10 @@ SUBROUTINE WQinput
   mu_max4 =  mu_max4/86400.0
   R_mor4 =  R_mor4/86400.0
   R_gr4 =  R_gr4/86400.0
+  mu_max5 =  mu_max5/86400.0
+  R_mor5 =  R_mor5/86400.0
+  R_gr5 =  R_gr5/86400.0
+
   ! Nutrients
   R_decom_pon =  R_decom_pon/86400.0
   R_miner_don =  R_miner_don/86400.0
@@ -576,9 +578,13 @@ SUBROUTINE WQinput
   R_miner_dop =  R_miner_dop/86400.0
   R_decom_poc =  R_decom_poc/86400.0
   R_miner_doc =  R_miner_doc/86400.0
-  R_settl =  R_settl/86400.0
-  R_resusp =  R_resusp/86400.0
+  R_settl =  R_settl/86400.0          ! [m/s]
+  R_resusp =  R_resusp/86400.0        ! [m/s]
 
+  ! DO
+  R_reaer   =  R_reaer/86400.0        ! [m/s]
+
+  R_SOD   = R_SOD/86400.0
   ATM_DON = ATM_DON/86400.0
   ATM_NH4 = ATM_NH4/86400.0
   ATM_NO3 = ATM_NO3/86400.0
@@ -596,7 +602,7 @@ SUBROUTINE WQinput
     PRINT*, "iDO  = ", iDO , "iPOC = ", iPOC, "iDOC = ", iDOC
     PRINT*, "iPON = ", iPON, "iDON = ", iDON, "iNH4 = ", iNH4, "iNO3 = ", iNO3
     PRINT*, "iPOP = ", iPOP, "iDOP = ", iDOP, "iPO4 = ", iPO4
-    PRINT*, "iALG1 = ", iALG1, "iALG2 = ", iALG2, "iALG3 = ", iALG3, "iALG4 = ", iALG4
+    PRINT*, "iALG1 = ", iALG1, "iALG2 = ", iALG2, "iALG3 = ", iALG3, "iALG4 = ", iALG4, "iALG5 = ", iALG5
     PRINT*, 'iMeHg = ', iMeHg, 'iHgII = ',iHgII, 'iHg0 = ', iHg0, 'iSS = ', iSS
     PRINT*, 'sed_diam',sed_diameter
     PRINT*,'sed_dens',sed_dens
@@ -643,7 +649,7 @@ SUBROUTINE WQinit
 
   !. . Initialize constituent locations
   LDO =0; LPON=0; LDON=0; LNH4=0; LNO3=0; LPOP=0; LDOP=0; LPO4=0
-  LALG1=0; LALG2=0; LALG3=0; LALG4=0; LDOC=0; LPOC=0;
+  LALG1=0; LALG2=0; LALG3=0; LALG4=0; LALG5=0; LDOC=0; LPOC=0;
   LSS1 = 0; LSS2 = 0; LSS3 = 0; LHg0 = 0; LMeHg = 0; LHgII = 0
   
   !. . Assign Lxx to each constituent modeled
@@ -693,6 +699,8 @@ SUBROUTINE WQinit
       LALG3 = i
     else if ((tracer_list(i) == 'ALG4') .and. (iALG4 == 1)) then
       LALG4 = i
+    else if ((tracer_list(i) == 'ALG5') .and. (iALG5 == 1)) then
+      LALG5 = i
     else if ((tracer_list(i) == 'SS1') .and. (iSS == 1)) then
       LSS1 = i
     else if ((tracer_list(i) == 'SS2') .and. (iSS == 1)) then
@@ -728,6 +736,7 @@ SUBROUTINE WQinit
     PRINT*,'LALG2 = ', LALG2
     PRINT*,'LALG3 = ', LALG3
     PRINT*,'LALG4 = ', LALG4
+    PRINT*,'LALG5 = ', LALG5
     PRINT*,'LHg0 = ', LHg0
     PRINT*,'LHgII = ', LHgII
     PRINT*,'LMeHg = ', LMeHg
@@ -756,11 +765,9 @@ SUBROUTINE srcsnkWQ(n)
   !... Local variables
   INTEGER:: i, j, k, l, liter, k1s, kms, iteration
   integer, intent(in) :: n 
-  REAL :: thrs1
 
   ! reset soursesink = 0
   sourcesink = 0.0
-  thrs1 = n * dt / 3600
 
   ! STWAVE controlling section. (SergioValbuena 03-11-2023) 
   if ((iSS == 1) .and. (iSTWAVE == 1)) then
@@ -778,46 +785,49 @@ SUBROUTINE srcsnkWQ(n)
     DO k = k1s, kms;
 
       IF (iDO == 1) THEN
-        CALL sourceDO(k,l,thrs1)
+        CALL sourceDO(k,l)
       END IF
       IF (iPON == 1) THEN
-        CALL sourcePON(k,l,thrs1)
+        CALL sourcePON(k,l)
       END IF
       IF (iDON == 1) THEN
-        CALL sourceDON(k,l,thrs1)
+        CALL sourceDON(k,l)
       END IF
       IF (iNH4 == 1) THEN
-        CALL sourceNH4(k,l,thrs1)
+        CALL sourceNH4(k,l)
       END IF
       IF (iNO3 == 1) THEN
-        CALL sourceNO3(k,l,thrs1)
+        CALL sourceNO3(k,l)
       END IF
       IF (iPOP == 1) THEN
-        CALL sourcePOP(k,l,thrs1)
+        CALL sourcePOP(k,l)
       END IF
       IF (iDOP == 1) THEN
-        CALL sourceDOP(k,l,thrs1)
+        CALL sourceDOP(k,l)
       END IF
       IF (iPO4 == 1) THEN
-        CALL sourcePO4(k,l,thrs1)
+        CALL sourcePO4(k,l)
       END IF
       IF (iDOC == 1) THEN
-        CALL sourceDOC(k,l,thrs1)
+        CALL sourceDOC(k,l)
       END IF
       IF (iPOC == 1) THEN
-        CALL sourcePOC(k,l,thrs1)
+        CALL sourcePOC(k,l)
       END IF
       IF (iALG1 == 1) THEN
-        CALL sourceALG1(k,l,thrs1)
+        CALL sourceALG1(k,l)
       END IF
       IF (iALG2 == 1) THEN
-        CALL sourceALG2(k,l,thrs1)
+        CALL sourceALG2(k,l)
       END IF
       IF (iALG3 == 1) THEN
-        CALL sourceALG3(k,l,thrs1)
+        CALL sourceALG3(k,l)
       END IF
       IF (iALG4 == 1) THEN
-        CALL sourceALG4(k,l,thrs1)
+        CALL sourceALG4(k,l)
+      END IF
+      IF (iALG5 == 1) THEN
+        CALL sourceALG5(k,l)
       END IF
       IF (iSS == 1) THEN
         call sourceSS(k, l)

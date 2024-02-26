@@ -177,9 +177,11 @@ SUBROUTINE input
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iotr
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) itspftr
      ! ipwq = Time step to run WQ modules. E.g. in idt = 100 s, and want to run WQ every 1 h, ipwq = 36;
-     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) ipwq 
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) ipwq
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) nswq 
      IF (ios  /= 0) CALL input_error ( ios, 9 )
    ELSE IF (ntr == 0) THEN
+     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
      READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
@@ -589,7 +591,7 @@ SUBROUTINE bathy
 !-------------------------------------------------------------------------
 
   !.....Local variables.....
-  CHARACTER(LEN=50) :: bathymetry_file = "h"
+  CHARACTER(LEN=50) :: bathymetry_file = "si3d_bathy"
   INTEGER :: i, j, k, l, c, ios, istat, kb, is, ie, js, je
   INTEGER :: imm, jmm, ncols, ncols1, nc, nn, ia, ib
   REAL :: hs1, udepth, vdepth, ztop
@@ -1109,7 +1111,7 @@ SUBROUTINE outt(n,thrs)
       trout = -99.0
 
       DO k  = k1, kmz(l) + 1
-        ! IF (h(k,l)<=ZERO) CYCLE
+        IF (h(k,l)<=ZERO) CYCLE
         !uout(k)  = 0.5 * (u  (k,l) + u  (k,lWC(l)))
         !vout(k)  = 0.5 * (v  (k,l) + v  (k,lSC(l)))
         !wout(k)  = 0.5 * (wp (k,l) + wp (k+1,l   ))

@@ -17,6 +17,7 @@ List of tracers simulated
  iALG2           !       0            ! Algae-2, PhytoC2, 	            ALG2
  iALG3           !       0            ! Algae-3, PhytoC3, 	            ALG3
  iALG4           !       0            ! Algae-4, PhytoC4, 	            ALG4
+ iALG5           !       0            ! Algae-5, PhytoC5, 	            ALG5
  iMeHg           !       0            ! Methylmercury,                  MeHg
  iHgII           !       0            ! Divalent Mercury,               HgII
  iHg0            !       0            ! Elemental Mercury,              Hg0
@@ -39,62 +40,70 @@ Model Constants
  light_sat2      !    100.000         ! Light saturation for Algae-2 (microE/m2/s)
  light_sat3      !    100.000         ! Light saturation for Algae-3 (microE/m2/s)
  light_sat4      !    100.000         ! Light saturation for Algae-4 (microE/m2/s)
+ light_sat5      !    100.000         ! Light saturation for Algae-5 (microE/m2/s)
 --------------------------------------------------------------------------------------------------------
 Model rates: Four algae groups, oxygen, SOD, and Nutrientes
 --------------------------------------------------------------------------------------------------------
- R_reaer         !      0.1           ! (1/d) Reaeration rate
- R_SOD           !      0.03          ! (1/d) Sediment oxygen demand rate
- mu_max1         !      0.5           ! (1/d) Maximum growth rate of algae  - 1
- R_mor1          !      0.05          ! (1/d) Mortality rate of algae       - 1
- R_gr1           !      0.00          ! (1/d) Zoop Grazing rate of algae    - 1
- mu_max2         !      0.00          ! (1/d) Maximum growth rate of algae  - 2
- R_mor2          !      0.00          ! (1/d) Mortality rate of algae       - 2    
- R_gr2           !      0.00          ! (1/d) Zoop Grazing rate of algae    - 2
- mu_max3         !      0.00          ! (1/d) Maximum growth rate of algae  - 3
- R_mor3          !      0.00          ! (1/d) Mortality rate of algae       - 3
- R_gr3           !      0.00          ! (1/d) Zoop Grazing rate of algae    - 3
- mu_max4         !      0.00          ! (1/d) Maximum growth rate of algae  - 4
- R_mor4          !      0.00          ! (1/d) Mortality rate of algae       - 4
- R_gr4           !      0.00          ! (1/d) Zoop Grazing rate of algae    - 4
- R_decom_pon     !      0.01          ! (1/d) Rate of decomposition of PON 
- R_miner_don     !      0.01          ! (1/d) Rate of mineralization of DON   
- R_nitrif        !      0.01          ! (1/d) Rate of Nitrification      
- R_denit         !      0.0           ! (1/d) Rate of denitrification 
- R_decom_pop     !      0.01          ! (1/d) Rate of decomposition of POP 
- R_miner_dop     !      0.01          ! (1/d) Mineralization rate of DOP 
- R_decom_poc     !      0.01          ! (1/d) Rate of decomposition of POC
- R_miner_doc     !      0.000         ! (1/d) Rate of mineralization of DOC
- R_settl         !      0.0000        ! (m/d) Rate of settling of nutrients         
- R_resusp        !      0.0000        ! (m/d) Rate of resuspension of nutrients
- vspa            !      0.0000        ! [] Settling velocity of algae
- vspom           !      0.0000        ! [] Settling velocity of Particulate Organic Matter
+ mu_max1         !      0.5           ! [1/d] Maximum growth rate of algae  - 1
+ R_mor1          !      0.05          ! [1/d] Mortality rate of algae       - 1
+ R_gr1           !      0.00          ! [1/d] Zoop Grazing rate of algae    - 1
+ mu_max2         !      0.00          ! [1/d] Maximum growth rate of algae  - 2
+ R_mor2          !      0.00          ! [1/d] Mortality rate of algae       - 2    
+ R_gr2           !      0.00          ! [1/d] Zoop Grazing rate of algae    - 2
+ mu_max3         !      0.00          ! [1/d] Maximum growth rate of algae  - 3
+ R_mor3          !      0.00          ! [1/d] Mortality rate of algae       - 3
+ R_gr3           !      0.00          ! [1/d] Zoop Grazing rate of algae    - 3
+ mu_max4         !      0.00          ! [1/d] Maximum growth rate of algae  - 4
+ R_mor4          !      0.00          ! [1/d] Mortality rate of algae       - 4
+ R_gr4           !      0.00          ! [1/d] Zoop Grazing rate of algae    - 4
+ mu_max5         !      0.00          ! [1/d] Maximum growth rate of algae  - 5
+ R_mor5          !      0.00          ! [1/d] Mortality rate of algae       - 5
+ R_gr5           !      0.00          ! [1/d] Zoop Grazing rate of algae    - 5
+ R_decom_pon     !      0.01          ! [1/d] Rate of decomposition of PON 
+ R_miner_don     !      0.01          ! [1/d] Rate of mineralization of DON   
+ R_nitrif        !      0.01          ! [1/d] Rate of Nitrification      
+ R_denit         !      0.0           ! [1/d] Rate of denitrification 
+ R_decom_pop     !      0.01          ! [1/d] Rate of decomposition of POP 
+ R_miner_dop     !      0.01          ! [1/d] Mineralization rate of DOP 
+ R_decom_poc     !      0.01          ! [1/d] Rate of decomposition of POC
+ R_miner_doc     !      0.000         ! [1/d] Rate of mineralization of DOC
+ R_reaer         !      0.1           ! [1/d] Reaeration rate
+ R_settl         !      0.0000        ! [m/d] Rate of settling of nutrients         
+ R_resusp        !      0.0000        ! [m/d] Rate of resuspension of nutrients
+ vspa            !      0.0000        ! [m/d] Settling velocity of algae
+ vspoc           !      0.0000        ! [m/d] Settling velocity of Particulate Organic Matter
 --------------------------------------------------------------------------------------------------------
 Temperature Correction Factors
 --------------------------------------------------------------------------------------------------------
- Theta_SOD       !      1.050         ! (NDN) Tw dependence for sediment oxygen demand
- Theta_mu        !      1.060         ! (NDN) Tw dependence for phytoplankton growth 
- Theta_mor       !      1.050         ! (NDN) Tw dependence for phytoplankton mortality	 
- Theta_gr        !      1.050         ! (NDN) Tw dependence for phytoplankton grazing 
- Theta_decom     !      1.080         ! (NDN) Tw dependence for decomposition 
- Theta_miner     !      1.080         ! (NDN) Tw dependence for mineralization
- Theta_sedfl     !      1.050         ! (NDN) Tw dependence for nutrient sediment flux
- Theta_nitri     !      1.080         ! (NDN) Tw dependence for nitrification
- Theta_denit     !      1.045         ! (NDN) Tw dependence for denitrification
+ Topt1           !      0.000         ! [C] Optimal temperature for growth of algea - 1
+ Topt2           !      0.000         ! [C] Optimal temperature for growth of algea - 2
+ Topt3           !      0.000         ! [C] Optimal temperature for growth of algea - 3
+ Topt4           !      0.000         ! [C] Optimal temperature for growth of algea - 4
+ Topt5           !      0.000         ! [C] Optimal temperature for growth of algea - 5
+ Theta_SOD       !      1.050         ! [-] Tw dependence for sediment oxygen demand
+ Theta_mor       !      1.050         ! [-] Tw dependence for phytoplankton mortality	 
+ Theta_gr        !      1.050         ! [-] Tw dependence for phytoplankton grazing 
+ Theta_decom     !      1.080         ! [-] Tw dependence for decomposition 
+ Theta_miner     !      1.080         ! [-] Tw dependence for mineralization
+ Theta_sedfl     !      1.050         ! [-] Tw dependence for nutrient sediment flux
+ Theta_nitri     !      1.080         ! [-] Tw dependence for nitrification
+ Theta_denit     !      1.045         ! [-] Tw dependence for denitrification
 --------------------------------------------------------------------------------------------------------
 Fluxes (atmospheric and sediments)
 --------------------------------------------------------------------------------------------------------
- ATM_DON         !      0.0           ! (mg/m2/day) Atmospheric deposition of DON
- ATM_NH4         !      0.0           ! (mg/m2/day) Atmospheric deposition of NH4
- ATM_NO3         !      0.0           ! (mg/m2/day) Atmospheric deposition of NO3
- ATM_DOP         !      0.0           ! (mg/m2/day) Atmospheric deposition of DOP
- ATM_PO4         !      0.0           ! (mg/m2/day) Atmospheric deposition of PO4
- ATM_DOC         !      0.0           ! (mg/m2/day) Atmospheric deposition of DOC
- SED_DON         !      0.0           ! (mg/m2/day) Sediment release of DON
- SED_NH4         !      0.001         ! (mg/m2/day) Sediment release of NH4
- SED_NO3         !      0.0           ! (mg/m2/day) Sediment release of NO3
- SED_DOP         !      0.0           ! (mg/m2/day) Sediment release of DOP
- SED_PO4         !      0.005         ! (mg/m2/day) Sediment release of PO4
- SED_DOC         !      0.0           ! (mg/m2/day) Sediment release of DOC
+ R_SOD           !      0.03          ! [1/d] Sediment oxygen demand rate
+ ATM_DON         !      0.0           ! [mg/m2/day] Atmospheric deposition of DON
+ ATM_NH4         !      0.0           ! [mg/m2/day] Atmospheric deposition of NH4
+ ATM_NO3         !      0.0           ! [mg/m2/day] Atmospheric deposition of NO3
+ ATM_DOP         !      0.0           ! [mg/m2/day] Atmospheric deposition of DOP
+ ATM_PO4         !      0.0           ! [mg/m2/day] Atmospheric deposition of PO4
+ ATM_DOC         !      0.0           ! [mg/m2/day] Atmospheric deposition of DOC
+ SED_DON         !      0.0           ! [mg/m2/day] Sediment release of DON
+ SED_NH4         !      0.001         ! [mg/m2/day] Sediment release of NH4
+ SED_NO3         !      0.0           ! [mg/m2/day] Sediment release of NO3
+ SED_DOP         !      0.0           ! [mg/m2/day] Sediment release of DOP
+ SED_PO4         !      0.005         ! [mg/m2/day] Sediment release of PO4
+ SED_DOC         !      0.0           ! [mg/m2/day] Sediment release of DOC
 --------------------------------------------------------------------------------------------------------
 Sediment Parameters
 --------------------------------------------------------------------------------------------------------

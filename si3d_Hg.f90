@@ -772,7 +772,7 @@ SUBROUTINE HgII_deposition(HgIIw_deposition_flux, HgII_wpa, HgII_wpom, HgII_wpn)
     end do
   end if
 
-  HgIIw_deposition_flux = vspa * HgII_wpa + vspom * HgII_wpom + sum(settling_pn)
+  HgIIw_deposition_flux = vspa * HgII_wpa + vspoc * HgII_wpom + sum(settling_pn)
 
 END SUBROUTINE HgII_deposition
 
@@ -798,7 +798,7 @@ SUBROUTINE MeHg_deposition(MeHgw_deposition_flux, MeHg_wpa, MeHg_wpom, MeHg_wpn)
     end do
   end if
 
-  MeHgw_deposition_flux = vspa * MeHg_wpa + vspom * MeHg_wpom + sum(settling_pn)
+  MeHgw_deposition_flux = vspa * MeHg_wpa + vspoc * MeHg_wpom + sum(settling_pn)
 
 END SUBROUTINE MeHg_deposition
 

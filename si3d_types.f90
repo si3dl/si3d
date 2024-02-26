@@ -69,7 +69,7 @@
             & nnodes, nopen, iseich, idbg, iextrp, iyr0, imon0, iday0,   &
             & ihr0, istd, igs, ivpv, iupwind, ioutg, ipv, ipsal, ipxml,  &
             & itspf, itrsca, itrmom, ibathyf, apxml, iTurbVars, ipwq,    &
-            & itspfh, itspftr
+            & itspfh, itspftr, nswq
    CHARACTER :: title*80, sal_ic_file*50, wse_file*7, flw_file*7,        &
               & hcn_file*7, sal_file*7, barrier_file*50, commentline*50
 
@@ -320,7 +320,7 @@
    INTEGER, ALLOCATABLE, DIMENSION(:    )  :: pdt            ! Frequency of update (device)
    INTEGER, ALLOCATABLE, DIMENSION(:    )  :: iodev          ! Device No. for each pss (column)
    INTEGER, ALLOCATABLE, DIMENSION(:    )  :: ipss,jpss      ! Grid location of pss (column)
-   REAL   , ALLOCATABLE, DIMENSION(:,:  )  :: Qpss	         ! Inflow/outflow rate at n+1 (column)
+   REAL   , ALLOCATABLE, DIMENSION(:,:  )  :: Qpss          ! Inflow/outflow rate at n+1 (column)
    REAL   , ALLOCATABLE, DIMENSION(:,:  )  :: Tpss           ! Temp. for pss at n+1 - (column)
    REAL   , ALLOCATABLE, DIMENSION(:,:,:)  :: Rpss           ! Tracers for pss at n + 1 - (column)
    REAL   , ALLOCATABLE, DIMENSION(:    )  :: uWpss          ! Enforce flow rates on EW direction (device)
@@ -380,26 +380,27 @@
    INTEGER :: iALG2     !< Algae-2, PhytoC2
    INTEGER :: iALG3     !< Algae-3, PhytoC3
    INTEGER :: iALG4     !< Algae-4, PhytoC4
+   INTEGER :: iALG5     !< Algae-5, PhytoC5
 
    ! ... Integer to determine index of constituent within tracer matrix
    INTEGER :: LDO , LPON, LDON, LNH4, LNO3, LPOP, LDOP, LPO4
-   INTEGER :: LDOC, LPOC, LALG1, LALG2, LALG3, LALG4
+   INTEGER :: LDOC, LPOC, LALG1, LALG2, LALG3, LALG4, LALG5
 
    ! ... Model Constants - read from input file and many used for calibration
    ! - Stochiometeric constants
    REAL   :: rnc, rpc, roc, ron
 
    ! - Half-saturation values and algal constants
-   REAL   :: KSOD, KDECMIN, KSED, KNIT, KSN, KSP, FNH4, light_sat1, light_sat2, light_sat3, light_sat4
+   REAL   :: KSOD, KDECMIN, KSED, KNIT, KSN, KSP, FNH4, light_sat1, light_sat2, light_sat3, light_sat4, light_sat5
 
    ! - Model rates
-   REAL   :: mu_max1, R_mor1, R_gr1,mu_max2, R_mor2, R_gr2, mu_max3, R_mor3, R_gr3, mu_max4, R_mor4, R_gr4
+   REAL   :: mu_max1, R_mor1, R_gr1,mu_max2, R_mor2, R_gr2, mu_max3, R_mor3, R_gr3, mu_max4, R_mor4, R_gr4, mu_max5, R_mor5, R_gr5
    REAL   :: R_reaer, R_SOD, R_decom_pon, R_miner_don, R_nitrif, R_denit
    REAL   :: R_decom_pop, R_miner_dop, R_decom_poc, R_miner_doc
    REAL   :: R_settl, R_resusp
   
-   ! - Temperature depependence factors
-   REAL    :: Theta_SOD, Theta_mu, Theta_mor, Theta_gr
+   ! - Temperature depependence factors and optimal temperatures for algae growth
+   REAL    :: Topt1, Topt2, Topt3, Topt4, Topt5, Theta_SOD, Theta_mor, Theta_gr
    REAL    :: Theta_decom, Theta_miner, Theta_sedflux,Theta_nitrif,  Theta_denit
    
 
@@ -463,7 +464,7 @@
    real     :: Hg0atm    !< [ng/L] concentration of Hg0 in the atmosphere
    real     :: K_H_Hg0w  !< [-] Henry's law constant for Hg0
    real     :: vspa      !< [m/T] settling velocity of algae
-   real     :: vspom     !< [m/T] settling velocity of POM or POC
+   real     :: vspoc     !< [m/T] settling velocity of POM or POC
    real :: kd_wdoc2
    real :: kd_wpa2
    real :: kd_wpom2
