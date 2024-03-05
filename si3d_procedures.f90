@@ -89,6 +89,7 @@ SUBROUTINE init
             hp(k,l)=ZERO;
           ENDIF
       ENDDO
+      hp(kms + 1, l) = sed_h
 
       ! Set zeta = hhs(i,j) for columns with mask2d = TRUE (i.e.
       ! potentially wett) but intitially dry (k1z = km1).
@@ -4347,7 +4348,7 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
       ENDIF
     ENDDO
 
-    Bex(kms+1,l) = hpp(kms,l)*tracerpp(kms+1,l,nt)/twodt1
+    Bex(kms + 1, l) = hpp(kms + 1, l)*tracerpp(kms + 1, l, nt) / twodt1
 
   ENDDO
 
@@ -4373,7 +4374,6 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
 !    ----            ----------        -----------------------
 !
 !-----------------------------------------------------------------------
-
 
    ! ... Arguments
    INTEGER, INTENT (IN) :: nt
@@ -4471,20 +4471,19 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
          tracer(k1s:kms  ,l,nt) = sal1(1:nwlayers)
          tracer(k1 :k1s-1,l,nt) = sal1(1         )
          tracer(k1-1,l,nt) = sal1(1)
-
-         do k = k1-1, kms+1
-            if (tracer(k,l,nt) .lt. 0.0) then
-              tracer(k,l,nt) = 0.0
-            end if 
-         end do
       END SELECT
 
-      ! Adding solution to sediment layer 
-        hn(kms+1) = hn(kms)
-        aa( 2,kms+1) = hn(kms+1)/twodt1
-        ds(kms+1) = Bex(kms+1,l) + sourcesink(kms+1,l,nt)
-        tracer(kms+1,l,nt) = ds(kms+1) / aa(2,kms+1)
+      ! Adding solution to sediment layer
+      hn(kms + 1) = hpp(kms + 1, l)
+      aa( 2, kms + 1) = hn(kms + 1) / twodt1
+      ds(kms + 1) = Bex(kms + 1, l) + sourcesink(kms + 1, l, nt)
+      tracer(kms + 1, l, nt) = ds(kms + 1) / aa(2, kms + 1)
 
+      do k = k1-1, kms+1
+        if (tracer(k, l, nt) .lt. 0.0) then
+          tracer(k, l, nt) = 0.0
+        end if 
+      end do
 
    !.....End loop over scalar-pts.....
    END DO

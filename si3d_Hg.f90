@@ -182,9 +182,9 @@ SUBROUTINE sourceHg(kwq, lwq)
       HgIIs = tracerpp(kwq + 1, lwq, LHgII)
     end if
     ! Define partitioning (Instantaneous) 
-    call HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, fwpom2, fwpn2, &
-       & fsd2, fsdoc2, fspom2, fspn2, HgII_wpn, HgII_wd, HgII_wdoc, HgII_wpa, &
-       & HgII_wpom, HgII_spn, HgII_sd, HgII_sdoc, HgII_spom)
+    ! call HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, fwpom2, fwpn2, &
+    !    & fsd2, fsdoc2, fspom2, fspn2, HgII_wpn, HgII_wd, HgII_wdoc, HgII_wpa, &
+    !    & HgII_wpom, HgII_spn, HgII_sd, HgII_sdoc, HgII_spom)
   end if
 
   if (iMeHg .eq. 1) then
@@ -193,44 +193,50 @@ SUBROUTINE sourceHg(kwq, lwq)
       MeHgs = tracerpp(kwq + 1, lwq, LMeHg)
     end if
     ! Define partitioning (Instantaneous)
-    call MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, fwpom3, fwpn3, &
-          & fsd3, fsdoc3, fspom3, fspn3, MeHg_wpn, MeHg_wd, MeHg_wdoc, &
-          & MeHg_wpa, MeHg_wpom, MeHg_spn, MeHg_sd, MeHg_sdoc, MeHg_spom)
+    ! call MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, fwpom3, fwpn3, &
+    !       & fsd3, fsdoc3, fspom3, fspn3, MeHg_wpn, MeHg_wd, MeHg_wdoc, &
+    !       & MeHg_wpa, MeHg_wpom, MeHg_spn, MeHg_sd, MeHg_sdoc, MeHg_spom)
   end if
 
   !--------------------------------------------------------------------------------
   ! Source / Sink for the Mercury processes in the water column 
   
   ! Total dissolved HgII in water. Sum of dissolved and dissolved bounded to DOC
-  HgII_wddoc = HgII_wd + HgII_wdoc
-  MeHg_wddoc = MeHg_wd + MeHg_wdoc
+  ! HgII_wddoc = HgII_wd + HgII_wdoc
+  ! MeHg_wddoc = MeHg_wd + MeHg_wdoc
 
-  MeHg_sddoc = MeHg_sd + MeHg_sdoc
-  HgII_sddoc = HgII_sd + HgII_sdoc
+  ! MeHg_sddoc = MeHg_sd + MeHg_sdoc
+  ! HgII_sddoc = HgII_sd + HgII_sdoc
 
-  call HgII_reduction(HgIIw_reduction, kwq, lwq, HgII_wddoc)
-  call HgIIw_methylation(HgIIw_methy, kwq, lwq, HgII_wddoc)
-  call MeHgw_demethylation(MeHgw_demethy, kwq, lwq, MeHg_wddoc)
-  call MeHg_photodegradation(MeHgw_photodeg, kwq, lwq, MeHg_wddoc)
-  call Hg0_oxidation(Hg0w_oxidation, Hg0w, HgII_wd, HgIIw_reduction)
+  HgII_wddoc = HgIIw
+  MeHg_wddoc = MeHgw
+
+  MeHg_sddoc = MeHgs
+  HgII_sddoc = HgIIs
+
+  ! call HgII_reduction(HgIIw_reduction, kwq, lwq, HgII_wddoc)
+  ! call HgIIw_methylation(HgIIw_methy, kwq, lwq, HgII_wddoc)
+  ! call MeHgw_demethylation(MeHgw_demethy, kwq, lwq, MeHg_wddoc)
+  ! call MeHg_photodegradation(MeHgw_photodeg, kwq, lwq, MeHg_wddoc)
+  ! call Hg0_oxidation(Hg0w_oxidation, Hg0w, HgII_wd, HgIIw_reduction)
 
   if (kwq .eq. k1s) then
     call HgII_atm_deposition(HgIIw_atmdep, kwq, lwq)
     call MeHg_atm_deposition(MeHgw_atmdep, kwq, lwq)
-    call MeHg_volatilization(MeHgw_vol, MeHg_wddoc)
-    call Hg0_volatilization(Hg0w_vol, Hg0w)
+    ! call MeHg_volatilization(MeHgw_vol, MeHg_wddoc)
+    ! call Hg0_volatilization(Hg0w_vol, Hg0w)
   end if
 
   if (kwq .eq. kms) then
     call Hg0_diffusion(Hg0w_diffusion, Hg0w, Hg0s)
     call MeHg_diffusion(MeHgw_diffusion, MeHg_wddoc, MeHg_sddoc)
     call HgII_diffusion(HgIIw_diffusion, HgII_wddoc, HgII_sddoc)
-    call HgII_deposition(HgIIw_deposition_flux, HgII_wpa, HgII_wpom, HgII_wpn)
-    call MeHg_deposition(MeHgw_deposition_flux, MeHg_wpa, MeHg_wpom, MeHg_wpn)
-    call HgII_erosion(HgIIs_erosion_flux, HgII_spn)
-    call HgII_erosion(MeHgs_erosion_flux, MeHg_spn)
-    call HgIIs_methylation(HgIIs_methy, kwq + 1, lwq, HgII_sddoc)
-    call MeHgs_demethylation(MeHgs_demethy, kwq + 1, lwq, MeHg_sddoc)
+    ! call HgII_deposition(HgIIw_deposition_flux, HgII_wpa, HgII_wpom, HgII_wpn)
+    ! call MeHg_deposition(MeHgw_deposition_flux, MeHg_wpa, MeHg_wpom, MeHg_wpn)
+    ! call HgII_erosion(HgIIs_erosion_flux, HgII_spn)
+    ! call HgII_erosion(MeHgs_erosion_flux, MeHg_spn)
+    ! call HgIIs_methylation(HgIIs_methy, kwq + 1, lwq, HgII_sddoc)
+    ! call MeHgs_demethylation(MeHgs_demethy, kwq + 1, lwq, MeHg_sddoc)
   end if
 
   sourcesink(kwq, lwq, LHg0)  = HgIIw_reduction + MeHgw_photodeg + Hg0w_diffusion - Hg0w_oxidation - Hg0w_vol
@@ -243,6 +249,28 @@ SUBROUTINE sourceHg(kwq, lwq)
     sourcesink(kwq + 1, lwq, LHg0)  = - Hg0w_diffusion
     sourcesink(kwq + 1, lwq, LHgII) = - HgIIw_diffusion + MeHgs_demethy - HgIIs_methy + HgIIw_deposition_flux - HgIIs_erosion_flux
     sourcesink(kwq + 1, lwq, LMeHg) = - MeHgw_diffusion - MeHgs_demethy + HgIIs_methy + MeHgw_deposition_flux - MeHgs_erosion_flux
+  end if
+
+  if (lwq == 50) then
+    print*,'k = ',kwq
+    print*,'h = ',h(kwq + 1,lwq)
+    print*,'MeHgw = ',MeHgw
+    print*,'MeHgs = ',MeHgs
+    print*,'kws = ',kws
+    ! print*,'diff = ', kws * (MeHgs - MeHgw)
+    print*,'MeHg_atm_deposition = ',MeHgw_atmdep
+    print*,'MeHgw_diffusion = ', MeHgw_diffusion
+    print*,'MeHgs_demethy = ',MeHgs_demethy
+    print*,'HgIIs_methy = ',HgIIs_methy
+    print*,'MeHgw_demethy = ',MeHgw_demethy
+    print*,'HgIIw_methy = ',HgIIw_methy
+    print*,'MeHgs_erosion_flux = ',MeHgs_erosion_flux
+    print*,'MeHgw_deposition_flux = ',MeHgw_deposition_flux
+    print*,'MeHgw_photodeg = ',MeHgw_photodeg
+    print*,'sourcesink = ',sourcesink(kwq, lwq, LMeHg)
+    if (kwq == kms) then
+      print*,'sourcesink_sed = ',sourcesink(kwq + 1, lwq, LMeHg)
+    end if 
   end if
 
 END SUBROUTINE sourceHg
@@ -724,6 +752,10 @@ SUBROUTINE HgIIs_methylation(HgIIs_methy, kwq, lwq, HgII)
   ! Q10 = Q_10meth ** ( (salp(kwq,lwq) - T_methyl)/ 10 )
   Q10 = 1.0
 
+  if (lwq == 50) then
+    print*, 'sed_h = ',h(kwq, lwq)
+  end if 
+
   HgIIs_methy = h(kwq, lwq) * ks23 * Q10 * (1 + miu_so4 * (SO4 / (KSO4 + SO4)) ) * HgII
 
 END SUBROUTINE HgIIs_methylation
@@ -745,6 +777,10 @@ SUBROUTINE MeHgs_demethylation(MeHgs_demethy, kwq, lwq, MeHg)
   real                 :: Q10
 
   Q10 = 1.0
+
+  if (lwq == 50) then
+    print*, 'sed_h = ',h(kwq, lwq)
+  end if
 
   MeHgs_demethy = h(kwq, lwq) * ks32 * Q10 * MeHg
 

@@ -476,64 +476,160 @@ SUBROUTINE WQinput
    ALLOCATE(sed_diameter(sedNumber), sed_dens(sedNumber), sed_frac(sedNumber), sed_type(sedNumber))
    READ (UNIT=i99,FMT='(18X,I20)',IOSTAT=ios) iSTWAVE
    IF (ios /= 0) CALL input_error ( ios, 98)
-   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_diameter(nn), nn = 1, sedNumber)
+   READ (UNIT=i99,FMT='(18X,G20.2)',IOSTAT=ios) sed_h
    IF (ios /= 0) CALL input_error ( ios, 99)
-   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_dens(nn), nn = 1, sedNumber)
+   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_diameter(nn), nn = 1, sedNumber)
    IF (ios /= 0) CALL input_error ( ios, 100)
-   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_frac(nn), nn = 1, sedNumber)
+   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_dens(nn), nn = 1, sedNumber)
    IF (ios /= 0) CALL input_error ( ios, 101)
-   READ (UNIT=i99,FMT='(18X,5I)', IOSTAT=ios) (sed_type(nn), nn = 1, sedNumber)
+   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_frac(nn), nn = 1, sedNumber)
    IF (ios /= 0) CALL input_error ( ios, 102)
+   READ (UNIT=i99,FMT='(18X,5I)', IOSTAT=ios) (sed_type(nn), nn = 1, sedNumber)
+   IF (ios /= 0) CALL input_error ( ios, 103)
   ELSE IF (sedNumber == 0) THEN
    READ (UNIT=i99, FMT='(18X,I20)', IOSTAT=ios)
+   READ (UNIT=i99, FMT='(18X,G20.2)', IOSTAT=ios) sed_h
    READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
    READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
    READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
    READ (UNIT=i99, FMT='(18X,5I)', IOSTAT=ios)
-   IF (ios /= 0) CALL input_error ( ios, 103)
+   IF (ios /= 0) CALL input_error ( ios, 104)
   END IF
 
   if (iMeHg == 1) then
     allocate(kd_wpn3(sedNumber), kd_spn3(sedNumber))
     READ (UNIT=i99, FMT='(///(18X,G20.5))', IOSTAT=ios) inst_eq
+    IF (ios /= 0) CALL input_error ( ios, 105)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kw31
+    IF (ios /= 0) CALL input_error ( ios, 106)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) atm_MeHg
+    IF (ios /= 0) CALL input_error ( ios, 107)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) k_MeHgw
+    IF (ios /= 0) CALL input_error ( ios, 108)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) k_MeHgatm
+    IF (ios /= 0) CALL input_error ( ios, 109)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) MeHgatm
+    IF (ios /= 0) CALL input_error ( ios, 110)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) K_H_MeHgw
+    IF (ios /= 0) CALL input_error ( ios, 111)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kw32
+    IF (ios /= 0) CALL input_error ( ios, 112)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) ks32
+    IF (ios /= 0) CALL input_error ( ios, 113)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kws
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wdoc3
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wpa3
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wpom3
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_sdoc3
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_spom3
-    READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (kd_wpn3(nn), nn = 1, sedNumber)
-    READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (kd_spn3(nn), nn = 1, sedNumber)
+    IF (ios /= 0) CALL input_error ( ios, 114)
+
+    if (iDOC == 1) then
+      READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wdoc3
+      IF (ios /= 0) CALL input_error ( ios, 115)
+      READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_sdoc3
+      IF (ios /= 0) CALL input_error ( ios, 115)
+    else
+      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      IF (ios /= 0) CALL input_error ( ios, 115)
+      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      IF (ios /= 0) CALL input_error ( ios, 115)
+    end if
+
+    if (iALG1 == 1) then
+      READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wpa3
+      IF (ios /= 0) CALL input_error ( ios, 116)
+    else
+      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      IF (ios /= 0) CALL input_error ( ios, 116)
+    end if
+
+    if (iPOC == 1) then
+      READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wpom3
+      IF (ios /= 0) CALL input_error ( ios, 117)
+      READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_spom3
+      IF (ios /= 0) CALL input_error ( ios, 117)
+    else
+      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      IF (ios /= 0) CALL input_error ( ios, 117)
+      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      IF (ios /= 0) CALL input_error ( ios, 117)
+    end if
+
+    if (iSS == 1) then
+      READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (kd_wpn3(nn), nn = 1, sedNumber)
+      IF (ios /= 0) CALL input_error ( ios, 119)
+      READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (kd_spn3(nn), nn = 1, sedNumber)
+      IF (ios /= 0) CALL input_error ( ios, 120)
+    else
+      READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
+      IF (ios /= 0) CALL input_error ( ios, 119)
+      READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
+      IF (ios /= 0) CALL input_error ( ios, 120)
+    end if
 
   else if (iMeHg == 0) then
     READ (UNIT=i99, FMT='(///////////////////(18X,G20.5))', IOSTAT=ios)
+    IF (ios /= 0) CALL input_error ( ios, 122)
   end if
 
   if (iHgII == 1) then
     allocate(kd_wpn2(sedNumber), kd_spn2(sedNumber))
     READ (UNIT=i99, FMT='(///(18X,G20.5))', IOSTAT=ios) kw21
+    IF (ios /= 0) CALL input_error ( ios, 123)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) atm_HgII
+    IF (ios /= 0) CALL input_error ( ios, 124)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kw23
+    IF (ios /= 0) CALL input_error ( ios, 125)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) ks23
+    IF (ios /= 0) CALL input_error ( ios, 126)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) KDO
+    IF (ios /= 0) CALL input_error ( ios, 127)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) KSO4
+    IF (ios /= 0) CALL input_error ( ios, 128)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) SO4
+    IF (ios /= 0) CALL input_error ( ios, 129)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) miu_so4
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wdoc2
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wpa2
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wpom2
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_sdoc2
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_spom2
-    READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (kd_wpn2(nn), nn = 1, sedNumber)
-    READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (kd_spn2(nn), nn = 1, sedNumber)
+    IF (ios /= 0) CALL input_error ( ios, 130)
+
+    if (iDOC == 1) then
+      READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wdoc2
+      IF (ios /= 0) CALL input_error ( ios, 131)
+      READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_sdoc2
+      IF (ios /= 0) CALL input_error ( ios, 131)
+    else
+      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      IF (ios /= 0) CALL input_error ( ios, 131)
+      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      IF (ios /= 0) CALL input_error ( ios, 131)
+    end if
+
+    if (iALG1 == 1) then
+      READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wpa2
+      IF (ios /= 0) CALL input_error ( ios, 132)
+    else
+      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      IF (ios /= 0) CALL input_error ( ios, 132)
+    end if
+
+    if (iPOC == 1) then
+      READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wpom2
+      IF (ios /= 0) CALL input_error ( ios, 133)
+      READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_spom2
+      IF (ios /= 0) CALL input_error ( ios, 133)
+    else
+      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      IF (ios /= 0) CALL input_error ( ios, 133)
+      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      IF (ios /= 0) CALL input_error ( ios, 133)
+    end if
+
+    if (iSS == 1) then
+      READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (kd_wpn2(nn), nn = 1, sedNumber)
+      IF (ios /= 0) CALL input_error ( ios, 134)
+      READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (kd_spn2(nn), nn = 1, sedNumber)
+      IF (ios /= 0) CALL input_error ( ios, 134)
+    else
+      READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
+      IF (ios /= 0) CALL input_error ( ios, 134)
+      READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
+      IF (ios /= 0) CALL input_error ( ios, 134)
+    end if
   else if (iHgII == 0) then
     READ (UNIT=i99, FMT='(/////////////////(18X,G20.5))', IOSTAT=ios)
   end if

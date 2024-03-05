@@ -25,228 +25,228 @@ SUBROUTINE input
 !
 !------------------------------------------------------------------------
 
-   !.....Local variables.................................................
-   CHARACTER(LEN=12) :: input_file = "si3d_inp.txt"
-   INTEGER :: ios, nn, i, j, istat
+  !.....Local variables.................................................
+  CHARACTER(LEN=12) :: input_file = "si3d_inp.txt"
+  INTEGER :: ios, nn, i, j, istat
 
-   !.....Open input parameter file.....
-   OPEN (UNIT=i5, FILE=input_file, STATUS="OLD", IOSTAT=ios)
-   IF (ios /= 0) CALL open_error ( "Error opening "//input_file, ios )
+  !.....Open input parameter file.....
+  OPEN (UNIT=i5, FILE=input_file, STATUS="OLD", IOSTAT=ios)
+  IF (ios /= 0) CALL open_error ( "Error opening "//input_file, ios )
 
-   !.....Read header record containing comments about run................
-   READ (UNIT=i5, FMT='(/(A))', IOSTAT=ios) title
-   IF (ios /= 0) CALL input_error ( ios, 1)
+  !.....Read header record containing comments about run................
+  READ (UNIT=i5, FMT='(/(A))', IOSTAT=ios) title
+  IF (ios /= 0) CALL input_error ( ios, 1)
 
-   !.....Read & define start date of the run.............................
-   READ (UNIT=i5,FMT='(///(14X,G20.2))',IOSTAT=ios) iyr0,imon0,iday0,ihr0
-   IF (ios /= 0) CALL input_error ( ios, 2 )
-   CALL compute_date (0.0)
+  !.....Read & define start date of the run.............................
+  READ (UNIT=i5,FMT='(///(14X,G20.2))',IOSTAT=ios) iyr0,imon0,iday0,ihr0
+  IF (ios /= 0) CALL input_error ( ios, 2 )
+  CALL compute_date (0.0)
 
-   !.....Read space-time domains, cell size & time step .................
-   READ (UNIT=i5,FMT='(///(14X,G20.2))',IOSTAT=ios) xl,yl,zl,tl,idx,idy, &
-   & idz,dzmin, datadj, zetainit,idt, ibathyf
-   IF (ios /= 0) CALL input_error ( ios, 3 )
+  !.....Read space-time domains, cell size & time step .................
+  READ (UNIT=i5,FMT='(///(14X,G20.2))',IOSTAT=ios) xl,yl,zl,tl,idx,idy, &
+                                & idz,dzmin, datadj, zetainit,idt, ibathyf
+  IF (ios /= 0) CALL input_error ( ios, 3 )
 
-   ! ... Read parameters controlling solution algorithm .................
-   READ (UNIT=i5,FMT='(///(14X,G20.2))',IOSTAT=ios) itrap,niter,ismooth, &
-       & beta, iturb, Av0, Dv0, iadv, itrmom, ihd, Ax0, Ay0, f, theta,   &
-       & ibc,isal, itrsca, cd, ifsurfbc, dtsurfbc, cw, wa, phi, idbg, num_threads
-   IF (ios /= 0) CALL input_error ( ios, 4 )
+  ! ... Read parameters controlling solution algorithm .................
+  READ (UNIT=i5,FMT='(///(14X,G20.2))',IOSTAT=ios) itrap,niter,ismooth, &
+      & beta, iturb, Av0, Dv0, iadv, itrmom, ihd, Ax0, Ay0, f, theta,   &
+      & ibc,isal, itrsca, cd, ifsurfbc, dtsurfbc, cw, wa, phi, idbg, num_threads
+  IF (ios /= 0) CALL input_error ( ios, 4 )
 
-   !.....Read node numbers for time series output .......................
-   READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) ipt,nnodes
-   IF (ios /= 0) CALL input_error ( ios, 5 )
+  !.....Read node numbers for time series output .......................
+  READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) ipt,nnodes
+  IF (ios /= 0) CALL input_error ( ios, 5 )
 
-   IF (nnodes > 0) THEN
-     IF (ios /= 0) CALL input_error ( ios, 5 )
-     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (inode(nn), nn = 1, nnodes) ! Changed to I5 12/2010 SWA
-     IF (ios /= 0) CALL input_error ( ios, 5 )
-     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jnode(nn), nn = 1, nnodes) ! Changed to I5 12/2010 SWA
-     IF (ios /= 0) CALL input_error ( ios, 5 )
-   ELSE IF (nnodes == 0) THEN
-     READ (UNIT=i5, FMT='(/)', IOSTAT=ios)
-     IF (ios /= 0) CALL input_error ( ios, 5 )
-   ENDIF
+  IF (nnodes > 0) THEN
+    IF (ios /= 0) CALL input_error ( ios, 5 )
+    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (inode(nn), nn = 1, nnodes)
+  IF (ios /= 0) CALL input_error ( ios, 5 )
+    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jnode(nn), nn = 1, nnodes)
+    IF (ios /= 0) CALL input_error ( ios, 5 )
+  ELSE IF (nnodes == 0) THEN
+    READ (UNIT=i5, FMT='(/)', IOSTAT=ios)
+    IF (ios /= 0) CALL input_error ( ios, 5 )
+  ENDIF
 
-   ! ... Read nodes for horizontal plane output ...........................
-   READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) iop
-   IF (ios /= 0) CALL input_error ( ios, 6 )
-   READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) itspfh
-   IF (ios /= 0) CALL input_error ( ios, 6 )
-   READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) n_planes
-   IF (ios /= 0) CALL input_error ( ios, 6 )
-   IF (n_planes > max_planes) THEN
-     PRINT *,'ERROR: # of planes requested > maximum allowed'
-     STOP
-   END IF
-   IF (n_planes > 0) THEN
-     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (p_out(nn), nn = 1, n_planes)
-     IF (ios /= 0) CALL input_error ( ios, 6 )
-   ELSE IF (n_planes == 0) THEN
-     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios)
-     IF (ios /= 0) CALL input_error ( ios, 6 )
-   END IF
+  ! ... Read nodes for horizontal plane output ...........................
+  READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) iop
+  IF (ios /= 0) CALL input_error ( ios, 6 )
+  READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) itspfh
+  IF (ios /= 0) CALL input_error ( ios, 6 )
+  READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) n_planes
+  IF (ios /= 0) CALL input_error ( ios, 6 )
+  IF (n_planes > max_planes) THEN
+    PRINT *,'ERROR: # of planes requested > maximum allowed'
+    STOP
+  END IF
+  IF (n_planes > 0) THEN
+    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (p_out(nn), nn = 1, n_planes)
+    IF (ios /= 0) CALL input_error ( ios, 6 )
+  ELSE IF (n_planes == 0) THEN
+    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios)
+    IF (ios /= 0) CALL input_error ( ios, 6 )
+  END IF
 
-   ! ... Read nodes for vertical plane output ...........................
-   READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) iox
-   IF (ios /= 0) CALL input_error ( ios, 7 )
-   IF (iox /= 0) THEN
-     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) n_sections
-     IF (ios /= 0) CALL input_error ( ios, 7 )
-     IF (n_sections > max_sections) THEN
-       PRINT *,'ERROR: # of sections requested > maximum allowed'
-       STOP
-     END IF
-     DO j = 1, n_sections
-       ! ... Read number of cells in X-section j
-       READ (UNIT=i5, FMT='(/14X,I20)' , IOSTAT=ios) n_section_cells(j)
-       IF (ios /= 0) CALL input_error ( ios, 7 )
-       ! ... Read i coordinates for cells in X-section j
-       READ (UNIT=i5, FMT='(14X,10I5)', IOSTAT=ios)                       &  ! Changed to I5 12/2010 SWA
-       &    (xinode(j, nn), nn = 1, n_section_cells(j) )
-       IF (ios /= 0) CALL input_error ( ios, 7 )
-       ! ... Read j coordinates for cells in X-section j
-       READ (UNIT=i5, FMT='(14X,10I5)', IOSTAT=ios)                       &  ! Changed to I5 12/2010 SWA
-       &    (xjnode(j, nn),nn=1,n_section_cells(j))
-       IF (ios /= 0) CALL input_error ( ios, 7 )
-     END DO
-   ENDIF
+  ! ... Read nodes for vertical plane output ...........................
+  READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) iox
+  IF (ios /= 0) CALL input_error ( ios, 7 )
+  IF (iox /= 0) THEN
+    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) n_sections
+    IF (ios /= 0) CALL input_error ( ios, 7 )
+    IF (n_sections > max_sections) THEN
+      PRINT *,'ERROR: # of sections requested > maximum allowed'
+      STOP
+    END IF
+    DO j = 1, n_sections
+      ! ... Read number of cells in X-section j
+      READ (UNIT=i5, FMT='(/14X,I20)' , IOSTAT=ios) n_section_cells(j)
+      IF (ios /= 0) CALL input_error ( ios, 7 )
+      ! ... Read i coordinates for cells in X-section j
+      READ (UNIT=i5, FMT='(14X,10I5)', IOSTAT=ios)                       &  ! Changed to I5 12/2010 SWA
+      &    (xinode(j, nn), nn = 1, n_section_cells(j) )
+      IF (ios /= 0) CALL input_error ( ios, 7 )
+      ! ... Read j coordinates for cells in X-section j
+      READ (UNIT=i5, FMT='(14X,10I5)', IOSTAT=ios)                       &  ! Changed to I5 12/2010 SWA
+      &    (xjnode(j, nn),nn=1,n_section_cells(j))
+      IF (ios /= 0) CALL input_error ( ios, 7 )
+    END DO
+  ENDIF
 
-   !! ... Read toggles for 3D output  .....................................
-   READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) ipxml
-   IF (ios /= 0) CALL input_error ( ios, 7 )
-   READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) itspf
-   IF (ios /= 0) CALL input_error ( ios, 7 )
-   READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iTurbVars
-   IF (ios /= 0) CALL input_error ( ios, 7 )
+  !! ... Read toggles for 3D output  .....................................
+  READ (UNIT=i5, FMT='(///(14X,I20))', IOSTAT=ios) ipxml
+  IF (ios /= 0) CALL input_error ( ios, 7 )
+  READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) itspf
+  IF (ios /= 0) CALL input_error ( ios, 7 )
+  READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iTurbVars
+  IF (ios /= 0) CALL input_error ( ios, 7 )
 
-   !.....Read info on open boundaries.....................................
-   READ (UNIT=i5, FMT='(///14X,I20)', IOSTAT=ios) nopen
-   IF (ios /= 0) CALL input_error ( ios, 8 )
-   IF (nopen > 0) THEN
-      READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) dtsecopenbc
-      IF (ios /= 0) CALL input_error ( ios, 8 )
-      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iside(nn), nn = 1, nopen)
-      IF (ios /= 0) CALL input_error ( ios, 8 )
-      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (itype(nn), nn = 1, nopen)
-      IF (ios /= 0) CALL input_error ( ios, 8 )
-      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (isbc(nn), nn = 1, nopen)
-      IF (ios /= 0) CALL input_error ( ios, 8 )
-      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jsbc(nn), nn = 1, nopen)
-      IF (ios /= 0) CALL input_error ( ios, 8 )
-      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iebc(nn), nn = 1, nopen)
-      IF (ios /= 0) CALL input_error ( ios, 8 )
-      READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jebc(nn), nn = 1, nopen)
-      IF (ios /= 0) CALL input_error ( ios, 8 )
-    ELSE IF (nopen == 0) THEN
-      READ (UNIT=i5, FMT='(//////)', IOSTAT=ios)
-      IF (ios /= 0) CALL input_error ( ios, 8 )
-   END IF
+  !.....Read info on open boundaries.....................................
+  READ (UNIT=i5, FMT='(///14X,I20)', IOSTAT=ios) nopen
+  IF (ios /= 0) CALL input_error ( ios, 8 )
+  IF (nopen > 0) THEN
+    READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) dtsecopenbc
+    IF (ios /= 0) CALL input_error ( ios, 8 )
+    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iside(nn), nn = 1, nopen)
+    IF (ios /= 0) CALL input_error ( ios, 8 )
+    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (itype(nn), nn = 1, nopen)
+    IF (ios /= 0) CALL input_error ( ios, 8 )
+    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (isbc(nn), nn = 1, nopen)
+    IF (ios /= 0) CALL input_error ( ios, 8 )
+    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jsbc(nn), nn = 1, nopen)
+    IF (ios /= 0) CALL input_error ( ios, 8 )
+    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iebc(nn), nn = 1, nopen)
+    IF (ios /= 0) CALL input_error ( ios, 8 )
+    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jebc(nn), nn = 1, nopen)
+    IF (ios /= 0) CALL input_error ( ios, 8 )
+  ELSE IF (nopen == 0) THEN
+    READ (UNIT=i5, FMT='(//////)', IOSTAT=ios)
+    IF (ios /= 0) CALL input_error ( ios, 8 )
+  END IF
 
-   !.....Read info to output nested grid boundaries ......................
-   IF (ioNBTOGGLE > 0 ) THEN
-     READ (UNIT=i5,  FMT='(///14X,I20)', IOSTAT=ios) nxNBO
-     IF (ios /= 0) CALL input_error ( ios, 8 )
-     IF (nxNBO > 0) THEN
-       READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) ioNBO
-       IF (ios /= 0) CALL input_error ( ios, 8 )
-       READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) xxNBO
-       IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (isdNBO(nn), nn=1, nxNBO)
-         IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (isbcNBO(nn), nn=1, nxNBO)
-         IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jsbcNBO(nn), nn=1, nxNBO)
-         IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iebcNBO(nn), nn=1, nxNBO)
-         IF (ios /= 0) CALL input_error ( ios, 8 )
-         READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jebcNBO(nn), nn=1, nxNBO)
-         IF (ios /= 0) CALL input_error ( ios, 8 )
-       ELSE IF (nxNBO == 0) THEN
-         READ (UNIT=i5, FMT='(//////)', IOSTAT=ios)
-         IF (ios /= 0) CALL input_error ( ios, 8 )
-     END IF
-   END IF
+  !.....Read info to output nested grid boundaries ......................
+  IF (ioNBTOGGLE > 0 ) THEN
+  READ (UNIT=i5,  FMT='(///14X,I20)', IOSTAT=ios) nxNBO
+  IF (ios /= 0) CALL input_error ( ios, 8 )
+  IF (nxNBO > 0) THEN
+    READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) ioNBO
+    IF (ios /= 0) CALL input_error ( ios, 8 )
+    READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) xxNBO
+    IF (ios /= 0) CALL input_error ( ios, 8 )
+    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (isdNBO(nn), nn=1, nxNBO)
+    IF (ios /= 0) CALL input_error ( ios, 8 )
+    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (isbcNBO(nn), nn=1, nxNBO)
+    IF (ios /= 0) CALL input_error ( ios, 8 )
+    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jsbcNBO(nn), nn=1, nxNBO)
+    IF (ios /= 0) CALL input_error ( ios, 8 )
+    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iebcNBO(nn), nn=1, nxNBO)
+    IF (ios /= 0) CALL input_error ( ios, 8 )
+    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jebcNBO(nn), nn=1, nxNBO)
+    IF (ios /= 0) CALL input_error ( ios, 8 )
+  ELSE IF (nxNBO == 0) THEN
+    READ (UNIT=i5, FMT='(//////)', IOSTAT=ios)
+    IF (ios /= 0) CALL input_error ( ios, 8 )
+  END IF
+  END IF
 
-   !.... Read info for tracers ...........................................
-   READ (UNIT=i5, FMT='(///14X,I20)', IOSTAT=ios) ntr
-   IF (ios  /= 0) CALL input_error ( ios, 9 )
-   iotr = 0; ! Default value
-   IF (ntr > 0) THEN
-     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) ecomod
-     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iotr
-     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) itspftr
-     ! ipwq = Time step to run WQ modules. E.g. in idt = 100 s, and want to run WQ every 1 h, ipwq = 36;
-     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) ipwq
-     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) nswq 
-     IF (ios  /= 0) CALL input_error ( ios, 9 )
-   ELSE IF (ntr == 0) THEN
-     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
-     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
-     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
-     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
-     READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
-   ENDIF
+  !.... Read info for tracers ...........................................
+  READ (UNIT=i5, FMT='(///14X,I20)', IOSTAT=ios) ntr
+  IF (ios  /= 0) CALL input_error ( ios, 9 )
+  iotr = 0; ! Default value
+  IF (ntr > 0) THEN
+    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) ecomod
+    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iotr
+    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) itspftr
+    ! ipwq = Time step to run WQ modules. E.g. in idt = 100 s, and want to run WQ every 1 h, ipwq = 36;
+    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) ipwq
+    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) nswq 
+    IF (ios  /= 0) CALL input_error ( ios, 9 )
+  ELSE IF (ntr == 0) THEN
+    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
+    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
+    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
+    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
+    READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios)
+  ENDIF
 
-   !.... Read info for plume models & oxygenation systems ................
-   READ (UNIT=i5, FMT='(///14X,I20)', IOSTAT=ios) iopss
-   IF (ios  /= 0) CALL input_error ( ios, 10 )
-   IF (iopss > 0) THEN
-     ! ... Read no. of devices, each with its own inflow/outflow rate
-     READ (UNIT=i5, FMT='( 14X,I20)', IOSTAT=ios) npssdev
-     IF (ios  /= 0) CALL input_error ( ios, 10 )
-     IF ( npssdev > iopss .OR. npssdev < 1) THEN
-       PRINT *, '*** ERROR ***'
-       PRINT *, 'No. of devices creating point sources & sinks cannot be > '
-       PRINT *, 'No. of water columns with point sources & sinks'
-       STOP
-     ENDIF
-     ! Read time in seconds between consecutive records from time files
-     READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) dtsecpss
+  !.... Read info for plume models & oxygenation systems ................
+  READ (UNIT=i5, FMT='(///14X,I20)', IOSTAT=ios) iopss
+  IF (ios  /= 0) CALL input_error ( ios, 10 )
+  IF (iopss > 0) THEN
+    ! ... Read no. of devices, each with its own inflow/outflow rate
+    READ (UNIT=i5, FMT='( 14X,I20)', IOSTAT=ios) npssdev
+    IF (ios  /= 0) CALL input_error ( ios, 10 )
+    IF ( npssdev > iopss .OR. npssdev < 1) THEN
+      PRINT *, '*** ERROR ***'
+      PRINT *, 'No. of devices creating point sources & sinks cannot be > '
+      PRINT *, 'No. of water columns with point sources & sinks'
+      STOP
+    ENDIF
+    ! Read time in seconds between consecutive records from time files
+    READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) dtsecpss
 
-     ! ... Allocate space for arrays holding location
-     !     of point sources and sinks and devices
-     ALLOCATE ( ipss  (iopss), jpss   (iopss), &
-                iodev (iopss), STAT=istat)
-     IF (istat /= 0) CALL allocate_error ( istat, 100 )
+    ! ... Allocate space for arrays holding location
+    !     of point sources and sinks and devices
+    ALLOCATE ( ipss  (iopss), jpss   (iopss), &
+    iodev (iopss), STAT=istat)
+    IF (istat /= 0) CALL allocate_error ( istat, 100 )
 
-     ! ... Read in locations & characteristics of diffusers
-     !     At this point, they are pressumed constants in time
-     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (ipss(nn), nn=1, iopss)
-     IF (ios/= 0) CALL input_error ( ios, 10)
-     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jpss(nn), nn=1, iopss)
-     IF (ios/= 0) CALL input_error ( ios, 10)
-     READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iodev(nn), nn=1, iopss)
-     IF (ios/= 0) CALL input_error ( ios, 10)
+    ! ... Read in locations & characteristics of diffusers
+    !     At this point, they are pressumed constants in time
+    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (ipss(nn), nn=1, iopss)
+    IF (ios/= 0) CALL input_error ( ios, 10)
+    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jpss(nn), nn=1, iopss)
+    IF (ios/= 0) CALL input_error ( ios, 10)
+    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iodev(nn), nn=1, iopss)
+    IF (ios/= 0) CALL input_error ( ios, 10)
 
-     IF (iodev(npssdev) /= npssdev) THEN  ! iodev es el identificador del dispositivo. Nodev es el numero de dispositivos. Entonces, el ultimo valor de iodev debe ser igual al Nodev. 
-       PRINT*, '*** ERROR *** No. of Devices causing point sources'
-       STOP
-     END IF
-     ! ... Read sources & sinks specifications -
-     CALL PointSourceSinkInput
-   ELSE IF (iopss == 0) THEN
-     READ (UNIT=i5, FMT='(////)', IOSTAT=ios)
-     IF (ios  /= 0) CALL input_error ( ios, 10 )
-   ENDIF
+    IF (iodev(npssdev) /= npssdev) THEN  ! iodev es el identificador del dispositivo. Nodev es el numero de dispositivos. Entonces, el ultimo valor de iodev debe ser igual al Nodev. 
+      PRINT*, '*** ERROR *** No. of Devices causing point sources'
+      STOP
+    END IF
+    ! ... Read sources & sinks specifications -
+    CALL PointSourceSinkInput
+  ELSE IF (iopss == 0) THEN
+    READ (UNIT=i5, FMT='(////)', IOSTAT=ios)
+    IF (ios  /= 0) CALL input_error ( ios, 10 )
+  ENDIF
 
-   ! ... Input instructions & parameters controlling the solution of
-   !     the tracer transport equations.
-   IF (ntr > 0) THEN
-     ! ... Allocate space for some arrays - they are initialized
-     !     only if ecomod < 0, but used allways in determining
-     !     if the tracer transport equation is used or not in subroutine fd.
-     !ALLOCATE ( trct0(ntr), trcpk(ntr), trctn(ntr), &
-     !          trcx0(ntr), trcy0(ntr), trcz0(ntr), &
-     !           trcsx(ntr), trcsy(ntr), trcsz(ntr), STAT=istat)
-     !IF (istat /= 0) CALL allocate_error ( istat, 121 )
+  ! ... Input instructions & parameters controlling the solution of
+  !     the tracer transport equations.
+  IF (ntr > 0) THEN
+    ! ... Allocate space for some arrays - they are initialized
+    !     only if ecomod < 0, but used allways in determining
+    !     if the tracer transport equation is used or not in subroutine fd.
+    !ALLOCATE ( trct0(ntr), trcpk(ntr), trctn(ntr), &
+    !          trcx0(ntr), trcy0(ntr), trcz0(ntr), &
+    !           trcsx(ntr), trcsy(ntr), trcsz(ntr), STAT=istat)
+    !IF (istat /= 0) CALL allocate_error ( istat, 121 )
 
-     ! .... Initialize trct0 and trctn to default values
-     trct0 = 1E7;
-     trctn =   0;
+    ! .... Initialize trct0 and trctn to default values
+    trct0 = 1E7;
+    trctn =   0;
 
-     ! .... Define other input variables
-     SELECT CASE (ecomod)
+    ! .... Define other input variables
+    SELECT CASE (ecomod)
       CASE (-1) ! Tracer Cloud Releases
         PRINT *, 'Tracer Cloud Modelling activated'
         CALL trcinput
@@ -259,40 +259,57 @@ SUBROUTINE input
       CASE (3) ! Sediment transport routines
         PRINT *, 'Sediment transport activated'
         CALL sdinput
-      END SELECT
+    END SELECT
+  ENDIF
+
+  ! ... Read info for interpolation method (Added 12/2010 by SWA)
+  IF (ifsurfbc >=10) THEN
+    READ (UNIT=i5, FMT='(///14X,I20)', IOSTAT=ios) iinterp
+    IF (ios  /= 0) CALL input_error ( ios, 10 )
+    IF (iinterp==2) THEN
+      READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) gammaB
+      IF (ios  /= 0) CALL input_error ( ios, 10 )
+      READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) delNfactor
+      IF (ios  /= 0) CALL input_error ( ios, 10 )
     ENDIF
+  ENDIF
 
-   ! ... Read info for interpolation method (Added 12/2010 by SWA)
-   IF (ifsurfbc >=10) THEN
-     READ (UNIT=i5, FMT='(///14X,I20)', IOSTAT=ios) iinterp
-     IF (ios  /= 0) CALL input_error ( ios, 10 )
-     IF (iinterp==2) THEN
-       READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) gammaB
-       IF (ios  /= 0) CALL input_error ( ios, 10 )
-       READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) delNfactor
-       IF (ios  /= 0) CALL input_error ( ios, 10 )
-     ENDIF
-   ENDIF
+  if (ipxml .lt. 0) then
+    if ((ipxml .ne. iop) .or. (itspfh .ne. itspf)) then
+      print *, ' Error - si3d_inp.txt file'
+      print *, '  iop and ipxml must be the same when exporting 3D files'
+      print *, '  itspfh and itspf must be the same when exporting 3D files'
+      STOP
+    end if
+    if (ntr .gt. 0) then
+      if ((ipxml .ne. iop) .or. (ipxml .ne. iotr) .or. (iop .ne. iotr) .or. (itspfh .ne. itspf) .or. (itspf .ne. itspftr) .or. (itspfh .ne. itspftr)) then
+        print *, ' Error - si3d_inp.txt file'
+        print *, '  iop, ipxml, iotr must be the same when exporting 3D files'
+        print *, '  itspfh, itspf, itspftr must be the same when exporting 3D files'
+        STOP
+      end if
+    end if
+  end if
 
-   !.....Close input file.....
-   CLOSE (UNIT=i5)
+  !.....Close input file.....
+  CLOSE (UNIT=i5)
 
-   !.....Define frequently used numerical constants and coefficients.....
-   dt=idt; dx=idx; dy=idy; ddz=idz; twodt=2.*dt; dtdx=dt/dx; dtdy=dt/dy
-   gdtdx=g*dtdx; gdtdy=g*dtdy; gdt2dx2=gdtdx*dtdx; gdt2dy2=gdtdy*dtdy
-   !gthx=gdtdx*theta; gthy=gdtdy*theta; gth1x=gdtdx*2.*(1.-theta)
-   !gth1y=gdtdy*2.*(1.-theta);
-   cwind=2.*dt*cw*rhoair*wa*wa; alp4=(1.-alp)/4.
-   twodx=2.*dx; twody=2.*dy; fourdx=2.*twodx; fourdy=2.*twody
-   dxdx=dx*dx; dydy=dy*dy; twodxdx=2.*dxdx; twodydy=2.*dydy; dxdy=dx*dy ! Changed 12/2010 SWA
-   beta2=beta/2.; chi1=1.-chi; twochi1=2.*chi1
-   im=nint(xl/dx)+1; im1=im+1; i1=2; ndx=im1-i1
-   jm=nint(yl/dy)+1; jm1=jm+1; j1=2; ndy=jm1-j1
-   nts=tl/dt+.5; apxml = ABS(ipxml)
-   isec0=REAL(ihr0)/100.*3600.; !dt_min=idt/60.
+  !.....Define frequently used numerical constants and coefficients.....
+  dt=idt; dx=idx; dy=idy; ddz=idz; twodt=2.*dt; dtdx=dt/dx; dtdy=dt/dy
+  gdtdx=g*dtdx; gdtdy=g*dtdy; gdt2dx2=gdtdx*dtdx; gdt2dy2=gdtdy*dtdy
+  !gthx=gdtdx*theta; gthy=gdtdy*theta; gth1x=gdtdx*2.*(1.-theta)
+  !gth1y=gdtdy*2.*(1.-theta);
+  cwind=2.*dt*cw*rhoair*wa*wa; alp4=(1.-alp)/4.
+  twodx=2.*dx; twody=2.*dy; fourdx=2.*twodx; fourdy=2.*twody
+  dxdx=dx*dx; dydy=dy*dy; twodxdx=2.*dxdx; twodydy=2.*dydy; dxdy=dx*dy ! Changed 12/2010 SWA
+  beta2=beta/2.; chi1=1.-chi; twochi1=2.*chi1
+  im=nint(xl/dx)+1; im1=im+1; i1=2; ndx=im1-i1
+  jm=nint(yl/dy)+1; jm1=jm+1; j1=2; ndy=jm1-j1
+  nts=tl/dt+.5; apxml = ABS(ipxml)
+  isec0=REAL(ihr0)/100.*3600.; !dt_min=idt/60.
 
-   ! ... Generate grid dimensions in Z-direction
-   CALL ZGridDimensions
+  ! ... Generate grid dimensions in Z-direction
+  CALL ZGridDimensions
 
 END SUBROUTINE input
 
@@ -304,62 +321,62 @@ SUBROUTINE ZGridDimensions
 !
 !------------------------------------------------------------------------
 
-   !.....Local variables.................................................
-   CHARACTER(LEN=14) :: input_file = "si3d_layer.txt"
-   INTEGER :: ios, k, istat
+  !.....Local variables.................................................
+  CHARACTER(LEN=14) :: input_file = "si3d_layer.txt"
+  INTEGER :: ios, k, istat
 
-   ! ... Variable layer thickness
-   IF (ibathyf < 0 ) THEN
+  ! ... Variable layer thickness
+  IF (ibathyf < 0 ) THEN
 
-     !.....Open input file.....
-     OPEN (UNIT=i5, FILE=input_file, STATUS="OLD", IOSTAT=ios)
-     IF (ios /= 0) CALL open_error ( "Error opening "//input_file, ios )
+    !.....Open input file.....
+    OPEN (UNIT=i5, FILE=input_file, STATUS="OLD", IOSTAT=ios)
+    IF (ios /= 0) CALL open_error ( "Error opening "//input_file, ios )
 
-     !.....Read information ...
-     ! Skip over first line (header)
-     READ (UNIT=i5, FMT='(//)', IOSTAT=ios)
-     IF (ios /= 0) CALL input_error ( ios, 40 )
+    !.....Read information ...
+    ! Skip over first line (header)
+    READ (UNIT=i5, FMT='(//)', IOSTAT=ios)
+    IF (ios /= 0) CALL input_error ( ios, 40 )
 
-     ! Read number of layers from second header record
-     READ (UNIT=i5, FMT='(10X,I11)', IOSTAT=ios) km1
-     IF (ios /= 0) CALL input_error ( ios, 41 )
+    ! Read number of layers from second header record
+    READ (UNIT=i5, FMT='(10X,I11)', IOSTAT=ios) km1
+    IF (ios /= 0) CALL input_error ( ios, 41 )
 
-     !..... Allocate space for zlevel array
-     ALLOCATE (zlevel(1:km1), STAT=istat )
-     IF (istat /= 0) CALL allocate_error ( istat, 0 )
+    !..... Allocate space for zlevel array
+    ALLOCATE (zlevel(1:km1), STAT=istat )
+    IF (istat /= 0) CALL allocate_error ( istat, 0 )
 
-     ! .... Read array with levels to layer interfaces
-     DO k = 1, km1
-       READ (UNIT=i5, FMT='(10X,G11.2)', IOSTAT=ios) zlevel(k)
-       IF (ios /= 0) CALL input_error ( ios, 42 )
-     END DO
+    ! .... Read array with levels to layer interfaces
+    DO k = 1, km1
+      READ (UNIT=i5, FMT='(10X,G11.2)', IOSTAT=ios) zlevel(k)
+      IF (ios /= 0) CALL input_error ( ios, 42 )
+    END DO
 
-     ! ... Generate grid dimensions in z-direction
-     km  = km1 - 1  ;
-     k1  = 2        ;
-     ndz = km1 - k1 ;
+    ! ... Generate grid dimensions in z-direction
+    km  = km1 - 1  ;
+    k1  = 2        ;
+    ndz = km1 - k1 ;
 
-   ! ... Constant layer thickness (original si3d)
-   ELSE
+  ! ... Constant layer thickness (original si3d)
+  ELSE
 
-     ! ... Generate grid dimensions in z-direction
-     !km=CEILING((zl-dzmin)/ddz)+1
-     km=CEILING((zl)/ddz)+1
-     km1=km+1; k1=2; ndz=km1-k1
+    ! ... Generate grid dimensions in z-direction
+    !km=CEILING((zl-dzmin)/ddz)+1
+    km=CEILING((zl)/ddz)+1
+    km1=km+1; k1=2; ndz=km1-k1
 
-     !..... Allocate space for zlevel array
-     ALLOCATE (zlevel(1:km1), STAT=istat )
-     IF (istat /= 0) CALL allocate_error ( istat, 0 )
+    !..... Allocate space for zlevel array
+    ALLOCATE (zlevel(1:km1), STAT=istat )
+    IF (istat /= 0) CALL allocate_error ( istat, 0 )
 
-     !.....Initialize arrays with levels to layer interfaces
-     zlevel(k1) = 0.0;
-     DO k = k1+1, km1
-       zlevel(k)=zlevel(k-1)+ddz
-     END DO
-     zlevel(k1) = -100.
-     zlevel(1 ) = -100.
+    !.....Initialize arrays with levels to layer interfaces
+    zlevel(k1) = 0.0;
+    DO k = k1+1, km1
+      zlevel(k)=zlevel(k-1)+ddz
+    END DO
+    zlevel(k1) = -100.
+    zlevel(1 ) = -100.
 
-   ENDIF
+  ENDIF
 
 END SUBROUTINE ZGridDimensions
 
@@ -803,7 +820,7 @@ SUBROUTINE bathy
       CASE (.TRUE.)      ! Cells with wet layers
 
         l=ij2l(i,j)
-        ! ... Take depth at zeta-point as given in h file
+        ! ... Take depth at zeta-point as given in bathy file
         hs1 = h4(i,j)
 
         ! ... Compute No. of wet layers & depths at zeta-points
@@ -866,7 +883,7 @@ SUBROUTINE bathy
 
   !.....Process and output the bathymetry needed for
   !     graphics and particle tracking if ioutg=1.....
-  IF ( ipxml > 0 ) CALL outg ( h4 )
+  ! IF ( ipxml > 0 ) CALL outg ( h4 )
 
   !.....Deallocate h4 pointer array.....
   DEALLOCATE ( h4 )
@@ -908,8 +925,6 @@ FUNCTION linear ( frstpt, x, fx, dx )
 !  Purpose: To interpolate linearly between the functional values
 !           within the array fx.
 !
-
-
 !-----------------------------------------------------------------------
 
    REAL, DIMENSION(:), INTENT(IN) :: fx      ! Assumed-shape array
@@ -921,7 +936,6 @@ FUNCTION linear ( frstpt, x, fx, dx )
    m = FLOOR((x - frstpt)/dx)
    theta = (x - frstpt - m*dx) / dx
    linear=(1-theta)*fx(m+1)+theta*fx(m+2)
-
 
 END FUNCTION linear
 
@@ -1186,8 +1200,6 @@ SUBROUTINE outt(n,thrs)
 
 END SUBROUTINE outt
 
-
-
 !***********************************************************************
 SUBROUTINE outw(n)
 !***********************************************************************
@@ -1295,8 +1307,6 @@ SUBROUTINE outw(n)
 END IF
 
 END SUBROUTINE outw
-
-
 
 !***********************************************************************
 SUBROUTINE outv(n)
@@ -1448,8 +1458,6 @@ SUBROUTINE outv(n)
  END IF
 
 END SUBROUTINE outv
-
-
 
 !***********************************************************************
 SUBROUTINE CountSectionCells ( i1, ksection )
@@ -1959,8 +1967,6 @@ SUBROUTINE outcheckMass(n,thrs)
    ! ... Assing output variables and write to output files
    DO nn = 1, nopen
 
-
-
      ! ... Allocate space for output variables
      ipts = iptNBI(nn)
      ALLOCATE( outvar ( ipts, 5+ntr ), STAT=istat )
@@ -2043,26 +2049,18 @@ SUBROUTINE outcheckMass(n,thrs)
 
      END SELECT
 
-
-
      ! ... Id # for nesting boundary file
 
      iboid = iboid0 + nn
-
-
 
      DEALLOCATE (outvar)
 
      ! ... Mass Balance Check
      WRITE (UNIT=iboid, FMT='(3E20.11)') thrs, uflow, dzi*dx*dy
 
-
    ENDDO
 
-
 END SUBROUTINE outcheckMass
-
-
 
 !***********************************************************************
 SUBROUTINE FindCellsNBO ( ix, nn )
@@ -2136,7 +2134,6 @@ SUBROUTINE FindCellsNBO ( ix, nn )
 
  END SELECT
  ix = count
-
 
 END SUBROUTINE FindCellsNBO
 
@@ -2335,8 +2332,6 @@ SUBROUTINE outh(n)
 
 END SUBROUTINE outh
 
-
-
 !***********************************************************************
 SUBROUTINE CountPlaneCells ( count, kplane )
 !***********************************************************************
@@ -2381,234 +2376,108 @@ SUBROUTINE outz(n)
 !
 !-----------------------------------------------------------------------
 
-   INTEGER, INTENT(IN) :: n
+  INTEGER, INTENT(IN) :: n
 
-   !.....Local variables.....
-   CHARACTER (LEN = 11) :: tracer_file
-   CHARACTER (LEN = 13) :: tracerbc_file
-   INTEGER, PARAMETER   :: tracer_id0 = 1200
-   INTEGER, PARAMETER   :: tracerbc_id0 = 1400
-   INTEGER :: tracer_id, tracerbc_id
-   INTEGER :: i, j, k, l, k_t,ios, istat, n_frames,  k_out, m1,m2, c
-   INTEGER, SAVE :: ipoints
-   !REAL, ALLOCATABLE, DIMENSION(:,:) :: out_arrayZ
-   INTEGER :: year_out, day_out, mon_out
-   REAL    :: hour_out
-   INTEGER:: jj
-   CHARACTER(LEN=24) :: fmt
+  !.....Local variables.....
+  CHARACTER (LEN = 11) :: tracer_file
+  CHARACTER (LEN = 13) :: tracerbc_file
+  INTEGER, PARAMETER   :: tracer_id0 = 1200
+  INTEGER, PARAMETER   :: tracerbc_id0 = 1400
+  INTEGER :: tracer_id, tracerbc_id
+  INTEGER :: i, j, k, l, k_t,ios, istat, n_frames,  k_out, m1,m2, c
+  INTEGER, SAVE :: ipoints
+  !REAL, ALLOCATABLE, DIMENSION(:,:) :: out_arrayZ
+  INTEGER :: year_out, day_out, mon_out
+  REAL    :: hour_out
+  INTEGER:: jj
+  CHARACTER(LEN=24) :: fmt
 
-   IF ( ntr <= 0 ) RETURN
+  IF ( ntr <= 0 ) RETURN
 
-   !.....Open spacefile on first entry and print initial conditions ....
-   IF( n == 0 ) THEN
+  !.....Open spacefile on first entry and print initial conditions ....
+  IF( n == 0 ) THEN
+    ipoints = 0
+    DO l = 1, lm
+      DO k = k1, kmz(l) + 1
+        ipoints = ipoints + 1;
+      ENDDO
+    ENDDO
 
-     ipoints = 0
-     DO l = 1, lm
-        DO k = k1, kmz(l)
-           ipoints = ipoints + 1;
-        ENDDO
-     ENDDO
+    DO j = 1, ntr
+      n_frames = (nts-itspftr)/MAX(iotr,1)
+      tracer_id = tracer_id0 + j
+      tracer_file = "tracer_    "
+      IF ( j < 10 ) WRITE ( tracer_file(8:11), FMT='(I1,"   ")' ) j
+      IF ((j >=10 ) .AND. (j < 100)) WRITE ( tracer_file(8:11), FMT='(I2,"  ")' ) j
+      IF ( j >100 ) WRITE ( tracer_file(8:11), FMT='(I3," ")' ) j
+      OPEN(unit=tracer_id,file=tracer_file,FORM='UNFORMATTED',IOSTAT=ios)
+      IF(ios /= 0) THEN
+        PRINT *, "Error opening tracer file = ", j, ios
+        STOP
+      END IF
+      !... Write number of time slices to output file
+      WRITE(tracer_id) n_frames
+      WRITE(tracer_id) ipoints
+    END DO
 
-     DO j = 1, ntr
-       n_frames = (nts-itspftr)/MAX(iotr,1)
-       tracer_id = tracer_id0 + j
-       tracer_file = "tracer_    "
-       IF ( j < 10 ) WRITE ( tracer_file(8:11), FMT='(I1,"   ")' ) j
-       IF ((j >=10 ) .AND. (j < 100)) WRITE ( tracer_file(8:11), FMT='(I2,"  ")' ) j
-       IF ( j >100 ) WRITE ( tracer_file(8:11), FMT='(I3," ")' ) j
-       OPEN(unit=tracer_id,file=tracer_file,FORM='UNFORMATTED',IOSTAT=ios)
-       IF(ios /= 0) THEN; PRINT *, "Error opening tracer file = ", j, ios;STOP;ENDIF
-       !... Write number of time slices to output file
-       WRITE(tracer_id) n_frames
-       WRITE(tracer_id) ipoints
-     END DO
+    ! ... Time stamp
+    year_out = iyr
+    mon_out  = imon
+    day_out  = iday
+    hour_out = ihr
 
-     ! ... Time stamp
-     year_out = iyr
-     mon_out  = imon
-     day_out  = iday
-     hour_out = ihr
-
-     !ALLOCATE( out_arrayZ ( ipoints, 4 ), STAT=istat )
-     !IF (istat /= 0) THEN;
-     !  PRINT *, 'ERROR allocating space in output_tracer'
-     !  STOP
-     !ENDIF
-
-     ! ... Output tracer concentrations
-     DO k_t = 1, ntr
-        k_out = 0
-        ! ... Assign values to the output array
-        DO c=1,cm1
-             IF (.NOT. mask(c)) CYCLE
-             l = l2c(c)
-             DO k = k1, kmz(l)
-             k_out = k_out + 1
-             out_array(k_out,1) = FLOAT(l2i(l))
-             out_array(k_out,2) = FLOAT(l2j(l))
-             out_array(k_out,3) = FLOAT(k)
-             out_array(k_out,4) = tracer(k,l,k_t) * h(k,l)
-             out_array(k_out,5) = tracer(k,l,k_t)! cintia_trazador
-
-             END DO;
+    ! ... Output tracer concentrations
+    DO k_t = 1, ntr
+      k_out = 0
+      ! ... Assign values to the output array
+      DO c=1,cm1
+        IF (.NOT. mask(c)) CYCLE
+        l = l2c(c)
+        DO k = k1, kmz(l) + 1
+          k_out = k_out + 1
+          out_array(k_out, 1) = FLOAT(l2i(l))
+          out_array(k_out, 2) = FLOAT(l2j(l))
+          out_array(k_out, 3) = FLOAT(k)
+          out_array(k_out, 4) = tracer(k, l, k_t)
         END DO
-        ! ... Id # for plane file
-        tracer_id = tracer_id0 + k_t
-        ! ... Print time stamp followed by the records
-        WRITE(tracer_id) n,year_out,mon_out, day_out,hour_out,  &
-       &            ((out_array(m1,m2),m2=1,5),m1=1,ipoints)
-     END DO
-     !DEALLOCATE (out_arrayZ)
+      END DO
+      ! ... Id # for plane file
+      tracer_id = tracer_id0 + k_t
+      ! ... Print time stamp followed by the records
+      WRITE(tracer_id) n, year_out, mon_out, day_out, hour_out,  &
+      &            ((out_array(m1, m2), m2 = 1, 4), m1 = 1, ipoints)
+    END DO
+  ELSE
 
-   ELSE
+    ! ... Time stamp
+    year_out = iyr
+    mon_out  = imon
+    day_out  = iday
+    hour_out = ihr
 
-     ! ... Time stamp
-     year_out = iyr
-     mon_out  = imon
-     day_out  = iday
-     hour_out = ihr
-
-     ! ... Allocate space
-     !ALLOCATE( out_arrayZ ( ipoints, 1 ), STAT=istat )
-     !IF (istat /= 0) THEN;
-     !  PRINT *, 'ERROR allocating space in output_tracer'
-     !  STOP
-     !ENDIF
-
-     ! ... Output tracer concentrations
-     DO k_t = 1, ntr
-        k_out = 0
-        ! ... Assign values to the output array
-        DO c=1,cm1
-             IF (.NOT. mask(c)) CYCLE
-             l = l2c(c)
-             DO k = k1, kmz(l)
-             k_out = k_out + 1
-             out_array(k_out,1) = tracer(k,l,k_t) * h(k,l)
-             out_array(k_out,2) = tracer(k,l,k_t)! cintia_trazador
-             END DO;
+    ! ... Output tracer concentrations
+    DO k_t = 1, ntr
+      k_out = 0
+      ! ... Assign values to the output array
+      DO c=1,cm1
+        IF (.NOT. mask(c)) CYCLE
+        l = l2c(c)
+        DO k = k1, kmz(l) + 1
+          k_out = k_out + 1
+          out_array(k_out,1) = tracer(k, l, k_t)! cintia_trazador
         END DO
-        ! ... Id # for plane file
-        tracer_id = tracer_id0 + k_t
-        ! ... Print time stamp followed by the records
-        WRITE(tracer_id) n,year_out,mon_out, day_out,hour_out,   &
-        &            ((out_array(m1,m2),m2=1,2),m1=1,ipoints)
-     END DO
-     !DEALLOCATE (out_arrayZ)
+      END DO
+      ! ... Id # for plane file
+      tracer_id = tracer_id0 + k_t
+      ! ... Print time stamp followed by the records
+      WRITE(tracer_id) n, year_out, mon_out, day_out, hour_out,   &
+      &            ((out_array(m1, m2), m2 = 1, 1), m1 = 1, ipoints)
+    END DO
+  END IF
 
-   END IF
-
-   10 FORMAT( 1X,2I7,F10.3,F40.10)
+  10 FORMAT( 1X, 2I7, F10.3, F40.10)
 
 END SUBROUTINE outz
-
-!***********************************************************************
-SUBROUTINE outpTurb(n)
-!***********************************************************************
-!
-!  Purpose: To write the complete solution in the computational domain
-!           The resulting file is used to drive particle tracking
-!           simulations with PTRACK-TOOL.
-!-----------------------------------------------------------------------
-
-   INTEGER, INTENT(IN) :: n
-
-   !.....Local variables.....
-   CHARACTER (LEN = 16) :: ptrack_file
-   INTEGER, PARAMETER   :: ptrack_id = 1002
-   INTEGER              :: i, j, k, l, ios, istat, Noframes, m1, m2,  &
-                           kout, year_out, day_out, mon_out, c
-   REAL                 :: hour_out
-   INTEGER, SAVE        :: ipoints
-!   REAL, ALLOCATABLE, DIMENSION(:,:) :: out_array
-  IF( n == 0 ) THEN
-     ! ... Determine No. of frames to output & No. of interior points
-     Noframes = (nts-itspf)/MAX(apxml,1)
-     ipoints = 0
-     DO l = 1, lm
-        i = l2i(l); j = l2j(l)
-        DO k = k1, kmz(l)
-           ipoints = ipoints + 1;
-        ENDDO
-     ENDDO
-
-     ! ... Open output file & print data & initial conditions
-     ptrack_file = "ptrack_hydro.bnr"
-     OPEN(unit=ptrack_id,file=ptrack_file,FORM='UNFORMATTED',IOSTAT=ios)
-     IF(ios /= 0) THEN
-       PRINT *, "Error opening ptrack hydro file = ", ios
-       STOP
-     ENDIF
-     !... Write number of time slices to output file
-     WRITE(ptrack_id) Noframes
-     WRITE(ptrack_id) ipoints
-
-     ! ... Time stamp
-     year_out = iyr
-     mon_out  = imon
-     day_out  = iday
-     hour_out = ihr
-     ! ... Output tracer concentrations
-     kout = 0
-     ! ... Assign values to the output array
-     DO c=1,cm1
-       IF (.NOT. mask(c)) CYCLE
-       l = l2c(c)
-       i = l2i(l); j = l2j(l); !Andrea PT
-       DO k = k1, kmz(l)
-         kout = kout + 1
-         out_array(kout,1) = FLOAT(i)
-         out_array(kout,2) = FLOAT(j)
-         out_array(kout,3) = FLOAT(k)
-         out_array(kout,4) = hp (k,l)
-         out_array(kout,5) = up (k,l)
-         out_array(kout,6) = vp (k,l)
-         out_array(kout,7) = wp (k,l)
-         out_array(kout,8) = Dv (k,l)
-         out_array(kout,9) = salp (k,l)
-         out_array(kout,10) = q2p (k,l)
-         out_array(kout,11) = q2lp (k,l)
-         out_array(kout,12) = kh (k,l)
-         out_array(kout,13) = Av (k,l)
-       END DO;
-     END DO
-     ! ... Print time stamp followed by the records
-     WRITE(ptrack_id) n,year_out,mon_out, day_out,hour_out,  &
-     &              ((out_array(m1,m2),m2=1,13),m1=1,ipoints)
-!     DEALLOCATE (out_array)
-  ELSE
-     ! ... Time stamp
-     year_out = iyr
-     mon_out  = imon
-     day_out  = iday
-     hour_out = ihr
-     ! ... Output tracer concentrations
-     kout = 0
-     ! ... Assign values to the output array
-     DO c=1,cm1
-       IF (.NOT. mask(c)) CYCLE
-       l = l2c(c)
-       DO k = k1, kmz(l)
-         kout = kout + 1
-         out_array(kout,1) = hp(k,l)
-         out_array(kout,2) = up(k,l)
-         out_array(kout,3) = vp(k,l)
-         out_array(kout,4) = wp(k,l)
-         out_array(kout,5) = Dv(k,l)
-         out_array(kout,6) = salp (k,l)
-         out_array(kout,7) = q2p (k,l)
-         out_array(kout,8) = q2lp (k,l)
-         out_array(kout,9) = kh (k,l)
-         out_array(kout,10) = Av (k,l)
-       END DO;
-     END DO
-     ! ... Print time stamp followed by the records
-     WRITE(ptrack_id) n,year_out,mon_out, day_out,hour_out,  &
-     &              ((out_array(m1,m2),m2=1,10),m1=1,ipoints)
-     !DEALLOCATE (out_array)
- END IF
-
-END SUBROUTINE outpTurb
 
 !***********************************************************************
 SUBROUTINE outp(n)
@@ -2619,93 +2488,115 @@ SUBROUTINE outp(n)
 !           simulations with PTRACK-TOOL.
 !-----------------------------------------------------------------------
 
-   INTEGER, INTENT(IN) :: n
+  INTEGER, INTENT(IN) :: n
 
-   !.....Local variables.....
-   CHARACTER (LEN = 16) :: ptrack_file
-   INTEGER, PARAMETER   :: ptrack_id = 1002
-   INTEGER              :: i, j, k, l, ios, istat, Noframes, m1, m2,  &
-                           kout, year_out, day_out, mon_out, c
-   REAL                 :: hour_out
-   INTEGER, SAVE        :: ipoints
-!   REAL, ALLOCATABLE, DIMENSION(:,:) :: out_array
+  !.....Local variables.....
+  CHARACTER (LEN = 11) :: ptrack_file
+  INTEGER, PARAMETER   :: ptrack_id = 1002
+  INTEGER              :: i, j, k, l, ios, istat, Noframes, m1, m2,  &
+                          kout, year_out, day_out, mon_out, c
+  REAL                 :: hour_out
+  INTEGER, SAVE        :: ipoints
+  !   REAL, ALLOCATABLE, DIMENSION(:,:) :: out_array
   IF( n == 0 ) THEN
-     ! ... Determine No. of frames to output & No. of interior points
-     Noframes = (nts-itspf)/MAX(apxml,1)
-     ipoints = 0
-     DO l = 1, lm
-        i = l2i(l); j = l2j(l)
-        DO k = k1, kmz(l)
-           ipoints = ipoints + 1;
-        ENDDO
-     ENDDO
+    ! ... Determine No. of frames to output & No. of interior points
+    Noframes = (nts - itspf) / MAX(apxml, 1)
+    ipoints = 0
+    DO l = 1, lm
+      ! i = l2i(l); j = l2j(l)
+      DO k = k1, kmz(l) + 1
+        ipoints = ipoints + 1
+      ENDDO
+    ENDDO
 
-     ! ... Open output file & print data & initial conditions
-     ptrack_file = "ptrack_hydro.bnr"
-     OPEN(unit=ptrack_id,file=ptrack_file,FORM='UNFORMATTED',IOSTAT=ios)
-     IF(ios /= 0) THEN
-       PRINT *, "Error opening ptrack hydro file = ", ios
-       STOP
-     ENDIF
-     !... Write number of time slices to output file
-     WRITE(ptrack_id) Noframes
-     WRITE(ptrack_id) ipoints
+    ! ... Open output file & print data & initial conditions
+    ptrack_file = "si3d_3D"
+    OPEN(unit = ptrack_id, file = ptrack_file, FORM = 'UNFORMATTED', IOSTAT = ios)
+    IF(ios .ne. 0) THEN
+      PRINT *, "Error opening hydro file = ", ios
+      STOP
+    ENDIF
+    !... Write number of time slices to output file
+    WRITE(ptrack_id) Noframes
+    WRITE(ptrack_id) ipoints
 
-     ! ... Time stamp
-     year_out = iyr
-     mon_out  = imon
-     day_out  = iday
-     hour_out = ihr
-     ! ... Output tracer concentrations
-     kout = 0
-     ! ... Assign values to the output array
-     DO c=1,cm1
-       IF (.NOT. mask(c)) CYCLE
-       l = l2c(c)
-       i = l2i(l); j = l2j(l); !Andrea PT
-       DO k = k1, kmz(l)
-         kout = kout + 1
-         out_array(kout,1) = FLOAT(i)
-         out_array(kout,2) = FLOAT(j)
-         out_array(kout,3) = FLOAT(k)
-         out_array(kout,4) = hp (k,l)
-         out_array(kout,5) = up (k,l)
-         out_array(kout,6) = vp (k,l)
-         out_array(kout,7) = wp (k,l)
-         out_array(kout,8) = salp (k,l)
-       END DO;
-     END DO
-     ! ... Print time stamp followed by the records
-     WRITE(ptrack_id) n,year_out,mon_out, day_out,hour_out,  &
-     &              ((out_array(m1,m2),m2=1,8),m1=1,ipoints)
-!     DEALLOCATE (out_array)
+    ! ... Time stamp
+    year_out = iyr
+    mon_out  = imon
+    day_out  = iday
+    hour_out = ihr
+    ! ... Output tracer concentrations
+    kout = 0
+    ! ... Assign values to the output array
+    DO c=1,cm1
+      IF (.NOT. mask(c)) CYCLE
+      l = l2c(c)
+      i = l2i(l)
+      j = l2j(l)
+      DO k = k1, kmz(l) + 1
+        kout = kout + 1
+        out_array(kout, 1) = FLOAT(i)
+        out_array(kout, 2) = FLOAT(j)
+        out_array(kout, 3) = FLOAT(k)
+        out_array(kout, 4) = hp (k, l)
+        out_array(kout, 5) = up (k, l)
+        out_array(kout, 6) = vp (k, l)
+        out_array(kout, 7) = wp (k, l)
+        out_array(kout, 8) = salp (k, l)
+        if (iTurbVars .eq. 1) then
+          out_array(kout, 9) = Dv (k, l)
+          out_array(kout, 10) = q2p (k, l)
+          out_array(kout, 11) = q2lp (k, l)
+          out_array(kout, 12) = kh (k, l)
+          out_array(kout, 13) = Av (k, l)
+        end if
+      END DO
+    END DO
+    ! ... Print time stamp followed by the records
+    if (iTurbVars .eq. 1) then
+      WRITE(ptrack_id) n, year_out, mon_out, day_out, hour_out,  &
+      &              ((out_array(m1, m2), m2 = 1, 13), m1 = 1, ipoints)
+    else
+      WRITE(ptrack_id) n, year_out, mon_out, day_out, hour_out,  &
+      &              ((out_array(m1, m2), m2 = 1, 8), m1 = 1, ipoints)
+    end if
   ELSE
-
-     ! ... Time stamp
-     year_out = iyr
-     mon_out  = imon
-     day_out  = iday
-     hour_out = ihr
-     ! ... Output tracer concentrations
-     kout = 0
-     ! ... Assign values to the output array
-     DO c=1,cm1
-       IF (.NOT. mask(c)) CYCLE
-       l = l2c(c)
-       DO k = k1, kmz(l)
-         kout = kout + 1
-         out_array(kout,1) = hp(k,l)
-         out_array(kout,2) = up(k,l)
-         out_array(kout,3) = vp(k,l)
-         out_array(kout,4) = wp(k,l)
-         out_array(kout,5) = salp (k,l)
-       END DO;
-     END DO
-     ! ... Print time stamp followed by the records
-     WRITE(ptrack_id) n,year_out,mon_out, day_out,hour_out,  &
-     &              ((out_array(m1,m2),m2=1,5),m1=1,ipoints)
-     !DEALLOCATE (out_array)
- END IF
+    ! ... Time stamp
+    year_out = iyr
+    mon_out  = imon
+    day_out  = iday
+    hour_out = ihr
+    ! ... Output tracer concentrations
+    kout = 0
+    ! ... Assign values to the output array
+    DO c=1,cm1
+      IF (.NOT. mask(c)) CYCLE
+      l = l2c(c)
+      DO k = k1, kmz(l) + 1
+        kout = kout + 1
+        out_array(kout, 1) = hp(k, l)
+        out_array(kout, 2) = up(k, l)
+        out_array(kout, 3) = vp(k, l)
+        out_array(kout, 4) = wp(k, l)
+        out_array(kout, 5) = salp (k, l)
+        if (iTurbVars .eq. 1) then
+          out_array(kout, 6) = Dv(k, l)
+          out_array(kout, 7) = q2p (k, l)
+          out_array(kout, 8) = q2lp (k, l)
+          out_array(kout, 9) = kh (k, l)
+          out_array(kout, 10) = Av (k, l)
+        end if
+      END DO
+    END DO
+    ! ... Print time stamp followed by the records
+    if (iTurbVars .eq. 1) then
+      WRITE(ptrack_id) n, year_out, mon_out, day_out, hour_out,  &
+      &              ((out_array(m1, m2), m2 = 1, 10), m1 = 1, ipoints)
+    else
+      WRITE(ptrack_id) n, year_out, mon_out, day_out, hour_out,  &
+      &              ((out_array(m1, m2), m2 = 1, 5), m1 = 1, ipoints)
+    end if
+  END IF
 
 END SUBROUTINE outp
 
@@ -2866,9 +2757,6 @@ SUBROUTINE outs(n,its)
    END IF
 
 END SUBROUTINE outs
-
-
-
 
 !***********************************************************************
 SUBROUTINE outs_bin
@@ -3806,7 +3694,7 @@ LOGICAL FUNCTION leap_year ( iyear )
 END FUNCTION leap_year
 
 !************************************************************************
-  SUBROUTINE OutScalarEnergyBalance(n,thrs)
+SUBROUTINE OutScalarEnergyBalance(n,thrs)
 !************************************************************************
 !
 !  Purpose: To output mass & energy existing at the basin
