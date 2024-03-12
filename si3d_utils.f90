@@ -2159,7 +2159,7 @@ SUBROUTINE outh(n)
    IF( n == 0 ) THEN
 
      ! ... Determine No. of time slices to output
-     n_frames = (nts-itspfh)/MAX(iop,1)
+     n_frames = int((nts-itspfh)/MAX(iop,1))
      DO j = 1, n_planes
        ! ... Check that plane no. is below 2
        IF ( p_out(j) < k1 ) THEN
@@ -2404,7 +2404,7 @@ SUBROUTINE outz(n)
     ENDDO
 
     DO j = 1, ntr
-      n_frames = (nts-itspftr)/MAX(iotr,1)
+      n_frames = int((nts-itspftr)/MAX(iotr,1))
       tracer_id = tracer_id0 + j
       tracer_file = "tracer_    "
       IF ( j < 10 ) WRITE ( tracer_file(8:11), FMT='(I1,"   ")' ) j
@@ -2500,7 +2500,7 @@ SUBROUTINE outp(n)
   !   REAL, ALLOCATABLE, DIMENSION(:,:) :: out_array
   IF( n == 0 ) THEN
     ! ... Determine No. of frames to output & No. of interior points
-    Noframes = (nts - itspf) / MAX(apxml, 1)
+    Noframes = int((nts - itspf) / MAX(apxml, 1))
     ipoints = 0
     DO l = 1, lm
       ! i = l2i(l); j = l2j(l)
