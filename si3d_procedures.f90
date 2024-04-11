@@ -520,7 +520,7 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
   !$omp barrier
 
   !.....Solve for non-active scalar transport
-  IF (ntr      >  0 .AND. & niter    >  0 .AND. &  lastiter == 1 ) THEN
+  IF (ntr      >  0 .AND. niter >  0 .AND. lastiter == 1 ) THEN
     IF (ecomod <  0) THEN
       CALL srcsnk00
     ELSE IF (ecomod == 0) THEN
