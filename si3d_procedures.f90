@@ -89,6 +89,7 @@ SUBROUTINE init
             hp(k,l)=ZERO;
           ENDIF
       ENDDO
+      hp(kms + 1, l) = sed_h
 
       ! Set zeta = hhs(i,j) for columns with mask2d = TRUE (i.e.
       ! potentially wett) but intitially dry (k1z = km1).
@@ -394,185 +395,185 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
 !
 !-----------------------------------------------------------------------
 
-   REAL, INTENT(INOUT) :: t_exmom2,t_matmom2,t_matcon2
-   REAL, INTENT(IN) :: thrs, its
-   INTEGER, INTENT(IN) :: Bstart,Bend,istep,n,lastiter,iter
-   REAL, DIMENSION (1:km1,Bstart:Bend+1), INTENT(INOUT) :: Bhaxpp, Bhaypp, Bth, Bth1, Bex, heatSourceB,QswFrB
-   REAL, DIMENSION (1:km1,Bstart:Bend+1), INTENT(INOUT) :: Bth2, Bagx, Barx,Bagy,Bary,Bth3,Bth4
-   REAL, DIMENSION (Bstart:Bend+1), INTENT(INOUT) :: Beagx, Bearx,Beagy,Beary,Bsx,Bsy
-   REAL, DIMENSION (Bstart:Bend+1), INTENT(INOUT) :: Bdd, Bqq,Brr,uairB,vairB,cdwB
-   INTEGER, DIMENSION (Bstart:Bend+1), INTENT(IN) :: lSCH,lNCH,lWCH,lECH
-   REAL, INTENT(INOUT) :: Qsw,Qn,Qlw,eta,Ta,Pa,RH,Cc
-   REAL(real_G1), INTENT(INOUT) :: ShearProduction,BuoyancyProduction, Dissipation, TKinE
-   REAL, DIMENSION (nmetstat), INTENT(INOUT) :: Qsw2dB,Qlw2dB,Ta2dB,RH2dB,Cc2dB,uair2dB,vair2dB
-   REAL,DIMENSION (1:km1), INTENT(INOUT) :: bclncxB,hupdrhoB
+  REAL, INTENT(INOUT) :: t_exmom2,t_matmom2,t_matcon2
+  REAL, INTENT(IN) :: thrs, its
+  INTEGER, INTENT(IN) :: Bstart,Bend,istep,n,lastiter,iter
+  REAL, DIMENSION (1:km1,Bstart:Bend+1), INTENT(INOUT) :: Bhaxpp, Bhaypp, Bth, Bth1, Bex, heatSourceB,QswFrB
+  REAL, DIMENSION (1:km1,Bstart:Bend+1), INTENT(INOUT) :: Bth2, Bagx, Barx,Bagy,Bary,Bth3,Bth4
+  REAL, DIMENSION (Bstart:Bend+1), INTENT(INOUT) :: Beagx, Bearx,Beagy,Beary,Bsx,Bsy
+  REAL, DIMENSION (Bstart:Bend+1), INTENT(INOUT) :: Bdd, Bqq,Brr,uairB,vairB,cdwB
+  INTEGER, DIMENSION (Bstart:Bend+1), INTENT(IN) :: lSCH,lNCH,lWCH,lECH
+  REAL, INTENT(INOUT) :: Qsw,Qn,Qlw,eta,Ta,Pa,RH,Cc
+  REAL(real_G1), INTENT(INOUT) :: ShearProduction,BuoyancyProduction, Dissipation, TKinE
+  REAL, DIMENSION (nmetstat), INTENT(INOUT) :: Qsw2dB,Qlw2dB,Ta2dB,RH2dB,Cc2dB,uair2dB,vair2dB
+  REAL,DIMENSION (1:km1), INTENT(INOUT) :: bclncxB,hupdrhoB
 
-   ! ... Local variables
-   INTEGER :: itr,l,lol,liter
-   REAL, EXTERNAL :: TIMER
-   REAL :: tsbar,tebar
+  ! ... Local variables
+  INTEGER :: itr,l,lol,liter
+  REAL, EXTERNAL :: TIMER
+  REAL :: tsbar,tebar
 
-   ! ... Define tz used in all following routines ...............
-   tz = 1.0/istep
-   !print *,"hihihi:",omp_get_thread_num()
-   !$omp barrier
-   ! ... Read in nested boundary conditions, if specified .......
-   CALL readbcNGB(thrs)
-   !$omp barrier
-   !print *,"hihihi2:",omp_get_thread_num()
-   !.....Assign new values of s or u/v along open boundaries.....
-   CALL openbcUVH(thrs)
+  ! ... Define tz used in all following routines ...............
+  tz = 1.0/istep
+  !print *,"hihihi:",omp_get_thread_num()
+  !$omp barrier
+  ! ... Read in nested boundary conditions, if specified .......
+  CALL readbcNGB(thrs)
+  !$omp barrier
+  !print *,"hihihi2:",omp_get_thread_num()
+  !.....Assign new values of s or u/v along open boundaries.....
+  CALL openbcUVH(thrs)
 
-   !$omp barrier
-   !print *,"hihihi3:",omp_get_thread_num()
-   !.... Find magnitude of sources and sinks and their scalar loads
-   IF (iopss > 0) CALL PointSourceSinkSolve(n,istep,thrs)
+  !$omp barrier
+  !print *,"hihihi3:",omp_get_thread_num()
+  !.... Find magnitude of sources and sinks and their scalar loads
+  IF (iopss > 0) CALL PointSourceSinkSolve(n,istep,thrs)
 
-   !$omp barrier
-   ! ... Assign boundary conditions at free surface .............
-   CALL surfbc(n,istep,thrs)
+  !$omp barrier
+  ! ... Assign boundary conditions at free surface .............
+  CALL surfbc(n,istep,thrs)
 
-   !$omp barrier
-   !print *,"hihihi4:",omp_get_thread_num()
-   !.....Assing horizonal eddy viscosity and diffusivity at n ...........
-   CALL UpdateHorizontalMixingCoefficients
-   !$omp barrier
-   !print *,"hihihi5:",omp_get_thread_num()
-    !.....Evaluate explicit terms in x-momentum eq................
-   CALL exmom(1)
-   !$omp barrier
-   !print *,"ex1:",sum(ex(:,:))
+  !$omp barrier
+  !print *,"hihihi4:",omp_get_thread_num()
+  !.....Assing horizonal eddy viscosity and diffusivity at n ...........
+  CALL UpdateHorizontalMixingCoefficients
+  !$omp barrier
+  !print *,"hihihi5:",omp_get_thread_num()
+  !.....Evaluate explicit terms in x-momentum eq................
+  CALL exmom(1)
+  !$omp barrier
+  !print *,"ex1:",sum(ex(:,:))
 
-   !print *,"hihihi6:",omp_get_thread_num()
-   !.....Solve a tridiagonal system at each horizontal node
-   !     to obtain the matrices for the x-momentum equations.....
-   CALL matmom(1,t_matmom2,Bstart,Bend,Bex,Beagx,Bearx,Bagx,Barx,Beagy,Beary,Bagy,Bary,uairB,vairB,cdwB,bclncxB,hupdrhoB)
-   !$omp barrier
-   !print *,"hihihi7:",omp_get_thread_num()
-   !.....Evaluate explicit terms in y-momentum eq................
-   CALL exmom(2)
+  !print *,"hihihi6:",omp_get_thread_num()
+  !.....Solve a tridiagonal system at each horizontal node
+  !     to obtain the matrices for the x-momentum equations.....
+  CALL matmom(1,t_matmom2,Bstart,Bend,Bex,Beagx,Bearx,Bagx,Barx,Beagy,Beary,Bagy,Bary,uairB,vairB,cdwB,bclncxB,hupdrhoB)
+  !$omp barrier
+  !print *,"hihihi7:",omp_get_thread_num()
+  !.....Evaluate explicit terms in y-momentum eq................
+  CALL exmom(2)
 
-   !$omp barrier
-!!   if(omp_get_thread_num() .EQ. 0) THEN
-!!   print *,"ex2:",sum(ex(:,:))
-!!   end if
-   !eagy=0
-   !Beagy=0
-!!   DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
-!!     l = id_column(liter)
+  !$omp barrier
+  !!   if(omp_get_thread_num() .EQ. 0) THEN
+  !!   print *,"ex2:",sum(ex(:,:))
+  !!   end if
+  !eagy=0
+  !Beagy=0
+  !!   DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
+  !!     l = id_column(liter)
 
-!!     Bagy(:,l) = 0.0
-!!   END DO
+  !!     Bagy(:,l) = 0.0
+  !!   END DO
 
-   !.....Solve a tridiagonal system at each horizontal node
-   !     to obtain the matrices for the y-momentum equations.....
-   CALL matmom(2,t_matmom2,Bstart,Bend,Bex,Beagx,Bearx,Bagx,Barx,Beagy,Beary,Bagy,Bary,uairB,vairB,cdwB,bclncxB,hupdrhoB)
+  !.....Solve a tridiagonal system at each horizontal node
+  !     to obtain the matrices for the y-momentum equations.....
+  CALL matmom(2,t_matmom2,Bstart,Bend,Bex,Beagx,Bearx,Bagx,Barx,Beagy,Beary,Bagy,Bary,uairB,vairB,cdwB,bclncxB,hupdrhoB)
 
-   !print *,"hihihi9:",omp_get_thread_num()
-   !$omp barrier
+  !print *,"hihihi9:",omp_get_thread_num()
+  !$omp barrier
 
-   CALL matcon(t_matcon2,Bstart,Bend,lWCH,lSCH,Beagx,Bearx,Beagy,Beary,Bsx,Bsy,Bdd,Bqq,Brr)
-   !print *,"hihihi10:",omp_get_thread_num()
-   !$omp barrier
-   !.....Solve implicit system of equations for zeta............
-   !CALL SolverBlock ! Original formulation writen by P.E. Smith
-   CALL SolverSparse(n,Bstart,Bend,lWCH,lSCH,Bsx,Bsy,Bqq,Brr,iter,istep,thrs) ! Formulation by F.J. Rueda
-   !print *,"hihihi11:",omp_get_thread_num()
-   !$omp barrier
-   !.....Reassign new values of s or u/v along open boundaries.....
-   CALL openbcUVH(thrs)
-   !
-!!   if(omp_get_thread_num() .EQ. 0) THEN
-!!   print *,"vhavel:",sum(vh(:,:))
-!!   vh(:,:)=0.0
-!!   end if
+  CALL matcon(t_matcon2,Bstart,Bend,lWCH,lSCH,Beagx,Bearx,Beagy,Beary,Bsx,Bsy,Bdd,Bqq,Brr)
+  !print *,"hihihi10:",omp_get_thread_num()
+  !$omp barrier
+  !.....Solve implicit system of equations for zeta............
+  !CALL SolverBlock ! Original formulation writen by P.E. Smith
+  CALL SolverSparse(n,Bstart,Bend,lWCH,lSCH,Bsx,Bsy,Bqq,Brr,iter,istep,thrs) ! Formulation by F.J. Rueda
+  !print *,"hihihi11:",omp_get_thread_num()
+  !$omp barrier
+  !.....Reassign new values of s or u/v along open boundaries.....
+  CALL openbcUVH(thrs)
+  !
+  !!   if(omp_get_thread_num() .EQ. 0) THEN
+  !!   print *,"vhavel:",sum(vh(:,:))
+  !!   vh(:,:)=0.0
+  !!   end if
 
-!!   DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
-!!     l = id_column(liter)
-!!     ary(:,l)=Bary(:,l)
-!!     agy(:,l)=Bagy(:,l)
-!!   END DO
-   !$omp barrier
-!!   if(omp_get_thread_num() .EQ. 0) THEN
-!!   print *,"ary:",sum(ary(:,:))
-!!   print *,"agy:",sum(agy(:,:))
-!!   end if
-   !.....Solve for velocities explicitly. If DRYING occurs
-   !     at this point, dry cells are removed and k1z/k1u/k1v
-   !     recalculated (wetting is done after finishing the
-   !     calculations for a given time step or iteration) ......
-   CALL vel(Bstart,Bend,Bagx,Barx,Bagy,Bary)
-   !print *,"hihihi12:",omp_get_thread_num()
-   !$omp barrier
-!!   if(omp_get_thread_num() .EQ. 0) THEN
-!!   print *,"vhdvel:",sum(vh(:,:))
-!!   end if
-   ! ... Solve for active scalar transport
-    IF (isal /= 0) THEN
-     CALL exsal(Bstart,Bend,lSCH,lNCH,lECH,lWCH,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,Bex,thrs)
-     !$omp barrier
-     CALL imsal(Bstart,Bend,Bex,heatSourceB)
-     !$omp barrier
-     CALL openbcSCA(thrs)
-   END IF
+  !!   DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
+  !!     l = id_column(liter)
+  !!     ary(:,l)=Bary(:,l)
+  !!     agy(:,l)=Bagy(:,l)
+  !!   END DO
+  !$omp barrier
+  !!   if(omp_get_thread_num() .EQ. 0) THEN
+  !!   print *,"ary:",sum(ary(:,:))
+  !!   print *,"agy:",sum(agy(:,:))
+  !!   end if
+  !.....Solve for velocities explicitly. If DRYING occurs
+  !     at this point, dry cells are removed and k1z/k1u/k1v
+  !     recalculated (wetting is done after finishing the
+  !     calculations for a given time step or iteration) ......
+  CALL vel(Bstart,Bend,Bagx,Barx,Bagy,Bary)
+  !print *,"hihihi12:",omp_get_thread_num()
+  !$omp barrier
+  !!   if(omp_get_thread_num() .EQ. 0) THEN
+  !!   print *,"vhdvel:",sum(vh(:,:))
+  !!   end if
+  ! ... Solve for active scalar transport
+  IF (isal /= 0) THEN
+    CALL exsal(Bstart,Bend,lSCH,lNCH,lECH,lWCH,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,Bex,thrs)
+    !$omp barrier
+    CALL imsal(Bstart,Bend,Bex,heatSourceB)
+    !$omp barrier
+    CALL openbcSCA(thrs)
+  END IF
 
-   !$omp barrier
+  !$omp barrier
 
-   !.....Solve for non-active scalar transport
-   IF (ntr      >  0 .AND. &
-       niter    >  0 .AND. &
-       lastiter == 1      ) THEN
-       IF      (ecomod <  0) THEN
-         CALL srcsnk00
-       ELSE IF (ecomod == 0) THEN
-         CALL srcsnk00
-       ELSE IF (ecomod == 1) THEN
-         IF (idbg == 1) PRINT *, 'Before entry into SUB srcsnkWQ'
-         IF ((ecomod == 1) .AND. (MOD(n,MAX(ipwq, 1)) == 0)) CALL srcsnkWQ(n) !! ACC 11/21/2022 added to run WQ at lower frequency than hydrodynamics
-         IF (idbg == 1) PRINT *, ' After entry into SUB srcsnkWQ'
-       ELSE IF (ecomod == 2) THEN
-         CALL srcsnkSZ
-       ELSE IF (ecomod == 3) THEN
-         CALL srcsnkSD
-       ENDIF
-       !$omp barrier
-       DO itr = 1, ntr
-         IF (ecomod < 0 .AND. ( trct0(itr) > n .OR. trctn(itr) < n ) ) CYCLE
-         CALL exTracer (itr,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH,lWCH,Bex,thrs)
-         !$omp barrier
-         CALL imTracer (itr,Bstart,Bend,Bex)
-         !$omp barrier
-         CALL openbctracer (itr,thrs)
-         !$omp barrier
-       ENDDO
-   ENDIF
-   !$omp barrier
-!!   if(omp_get_thread_num() .EQ. 0) THEN
-!!   print *,"vhavel2:",sum(vh(:,:))
-!!   end if
-   ! ... Recalculate near surface velocity to account
-   !     for WETTING & recalculate k1z, k1u & k1v ..............
-   CALL vel2
-   !$omp barrier
-!!   if(omp_get_thread_num() .EQ. 0) THEN
-!!   print *,"u:",sum(u(:,:))
-!!   print *,"v:",sum(v(:,:))
-!!   print *,"wp:",sum(wp(:,:))
-!!   print *,"vhp:",sum(vhp(:,:))
-!!   print *,"hvp:",sum(hvp(:,:))
-!!   print *,"vh:",sum(vh(:,:))
-!!   end if
-   !print *,"hihihi14:",omp_get_thread_num()
-   !.....Smooth solution on leapfrog step if ismooth>=1.........
-   IF (ismooth >= 1 .AND. istep == 1) CALL smooth
+  !.....Solve for non-active scalar transport
+  IF (ntr      >  0 .AND. & niter    >  0 .AND. &  lastiter == 1 ) THEN
+    IF (ecomod <  0) THEN
+      CALL srcsnk00
+    ELSE IF (ecomod == 0) THEN
+      CALL srcsnk00
+    ELSE IF (ecomod == 1) THEN
+    IF ((ecomod == 1) .AND. (MOD(n,MAX(ipwq, 1)) == 0)) THEN
+      IF (idbg == 1) PRINT *, ' Before entry into SUB srcsnkWQ'
+      CALL srcsnkWQ(n) !! ACC 11/21/2022 added to run WQ at lower frequency than hydrodynamics
+      IF (idbg == 1) PRINT *, ' After entry into SUB srcsnkWQ'
+    END IF
+    ELSE IF (ecomod == 2) THEN
+      CALL srcsnkSZ
+    ELSE IF (ecomod == 3) THEN
+      CALL srcsnkSD
+    END IF
+    !$omp barrier
+    DO itr = 1, ntr
+      IF (ecomod < 0 .AND. ( trct0(itr) > n .OR. trctn(itr) < n ) ) CYCLE
+      CALL exTracer (itr,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH,lWCH,Bex,thrs)
+      !$omp barrier
+      CALL imTracer (itr,Bstart,Bend,Bex)
+      !$omp barrier
+      CALL openbctracer (itr,thrs)
+      !$omp barrier
+    ENDDO
+  END IF
+  !$omp barrier
+  !!   if(omp_get_thread_num() .EQ. 0) THEN
+  !!   print *,"vhavel2:",sum(vh(:,:))
+  !!   end if
+  ! ... Recalculate near surface velocity to account
+  !     for WETTING & recalculate k1z, k1u & k1v ..............
+  CALL vel2
+  !$omp barrier
+  !!   if(omp_get_thread_num() .EQ. 0) THEN
+  !!   print *,"u:",sum(u(:,:))
+  !!   print *,"v:",sum(v(:,:))
+  !!   print *,"wp:",sum(wp(:,:))
+  !!   print *,"vhp:",sum(vhp(:,:))
+  !!   print *,"hvp:",sum(hvp(:,:))
+  !!   print *,"vh:",sum(vh(:,:))
+  !!   end if
+  !print *,"hihihi14:",omp_get_thread_num()
+  !.....Smooth solution on leapfrog step if ismooth>=1.........
+  IF (ismooth >= 1 .AND. istep == 1) CALL smooth
 
-   !$omp barrier
+  !$omp barrier
 
-   !.....Assing eddy viscosity and diffusivity at n+1 ...........
-   CALL UpdateMixingCoefficients(Bstart,Bend,istep,uairB,vairB,cdwB, &
-   & ShearProduction,BuoyancyProduction, Dissipation, TKinE)
-   !print *,"hihihi15:",omp_get_thread_num()
-   !$omp barrier
+  !.....Assing eddy viscosity and diffusivity at n+1 ...........
+  CALL UpdateMixingCoefficients(Bstart,Bend,istep,uairB,vairB,cdwB, &
+  & ShearProduction,BuoyancyProduction, Dissipation, TKinE)
+  !print *,"hihihi15:",omp_get_thread_num()
+  !$omp barrier
 END SUBROUTINE fd
 
 !***********************************************************************
@@ -4347,7 +4348,7 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
       ENDIF
     ENDDO
 
-    Bex(kms+1,l) = hpp(kms,l)*tracerpp(kms+1,l,nt)/twodt1
+    Bex(kms + 1, l) = hpp(kms + 1, l)*tracerpp(kms + 1, l, nt) / twodt1
 
   ENDDO
 
@@ -4373,7 +4374,6 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
 !    ----            ----------        -----------------------
 !
 !-----------------------------------------------------------------------
-
 
    ! ... Arguments
    INTEGER, INTENT (IN) :: nt
@@ -4471,20 +4471,19 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
          tracer(k1s:kms  ,l,nt) = sal1(1:nwlayers)
          tracer(k1 :k1s-1,l,nt) = sal1(1         )
          tracer(k1-1,l,nt) = sal1(1)
-
-         do k = k1-1, kms+1
-            if (tracer(k,l,nt) .lt. 0.0) then
-              tracer(k,l,nt) = 0.0
-            end if 
-         end do
       END SELECT
 
-      ! Adding solution to sediment layer 
-        hn(kms+1) = hn(kms)
-        aa( 2,kms+1) = hn(kms+1)/twodt1
-        ds(kms+1) = Bex(kms+1,l) + sourcesink(kms+1,l,nt)
-        tracer(kms+1,l,nt) = ds(kms+1) / aa(2,kms+1)
+      ! Adding solution to sediment layer
+      hn(kms + 1) = hpp(kms + 1, l)
+      aa( 2, kms + 1) = hn(kms + 1) / twodt1
+      ds(kms + 1) = Bex(kms + 1, l) + sourcesink(kms + 1, l, nt)
+      tracer(kms + 1, l, nt) = ds(kms + 1) / aa(2, kms + 1)
 
+      do k = k1-1, kms+1
+        if (tracer(k, l, nt) .lt. 0.0) then
+          tracer(k, l, nt) = 0.0
+        end if 
+      end do
 
    !.....End loop over scalar-pts.....
    END DO

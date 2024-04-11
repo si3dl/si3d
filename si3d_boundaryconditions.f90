@@ -4677,7 +4677,7 @@ SUBROUTINE surfbc(n,istep,thrs)
 END SUBROUTINE surfbc
 
 !************************************************************************
- SUBROUTINE DistributeQswH
+SUBROUTINE DistributeQswH
 !************************************************************************
 !
 !  Purpose: To apportion the solar irradiance penetrating the
@@ -4735,7 +4735,7 @@ END SUBROUTINE surfbc
 END SUBROUTINE DistributeQswH
 
 !************************************************************************
- SUBROUTINE DistributeQsw
+SUBROUTINE DistributeQsw
 !************************************************************************
 !
 !  Purpose: To apportion the solar irradiance penetrating the
@@ -4824,7 +4824,7 @@ REAL FUNCTION SolarFr ( depth )
 END FUNCTION SolarFr
 
 !************************************************************************
- SUBROUTINE DistributeMomentumHeatSources
+SUBROUTINE DistributeMomentumHeatSources
 !************************************************************************
 !
 !  Purpose: To construct a 2D met field from discrete variables &
@@ -5129,7 +5129,7 @@ END FUNCTION SolarFr
 END SUBROUTINE DistributeMomentumHeatSources
 
 !************************************************************************
- SUBROUTINE DistributeMomentumHeatSourcesH(n,istep)
+SUBROUTINE DistributeMomentumHeatSourcesH(n,istep)
 !************************************************************************
 !
 !  Purpose: To construct a 2D met field from discrete variables &
