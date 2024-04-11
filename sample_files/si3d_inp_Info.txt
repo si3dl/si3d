@@ -65,7 +65,7 @@ Output specifications for time files (individual nodes)
 -------------------------------------------------------
 Output specifications for H-plane files (plot in matlab with LoadPlotSheetFile3L)
 -------------------------------------------------------
- iht         !       360          ! No. of time step between consecutive output to plane file  (2h)
+ iop         !       360          ! No. of time step between consecutive output to plane file  (2h)
  itspfh      !         0          ! No. of time steps before first output to horizontal plane file 
  nplanes     !         5          !
  planes      !   2,3,5,40,20      ! Layer numbers of depth that will be exported
