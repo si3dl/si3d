@@ -695,11 +695,27 @@ SUBROUTINE WQinput
   SED_DOC = SED_DOC/86400.0
 
   IF (idbg == 1) THEN
-    PRINT*, "iDO  = ", iDO , "iPOC = ", iPOC, "iDOC = ", iDOC
-    PRINT*, "iPON = ", iPON, "iDON = ", iDON, "iNH4 = ", iNH4, "iNO3 = ", iNO3
-    PRINT*, "iPOP = ", iPOP, "iDOP = ", iDOP, "iPO4 = ", iPO4
-    PRINT*, "iALG1 = ", iALG1, "iALG2 = ", iALG2, "iALG3 = ", iALG3, "iALG4 = ", iALG4, "iALG5 = ", iALG5
+    PRINT*, 'iDO  = ', iDO , 'iPOC = ', iPOC, 'iDOC = ', iDOC
+    PRINT*, 'iPON = ', iPON, 'iDON = ', iDON, 'iNH4 = ', iNH4
+    PRINT*, 'iPOP = ', iPOP, 'iDOP = ', iDOP, 'iPO4 = ', iPO4
+    PRINT*, 'iNO3 = ', iNO3, 'iALG1 = ', iALG1, 'iALG2 = ', iALG2
+    PRINT*, 'iALG3 = ', iALG3, 'iALG4 = ', iALG4, 'iALG5 = ', iALG5
     PRINT*, 'iMeHg = ', iMeHg, 'iHgII = ',iHgII, 'iHg0 = ', iHg0, 'iSS = ', iSS
+    print*, 'mu_max1 =', mu_max1, 'R_mor1 =', R_mor1, 'R_gr1 =', R_gr1
+    print*, 'mu_max2 =', mu_max2, 'R_mor2 = ', R_mor2, 'R_gr2 =', R_gr2
+    print*, 'mu_max3 =', mu_max3, 'R_mor3 = ', R_mor3, 'R_gr3 =', R_gr3
+    print*, 'mu_max4 =', mu_max4, 'R_mor4 = ', R_mor4, 'R_gr4 =', R_gr4
+    print*, 'mu_max5 =', mu_max5, 'R_mor5 = ', R_mor5, 'R_gr5 =', R_gr5
+    print*, 'R_decom_pon =' , R_decom_pon, 'R_miner_don = ', R_miner_don 
+    print*, 'R_nitrif = ', R_nitrif, 'R_denit = ', R_denit
+    print*, 'R_decom_pop =' , R_decom_pop, 'R_miner_dop = ', R_miner_dop
+    print*, 'R_decom_poc =' , R_decom_poc, 'R_miner_doc = ', R_miner_doc
+    print*, 'R_settl = ', R_settl, 'R_resusp = ', R_resusp
+    print*, 'R_reaer = ', R_reaer, 'R_SOD = ', R_SOD
+    print*, 'ATM_DOC = ', ATM_DOC, 'ATM_DON = ', ATM_DON, 'ATM_DOP = ', ATM_DOP
+    print*, 'ATM_NH4 = ', ATM_NH4, 'ATM_NO3 = ', ATM_NO3, 'ATM_PO4 = ', ATM_NO3
+    print*, 'SED_DOC = ', SED_DOC, 'SED_DON = ', SED_DON, 'SED_DOP = ', SED_DOP
+    print*, 'SED_NH4 = ', SED_NH4, 'SED_NO3 = ', SED_NO3, 'SED_PO4 = ', SED_PO4
     PRINT*, 'sed_diam',sed_diameter
     PRINT*,'sed_dens',sed_dens
     PRINT*,'sed_frac',sed_frac
@@ -730,7 +746,7 @@ SUBROUTINE WQinit
 
   !. . . Local Variables
   INTEGER, DIMENSION(ntrmax):: tracerpplocal
-  INTEGER:: i,j, sumtr, ios
+  INTEGER:: i,j, ios
   character(11), allocatable, dimension(:) :: tracer_list
   
 
@@ -764,9 +780,9 @@ SUBROUTINE WQinit
   end if
 
   print*, 'Constituents to model:'
+  print*, tracer_list(:)
 
   do i = 1, ntr
-    print*,tracer_list(i)
     if ((tracer_list(i) == 'DO') .and. (iDO == 1)) then
       LDO = i
     else if ((tracer_list(i) == 'PON') .and.(iPON == 1)) then
@@ -774,7 +790,7 @@ SUBROUTINE WQinit
     else if ((tracer_list(i) == 'DON') .and. (iDON == 1)) then
       LDON = i
     else if ((tracer_list(i) == 'NH4') .and. (iNH4 == 1)) then
-      LPON = i
+      LNH4 = i
     else if ((tracer_list(i) == 'NO3') .and. (iNO3 == 1)) then
       LNO3 = i
     else if ((tracer_list(i) == 'POP') .and. (iPOP == 1)) then
@@ -819,8 +835,6 @@ SUBROUTINE WQinit
 
   IF (idbg == 1) THEN
     PRINT*,'LDO  = ', LDO
-    PRINT*,'LPOC = ',LPOC
-    PRINT*,'LDOC = ', LDOC
     PRINT*,'LPON = ', LPON
     PRINT*,'LDON = ', LDON
     PRINT*,'LNH4 = ', LNH4
@@ -828,6 +842,8 @@ SUBROUTINE WQinit
     PRINT*,'LPOP = ', LPOP
     PRINT*,'LDOP = ', LDOP
     PRINT*,'LPO4 = ', LPO4
+    PRINT*,'LPOC = ', LPOC
+    PRINT*,'LDOC = ', LDOC    
     PRINT*,'LALG1 = ', LALG1
     PRINT*,'LALG2 = ', LALG2
     PRINT*,'LALG3 = ', LALG3
@@ -837,7 +853,7 @@ SUBROUTINE WQinit
     PRINT*,'LHgII = ', LHgII
     PRINT*,'LMeHg = ', LMeHg
     PRINT*,'LSS1 = ', LSS1
-    PRINT*,'LSS2 = ',LSS2
+    PRINT*,'LSS2 = ', LSS2
     PRINT*,'LSS3 = ', LSS3
   END IF
 
@@ -859,7 +875,7 @@ SUBROUTINE srcsnkWQ(n)
 !------------------------------------------------------------
 
   !... Local variables
-  INTEGER:: i, j, k, l, liter, k1s, kms, iteration
+  INTEGER:: i, k, l, liter, k1s, kms, iteration
   integer, intent(in) :: n 
 
   ! reset soursesink = 0
