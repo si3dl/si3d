@@ -716,21 +716,22 @@ SUBROUTINE WQinput
     print*, 'ATM_NH4 = ', ATM_NH4, 'ATM_NO3 = ', ATM_NO3, 'ATM_PO4 = ', ATM_NO3
     print*, 'SED_DOC = ', SED_DOC, 'SED_DON = ', SED_DON, 'SED_DOP = ', SED_DOP
     print*, 'SED_NH4 = ', SED_NH4, 'SED_NO3 = ', SED_NO3, 'SED_PO4 = ', SED_PO4
-    PRINT*, 'sed_diam',sed_diameter
-    PRINT*,'sed_dens',sed_dens
-    PRINT*,'sed_frac',sed_frac
-    PRINT*, 'sed_type',sed_type
+    PRINT*, 'sed_h = ', sed_h
+    PRINT*, 'sed_diam = ',sed_diameter
+    PRINT*,'sed_dens = ',sed_dens
+    PRINT*,'sed_frac = ',sed_frac
+    PRINT*, 'sed_type = ',sed_type
     PRINT*,'kws = ',kws
-    print*,'kw21',kw21
-    print*,'atm_HgII',atm_HgII
-    print*,'kw23',kw23
-    print*,'ks23',ks23
-    print*,'KDO',KDO
-    print*,'DGMra',DGMra
-    print*,'k_Hg0w',k_Hg0w
-    print*,'k_Hg0atm',k_Hg0atm
-    print*,'Hg0atm',Hg0atm
-    print*,'K_H_Hg0w',K_H_Hg0w
+    print*,'kw21 = ',kw21
+    print*,'atm_HgII = ',atm_HgII
+    print*,'kw23 = ',kw23
+    print*,'ks23 = ',ks23
+    print*,'KDO = ',KDO
+    print*,'DGMra = ',DGMra
+    print*,'k_Hg0w = ',k_Hg0w
+    print*,'k_Hg0atm = ',k_Hg0atm
+    print*,'Hg0atm = ',Hg0atm
+    print*,'K_H_Hg0w = ',K_H_Hg0w
 
   END IF
 

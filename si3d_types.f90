@@ -417,7 +417,7 @@
    integer                              :: LSS1, LSS2, LSS3 !< integers that determine the index of the constituent within tracer matrix
    integer                              :: sedMax = 3       !< Max number of sediments to model
    integer                              :: sedNumber        !< Number of sediments to model
-   real                                 :: sed_h            !< [m] Sediment Layer thickness
+   real                                 :: sed_h = 0.5      !< [m] Sediment Layer thickness
    real, allocatable, dimension (:)     :: sed_diameter     !< (um) Sediment diameter D50 in micrometers
    real, allocatable, dimension (:)     :: sed_dens         !< (kg/m3) Sediment density
    real, allocatable, dimension (:)     :: sed_frac         !< Fraction of type of sediment in total suspended sediment

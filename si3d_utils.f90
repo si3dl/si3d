@@ -1146,8 +1146,8 @@ SUBROUTINE outt(n,thrs)
           ENDDO
         ENDIF
         zlevel_export(k) = zlevel(k+1)
-        if (k == km1) then
-          zlevel_export(k) = zlevel(k) + ddz
+        if (k == kmz(l) + 1) then
+          zlevel_export(k) = zlevel(k) + sed_h
         end if
      END DO
 
