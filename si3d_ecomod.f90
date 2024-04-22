@@ -764,6 +764,19 @@ SUBROUTINE WQinit
   LDO =0; LPON=0; LDON=0; LNH4=0; LNO3=0; LPOP=0; LDOP=0; LPO4=0
   LALG1=0; LALG2=0; LALG3=0; LALG4=0; LALG5=0; LDOC=0; LPOC=0;
   LSS1 = 0; LSS2 = 0; LSS3 = 0; LHg0 = 0; LMeHg = 0; LHgII = 0
+
+  ! Read tracer line from si3d_init file 
+  !.....Open initial condition file.....
+  sal_ic_file = 'si3d_init.txt'
+  OPEN (UNIT=i4, FILE='si3d_init.txt', STATUS="OLD", FORM="FORMATTED", IOSTAT=ios)
+  IF(ios /= 0) CALL open_error ( "Error opening "//sal_ic_file, ios )
+
+  ! Skip over first five header records in open boundary condition file
+  READ (UNIT=i4, FMT='(////)', IOSTAT=ios)
+  IF (ios /= 0) CALL input_error ( ios, 13 )
+
+  READ (UNIT=i4, FMT='(A)', IOSTAT=ios) tracer_line
+  CLOSE(i4)
   
   !. . Assign Lxx to each constituent modeled
   !. . .. first need to define intermediate array tracerpplocal
