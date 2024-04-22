@@ -540,11 +540,11 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
     DO itr = 1, ntr
       IF (ecomod < 0 .AND. ( trct0(itr) > n .OR. trctn(itr) < n ) ) CYCLE
       CALL exTracer (itr,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH,lWCH,Bex,thrs)
-      !$omp barrier
+      !!$omp barrier
       CALL imTracer (itr,Bstart,Bend,Bex)
-      !$omp barrier
+      !!$omp barrier
       CALL openbctracer (itr,thrs)
-      !$omp barrier
+      !!$omp barrier
     ENDDO
   END IF
   !$omp barrier
@@ -567,7 +567,7 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
   !.....Smooth solution on leapfrog step if ismooth>=1.........
   IF (ismooth >= 1 .AND. istep == 1) CALL smooth
 
-  !$omp barrier
+  !!$omp barrier
 
   !.....Assing eddy viscosity and diffusivity at n+1 ...........
   CALL UpdateMixingCoefficients(Bstart,Bend,istep,uairB,vairB,cdwB, &
@@ -3068,7 +3068,7 @@ SUBROUTINE exsal(Bstart,Bend,lSCH,lNCH,lECH,lWCH,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,Be
     ENDDO
   ENDDO
 
-  !$omp barrier
+  !!$omp barrier
   CALL MODexsal4openbc(Bstart,Bend,Bex,thrs)
 
   !.....Compute CPU time spent in subroutine.....
@@ -4261,22 +4261,22 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
           elseif (nt .eq. LSS3) then
             call fvs_ss(vs_ss,sed_diameter(nt - LSS3 + 1),sed_dens(nt - LSS3 + 1),rhop(k,l)+1000)
             vel = wp(k,l) - vs_ss
-          elseif (nt .eq. LPON) then
-            vel = wp(k,l) - R_settl
-          elseif (nt .eq. LPOP) then
-            vel = wp(k,l) - R_settl
-          elseif (nt .eq. LPO4) then
-            vel = wp(k,l) - R_settl
-          elseif (nt .eq. LPOC) then
-            vel = wp(k,l) - vspoc
-          elseif (nt .eq. LALG1) then
-            vel = wp(k,l) - vspa
-          elseif (nt .eq. LALG2) then
-            vel = wp(k,l) - vspa
-          elseif (nt .eq. LALG3) then
-            vel = wp(k,l) - vspa
-          elseif (nt .eq. LALG4) then
-            vel = wp(k,l) - vspa
+          ! elseif (nt .eq. LPON) then
+          !   vel = wp(k,l) - R_settl
+          ! elseif (nt .eq. LPOP) then
+          !   vel = wp(k,l) - R_settl
+          ! elseif (nt .eq. LPO4) then
+          !   vel = wp(k,l) - R_settl
+          ! elseif (nt .eq. LPOC) then
+          !   vel = wp(k,l) - vspoc
+          ! elseif (nt .eq. LALG1) then
+          !   vel = wp(k,l) - vspa
+          ! elseif (nt .eq. LALG2) then
+          !   vel = wp(k,l) - vspa
+          ! elseif (nt .eq. LALG3) then
+          !   vel = wp(k,l) - vspa
+          ! elseif (nt .eq. LALG4) then
+          !   vel = wp(k,l) - vspa
           else
             vel = wp(k,l)
           end if
@@ -4352,7 +4352,7 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
 
   ENDDO
 
-  !$omp barrier
+  !!$omp barrier
 
   ! ... Modify explicit term to account for flow boundary conditions
   CALL MODextracer4openbc (nt,Bstart,Bend,Bex,thrs)
@@ -4470,7 +4470,7 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
          !.....Define scalars at new time step....
          tracer(k1s:kms  ,l,nt) = sal1(1:nwlayers)
          tracer(k1 :k1s-1,l,nt) = sal1(1         )
-         tracer(k1-1,l,nt) = sal1(1)
+         ! tracer(k1-1,l,nt) = sal1(1)
       END SELECT
 
       ! Adding solution to sediment layer
