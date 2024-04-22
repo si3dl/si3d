@@ -327,11 +327,6 @@ SUBROUTINE InitializeScalarFields
     salpp = salp
 
     ! ... Initialize non-active scalar fields (if requested)
-    SELECT CASE (ecomod)
-      CASE(1)
-        CALL WQinit
-    END SELECT
-
     IF (ntr > 0) THEN
       tracer = 0.0
       IF (ecomod < 0 ) THEN
