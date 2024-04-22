@@ -3195,7 +3195,7 @@ SUBROUTINE imsal(Bstart,Bend,Bex,heatSourceB)
          sal(k1 :k1s-1,l) = sal1(1         )
          ! Change temperature of sediment layer to be equal to water on top
          ! No temperature changes happen within the sediment layer
-         sal(kms+1,l) = sal(kms,l)
+         ! sal(kms+1,l) = sal(kms,l)
 
       END SELECT
 
