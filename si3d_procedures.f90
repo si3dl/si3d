@@ -4474,11 +4474,11 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
       ds(kms + 1) = Bex(kms + 1, l) + sourcesink(kms + 1, l, nt)
       tracer(kms + 1, l, nt) = ds(kms + 1) / aa(2, kms + 1)
 
-      do k = k1-1, kms+1
-        if (tracer(k, l, nt) .lt. 0.0) then
-          tracer(k, l, nt) = 0.0
-        end if 
-      end do
+      ! do k = k1-1, kms+1
+      !   if (tracer(k, l, nt) .lt. 0.0) then
+      !     tracer(k, l, nt) = 0.0
+      !   end if 
+      ! end do
 
    !.....End loop over scalar-pts.....
    END DO
