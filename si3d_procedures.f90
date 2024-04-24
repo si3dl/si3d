@@ -562,7 +562,7 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
   !.....Smooth solution on leapfrog step if ismooth>=1.........
   IF (ismooth >= 1 .AND. istep == 1) CALL smooth
 
-  !!$omp barrier
+  !$omp barrier
 
   !.....Assing eddy viscosity and diffusivity at n+1 ...........
   CALL UpdateMixingCoefficients(Bstart,Bend,istep,uairB,vairB,cdwB, &
@@ -3063,7 +3063,7 @@ SUBROUTINE exsal(Bstart,Bend,lSCH,lNCH,lECH,lWCH,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,Be
     ENDDO
   ENDDO
 
-  !!$omp barrier
+  !$omp barrier
   CALL MODexsal4openbc(Bstart,Bend,Bex,thrs)
 
   !.....Compute CPU time spent in subroutine.....
@@ -3190,7 +3190,7 @@ SUBROUTINE imsal(Bstart,Bend,Bex,heatSourceB)
          sal(k1 :k1s-1,l) = sal1(1         )
          ! Change temperature of sediment layer to be equal to water on top
          ! No temperature changes happen within the sediment layer
-         ! sal(kms+1,l) = sal(kms,l)
+         sal(kms+1,l) = sal(kms,l)
 
       END SELECT
 
@@ -4347,7 +4347,7 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
 
   ENDDO
 
-  !!$omp barrier
+  !$omp barrier
 
   ! ... Modify explicit term to account for flow boundary conditions
   CALL MODextracer4openbc (nt,Bstart,Bend,Bex,thrs)
@@ -4465,7 +4465,7 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
          !.....Define scalars at new time step....
          tracer(k1s:kms  ,l,nt) = sal1(1:nwlayers)
          tracer(k1 :k1s-1,l,nt) = sal1(1         )
-         ! tracer(k1-1,l,nt) = sal1(1)
+         tracer(k1-1,l,nt) = sal1(1)
       END SELECT
 
       ! Adding solution to sediment layer
@@ -4474,11 +4474,11 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
       ds(kms + 1) = Bex(kms + 1, l) + sourcesink(kms + 1, l, nt)
       tracer(kms + 1, l, nt) = ds(kms + 1) / aa(2, kms + 1)
 
-      ! do k = k1-1, kms+1
-      !   if (tracer(k, l, nt) .lt. 0.0) then
-      !     tracer(k, l, nt) = 0.0
-      !   end if 
-      ! end do
+      do k = k1-1, kms+1
+        if (tracer(k, l, nt) .lt. 0.0) then
+          tracer(k, l, nt) = 0.0
+        end if 
+      end do
 
    !.....End loop over scalar-pts.....
    END DO
