@@ -521,9 +521,9 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
     ELSE IF (ecomod == 0) THEN
       CALL srcsnk00
     ELSE IF (ecomod == 1) THEN
-    IF ((ecomod == 1) .AND. (MOD(n,MAX(ipwq, 1)) == 0)) THEN
+    IF ((ecomod == 1) .AND. (MOD(n,MAX(ipwq, 1)) == 0)) THEN !! ACC 11/21/2022 added to run WQ at lower frequency than hydrodynamics
       IF (idbg == 1) PRINT *, ' Before entry into SUB srcsnkWQ'
-      CALL srcsnkWQ(n) !! ACC 11/21/2022 added to run WQ at lower frequency than hydrodynamics
+      CALL srcsnkWQ(n)
       IF (idbg == 1) PRINT *, ' After entry into SUB srcsnkWQ'
     END IF
     ELSE IF (ecomod == 2) THEN
@@ -535,11 +535,11 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
     DO itr = 1, ntr
       IF (ecomod < 0 .AND. ( trct0(itr) > n .OR. trctn(itr) < n ) ) CYCLE
       CALL exTracer (itr,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH,lWCH,Bex,thrs)
-      !!$omp barrier
+      !$omp barrier
       CALL imTracer (itr,Bstart,Bend,Bex)
-      !!$omp barrier
+      !$omp barrier
       CALL openbctracer (itr,thrs)
-      !!$omp barrier
+      !$omp barrier
     ENDDO
   END IF
   !$omp barrier
