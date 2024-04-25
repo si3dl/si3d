@@ -253,6 +253,7 @@ SUBROUTINE input
       CASE (1) ! Water quality routines
         PRINT *, 'Water Quality Model activated'
         CALL wqinput
+        CALL WQinit
       CASE (2) ! Size Structure distribution
         PRINT *, 'Size Structure Model activated'
         CALL szinput

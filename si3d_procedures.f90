@@ -327,11 +327,6 @@ SUBROUTINE InitializeScalarFields
     salpp = salp
 
     ! ... Initialize non-active scalar fields (if requested)
-    SELECT CASE (ecomod)
-      CASE(1)
-        CALL WQinit
-    END SELECT
-
     IF (ntr > 0) THEN
       tracer = 0.0
       IF (ecomod < 0 ) THEN
@@ -526,9 +521,9 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
     ELSE IF (ecomod == 0) THEN
       CALL srcsnk00
     ELSE IF (ecomod == 1) THEN
-    IF ((ecomod == 1) .AND. (MOD(n,MAX(ipwq, 1)) == 0)) THEN
+    IF ((ecomod == 1) .AND. (MOD(n,MAX(ipwq, 1)) == 0)) THEN !! ACC 11/21/2022 added to run WQ at lower frequency than hydrodynamics
       IF (idbg == 1) PRINT *, ' Before entry into SUB srcsnkWQ'
-      CALL srcsnkWQ(n) !! ACC 11/21/2022 added to run WQ at lower frequency than hydrodynamics
+      CALL srcsnkWQ(n)
       IF (idbg == 1) PRINT *, ' After entry into SUB srcsnkWQ'
     END IF
     ELSE IF (ecomod == 2) THEN
@@ -4262,21 +4257,21 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
             call fvs_ss(vs_ss,sed_diameter(nt - LSS3 + 1),sed_dens(nt - LSS3 + 1),rhop(k,l)+1000)
             vel = wp(k,l) - vs_ss
           elseif (nt .eq. LPON) then
-            vel = wp(k,l) - R_settl
+            vel = wp(k,l) !- R_settl
           elseif (nt .eq. LPOP) then
-            vel = wp(k,l) - R_settl
+            vel = wp(k,l) !- R_settl
           elseif (nt .eq. LPO4) then
-            vel = wp(k,l) - R_settl
+            vel = wp(k,l) !- R_settl
           elseif (nt .eq. LPOC) then
-            vel = wp(k,l) - vspoc
+            vel = wp(k,l) !- vspoc
           elseif (nt .eq. LALG1) then
-            vel = wp(k,l) - vspa
+            vel = wp(k,l) !- vspa
           elseif (nt .eq. LALG2) then
-            vel = wp(k,l) - vspa
+            vel = wp(k,l) !- vspa
           elseif (nt .eq. LALG3) then
-            vel = wp(k,l) - vspa
+            vel = wp(k,l) !- vspa
           elseif (nt .eq. LALG4) then
-            vel = wp(k,l) - vspa
+            vel = wp(k,l) !- vspa
           else
             vel = wp(k,l)
           end if

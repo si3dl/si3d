@@ -413,7 +413,7 @@
    ! ------------------------ Suspended Sediment Module (SSM) ----------------------------
    ! Parameters
    integer                              :: iSS              !< integer switch to model Suspended Sediments (SS)
-   integer                              :: iSTWAVE          !< Flag for using STWAVE in bottom shear stress calculations for suspended sediment transport
+   integer                              :: iSTWAVE = 0      !< Flag for using STWAVE in bottom shear stress calculations for suspended sediment transport
    integer                              :: LSS1, LSS2, LSS3 !< integers that determine the index of the constituent within tracer matrix
    integer                              :: sedMax = 3       !< Max number of sediments to model
    integer                              :: sedNumber        !< Number of sediments to model
