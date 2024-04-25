@@ -4256,22 +4256,22 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
           elseif (nt .eq. LSS3) then
             call fvs_ss(vs_ss,sed_diameter(nt - LSS3 + 1),sed_dens(nt - LSS3 + 1),rhop(k,l)+1000)
             vel = wp(k,l) - vs_ss
-          ! elseif (nt .eq. LPON) then
-          !   vel = wp(k,l) - R_settl
-          ! elseif (nt .eq. LPOP) then
-          !   vel = wp(k,l) - R_settl
-          ! elseif (nt .eq. LPO4) then
-          !   vel = wp(k,l) - R_settl
-          ! elseif (nt .eq. LPOC) then
-          !   vel = wp(k,l) - vspoc
-          ! elseif (nt .eq. LALG1) then
-          !   vel = wp(k,l) - vspa
-          ! elseif (nt .eq. LALG2) then
-          !   vel = wp(k,l) - vspa
-          ! elseif (nt .eq. LALG3) then
-          !   vel = wp(k,l) - vspa
-          ! elseif (nt .eq. LALG4) then
-          !   vel = wp(k,l) - vspa
+          elseif (nt .eq. LPON) then
+            vel = wp(k,l) !- R_settl
+          elseif (nt .eq. LPOP) then
+            vel = wp(k,l) !- R_settl
+          elseif (nt .eq. LPO4) then
+            vel = wp(k,l) !- R_settl
+          elseif (nt .eq. LPOC) then
+            vel = wp(k,l) !- vspoc
+          elseif (nt .eq. LALG1) then
+            vel = wp(k,l) !- vspa
+          elseif (nt .eq. LALG2) then
+            vel = wp(k,l) !- vspa
+          elseif (nt .eq. LALG3) then
+            vel = wp(k,l) !- vspa
+          elseif (nt .eq. LALG4) then
+            vel = wp(k,l) !- vspa
           else
             vel = wp(k,l)
           end if
