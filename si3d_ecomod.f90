@@ -519,37 +519,37 @@ SUBROUTINE WQinput
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kws
     IF (ios /= 0) CALL input_error ( ios, 114)
 
-    if (iDOC == 1) then
+    ! if (iDOC == 1) then
       READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wdoc3
       IF (ios /= 0) CALL input_error ( ios, 115)
       READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_sdoc3
       IF (ios /= 0) CALL input_error ( ios, 115)
-    else
-      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
-      IF (ios /= 0) CALL input_error ( ios, 115)
-      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
-      IF (ios /= 0) CALL input_error ( ios, 115)
-    end if
+    ! else
+      ! READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      ! IF (ios /= 0) CALL input_error ( ios, 115)
+      ! READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      ! IF (ios /= 0) CALL input_error ( ios, 115)
+    ! end if
 
-    if (iALG1 == 1) then
+    ! if (iALG1 == 1) then
       READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wpa3
       IF (ios /= 0) CALL input_error ( ios, 116)
-    else
-      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
-      IF (ios /= 0) CALL input_error ( ios, 116)
-    end if
+    ! else
+      ! READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      ! IF (ios /= 0) CALL input_error ( ios, 116)
+    ! end if
 
-    if (iPOC == 1) then
+    ! if (iPOC == 1) then
       READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wpom3
       IF (ios /= 0) CALL input_error ( ios, 117)
       READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_spom3
       IF (ios /= 0) CALL input_error ( ios, 117)
-    else
-      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
-      IF (ios /= 0) CALL input_error ( ios, 117)
-      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
-      IF (ios /= 0) CALL input_error ( ios, 117)
-    end if
+    ! else
+      ! READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      ! IF (ios /= 0) CALL input_error ( ios, 117)
+      ! READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      ! IF (ios /= 0) CALL input_error ( ios, 117)
+    ! end if
 
     if (iSS == 1) then
       READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (kd_wpn3(nn), nn = 1, sedNumber)
@@ -587,37 +587,37 @@ SUBROUTINE WQinput
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) miu_so4
     IF (ios /= 0) CALL input_error ( ios, 130)
 
-    if (iDOC == 1) then
+    ! if (iDOC == 1) then
       READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wdoc2
       IF (ios /= 0) CALL input_error ( ios, 131)
       READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_sdoc2
       IF (ios /= 0) CALL input_error ( ios, 131)
-    else
-      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
-      IF (ios /= 0) CALL input_error ( ios, 131)
-      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
-      IF (ios /= 0) CALL input_error ( ios, 131)
-    end if
+    ! else
+      ! READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      ! IF (ios /= 0) CALL input_error ( ios, 131)
+      ! READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      ! IF (ios /= 0) CALL input_error ( ios, 131)
+    ! end if
 
-    if (iALG1 == 1) then
+    ! if (iALG1 == 1) then
       READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wpa2
       IF (ios /= 0) CALL input_error ( ios, 132)
-    else
-      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
-      IF (ios /= 0) CALL input_error ( ios, 132)
-    end if
+    ! else
+      ! READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      ! IF (ios /= 0) CALL input_error ( ios, 132)
+    ! end if
 
-    if (iPOC == 1) then
+    ! if (iPOC == 1) then
       READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wpom2
       IF (ios /= 0) CALL input_error ( ios, 133)
       READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_spom2
       IF (ios /= 0) CALL input_error ( ios, 133)
-    else
-      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
-      IF (ios /= 0) CALL input_error ( ios, 133)
-      READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
-      IF (ios /= 0) CALL input_error ( ios, 133)
-    end if
+    ! else
+      ! READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      ! IF (ios /= 0) CALL input_error ( ios, 133)
+      ! READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
+      ! IF (ios /= 0) CALL input_error ( ios, 133)
+    ! end if
 
     if (iSS == 1) then
       READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (kd_wpn2(nn), nn = 1, sedNumber)
@@ -694,6 +694,46 @@ SUBROUTINE WQinput
   SED_PO4 = SED_PO4/86400.0
   SED_DOC = SED_DOC/86400.0
 
+
+  ! Tranformation to seconds (/86400) and m3 (*1000) of input constants for Hg Model
+   
+  kw31 = kw31 / 86400.0
+  atm_MeHg = atm_MeHg / 86400.0
+  k_MeHgw = k_MeHgw / 86400.0
+  k_MeHgatm = k_MeHgatm / 86400.0
+  ! print*, 'K_H_MeHgw =', K_H_MeHgw
+  ! print*, 'kw32 =', kw32
+  ks32 = ks32 / 86400.0
+  kws = kws / 86400.0
+  kd_wdoc3 = kd_wdoc3 / 1000
+  kd_sdoc3 = kd_sdoc3 / 1000
+  kd_wpa3 =  kd_wpa3 / 1000
+  kd_wpom3 = kd_wpom3 / 1000
+  kd_spom3 = kd_spom3 / 1000
+  kd_wpn3 = kd_wpn3 / 1000
+  kd_spn3 = kd_spn3 / 1000
+
+  kw21 = kw21 / 86400.0
+  atm_HgII = atm_HgII / 86400.0
+  ! print*, 'kw23 =', kw23
+  ks23 = ks23 / 86400.0
+  ! print*, 'KDO =', KDO
+  ! print*, 'KSO4 =', KSO4
+  ! print*, 'SO4 =', SO4
+  ! print*, 'miu_so4 =', miu_so4
+  kd_wdoc2 = kd_wdoc2 / 1000 !to go from L/ug to L/ng
+  kd_sdoc2 = kd_sdoc2 / 1000
+  kd_wpa2 = kd_wpa2 / 1000
+  kd_wpom2 = kd_wpom2 / 1000
+  kd_spom2 = kd_spom2 / 1000
+  kd_wpn2 = kd_wpn2 / 1000
+  kd_spn2 = kd_spn2 / 1000
+
+  ! print*, 'DGMra =', DGMra
+  k_Hg0w = k_Hg0w / 86400.0
+  k_Hg0atm = k_Hg0atm / 86400.0
+  ! print*, 'K_H_Hg0w =', K_H_Hg0w
+
   IF (idbg == 1) THEN
     PRINT*, 'iDO  = ', iDO , 'iPOC = ', iPOC, 'iDOC = ', iDOC
     PRINT*, 'iPON = ', iPON, 'iDON = ', iDON, 'iNH4 = ', iNH4
@@ -721,17 +761,49 @@ SUBROUTINE WQinput
     PRINT*,'sed_dens = ',sed_dens
     PRINT*,'sed_frac = ',sed_frac
     PRINT*, 'sed_type = ',sed_type
-    PRINT*,'kws = ',kws
-    print*,'kw21 = ',kw21
-    print*,'atm_HgII = ',atm_HgII
-    print*,'kw23 = ',kw23
-    print*,'ks23 = ',ks23
-    print*,'KDO = ',KDO
-    print*,'DGMra = ',DGMra
-    print*,'k_Hg0w = ',k_Hg0w
-    print*,'k_Hg0atm = ',k_Hg0atm
-    print*,'Hg0atm = ',Hg0atm
-    print*,'K_H_Hg0w = ',K_H_Hg0w
+    print*, 'inst_eq =',inst_eq
+    
+    print*, '----- Settings MeHg -----'
+    print*, 'kw31 =',kw31
+    print*, 'atm_MeHg =', atm_MeHg
+    print*, 'k_MeHgw =', k_MeHgw
+    print*, 'k_MeHgatm =', k_MeHgatm
+    print*, 'MeHgatm =', MeHgatm
+    print*, 'K_H_MeHgw =', K_H_MeHgw
+    print*, 'kw32 =', kw32
+    print*, 'ks32 =', ks32
+    print*, 'kws =', kws
+    print*, 'kd_wdoc3 =', kd_wdoc3
+    print*, 'kd_sdoc3 =', kd_sdoc3
+    print*, 'kd_wpa3 =', kd_wpa3
+    print*, 'kd_wpom3 =', kd_wpom3
+    print*, 'kd_spom3 =', kd_spom3
+    print*, 'kd_wpn3 =', kd_wpn3
+    print*, 'kd_spn3 =', kd_spn3
+
+    print*, '----- Settings HgII -----'
+    print*, 'kw21 =',kw21
+    print*, 'atm_HgII =', atm_HgII
+    print*, 'kw23 =', kw23
+    print*, 'ks23 =', ks23
+    print*, 'KDO =', KDO
+    print*, 'KSO4 =', KSO4
+    print*, 'SO4 =', SO4
+    print*, 'miu_so4 =', miu_so4
+    print*, 'kd_wdoc2 =', kd_wdoc2
+    print*, 'kd_sdoc2 =', kd_sdoc2
+    print*, 'kd_wpa2 =', kd_wpa2
+    print*, 'kd_wpom2 =', kd_wpom2
+    print*, 'kd_spom2 =', kd_spom2
+    print*, 'kd_wpn2 =', kd_wpn2
+    print*, 'kd_spn2 =', kd_spn2
+
+    print*, '----- Settings Hg0 -----'
+    print*, 'DGMra =', DGMra
+    print*, 'k_Hg0w =', k_Hg0w
+    print*, 'k_Hg0atm =', k_Hg0atm
+    print*, 'Hg0atm =', Hg0atm
+    print*, 'K_H_Hg0w =', K_H_Hg0w
 
   END IF
 
@@ -747,7 +819,7 @@ SUBROUTINE WQinit
 
   !. . . Local Variables
   INTEGER, DIMENSION(ntrmax):: tracerpplocal
-  INTEGER:: i,j, ios
+  INTEGER:: i,j, ios, ver
   character(11), allocatable, dimension(:) :: tracer_list
   
 
@@ -795,6 +867,14 @@ SUBROUTINE WQinit
 
   print*, 'Constituents to model:'
   print*, tracer_list(:)
+
+  ver = iDO + iPON + iDON + iNH4 + iNO3 + iPOP + iDOP + iPO4 + iPOC + iDOC + iALG1 + iALG2 + iALG3 + iALG4 + iALG5 + (sedNumber * iSS) + iMeHg + iHg0 + iHgII
+  if (ver .ne. ntr) then
+    print*, 'ERROR - Number of tracers to model does '
+    print*, ' not match list of tracer simulated in  '
+    print*, ' si3d_wq_inp.txt                        '
+    stop
+  end if
 
   do i = 1, ntr
     if ((tracer_list(i) == 'DO') .and. (iDO == 1)) then
@@ -872,10 +952,17 @@ SUBROUTINE WQinit
   END IF
 
   if (iSS .eq. 1) then
-    if ((LSS2 - LSS1 .ne.  1) .or. (LSS3 - LSS2 .ne.  1 )) then
+    if (sedNumber .gt. 1) then
+      if ((LSS2 - LSS1 .ne.  1) .or. (LSS3 - LSS2 .ne.  1 )) then
       print*,'ERROR - SS1, SS2, and SS3 must be consecutive within si3d_init'
       stop
-    end if 
+      end if
+    else
+      if ((LSS1 .gt. LHg0) .and. (LHg0 .eq. 1))then
+        print*,'ERROR - SS1 must be before Hg variables within si3d_init'
+        stop
+      end if
+    end if
   end if 
 
 END SUBROUTINE WQinit

@@ -21,7 +21,7 @@ List of tracers simulated
  iMeHg           !       1            ! Methylmercury,                  MeHg
  iHgII           !       1            ! Divalent Mercury,               HgII
  iHg0            !       1            ! Elemental Mercury,              Hg0
- iSS             !       0            ! Suspended Sediments,            SS
+ iSS             !       1            ! Suspended Sediments,            SS
 --------------------------------------------------------------------------------------------------------
 Model Constants 
 --------------------------------------------------------------------------------------------------------
@@ -107,56 +107,56 @@ Fluxes (atmospheric and sediments)
 --------------------------------------------------------------------------------------------------------
 Sediment Parameters
 --------------------------------------------------------------------------------------------------------
- SedNumber       !         0          ! Number of Particles to simulate
+ SedNumber       !         1          ! Number of Particles to simulate
  istwave         !         0          ! 1 = STWAVE runs, 0 = STWAVE bottom shear stress not added
  sed_thickness   !        0.1         ! [m] Sediment Layer thickness
- Diameter (um)   !  100., 353.     
- Density (kg/m3) ! 1200., 1850.
- Vol_Part_Frac   !   0.5, 0.5
+ Diameter (um)   !  018., 353.     
+ Density (kg/m3) ! 2100., 1850.
+ Vol_Part_Frac   !   1.0, 0.5
  Cohesive1 non=0 !     0, 0           ! 1 = Cohesive, 0 = non-cohesive
 --------------------------------------------------------------------------------------------------------
 MeHg Parameters
 --------------------------------------------------------------------------------------------------------
  inst_eq         !      1             ! 1 = instantaneous equilibrium 0 = Kinetics model for adsorption desorption
- kw31            !      1.0           ! [m2/W 1/s] Reduction rate constant for MeHg_to_Hg0
- atm_MeHg        !      0.0005        ! [ng/m2/d] Mercury deposition rate
- k_MeHgw         !      1.0           ! [m/d] Mass transfer coefficient for MeHg in water
- k_MeHgatm       !      2.            ! [m/d] Mass transfer coefficient for MeHg in atmosphere
- MeHgatm         !      3.            ! [ng/L] concentration of Hg0 in the atmosphere
- K_H_MeHgw       !      4.            ! [-] Henry's law constant for MeHg
- kw32            !      5.            ! [1/d] Demethylation rate constant for MeHg in water
- ks32            !      6.            ! [1/d] Demethylation rate constant for MeHg in sediment 
- kws             !       0.01         ! [m/s] Mass transfer for mercury diffusion
- kd_wdoc3        !      6.1           !
- kd_sdoc3        !      6.4           !
- kd_wpa3         !      6.2           !
- kd_wpom3        !      6.3           !
- kd_spom3        !      6.5           !
- kd_wpn3         !  0.1, 0.1
- kd_spn3         !  0.1, 0.1
+ kw31            !     0.0003         ! [m2/W 1/d] Photodegradation rate constant for MeHg_to_Hg0
+ atm_MeHg        !     0.14           ! [ng/m2/d] Mercury deposition rate
+ k_MeHgw         !     0.5            ! [m/d] Mass transfer coefficient for MeHg in water
+ k_MeHgatm       !   100.0            ! [m/d] Mass transfer coefficient for MeHg in atmosphere
+ MeHgatm         !     0.05           ! [ng/L] concentration of MeHg in the atmosphere
+ K_H_MeHgw       !     0.000016       ! [-] Henry's law constant for MeHg
+ kw32            !     0.013824       ! [1/d] Demethylation rate constant for MeHg in water
+ ks32            !     0.013824       ! [1/d] Demethylation rate constant for MeHg in sediment 
+ kws             !     0.02           ! [m/d] Mass transfer for mercury diffusion
+ kd_wdoc3        !     0.0015         ! [L/ug]
+ kd_sdoc3        !     0.0015         ! [L/ug]
+ kd_wpa3         !     0.001          ! [L/ug]
+ kd_wpom3        !     0.001          ! [L/ug]
+ kd_spom3        !     0.001          ! [L/ug]
+ kd_wpn3         ! 0.0002, 0.1
+ kd_spn3         ! 0.0002, 0.1
 --------------------------------------------------------------------------------------------------------
 HgII Parameters
 --------------------------------------------------------------------------------------------------------
- kw21            !   0.000001         ! [m2/W 1/s] Photodegradation rate constant for MeHg_to_Hg0
- atm_HgII        !   0.001            ! [ng/m2/d] Mercury deposition rate
- kw23            !     7.             ! [1/d] Methylation rate constant for HgII in water
- ks23            !     8.             ! [1/d] Methylation rate constant for HgII in sediment
- KDO             !     9.             ! [-] Half saturation constant for DO in water column
- KSO4            !     9.             !
- SO4             !     9.2            !
- miu_so4         !     9.3            !
- kd_wdoc2        !     9.4            !
- kd_sdoc2        !     9.5            !
- kd_wpa2         !     9.6            !
- kd_wpom2        !     9.7            !
- kd_spom2        !     9.8            !
- kd_wpn2         !   9.2, 9.9
- kd_spn2         !   9.2, 9.9
+ kw21            !     0.03           ! [m2/W 1/d] Reduction rate constant for HgII_to_Hg0
+ atm_HgII        !    13.70           ! [ng/m2/d] Mercury deposition rate
+ kw23            !     0.02592        ! [1/d] Methylation rate constant for HgII in water
+ ks23            !     0.02592        ! [1/d] Methylation rate constant for HgII in sediment
+ KDO             !     0.2            ! [mg/L] Half saturation constant for DO in water column
+ KSO4            !  1921.2            ! [ug-SO4/L] Half saturation constant for SO4
+ SO4             !  1000.0            ! [ug-SO4/L] Sulfate concentration at sediments 
+ miu_so4         !     1.0            ! [-] Maximum effect of SO4 on methylation rate
+ kd_wdoc2        !     0.012          ! [L/ug]
+ kd_sdoc2        !     0.012          ! [L/ug]
+ kd_wpa2         !     0.01           ! [L/ug]
+ kd_wpom2        !     0.01           ! [L/ug]
+ kd_spom2        !     0.01           ! [L/ug]
+ kd_wpn2         ! 0.003, 9.9
+ kd_spn2         ! 0.003, 9.9
 --------------------------------------------------------------------------------------------------------
 Hg0 Parameters
 --------------------------------------------------------------------------------------------------------
- DGMra           !       1.0          ! [-] Desired ratio from DOC and PH relatonship (Method in DSM2 model) 
- k_Hg0w          !      10.           ! [m/d] Mass transfer coefficient for Hg0 in water
- k_Hg0atm        !      11.           ! [m/d] Mass transfer coefficient for Hg0 in atmosphere
- Hg0atm          !      12.           ! [ng/L] concentration of Hg0 in the atmosphere
- K_H_Hg0w        !      13.           ! [-] Henry's law constant for Hg0
+ DGMra           !     0.018411       ! [-] Desired ratio from DOC and PH relatonship (Method in DSM2 model) 
+ k_Hg0w          !     0.5            ! [m/d] Mass transfer coefficient for Hg0 in water
+ k_Hg0atm        !   100.0            ! [m/d] Mass transfer coefficient for Hg0 in atmosphere
+ Hg0atm          !     0.003          ! [ng/L] concentration of Hg0 in the atmosphere
+ K_H_Hg0w        !     0.3            ! [-] Henry's law constant for Hg0

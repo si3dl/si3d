@@ -134,7 +134,7 @@ SUBROUTINE openbc0
         ENDIF
         IF ( isdNBI(nn) .NE. iside(nn)) THEN
           PRINT *, '******************************************************'
-          PRINT *, 'STOP - Boundary sides in coarse & fine grids dis-agree'
+          PRINT *, 'STOP - Boundary sides in coarse & fine grids disagree'
           PRINT *, 'Please CHECK Coarse Grid SIDE(',nn,')=', isdNBI(nn)
           PRINT *, '             Fine   Grid SIDE(',nn,')=', iside (nn)
           PRINT *, '******************************************************'
@@ -3209,7 +3209,7 @@ SUBROUTINE openbcSCA(thrs)
            DO k = k1s,kms
 
             ! Horizontal advection - Upwind differencing
-            IF ( uh(k,l) > 0.0 .AND. salbc > 0) THEN
+            IF ( uh(k,l) > 0.0 .AND. salbc > 0.0) THEN
               sal(k,l) = salbc
             ELSE
               sal(k,l) = sal(k,lEC(l))
@@ -3235,7 +3235,7 @@ SUBROUTINE openbcSCA(thrs)
            DO k = k1s,kms
 
             ! Horizontal advection - Upwind differencing
-            IF ( vh(k,lSC(l)) < 0.0 .AND. salbc > 0) THEN
+            IF ( vh(k,lSC(l)) < 0.0 .AND. salbc > 0.0) THEN
               sal(k,l) = salbc
             ELSE
               sal(k,l) = sal(k,lSC(l))
@@ -3262,7 +3262,7 @@ SUBROUTINE openbcSCA(thrs)
            DO k = k1s,kms
 
             ! Horizontal advection - Upwind differencing
-            IF ( uh(k,lWC(l)) < 0.0 .AND. salbc > 0) THEN
+            IF ( uh(k,lWC(l)) < 0.0 .AND. salbc > 0.0) THEN
               sal(k,l) = salbc
             ELSE
               sal(k,l) = sal(k,lWC(l))
@@ -3289,7 +3289,7 @@ SUBROUTINE openbcSCA(thrs)
            DO k = k1s,kms
 
             ! Horizontal advection - Upwind differencing
-            IF ( vh(k,l) > 0.0 .AND. salbc > 0) THEN
+            IF ( vh(k,l) > 0.0 .AND. salbc > 0.0) THEN
               sal(k,l) = salbc
             ELSE
               sal(k,l) = sal(k,lNC(l))
@@ -3373,7 +3373,7 @@ SUBROUTINE MODexsal4openbc(Bstart,Bend,Bex,thrs)
              ! ... Define velocity at boundary face
              uW = uhWB(k,j) + uhWBpp(k,j);
              ! ... Define scalar   at boundary face
-             IF ( uW >= 0.0 .AND. salbc > 0) THEN
+             IF ( uW >= 0.0 .AND. salbc > 0.0) THEN
                scW = salbc
              ELSE
                scW = salpp(k,l)
@@ -3397,7 +3397,7 @@ SUBROUTINE MODexsal4openbc(Bstart,Bend,Bex,thrs)
              ! ... Define velocity at boundary face
              vN = vhNB(k,i) + vhNBpp(k,i);
              ! ... Define scalar   at boundary face
-             IF ( vN < 0.0 .AND. salbc > 0) THEN
+             IF ( vN < 0.0 .AND. salbc > 0.0) THEN
                scN = salbc
              ELSE
                scN = salpp(k,l)
@@ -3421,7 +3421,7 @@ SUBROUTINE MODexsal4openbc(Bstart,Bend,Bex,thrs)
              ! ... Define velocity at boundary face
              uE = uhEB(k,j) + uhEBpp(k,j);
              ! ... Define scalar   at boundary face
-             IF ( uE < 0.0 .AND. salbc > 0) THEN
+             IF ( uE < 0.0 .AND. salbc > 0.0) THEN
                scE = salbc
              ELSE
                scE = salpp(k,l)
@@ -3483,12 +3483,12 @@ SUBROUTINE MODexsal4openbc(Bstart,Bend,Bex,thrs)
              uW = uhWB(k,j) + uhWBpp(k,j);
              ! ... Define scalar   at boundary face
 
-             IF ( uW > 0.0 .AND. salbc > 0) THEN
+             IF ( uW > 0.0 .AND. salbc > 0.0) THEN
                scW = salbc
              ELSE
                scW = salpp(k,l)
              ENDIF
-             ! ... Include boundary flux in ex- array
+             ! ... Include boundary flux in ex- array   
              Bex(k,l) = Bex(k,l) +  uW * scW / twodx
            ENDDO
          ENDDO
@@ -3507,7 +3507,7 @@ SUBROUTINE MODexsal4openbc(Bstart,Bend,Bex,thrs)
              ! ... Define velocity at boundary face
              vN = vhNB(k,i) + vhNBpp(k,i);
              ! ... Define scalar   at boundary face
-             IF ( vN < 0.0 .AND. salbc > 0) THEN
+             IF ( vN < 0.0 .AND. salbc > 0.0) THEN
                scN = salbc
              ELSE
                scN = salpp(k,l)
@@ -3531,7 +3531,7 @@ SUBROUTINE MODexsal4openbc(Bstart,Bend,Bex,thrs)
              ! ... Define velocity at boundary face
              uE = uhEB(k,j) + uhEBpp(k,j);
              ! ... Define scalar   at boundary face
-             IF ( uE < 0.0 .AND. salbc > 0) THEN
+             IF ( uE < 0.0 .AND. salbc > 0.0) THEN
                scE = salbc
              ELSE
                scE = salpp(k,l)
@@ -3553,7 +3553,7 @@ SUBROUTINE MODexsal4openbc(Bstart,Bend,Bex,thrs)
            ! ... Define velocity at boundary face
            vS = vhSB(k,i) + vhSBpp(k,i);
            ! ... Define scalar   at boundary face
-           IF ( vS > 0.0 .AND. salbc > 0) THEN
+           IF ( vS > 0.0 .AND. salbc > 0.0) THEN
              scS = salbc
            ELSE
              scS = salpp(k,l)

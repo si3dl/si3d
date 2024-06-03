@@ -334,19 +334,19 @@ SUBROUTINE InitializeScalarFields
       ELSE
         DO  nn = 1, ntr
           DO k = 1, km1
-            if (k == km1) then
-              if (nn .eq. LSS1) then
-                tracer(k,:,nn) = 0.6 * sed_dens(LSS1 + 1 - nn) * sed_frac(LSS1 + 1 - nn)
-              elseif (nn .eq. LSS2) then
-                tracer(k,:,nn) = 0.6 * sed_dens(LSS2 + 2 - nn) * sed_frac(LSS2 + 2 - nn)
-              elseif (nn .eq. LSS3) then
-                tracer(k,:,nn) = 0.6 * sed_dens(LSS3 + 3 - nn) * sed_frac(LSS3 + 3 - nn)
-              else
-                tracer(k,:,nn) = Scalardepthile(k,nn+1)
-              end if
-            else
+            ! if (k == km1) then
+            !   if (nn .eq. LSS1) then
+            !     tracer(k,:,nn) = 0.6 * sed_dens(LSS1 + 1 - nn) * sed_frac(LSS1 + 1 - nn)
+            !   elseif (nn .eq. LSS2) then
+            !     tracer(k,:,nn) = 0.6 * sed_dens(LSS2 + 2 - nn) * sed_frac(LSS2 + 2 - nn)
+            !   elseif (nn .eq. LSS3) then
+            !     tracer(k,:,nn) = 0.6 * sed_dens(LSS3 + 3 - nn) * sed_frac(LSS3 + 3 - nn)
+            !   else
+            !     tracer(k,:,nn) = Scalardepthile(k,nn+1)
+            !   end if
+            ! else
               tracer(k,:,nn) = Scalardepthile(k,nn+1)
-            end if
+            ! end if
           END DO
         END DO ! ... End loop over tracers
       END IF
