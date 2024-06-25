@@ -551,20 +551,23 @@ SUBROUTINE WQinput
       ! IF (ios /= 0) CALL input_error ( ios, 117)
     ! end if
 
-    if (iSS == 1) then
+    ! if (iSS == 1) then
       READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (kd_wpn3(nn), nn = 1, sedNumber)
       IF (ios /= 0) CALL input_error ( ios, 119)
       READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (kd_spn3(nn), nn = 1, sedNumber)
       IF (ios /= 0) CALL input_error ( ios, 120)
-    else
-      READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
-      IF (ios /= 0) CALL input_error ( ios, 119)
-      READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
-      IF (ios /= 0) CALL input_error ( ios, 120)
-    end if
+    ! else
+    !   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
+    !   IF (ios /= 0) CALL input_error ( ios, 119)
+    !   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
+    !   IF (ios /= 0) CALL input_error ( ios, 120)
+    ! end if
+
+    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) MeHg_sed
+    IF (ios /= 0) CALL input_error ( ios, 121)
 
   else if (iMeHg == 0) then
-    READ (UNIT=i99, FMT='(///////////////////(18X,G20.5))', IOSTAT=ios)
+    READ (UNIT=i99, FMT='(////////////////////(18X,G20.5))', IOSTAT=ios)
     IF (ios /= 0) CALL input_error ( ios, 122)
   end if
 
@@ -619,19 +622,21 @@ SUBROUTINE WQinput
       ! IF (ios /= 0) CALL input_error ( ios, 133)
     ! end if
 
-    if (iSS == 1) then
+    ! if (iSS == 1) then
       READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (kd_wpn2(nn), nn = 1, sedNumber)
       IF (ios /= 0) CALL input_error ( ios, 134)
       READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (kd_spn2(nn), nn = 1, sedNumber)
       IF (ios /= 0) CALL input_error ( ios, 134)
-    else
-      READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
-      IF (ios /= 0) CALL input_error ( ios, 134)
-      READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
-      IF (ios /= 0) CALL input_error ( ios, 134)
-    end if
+    ! else
+    !   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
+    !   IF (ios /= 0) CALL input_error ( ios, 134)
+    !   READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
+    !   IF (ios /= 0) CALL input_error ( ios, 134)
+    ! end if
+    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) HgII_sed
+    IF (ios /= 0) CALL input_error ( ios, 135)
   else if (iHgII == 0) then
-    READ (UNIT=i99, FMT='(/////////////////(18X,G20.5))', IOSTAT=ios)
+    READ (UNIT=i99, FMT='(//////////////////(18X,G20.5))', IOSTAT=ios)
   end if
 
   if (iHg0 == 1) then
@@ -640,8 +645,9 @@ SUBROUTINE WQinput
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) k_Hg0atm
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) Hg0atm
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) K_H_Hg0w
+    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) Hg0_sed
   else if (iHg0 == 0) then
-    READ (UNIT=i99, FMT='(///////(18X,G20.5))', IOSTAT=ios)
+    READ (UNIT=i99, FMT='(////////(18X,G20.5))', IOSTAT=ios)
   end if
 
   !.....Close wq input file.....

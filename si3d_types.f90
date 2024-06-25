@@ -480,7 +480,9 @@
    real :: kd_spom3
    real, allocatable, dimension(:)     :: kd_wpn3
    real, allocatable, dimension(:)     :: kd_spn3
-
+   real :: MeHg_sed
+   real :: HgII_sed
+   real :: Hg0_sed
 !                        -----Data Dictionary-----
 
 END MODULE si3d_types

@@ -195,10 +195,10 @@ SUBROUTINE InitializeScalarFields
 
   !.....Local variables.....
   INTEGER :: i, j, k, l, ios, imm1, jmm1, kmm1, ncols, ncols1, nc, &
-            nsets, ia, ib, nn, ntr1
+            nsets, ia, ib, nn, ntr1, kms
   REAL    :: Vamp, rhoamp, Ts, Tb,   &  ! Used to initialize IW-problem
             NBV, meandepth, length, &
-            rhohere, x, z, rhos, rhob
+            rhohere, x, z, rhos, rhob, hg_sed
   CHARACTER(LEN=18)  :: initfmt
   INTEGER, PARAMETER :: InitProc = 4
   REAL, ALLOCATABLE, DIMENSION(:,:) :: Scalardepthile
@@ -334,20 +334,20 @@ SUBROUTINE InitializeScalarFields
       ELSE
         DO  nn = 1, ntr
           DO k = 1, km1
-            ! if (k == km1) then
-            !   if (nn .eq. LSS1) then
             !     tracer(k,:,nn) = 0.6 * sed_dens(LSS1 + 1 - nn) * sed_frac(LSS1 + 1 - nn)
-            !   elseif (nn .eq. LSS2) then
-            !     tracer(k,:,nn) = 0.6 * sed_dens(LSS2 + 2 - nn) * sed_frac(LSS2 + 2 - nn)
-            !   elseif (nn .eq. LSS3) then
-            !     tracer(k,:,nn) = 0.6 * sed_dens(LSS3 + 3 - nn) * sed_frac(LSS3 + 3 - nn)
-            !   else
-            !     tracer(k,:,nn) = Scalardepthile(k,nn+1)
-            !   end if
-            ! else
               tracer(k,:,nn) = Scalardepthile(k,nn+1)
-            ! end if
           END DO
+          if (nn .eq. LHg0) then
+            hg_sed = Hg0_sed
+          elseif (nn .eq. LHgII) then
+            hg_sed = HgII_sed
+          elseif (nn .eq. LMeHg) then
+            hg_sed = MeHg_sed
+          end if
+          do l = 1, lm1
+            kms = kmz(l)
+            tracer(kms, l, nn) = hg_sed
+          end do
         END DO ! ... End loop over tracers
       END IF
       tracerpp = tracer;
@@ -362,8 +362,8 @@ SUBROUTINE InitializeScalarFields
   END SELECT
 
   ! ... Initialize density field at time n-1 & n
-  DO l = 1, lm1;
-    DO k = k1, km1;
+  DO l = 1, lm1
+    DO k = k1, km1
       IF (zlevel(k) == -100) THEN
         z = 0.5*hp(k,l)
       ELSE
@@ -1271,7 +1271,7 @@ SUBROUTINE matmom ( ieq, t_matmom2,Bstart, Bend, Bex,Beagx,Bearx,Bagx,Barx,Beagy
             ENDDO
 
             ! ... Define average layer density at u-pt (in kg/m**3) ...........
-            rhopx(k1x:kmx) = 1000. ! Neglect vertical density variations
+            rhopx(k1x:kmx) = sum(1000 + rhop(k1x:kmx,l)) / nwlayers ! Neglect vertical density variations
 
             ! ... Compute explicit portion of water surface slope term ........
             wsx0 = rhopx(k1x) * gdtdx * (spp(lEC(l)) - spp(l))
@@ -1464,7 +1464,7 @@ SUBROUTINE matmom ( ieq, t_matmom2,Bstart, Bend, Bex,Beagx,Bearx,Bagx,Barx,Beagy
             ENDDO
 
             ! .... Define average layer density at v-pts (in kg/m**3) .........
-            rhopy(k1y:kmy) = 1000. ! Neglect vertical density variations
+            rhopy(k1y:kmy) = sum(1000 + rhop(k1y:kmy,l)) / nwlayers ! Neglect vertical density variations
 
             !.....Compute explicit part of water surface slope term ...........
             wsy0 = rhopy(k1y) *  gdtdy  *(spp(lNC(l)) - spp(l))

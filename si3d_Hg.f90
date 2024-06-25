@@ -626,7 +626,7 @@ SUBROUTINE MeHg_atm_deposition(MeHgw_atmdep, kwq, lwq)
   integer, intent(in)  :: lwq
   real,    intent(out) :: MeHgw_atmdep !< Source/Sink term for the balance of MeHg dissolved in water
 
-  MeHgw_atmdep = (dx * dy) * atm_MeHg * h(kwq, lwq)
+  MeHgw_atmdep = ((dx * dy * h(kwq, lwq)) / 1000) * atm_MeHg 
 
 END SUBROUTINE MeHg_atm_deposition
 
@@ -643,7 +643,7 @@ SUBROUTINE HgII_atm_deposition(HgIIw_atmdep, kwq, lwq)
   integer, intent(in)  :: lwq
   real,    intent(out) :: HgIIw_atmdep !< Source/Sink term for the balance of MeHg dissolved in water
 
-  HgIIw_atmdep = (dx * dy) * atm_HgII * h(kwq, lwq)
+  HgIIw_atmdep = ((dx * dy * h(kwq, lwq)) / 1000) * atm_HgII
 
 END SUBROUTINE HgII_atm_deposition
 
