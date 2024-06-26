@@ -134,7 +134,6 @@ MeHg Parameters
  kd_spom3        !     0.001          ! [L/ug]
  kd_wpn3         ! 0.0002, 0.1
  kd_spn3         ! 0.0002, 0.1
- MeHg_sed        !  109888.066        ! [ng/L] MeHg concentration in sediment layer
 --------------------------------------------------------------------------------------------------------
 HgII Parameters
 --------------------------------------------------------------------------------------------------------
@@ -153,7 +152,6 @@ HgII Parameters
  kd_spom2        !     0.01           ! [L/ug]
  kd_wpn2         ! 0.003, 9.9
  kd_spn2         ! 0.003, 9.9
- HgII_sed        !  1112.86104        ! [ng/L] HgII concentration in sediment layer
 --------------------------------------------------------------------------------------------------------
 Hg0 Parameters
 --------------------------------------------------------------------------------------------------------
@@ -162,9 +160,10 @@ Hg0 Parameters
  k_Hg0atm        !   100.0            ! [m/d] Mass transfer coefficient for Hg0 in atmosphere
  Hg0atm          !     0.003          ! [ng/L] concentration of Hg0 in the atmosphere
  K_H_Hg0w        !     0.3            ! [-] Henry's law constant for Hg0
- Hg0_sed         !     0.0            ! [ng/L] Hg0 concentration in sediment layer
 --------------------------------------------------------------------------------------------------------
 Sediment Concentrations
 --------------------------------------------------------------------------------------------------------
- POC_s           !                    ! [mg/L] Concentration of POC in the sediment layer
- DOC_s           !                    ! [mg/L] Concentration of DOC in the sediment layer
+ MeHg_sed        !  109888.066        ! [ng/L] MeHg concentration in sediment layer
+ HgII_sed        !  1112.86104        ! [ng/L] HgII concentration in sediment layer Hg0_sed         !     0.0            ! [ng/L] Hg0 concentration in sediment layer
+ POC_sed         !                    ! [mg/L] Concentration of POC in the sediment layer
+ DOC_sed         !                    ! [mg/L] Concentration of DOC in the sediment layer
