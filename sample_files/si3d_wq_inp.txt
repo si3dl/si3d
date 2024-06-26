@@ -164,6 +164,7 @@ Hg0 Parameters
 Sediment Concentrations
 --------------------------------------------------------------------------------------------------------
  MeHg_sed        !  109888.066        ! [ng/L] MeHg concentration in sediment layer
- HgII_sed        !  1112.86104        ! [ng/L] HgII concentration in sediment layer Hg0_sed         !     0.0            ! [ng/L] Hg0 concentration in sediment layer
+ HgII_sed        !  1112.86104        ! [ng/L] HgII concentration in sediment layer
+ Hg0_sed         !     0.0            ! [ng/L] Hg0 concentration in sediment layer
  POC_sed         !                    ! [mg/L] Concentration of POC in the sediment layer
  DOC_sed         !                    ! [mg/L] Concentration of DOC in the sediment layer
