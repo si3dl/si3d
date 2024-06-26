@@ -421,7 +421,7 @@ SUBROUTINE WQinput
   IF (ios /= 0) CALL open_error ( "Error opening "//wq_input_file, ios )
 
   !.....Read header record containing comments about run................
-  READ (UNIT=i99, FMT='(/(A))', IOSTAT=ios) title
+  READ (UNIT=i99, FMT='(/(A))', IOSTAT=ios)
   IF (ios /= 0) CALL input_error ( ios, 91)
 
   !. . Read list of tracerpps modeled: Dissolved oxygen, N forms, P forms, C forms 

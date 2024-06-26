@@ -334,7 +334,6 @@ SUBROUTINE InitializeScalarFields
       ELSE
         DO  nn = 1, ntr
           DO k = 1, km1
-            !     tracer(k,:,nn) = 0.6 * sed_dens(LSS1 + 1 - nn) * sed_frac(LSS1 + 1 - nn)
               tracer(k,:,nn) = Scalardepthile(k,nn+1)
           END DO
           if (nn .eq. LHg0) then
@@ -346,7 +345,11 @@ SUBROUTINE InitializeScalarFields
           end if
           do l = 1, lm1
             kms = kmz(l)
-            tracer(kms, l, nn) = hg_sed
+            if ((nn .eq. LHg0) .or. (nn .eq. LHgII) .or. (nn .eq. LMeHg)) then
+              tracer(kms + 1, l, nn) = hg_sed
+            elseif ((nn .eq. LSS1) .or. (nn .eq. LSS2) .or. (nn .eq. LSS3)) then
+              tracer(kms + 1, l, nn) = 0.6 * sed_dens(LSS1 + 1 - nn) * sed_frac(LSS1 + 1 - nn)
+            end if
           end do
         END DO ! ... End loop over tracers
       END IF
