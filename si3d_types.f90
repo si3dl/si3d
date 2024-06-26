@@ -480,9 +480,13 @@
    real :: kd_spom3
    real, allocatable, dimension(:)     :: kd_wpn3
    real, allocatable, dimension(:)     :: kd_spn3
+   
+   ! Sediment concentrations
    real :: MeHg_sed
    real :: HgII_sed
    real :: Hg0_sed
+   real :: POC_sed
+   real :: DOC_sed
 !                        -----Data Dictionary-----
 
 END MODULE si3d_types
