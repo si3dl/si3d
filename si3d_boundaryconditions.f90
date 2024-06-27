@@ -4418,26 +4418,21 @@ SUBROUTINE surfbc0
 
      ! ... Initialize Interpolation Schemes (weights for Barnes)
      CALL InitializeInterpolationMethods
-     print *,"hola"
      ! Read number of records in file from seventh header record
      READ (UNIT=i53, FMT='(10X,I7)', IOSTAT=ios) npSurfbc
      IF (ios /= 0) CALL input_error ( ios, 110 )
-     print *,"hola2"
      ! Allocate space for the array of data
      nvSurfbc = 6 * nmetstat + 2
      ALLOCATE ( surfbc1(nvSurfbc,npSurfbc), STAT=istat )
      IF (istat /= 0) CALL allocate_error ( istat, 111 )
-     print *,"hola3"
      ! Write the format of the data records into an internal file
      WRITE (UNIT=surfbcfmt, FMT='("(10X,",I3,"G11.2)")') nvSurfbc
-     print *,"hola4"
      ! Read data array and store it in memory
      DO j = 1, npSurfbc
          READ (UNIT=i53, FMT=surfbcfmt, IOSTAT=ios) &
 		      (surfbc1(nn,j), nn = 1, nvSurfbc)
          IF (ios /= 0) CALL input_error ( ios, 112 )
      END DO
-     print *,"hola5"
      !           ----- Assign surfBC at time t=0.0-----
      eta           = surfbc1(1             ,1)
      Pa            = surfbc1(2             ,1)
@@ -4449,12 +4444,9 @@ SUBROUTINE surfbc0
        uair2D(imet)  = surfbc1((imet-1)*6 + 7,1)
        vair2D(imet)  = surfbc1((imet-1)*6 + 8,1)
      ENDDO
-     print *,"hola6"
      ! ... Distribute heat and momentum sources entering through free surface
      CALL DistributeQsw
-     print *,"hola61"
      CALL DistributeMomentumHeatSources
-     print *,"hola7"
    CASE (20)
      !               ----- Open files with wind velocity bc data-----
      OPEN (UNIT=i53, FILE='si3d_surfbc_W.txt', STATUS="OLD", IOSTAT=ios)
