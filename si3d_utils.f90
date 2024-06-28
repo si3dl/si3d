@@ -50,7 +50,7 @@ SUBROUTINE input
   ! ... Read parameters controlling solution algorithm .................
   READ (UNIT=i5,FMT='(///(14X,G20.2))',IOSTAT=ios) itrap,niter,ismooth, &
       & beta, iturb, Av0, Dv0, iadv, itrmom, ihd, Ax0, Ay0, f, theta,   &
-      & ibc,isal, itrsca, cd, ifsurfbc, dtsurfbc, cw, wa, phi, idbg, num_threads
+      & ibc,isal, itrsca, cd, ifsurfbc, dtsurfbc, icw, cw, wa, phi, idbg, num_threads
   IF (ios /= 0) CALL input_error ( ios, 4 )
 
   !.....Read node numbers for time series output .......................
