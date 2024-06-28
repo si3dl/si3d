@@ -5020,7 +5020,7 @@ SUBROUTINE DistributeMomentumHeatSources
       coeffE = (a_e(irg)+b_e(irg)*ws**p_e(irg)+c_e(irg)*(ws-8.)**2.)*1.e-3
 
       ! ... Calculate drag coefficient (Amorocho & DeVries)
-      cdw(l) = 0.0015 * 1./(1.0+ EXP((12.5-ws)/1.56))+0.00104
+      cdw(l) = 0.0015 * 1./(1.0+ EXP((15.5-ws)/1.56))+0.00104. !edited to 15.5, OG is 12.5
 
       ! ... Define variables used in cals. and equal to all surface cells
       ea    = saturated_vapor_pressure (Ta+273.) * Rh
@@ -5085,7 +5085,7 @@ SUBROUTINE DistributeMomentumHeatSources
       coeffE = (a_e(irg)+b_e(irg)*ws**p_e(irg)+c_e(irg)*(ws-8.)**2.)*1.e-3
 
       ! ... Calculate drag coefficient (Amorocho & DeVries)
-      cdw(l) = 0.0015 * 1./(1.0+ EXP((12.5-ws)/1.56))+0.00104
+      cdw(l) = 0.0015 * 1./(1.0+ EXP((15.5-ws)/1.56))+0.00104 !edited to 15.5, OG is 12.5
 
       ! ... Define variables used in cals. and equal to all surface cells
       Qbra  = Qlw * ( 1. - Al )
@@ -5341,7 +5341,7 @@ END DO
       coeffE = (a_e(irg)+b_e(irg)*ws**p_e(irg)+c_e(irg)*(ws-8.)**2.)*1.e-3
 
       ! ... Calculate drag coefficient (Amorocho & DeVries)
-      cdw(l) = 0.0015 * 1./(1.0+ EXP((12.5-ws)/1.56))+0.00104
+      cdw(l) = 0.0015 * 1./(1.0+ EXP((15.5-ws)/1.56))+0.00104 !edited to 15.5, OG is 12.5
 
       ! ... Define variables used in cals. and equal to all surface cells
       ea    = saturated_vapor_pressure (Ta+273.) * Rh
@@ -5409,7 +5409,7 @@ END DO
       coeffE = (a_e(irg)+b_e(irg)*ws**p_e(irg)+c_e(irg)*(ws-8.)**2.)*1.e-3
 
       ! ... Calculate drag coefficient (Amorocho & DeVries)
-      cdw(l) = 0.0015 * 1./(1.0+ EXP((12.5-ws)/1.56))+0.00104
+      cdw(l) = 0.0015 * 1./(1.0+ EXP((15.5-ws)/1.56))+0.00104  !edited to 15.5, OG is 12.5
 
       ! ... Define variables used in cals. and equal to all surface cells
       Qbra  = Qlw * ( 1. - Al )
