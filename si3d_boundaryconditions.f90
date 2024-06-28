@@ -5020,7 +5020,9 @@ SUBROUTINE DistributeMomentumHeatSources
       coeffE = (a_e(irg)+b_e(irg)*ws**p_e(irg)+c_e(irg)*(ws-8.)**2.)*1.e-3
 
       ! ... Calculate drag coefficient | Amorocho & DeVries (1980) or Andreas et al (2012)
-      if icw == 1 then
+      if icw == 0 then
+        cdw(l) = cw
+      else if icw == 1 then
         cdw(l) = 0.0015 * 1. / (1.0 + EXP((12.5 - ws) / 1.56)) + 0.00104
       else if icw == 2 then
         if ws == 0 then
@@ -5093,7 +5095,9 @@ SUBROUTINE DistributeMomentumHeatSources
       coeffE = (a_e(irg)+b_e(irg)*ws**p_e(irg)+c_e(irg)*(ws-8.)**2.)*1.e-3
 
       ! ... Calculate drag coefficient | Amorocho & DeVries (1980) or Andreas et al (2012)
-      if icw == 1 then
+      if icw == 0 then
+        cdw(l) = cw
+      else if icw == 1 then
         cdw(l) = 0.0015 * 1. / (1.0 + EXP((12.5 - ws) / 1.56)) + 0.00104
       else if icw == 2 then
         if ws == 0 then
@@ -5357,7 +5361,9 @@ END DO
       coeffE = (a_e(irg)+b_e(irg)*ws**p_e(irg)+c_e(irg)*(ws-8.)**2.)*1.e-3
 
       ! ... Calculate drag coefficient | Amorocho & DeVries (1980) or Andreas et al (2012)
-      if icw == 1 then
+      if icw == 0 then
+        cdw(l) = cw
+      else if icw == 1 then
         cdw(l) = 0.0015 * 1. / (1.0 + EXP((12.5 - ws) / 1.56)) + 0.00104
       else if icw == 2 then
         if ws == 0 then
@@ -5433,7 +5439,9 @@ END DO
       coeffE = (a_e(irg)+b_e(irg)*ws**p_e(irg)+c_e(irg)*(ws-8.)**2.)*1.e-3
 
       ! ... Calculate drag coefficient | Amorocho & DeVries (1980) or Andreas et al (2012)
-      if icw == 1 then
+      if icw == 0 then
+        cdw(l) = cw
+      else if icw == 1 then
         cdw(l) = 0.0015 * 1. / (1.0 + EXP((12.5 - ws) / 1.56)) + 0.00104
       else if icw == 2 then
         if ws == 0 then

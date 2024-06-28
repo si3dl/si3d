@@ -45,7 +45,7 @@ Parameters controlling solution algorithm
  cd          !      0.025         ! Bottom drag coefficient (adimensional)
  ifsbc       !        0           ! Surface BC; 0 = constant ; 1 = preprocess mode ; 2 = runtime mode
  dtsbc       !    3600.           ! Time (s) between records in surbc.txt (when ifsbc = 1)
- icw         !        1           ! Wind drag equation 1 = Amorocho Devries (1980), 2 = Andreas et al (2012) only when isurfbc = 10,11
+ icw         !        1           ! Wind drag equation 0 = cw (below, 1 = Amorocho Devries (1980), 2 = Andreas et al (2012) only when isurfbc = 10,11
  cw          !      1.2E-3        ! Wind drag coefficient (only if ifsbc = 0)
  ws          !      0.025         ! Wind speed (constant in m/s) when ifsbc = 0
  phi         !    000.0           ! Wind direction (constant in degress) when ifsbc = 0
