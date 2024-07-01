@@ -297,7 +297,7 @@ SUBROUTINE get_sed_prop(settling_vel,Rep,tauCrt,sed_diameter,sed_dens,w_dens)
 ! --------------------------------------------------------------------
   implicit none
   ! Arguments
-  real, intent(in)  :: sed_diameter     !< (um) Sediment diameter
+  real, intent(in)  :: sed_d            !< (m) Sediment diameter
   real, intent(in)  :: w_dens           !< (kg/m3) water density
   real, intent(in)  :: sed_dens         !< (kg/m3) sediment density
   real, intent(out) :: settling_vel     !< (m/s) settling velocity
@@ -310,17 +310,17 @@ SUBROUTINE get_sed_prop(settling_vel,Rep,tauCrt,sed_diameter,sed_dens,w_dens)
 
   call submergedSpecificGravity(submerged_spec_g, sed_dens, w_dens)
 
-  call partReynolds_Number(Rep, sed_diameter, kinematic_viscosity, submerged_spec_g)
+  call partReynolds_Number(Rep, sed_d, kinematic_viscosity, submerged_spec_g)
 
-  call settling_velocity(settling_vel, g, submerged_spec_g, Rep, sed_diameter, kinematic_viscosity, ivanRijn)
+  call settling_velocity(settling_vel, g, submerged_spec_g, Rep, sed_d, kinematic_viscosity, ivanRijn)
 
-  call tauCritical(tauCrt, g, sed_diameter, submerged_spec_g, w_dens, kinematic_viscosity, Rep)
+  call tauCritical(tauCrt, g, sed_d, submerged_spec_g, w_dens, kinematic_viscosity, Rep)
 
   return
 END SUBROUTINE get_sed_prop
 
 ! ********************************************************************
-SUBROUTINE fvs_ss(vs_ss,sed_diameter,sed_dens,w_dens)
+SUBROUTINE fvs_ss(vs_ss, sed_d, sed_dens, w_dens)
 ! ********************************************************************
 !
 ! Purpose: Estimate particle dependent parameters / properties
@@ -328,7 +328,7 @@ SUBROUTINE fvs_ss(vs_ss,sed_diameter,sed_dens,w_dens)
 ! --------------------------------------------------------------------
   implicit none
   ! Arguments
-  real, intent(in)  :: sed_diameter     !< (m) Sediment diameter
+  real, intent(in)  :: sed_d            !< (m) Sediment diameter
   real, intent(in)  :: w_dens           !< (kg/m3) water density
   real, intent(in)  :: sed_dens         !< (kg/m3) sediment density
   real, intent(out) :: vs_ss            !< (m/s) settling velocity
@@ -340,9 +340,9 @@ SUBROUTINE fvs_ss(vs_ss,sed_diameter,sed_dens,w_dens)
 
   call submergedSpecificGravity(submerged_spec_g, sed_dens, w_dens)
 
-  call partReynolds_Number(Rep, sed_diameter, kinematic_viscosity, submerged_spec_g)
+  call partReynolds_Number(Rep, sed_d, kinematic_viscosity, submerged_spec_g)
 
-  call settling_velocity(vs_ss, g, submerged_spec_g, Rep, sed_diameter, kinematic_viscosity, ivanRijn)
+  call settling_velocity(vs_ss, g, submerged_spec_g, Rep, sed_d, kinematic_viscosity, ivanRijn)
 
   return
 END SUBROUTINE fvs_ss
@@ -367,7 +367,7 @@ SUBROUTINE submergedSpecificGravity(submerged_spec_g, sed_dens, w_dens)
 END SUBROUTINE submergedSpecificGravity
 
 ! ********************************************************************
-SUBROUTINE partReynolds_Number(Rep, sed_diamm, kinematic_viscosity, submerged_spec_g)
+SUBROUTINE partReynolds_Number(Rep, sed_d, kinematic_viscosity, submerged_spec_g)
 ! ********************************************************************
 !
 ! Purpose: To estimate the explicit Particle Reynolds Number.
@@ -378,18 +378,18 @@ SUBROUTINE partReynolds_Number(Rep, sed_diamm, kinematic_viscosity, submerged_sp
 ! --------------------------------------------------------------------
 
   ! Arguments of subroutine
-  real, intent(in)  :: sed_diamm            !< (m) Sediment diameter D50
+  real, intent(in)  :: sed_d                !< (m) Sediment diameter D50
   real, intent(in)  :: kinematic_viscosity  !< (m2/sec) kinematic viscosity of water
   real, intent(in)  :: submerged_spec_g     !< Sediment submerged specific gravity
   real, intent(out) :: Rep                  !< Explicit Particle Reynolds Number
 
-  Rep = sqrt(g * submerged_spec_g * sed_diamm ** 3) / kinematic_viscosity
+  Rep = sqrt(g * submerged_spec_g * sed_d ** 3) / kinematic_viscosity
 
   return
 END SUBROUTINE partReynolds_Number
 
 ! ********************************************************************
-SUBROUTINE settling_velocity(settling_vel, g, submerged_spec_g, Rep, sed_diamm, kinematic_viscosity, ivanRijn)
+SUBROUTINE settling_velocity(settling_vel, g, submerged_spec_g, Rep, sed_d, kinematic_viscosity, ivanRijn)
 ! ********************************************************************
 !
 ! Purpose: To estimate the settling velocity for a given particle
@@ -400,7 +400,7 @@ SUBROUTINE settling_velocity(settling_vel, g, submerged_spec_g, Rep, sed_diamm, 
   real, intent(in)  :: g                    !< (m/s2)Gravitational acceleration (m/s**2)
   real, intent(in)  :: submerged_spec_g     !< Sediment submerged specific gravity
   real, intent(in)  :: kinematic_viscosity  !< (m2/s) Kinematic viscosity of water
-  real, intent(in)  :: sed_diamm            !< (m) Sediment Diameter
+  real, intent(in)  :: sed_d                !< (m) Sediment Diameter
   ! real, intent(in)  :: sed_spec_g           !< Sediment specific gravity
   real, intent(in)  :: Rep                  !< Explicit Particle Reynolds Number
   logical, optional :: ivanRijn             !< Flag for using van Rijn (1984) formula or Dietrich (1982). The default is van Rijn      
@@ -429,18 +429,18 @@ SUBROUTINE settling_velocity(settling_vel, g, submerged_spec_g, Rep, sed_diamm, 
   SELECT CASE (vanRijnFlag)
     CASE (.true.)
       ! Van Rijn Formula
-      if (sed_diamm .gt. 1.0d-3) then
-        settling_vel = 1.1 * sqrt(submerged_spec_g * g * sed_diamm)
-      elseif (sed_diamm .gt. 1.0d-4 .and. sed_diamm .le. 1.0d-3) then
-        settling_vel = (10 * kinematic_viscosity / sed_diamm) *        & 
+      if (sed_d .gt. 1.0d-3) then
+        settling_vel = 1.1 * sqrt(submerged_spec_g * g * sed_d)
+      elseif (sed_d .gt. 1.0d-4 .and. sed_d .le. 1.0d-3) then
+        settling_vel = (10 * kinematic_viscosity / sed_d) *        & 
                        (sqrt(1 + 0.01 * (submerged_spec_g * g       &
-                        * sed_diamm **3) / kinematic_viscosity ** 2.) - 1)
+                        * sed_d **3) / kinematic_viscosity ** 2.) - 1)
       ! elseif (sed_diamm .gt. 6.5d-5 .and. sed_diamm .le. 1.0d-4) then
       !   ! Stokes Law
       !   settling_vel = (submerged_spec_g * g * sed_diamm ** 2.) / (18.0 * kinematic_viscosity)
       else
       ! Stokes Law
-        settling_vel = (submerged_spec_g * g * sed_diamm ** 2.) / (18.0 * kinematic_viscosity)
+        settling_vel = (submerged_spec_g * g * sed_d ** 2.) / (18.0 * kinematic_viscosity)
       end if
 
     CASE (.false.)
@@ -448,7 +448,7 @@ SUBROUTINE settling_velocity(settling_vel, g, submerged_spec_g, Rep, sed_diamm, 
       ! if ( sed_diamm .lt. 1.0d-5) then
       !   settling_vel = (submerged_spec_g * g * sed_diamm**2)/(18.*kinematic_viscosity)
       ! else
-      settling_vel = dimless_fall_vel * sqrt(submerged_spec_g * g * sed_diamm)
+      settling_vel = dimless_fall_vel * sqrt(submerged_spec_g * g * sed_d)
       ! end if
   END SELECT
 
@@ -456,7 +456,7 @@ SUBROUTINE settling_velocity(settling_vel, g, submerged_spec_g, Rep, sed_diamm, 
 END SUBROUTINE settling_velocity
 
 ! ********************************************************************
-SUBROUTINE tauCritical(tauCrt, g, sed_diamm, submerged_spec_g, w_dens, kinematic_viscosity, Rep)
+SUBROUTINE tauCritical(tauCrt, g, sed_d, submerged_spec_g, w_dens, kinematic_viscosity, Rep)
 ! ********************************************************************
 !
 ! Purpose: To estimate the critical shear stress for a given particle
@@ -466,7 +466,7 @@ SUBROUTINE tauCritical(tauCrt, g, sed_diamm, submerged_spec_g, w_dens, kinematic
 ! --------------------------------------------------------------------
   ! Arguments of subroutine
   real, intent(in)  :: g                   !< (m/s2) Gravitational acceleration (m/s**2)
-  real, intent(in)  :: sed_diamm           !< (m) Sediment Diameter
+  real, intent(in)  :: sed_d               !< (m) Sediment Diameter
   real, intent(in)  :: submerged_spec_g    !< Sediment submerged specific gravity
   real, intent(in)  :: w_dens              !< (kg/m3) Water density
   real, intent(in)  :: kinematic_viscosity !< (m2/s) Kinematic viscosity of water
@@ -478,7 +478,7 @@ SUBROUTINE tauCritical(tauCrt, g, sed_diamm, submerged_spec_g, w_dens, kinematic
   shields_param = 0.5 * (0.22 * Rep ** (-0.6) + 0.06 * 10 ** (-7.7 * Rep ** (-0.6)))
 
   ! Estimate of critical shear stress for given water and sediment properties
-  tauCrt = shields_param * g * submerged_spec_g * sed_diamm * (w_dens / (1000 * 1000))
+  tauCrt = shields_param * g * submerged_spec_g * sed_d * (w_dens / (1000 * 1000))
   ![kgm/s/m2] = [-]  *  [m/s2] *      [-]       *    [m]     * [mg/m3] * [kg/mg]
   return 
 END SUBROUTINE tauCritical
