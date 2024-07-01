@@ -478,7 +478,7 @@ SUBROUTINE tauCritical(tauCrt, g, sed_diamm, submerged_spec_g, w_dens, kinematic
   shields_param = 0.5 * (0.22 * Rep ** (-0.6) + 0.06 * 10 ** (-7.7 * Rep ** (-0.6)))
 
   ! Estimate of critical shear stress for given water and sediment properties
-  tauCrt = shields_param * g * submerged_spec_g * sed_diamm * (w_dens / (1000 * 1000)
+  tauCrt = shields_param * g * submerged_spec_g * sed_diamm * (w_dens / (1000 * 1000))
   ![kgm/s/m2] = [-]  *  [m/s2] *      [-]       *    [m]     * [mg/m3] * [kg/mg]
   return 
 END SUBROUTINE tauCritical

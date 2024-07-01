@@ -4250,7 +4250,7 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
         if (k == k1s) then
             vel = 0.0
         else
-          if (nt .eq. LSS1) .or. (nt .eq. LSS2) .or. (nt .eq. LSS3) then
+          if ((nt .eq. LSS1) .or. (nt .eq. LSS2) .or. (nt .eq. LSS3)) then
             call fvs_ss(vs_ss, sed_diameter(nt - LSS1 + 1), sed_dens(nt - LSS1 + 1), (rhop(k,l)+1000) * (1000 * 1000))
             vel = wp(k,l) - vs_ss
           elseif (nt .eq. LPON) then
