@@ -40,8 +40,6 @@ SUBROUTINE sourceSS(kwq,lwq)
   real, dimension(sedNumber) :: burial_flux
   real                       :: cb
 
-
-
   kms = kmz(lwq)
   if (kwq .eq. kms) then
     w_dens = (rhop(kwq, lwq) + 1000) * (1000 * 1000) ! kg/m3 * mg/m3
