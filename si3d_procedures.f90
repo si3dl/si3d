@@ -348,7 +348,7 @@ SUBROUTINE InitializeScalarFields
             if ((nn .eq. LHg0) .or. (nn .eq. LHgII) .or. (nn .eq. LMeHg)) then
               tracer(kms + 1, l, nn) = hg_sed
             elseif ((nn .eq. LSS1) .or. (nn .eq. LSS2) .or. (nn .eq. LSS3)) then
-              tracer(kms + 1, l, nn) = 0.6 * sed_dens(LSS1 + 1 - nn) * sed_frac(LSS1 + 1 - nn)
+              tracer(kms + 1, l, nn) = 0.6 * sed_dens(nn - LSS1 + 1) * sed_frac(nn - LSS1 + 1)
             end if
           end do
         END DO ! ... End loop over tracers
@@ -4250,14 +4250,8 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
         if (k == k1s) then
             vel = 0.0
         else
-          if (nt .eq. LSS1) then
-            call fvs_ss(vs_ss,sed_diameter(nt - LSS1 + 1),sed_dens(nt - LSS1 + 1),rhop(k,l)+1000)
-            vel = wp(k,l) - vs_ss
-          elseif (nt .eq. LSS2) then
-            call fvs_ss(vs_ss,sed_diameter(nt - LSS2 + 1),sed_dens(nt - LSS2 + 1),rhop(k,l)+1000)
-            vel = wp(k,l) - vs_ss
-          elseif (nt .eq. LSS3) then
-            call fvs_ss(vs_ss,sed_diameter(nt - LSS3 + 1),sed_dens(nt - LSS3 + 1),rhop(k,l)+1000)
+          if (nt .eq. LSS1) .or. (nt .eq. LSS2) .or. (nt .eq. LSS3) then
+            call fvs_ss(vs_ss, sed_diameter(nt - LSS1 + 1), sed_dens(nt - LSS1 + 1), (rhop(k,l)+1000) * (1000 * 1000))
             vel = wp(k,l) - vs_ss
           elseif (nt .eq. LPON) then
             vel = wp(k,l) !- R_settl

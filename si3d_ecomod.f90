@@ -710,45 +710,61 @@ SUBROUTINE WQinput
   SED_PO4 = SED_PO4/86400.0
   SED_DOC = SED_DOC/86400.0
 
+  ! Tranform units for SS
+  ! To convert sediment density from kg/m3 to mg/m3
+  sed_dens = sed_dens * 1000 * 1000
+  ! To convert sediment diameter from um to m
+  sed_diameter = sed_diameter * 0.000001
 
-  ! Tranformation to seconds (/86400) and m3 (*1000) of input constants for Hg Model
-   
+
+  ! Transform units for Hg models
+  ! Convert time units - input is in days and should be in seconds.   
+  ! ---------- MeHg -------------
+  ! time units - days -> seconds
   kw31 = kw31 / 86400.0
   atm_MeHg = atm_MeHg / 86400.0
   k_MeHgw = k_MeHgw / 86400.0
   k_MeHgatm = k_MeHgatm / 86400.0
-  ! print*, 'K_H_MeHgw =', K_H_MeHgw
-  ! print*, 'kw32 =', kw32
+  kw32 = kw32 / 86400.0
   ks32 = ks32 / 86400.0
   kws = kws / 86400.0
-  kd_wdoc3 = kd_wdoc3 / 1000
-  kd_sdoc3 = kd_sdoc3 / 1000
-  kd_wpa3 =  kd_wpa3 / 1000
-  kd_wpom3 = kd_wpom3 / 1000
-  kd_spom3 = kd_spom3 / 1000
-  kd_wpn3 = kd_wpn3 / 1000
-  kd_spn3 = kd_spn3 / 1000
+  
+  ! kd units - m3/mg to m3/ng 
+  kd_wdoc3 = kd_wdoc3 / (1000 * 1000)
+  kd_sdoc3 = kd_sdoc3 / (1000 * 1000)
+  kd_wpa3 =  kd_wpa3 / (1000 * 1000)
+  kd_wpom3 = kd_wpom3 / (1000 * 1000)
+  kd_spom3 = kd_spom3 / (1000 * 1000)
+  kd_wpn3 = kd_wpn3 / (1000 * 1000)
+  kd_spn3 = kd_spn3 / (1000 * 1000)
 
+  ! ------------ HgII ----------
+  ! time units - days -> seconds
   kw21 = kw21 / 86400.0
   atm_HgII = atm_HgII / 86400.0
-  ! print*, 'kw23 =', kw23
+  kw23 = kw23 / 86400.0
   ks23 = ks23 / 86400.0
-  ! print*, 'KDO =', KDO
-  ! print*, 'KSO4 =', KSO4
-  ! print*, 'SO4 =', SO4
-  ! print*, 'miu_so4 =', miu_so4
-  kd_wdoc2 = kd_wdoc2 / 1000 !to go from L/ug to L/ng
-  kd_sdoc2 = kd_sdoc2 / 1000
-  kd_wpa2 = kd_wpa2 / 1000
-  kd_wpom2 = kd_wpom2 / 1000
-  kd_spom2 = kd_spom2 / 1000
-  kd_wpn2 = kd_wpn2 / 1000
-  kd_spn2 = kd_spn2 / 1000
 
-  ! print*, 'DGMra =', DGMra
+  ! kd units m3/mg to m3/ng
+  kd_wdoc2 = kd_wdoc2 / (1000 * 1000) 
+  kd_sdoc2 = kd_sdoc2 / (1000 * 1000)
+  kd_wpa2 = kd_wpa2 / (1000 * 1000)
+  kd_wpom2 = kd_wpom2 / (1000 * 1000)
+  kd_spom2 = kd_spom2 / (1000 * 1000)
+  kd_wpn2 = kd_wpn2 / (1000 * 1000)
+  kd_spn2 = kd_spn2 / (1000 * 1000)
+
+  ! ------------- Hg0 ------------
+  ! time units - days to seconds
   k_Hg0w = k_Hg0w / 86400.0
   k_Hg0atm = k_Hg0atm / 86400.0
-  ! print*, 'K_H_Hg0w =', K_H_Hg0w
+
+  ! concentration units mg/m3 to ng/m3
+  KDO = KDO * 1000 * 1000
+  KSO4 = KSO4 * 1000
+  SO4 = SO4 * 1000
+  POC_sed = POC_sed * 1000 * 1000
+  DOC_sed = DOC_sed * 1000 * 1000
 
   IF (idbg == 1) THEN
     PRINT*, 'iDO  = ', iDO , 'iPOC = ', iPOC, 'iDOC = ', iDOC
@@ -772,6 +788,8 @@ SUBROUTINE WQinput
     print*, 'ATM_NH4 = ', ATM_NH4, 'ATM_NO3 = ', ATM_NO3, 'ATM_PO4 = ', ATM_NO3
     print*, 'SED_DOC = ', SED_DOC, 'SED_DON = ', SED_DON, 'SED_DOP = ', SED_DOP
     print*, 'SED_NH4 = ', SED_NH4, 'SED_NO3 = ', SED_NO3, 'SED_PO4 = ', SED_PO4
+    
+    print*, '-------- SS Model -------'
     PRINT*, 'sed_h = ', sed_h
     PRINT*, 'sed_diam = ',sed_diameter
     PRINT*,'sed_dens = ',sed_dens
@@ -821,6 +839,13 @@ SUBROUTINE WQinput
     print*, 'Hg0atm =', Hg0atm
     print*, 'K_H_Hg0w =', K_H_Hg0w
 
+    print*, '----- Concentrations Hg Model ---'
+    ! concentration units mg/m3 to ng/m3
+    print*, 'KDO =', KDO
+    print*, 'KSO4 =', KSO4
+    print*, 'SO4 =', SO4
+    print*, 'POC_sed =', POC_sed
+    print*, 'DOC_sed =', DOC_sed
   END IF
 
 END SUBROUTINE WQinput

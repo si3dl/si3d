@@ -43,28 +43,27 @@ SUBROUTINE sourceSS(kwq,lwq)
 
 
   kms = kmz(lwq)
-  w_dens = rhop(kwq, lwq) + 1000
-
   if (kwq .eq. kms) then
+    w_dens = (rhop(kwq, lwq) + 1000) * (1000 * 1000) ! kg/m3 * mg/m3
     ! Estimate bottom shear stress
     call tauBottom(taub, ustarb, kwq, lwq)
     call totalMass(sed_frac, kwq, lwq)
 
     do i = 1, sedNumber
       ! Estimate properties of sediment for a given water density at bottom cell
-      cb = tracerpp(kwq,lwq,LSS1 + i - 1)
+      cb = tracerpp(kwq,lwq,LSS1 + i - 1) ! mg/m3
       
-      call get_sed_prop(settling_vel(i),Rep(i),tauCrt(i),sed_diameter(i),sed_dens(i),w_dens)
+      call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
       ! Estimate erosion flux
       if (taub .ge. tauCrt(i)) then
         if (sed_type(i) == 0) then
-          call erosion_noncohesive(erosion_flux(i), ustarb, Rep(i), settling_vel(i), sed_frac(i),sed_dens(i))
+          call erosion_noncohesive(erosion_flux(i), ustarb, Rep(i), settling_vel(i), sed_frac(i), sed_dens(i))
           ! if (lwq == 5) then
           !   print*,'Erosion Flux for noncohesive'
           !   print*,'diameter = ',sed_diameter(i),'fraction = ', sed_frac(i)
           ! end if
         else if (sed_type(i) == 1) then
-          call erosion_cohesive(erosion_flux(i),taub, tauCrt(i), sed_frac(i), sed_dens(i))
+          call erosion_cohesive(erosion_flux(i), taub, tauCrt(i), sed_frac(i), sed_dens(i))
           ! if (lwq == 5) then
           !   print*,'Erosion Flux for cohesive'
           !   print*,'diameter = ',sed_diameter(i),'fraction = ', sed_frac(i)
@@ -100,20 +99,22 @@ SUBROUTINE sourceSS(kwq,lwq)
       sourcesink(kwq, lwq, LSS1 + i - 1) = erosion_flux(i) - deposition_flux(i)
 
       ! if ((tauCrt(i) .lt. taub)) then
-      ! if (lwq == 45) then
-      !   print*, '--------------------------'
-      !   print*, 'k =',kwq,'l =',lwq,'i = ',l2i(lwq),'j = ',l2j(lwq)
-      !   print*, 'dt = ',dt,'h = ',hp(kwq+1,lwq)
-      !   print*, 'cb = ',cb
-      !   print*, 'taub =',taub
-      !   print*, 'tauCr =', tauCrt(i)
-      !   print*, 'erosion_flux = ', erosion_flux(i)
-      !   print*, 'depositionFlux = ', deposition_flux(i)
-      !   print*, 'sourcesink = ', sourcesink(kwq, lwq, LSS1+i-1)
-      !   print*, 'sourcesinklim = ', -cb * hp(kwq,lwq) / dt
-      !   ! print*, 'Rep = ', Rep(i)
-      !   ! print*, 'vs = ', settling_vel(i)
-      ! end if
+      if (lwq == 106) then
+        print*, '--------- SS Model ------------'
+        print*, 'k =',kwq,'l =',lwq,'i = ',l2i(lwq),'j = ',l2j(lwq)
+        print*, 'dt = ',dt,'h = ',hp(kwq+1,lwq)
+        print*, 'sed_dens =', sed_dens(i)
+        print*, 'submerged_spec_g = ', sed_dens(i) / w_dens - 1
+        print*, 'cb = ',cb
+        print*, 'taub =',taub
+        print*, 'tauCr =', tauCrt(i)
+        print*, 'erosion_flux = ', erosion_flux(i)
+        print*, 'depositionFlux = ', deposition_flux(i)
+        print*, 'sourcesink = ', sourcesink(kwq, lwq, LSS1+i-1)
+        print*, 'sourcesinklim = ', -cb * hp(kwq,lwq) / dt
+        ! print*, 'Rep = ', Rep(i)
+        ! print*, 'vs = ', settling_vel(i)
+      end if
 
       call burial(burial_flux(i), erosion_flux(i), deposition_flux(i))
 
@@ -305,23 +306,17 @@ SUBROUTINE get_sed_prop(settling_vel,Rep,tauCrt,sed_diameter,sed_dens,w_dens)
   real, intent(out) :: Rep              !< Explicit Particle Reynolds Number
   real, intent(out) :: tauCrt           !< (Pa) Critical shear stress 
   real              :: submerged_spec_g !< Sediment submerged specific gravity
-  real              :: sed_diamm        !< (m) Sediment diameter
   logical           :: ivanRijn         !< Flag for using van Rijn (1984) formula or Dietrich (1982). The default is van Rijn
 
   ivanRijn = .false.
 
-  ! To estimate sediment diamenter in m
-  sed_diamm = sed_diameter * 0.000001
-
-  ! sed_spec_g = sed_dens/w_dens
-
   call submergedSpecificGravity(submerged_spec_g, sed_dens, w_dens)
 
-  call partReynolds_Number(Rep, sed_diamm, kinematic_viscosity, submerged_spec_g)
+  call partReynolds_Number(Rep, sed_diameter, kinematic_viscosity, submerged_spec_g)
 
-  call settling_velocity(settling_vel, g, submerged_spec_g, Rep, sed_diamm, kinematic_viscosity, ivanRijn)
+  call settling_velocity(settling_vel, g, submerged_spec_g, Rep, sed_diameter, kinematic_viscosity, ivanRijn)
 
-  call tauCritical(tauCrt, g, sed_diamm, submerged_spec_g, w_dens, kinematic_viscosity, Rep)
+  call tauCritical(tauCrt, g, sed_diameter, submerged_spec_g, w_dens, kinematic_viscosity, Rep)
 
   return
 END SUBROUTINE get_sed_prop
@@ -335,27 +330,21 @@ SUBROUTINE fvs_ss(vs_ss,sed_diameter,sed_dens,w_dens)
 ! --------------------------------------------------------------------
   implicit none
   ! Arguments
-  real, intent(in)  :: sed_diameter     !< (um) Sediment diameter
+  real, intent(in)  :: sed_diameter     !< (m) Sediment diameter
   real, intent(in)  :: w_dens           !< (kg/m3) water density
   real, intent(in)  :: sed_dens         !< (kg/m3) sediment density
   real, intent(out) :: vs_ss            !< (m/s) settling velocity
   real              :: Rep              !< Explicit Particle Reynolds Number
   real              :: submerged_spec_g !< Sediment submerged specific gravity
-  real              :: sed_diamm        !< (m) Sediment diameter
   logical           :: ivanRijn         !< Flag for using van Rijn (1984) formula or Dietrich (1982). The default is van Rijn
 
   ivanRijn = .true.
 
-  ! To estimate sediment diamenter in m
-  sed_diamm = sed_diameter * 0.000001
-
-  ! sed_spec_g = sed_dens/w_dens
-
   call submergedSpecificGravity(submerged_spec_g, sed_dens, w_dens)
 
-  call partReynolds_Number(Rep, sed_diamm, kinematic_viscosity, submerged_spec_g)
+  call partReynolds_Number(Rep, sed_diameter, kinematic_viscosity, submerged_spec_g)
 
-  call settling_velocity(vs_ss, g, submerged_spec_g, Rep, sed_diamm, kinematic_viscosity, ivanRijn)
+  call settling_velocity(vs_ss, g, submerged_spec_g, Rep, sed_diameter, kinematic_viscosity, ivanRijn)
 
   return
 END SUBROUTINE fvs_ss
@@ -369,12 +358,12 @@ SUBROUTINE submergedSpecificGravity(submerged_spec_g, sed_dens, w_dens)
 !
 ! --------------------------------------------------------------------
   ! Arguments of subroutine
-  real, intent(in)  :: sed_dens         !< (kg/m3) Sediment density
-  real, intent(in)  :: w_dens           !< (kg/m3) Water density
+  real, intent(in)  :: sed_dens         !< (mg/m3) Sediment density
+  real, intent(in)  :: w_dens           !< (mg/m3) Water density
   real, intent(out) :: submerged_spec_g !< Sediment submerged specific gravity
 
   ! Estimate submerged specific gravity
-  submerged_spec_g = sed_dens / w_dens - 1
+  submerged_spec_g = (sed_dens / w_dens) - 1
 
   return
 END SUBROUTINE submergedSpecificGravity
@@ -491,8 +480,8 @@ SUBROUTINE tauCritical(tauCrt, g, sed_diamm, submerged_spec_g, w_dens, kinematic
   shields_param = 0.5 * (0.22 * Rep ** (-0.6) + 0.06 * 10 ** (-7.7 * Rep ** (-0.6)))
 
   ! Estimate of critical shear stress for given water and sediment properties
-  tauCrt = shields_param * g * submerged_spec_g * sed_diamm * w_dens
-
+  tauCrt = shields_param * g * submerged_spec_g * sed_diamm * (w_dens / (1000 * 1000)
+  ![kgm/s/m2] = [-]  *  [m/s2] *      [-]       *    [m]     * [mg/m3] * [kg/mg]
   return 
 END SUBROUTINE tauCritical
 

@@ -366,7 +366,7 @@ SUBROUTINE HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, &
 
 
   do i = 1, sedNumber
-    HgII_SS(i) = kd_wpn2(i) * tracerpp(kwq, lwq, LSS1 + i - 1)
+    HgII_SS(i) = kd_wpn2(i) * tracerpp(kwq, lwq, LSS1 + i - 1) * (1000 * 1000) ! mg/m3 to ng/m3
   end do
 
   R_HgIIw =  1 + (kd_wdoc2 * DOC) + (kd_wpa2 * ALG) + (kd_wpom2 * POM) + sum(HgII_SS)
@@ -377,7 +377,7 @@ SUBROUTINE HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, &
   fwpom2 = kd_wpom2 * POM / R_HgIIw
 
   do i = 1,sedNumber
-    fwpn2(i) = kd_wpn2(i) * tracerpp(kwq, lwq, LSS1 + i - 1) / R_HgIIw
+    fwpn2(i) = kd_wpn2(i) * (tracerpp(kwq, lwq, LSS1 + i - 1) * (1000 * 1000)) / R_HgIIw
     HgII_wpn(i) = fwpn2(i) * HgIIw
   end do
 
@@ -395,7 +395,7 @@ SUBROUTINE HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, &
     POM = 0.0
 
     do i = 1, sedNumber
-      HgII_SS(i) = kd_spn2(i) * tracerpp(kwq + 1, lwq, LSS1 + i - 1)
+      HgII_SS(i) = kd_spn2(i) * tracerpp(kwq + 1, lwq, LSS1 + i - 1) * (1000 * 1000) ! mg/m3 to ng/m3
     end do
 
     R_HgIIs =  1 + (kd_sdoc2 * DOC) + (kd_spom2 * POM) + sum(HgII_SS)
@@ -404,7 +404,7 @@ SUBROUTINE HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, &
     fsdoc2 = kd_sdoc2 * DOC / R_HgIIs
     fspom2 = kd_spom2 * POM / R_HgIIs
     do i = 1,sedNumber
-      fspn2(i) = kd_spn2(i) * tracerpp(kwq + 1, lwq, LSS1 + i - 1) / R_HgIIs
+      fspn2(i) = kd_spn2(i) * (tracerpp(kwq + 1, lwq, LSS1 + i - 1) * (1000 * 1000)) / R_HgIIs
       HgII_spn(i) = fspn2(i) * HgIIs
     end do
 
@@ -467,7 +467,7 @@ SUBROUTINE MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, f
   POM = 0.0
 
   do i = 1, sedNumber
-    MeHg_SS(i) = kd_wpn3(i) * tracerpp(kwq, lwq, LSS1 + i - 1)
+    MeHg_SS(i) = kd_wpn3(i) * tracerpp(kwq, lwq, LSS1 + i - 1) * (1000 * 1000)
   end do
 
   R_MeHgw =  1 + kd_wdoc3 * DOC + kd_wpa3 * ALG + kd_wpom3 * POM + sum(MeHg_SS)
@@ -477,7 +477,7 @@ SUBROUTINE MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, f
   fwpa3 = kd_wpa3 * ALG / R_MeHgw
   fwpom3 = kd_wpom3 * POM / R_MeHgw
   do i = 1,sedNumber
-    fwpn3(i) = kd_wpn3(i) * tracerpp(kwq, lwq, LSS1 + i - 1) / R_MeHgw
+    fwpn3(i) = kd_wpn3(i) * (tracerpp(kwq, lwq, LSS1 + i - 1) * (1000 * 1000))/ R_MeHgw
     MeHg_wpn(i) = fwpn3(i) * MeHgw
   end do
 
@@ -494,7 +494,7 @@ SUBROUTINE MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, f
     POM = 0.0
 
     do i = 1, sedNumber
-      MeHg_SS(i) = kd_spn3(i) * tracerpp(kwq + 1, lwq, LSS1 + i - 1)
+      MeHg_SS(i) = kd_spn3(i) * tracerpp(kwq + 1, lwq, LSS1 + i - 1) * (1000 * 1000)
     end do
 
     R_MeHgs =  1 + kd_sdoc3 * DOC + kd_spom3 * POM + sum(MeHg_SS)
@@ -503,7 +503,7 @@ SUBROUTINE MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, f
     fsdoc3 = kd_sdoc3 * DOC / R_MeHgs
     fspom3 = kd_spom3 * POM / R_MeHgs
     do i = 1,sedNumber
-      fspn3(i) = kd_spn3(i) * tracerpp(kwq + 1, lwq, LSS1 + i - 1) / R_MeHgs
+      fspn3(i) = kd_spn3(i) * (tracerpp(kwq + 1, lwq, LSS1 + i - 1) * (1000 * 1000)) / R_MeHgs
       MeHg_spn(i) = fspn3(i) * MeHgs
     end do
 
@@ -626,7 +626,7 @@ SUBROUTINE MeHg_atm_deposition(MeHgw_atmdep, kwq, lwq)
   integer, intent(in)  :: lwq
   real,    intent(out) :: MeHgw_atmdep !< Source/Sink term for the balance of MeHg dissolved in water
 
-  MeHgw_atmdep = ((dx * dy * h(kwq, lwq)) / 1000) * atm_MeHg 
+  MeHgw_atmdep = atm_MeHg 
 
 END SUBROUTINE MeHg_atm_deposition
 
@@ -643,7 +643,7 @@ SUBROUTINE HgII_atm_deposition(HgIIw_atmdep, kwq, lwq)
   integer, intent(in)  :: lwq
   real,    intent(out) :: HgIIw_atmdep !< Source/Sink term for the balance of MeHg dissolved in water
 
-  HgIIw_atmdep = ((dx * dy * h(kwq, lwq)) / 1000) * atm_HgII
+  HgIIw_atmdep = atm_HgII
 
 END SUBROUTINE HgII_atm_deposition
 
