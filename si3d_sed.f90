@@ -289,7 +289,7 @@ SUBROUTINE deposition_cohesive(deposition_flux, settling_vel, tauCrt, taub, cb)
 END SUBROUTINE deposition_cohesive
 
 ! ********************************************************************
-SUBROUTINE get_sed_prop(settling_vel,Rep,tauCrt,sed_diameter,sed_dens,w_dens)
+SUBROUTINE get_sed_prop(settling_vel,Rep,tauCrt,sed_d,sed_dens,w_dens)
 ! ********************************************************************
 !
 ! Purpose: Estimate particle dependent parameters / properties
