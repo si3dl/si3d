@@ -69,7 +69,7 @@
             & nnodes, nopen, iseich, idbg, iextrp, iyr0, imon0, iday0,   &
             & ihr0, istd, igs, ivpv, iupwind, ioutg, ipv, ipsal, ipxml,  &
             & itspf, itrsca, itrmom, ibathyf, apxml, iTurbVars, ipwq,    &
-            & itspfh, itspftr, nswq
+            & itspfh, itspftr, nswq, icw
    CHARACTER :: title*80, sal_ic_file*50, wse_file*7, flw_file*7,        &
               & hcn_file*7, sal_file*7, barrier_file*50, commentline*50
 
@@ -480,7 +480,13 @@
    real :: kd_spom3
    real, allocatable, dimension(:)     :: kd_wpn3
    real, allocatable, dimension(:)     :: kd_spn3
-
+   
+   ! Sediment concentrations
+   real :: MeHg_sed
+   real :: HgII_sed
+   real :: Hg0_sed
+   real :: POC_sed
+   real :: DOC_sed
 !                        -----Data Dictionary-----
 
 END MODULE si3d_types

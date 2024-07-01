@@ -134,7 +134,7 @@ SUBROUTINE openbc0
         ENDIF
         IF ( isdNBI(nn) .NE. iside(nn)) THEN
           PRINT *, '******************************************************'
-          PRINT *, 'STOP - Boundary sides in coarse & fine grids dis-agree'
+          PRINT *, 'STOP - Boundary sides in coarse & fine grids disagree'
           PRINT *, 'Please CHECK Coarse Grid SIDE(',nn,')=', isdNBI(nn)
           PRINT *, '             Fine   Grid SIDE(',nn,')=', iside (nn)
           PRINT *, '******************************************************'
@@ -3209,7 +3209,7 @@ SUBROUTINE openbcSCA(thrs)
            DO k = k1s,kms
 
             ! Horizontal advection - Upwind differencing
-            IF ( uh(k,l) > 0.0 .AND. salbc > 0) THEN
+            IF ( uh(k,l) > 0.0 .AND. salbc > 0.0) THEN
               sal(k,l) = salbc
             ELSE
               sal(k,l) = sal(k,lEC(l))
@@ -3235,7 +3235,7 @@ SUBROUTINE openbcSCA(thrs)
            DO k = k1s,kms
 
             ! Horizontal advection - Upwind differencing
-            IF ( vh(k,lSC(l)) < 0.0 .AND. salbc > 0) THEN
+            IF ( vh(k,lSC(l)) < 0.0 .AND. salbc > 0.0) THEN
               sal(k,l) = salbc
             ELSE
               sal(k,l) = sal(k,lSC(l))
@@ -3262,7 +3262,7 @@ SUBROUTINE openbcSCA(thrs)
            DO k = k1s,kms
 
             ! Horizontal advection - Upwind differencing
-            IF ( uh(k,lWC(l)) < 0.0 .AND. salbc > 0) THEN
+            IF ( uh(k,lWC(l)) < 0.0 .AND. salbc > 0.0) THEN
               sal(k,l) = salbc
             ELSE
               sal(k,l) = sal(k,lWC(l))
@@ -3289,7 +3289,7 @@ SUBROUTINE openbcSCA(thrs)
            DO k = k1s,kms
 
             ! Horizontal advection - Upwind differencing
-            IF ( vh(k,l) > 0.0 .AND. salbc > 0) THEN
+            IF ( vh(k,l) > 0.0 .AND. salbc > 0.0) THEN
               sal(k,l) = salbc
             ELSE
               sal(k,l) = sal(k,lNC(l))
@@ -3373,7 +3373,7 @@ SUBROUTINE MODexsal4openbc(Bstart,Bend,Bex,thrs)
              ! ... Define velocity at boundary face
              uW = uhWB(k,j) + uhWBpp(k,j);
              ! ... Define scalar   at boundary face
-             IF ( uW >= 0.0 .AND. salbc > 0) THEN
+             IF ( uW >= 0.0 .AND. salbc > 0.0) THEN
                scW = salbc
              ELSE
                scW = salpp(k,l)
@@ -3397,7 +3397,7 @@ SUBROUTINE MODexsal4openbc(Bstart,Bend,Bex,thrs)
              ! ... Define velocity at boundary face
              vN = vhNB(k,i) + vhNBpp(k,i);
              ! ... Define scalar   at boundary face
-             IF ( vN < 0.0 .AND. salbc > 0) THEN
+             IF ( vN < 0.0 .AND. salbc > 0.0) THEN
                scN = salbc
              ELSE
                scN = salpp(k,l)
@@ -3421,7 +3421,7 @@ SUBROUTINE MODexsal4openbc(Bstart,Bend,Bex,thrs)
              ! ... Define velocity at boundary face
              uE = uhEB(k,j) + uhEBpp(k,j);
              ! ... Define scalar   at boundary face
-             IF ( uE < 0.0 .AND. salbc > 0) THEN
+             IF ( uE < 0.0 .AND. salbc > 0.0) THEN
                scE = salbc
              ELSE
                scE = salpp(k,l)
@@ -3483,12 +3483,12 @@ SUBROUTINE MODexsal4openbc(Bstart,Bend,Bex,thrs)
              uW = uhWB(k,j) + uhWBpp(k,j);
              ! ... Define scalar   at boundary face
 
-             IF ( uW > 0.0 .AND. salbc > 0) THEN
+             IF ( uW > 0.0 .AND. salbc > 0.0) THEN
                scW = salbc
              ELSE
                scW = salpp(k,l)
              ENDIF
-             ! ... Include boundary flux in ex- array
+             ! ... Include boundary flux in ex- array   
              Bex(k,l) = Bex(k,l) +  uW * scW / twodx
            ENDDO
          ENDDO
@@ -3507,7 +3507,7 @@ SUBROUTINE MODexsal4openbc(Bstart,Bend,Bex,thrs)
              ! ... Define velocity at boundary face
              vN = vhNB(k,i) + vhNBpp(k,i);
              ! ... Define scalar   at boundary face
-             IF ( vN < 0.0 .AND. salbc > 0) THEN
+             IF ( vN < 0.0 .AND. salbc > 0.0) THEN
                scN = salbc
              ELSE
                scN = salpp(k,l)
@@ -3531,7 +3531,7 @@ SUBROUTINE MODexsal4openbc(Bstart,Bend,Bex,thrs)
              ! ... Define velocity at boundary face
              uE = uhEB(k,j) + uhEBpp(k,j);
              ! ... Define scalar   at boundary face
-             IF ( uE < 0.0 .AND. salbc > 0) THEN
+             IF ( uE < 0.0 .AND. salbc > 0.0) THEN
                scE = salbc
              ELSE
                scE = salpp(k,l)
@@ -3553,7 +3553,7 @@ SUBROUTINE MODexsal4openbc(Bstart,Bend,Bex,thrs)
            ! ... Define velocity at boundary face
            vS = vhSB(k,i) + vhSBpp(k,i);
            ! ... Define scalar   at boundary face
-           IF ( vS > 0.0 .AND. salbc > 0) THEN
+           IF ( vS > 0.0 .AND. salbc > 0.0) THEN
              scS = salbc
            ELSE
              scS = salpp(k,l)
@@ -4418,26 +4418,21 @@ SUBROUTINE surfbc0
 
      ! ... Initialize Interpolation Schemes (weights for Barnes)
      CALL InitializeInterpolationMethods
-     print *,"hola"
      ! Read number of records in file from seventh header record
      READ (UNIT=i53, FMT='(10X,I7)', IOSTAT=ios) npSurfbc
      IF (ios /= 0) CALL input_error ( ios, 110 )
-     print *,"hola2"
      ! Allocate space for the array of data
      nvSurfbc = 6 * nmetstat + 2
      ALLOCATE ( surfbc1(nvSurfbc,npSurfbc), STAT=istat )
      IF (istat /= 0) CALL allocate_error ( istat, 111 )
-     print *,"hola3"
      ! Write the format of the data records into an internal file
      WRITE (UNIT=surfbcfmt, FMT='("(10X,",I3,"G11.2)")') nvSurfbc
-     print *,"hola4"
      ! Read data array and store it in memory
      DO j = 1, npSurfbc
          READ (UNIT=i53, FMT=surfbcfmt, IOSTAT=ios) &
 		      (surfbc1(nn,j), nn = 1, nvSurfbc)
          IF (ios /= 0) CALL input_error ( ios, 112 )
      END DO
-     print *,"hola5"
      !           ----- Assign surfBC at time t=0.0-----
      eta           = surfbc1(1             ,1)
      Pa            = surfbc1(2             ,1)
@@ -4449,12 +4444,9 @@ SUBROUTINE surfbc0
        uair2D(imet)  = surfbc1((imet-1)*6 + 7,1)
        vair2D(imet)  = surfbc1((imet-1)*6 + 8,1)
      ENDDO
-     print *,"hola6"
      ! ... Distribute heat and momentum sources entering through free surface
      CALL DistributeQsw
-     print *,"hola61"
      CALL DistributeMomentumHeatSources
-     print *,"hola7"
    CASE (20)
      !               ----- Open files with wind velocity bc data-----
      OPEN (UNIT=i53, FILE='si3d_surfbc_W.txt', STATUS="OLD", IOSTAT=ios)
@@ -5027,8 +5019,18 @@ SUBROUTINE DistributeMomentumHeatSources
       coeffH = (a_h(irg)+b_h(irg)*ws**p_h(irg)+c_h(irg)*(ws-8.)**2.)*1.e-3
       coeffE = (a_e(irg)+b_e(irg)*ws**p_e(irg)+c_e(irg)*(ws-8.)**2.)*1.e-3
 
-      ! ... Calculate drag coefficient (Amorocho & DeVries)
-      cdw(l) = 0.0015 * 1./(1.0+ EXP((12.5-ws)/1.56))+0.00104
+      ! ... Calculate drag coefficient | Amorocho & DeVries (1980) or Andreas et al (2012)
+      if (icw == 0) then
+        cdw(l) = cw
+      else if (icw == 1) then
+        cdw(l) = 0.0015 * 1. / (1.0 + EXP((12.5 - ws) / 1.56)) + 0.00104
+      else if (icw == 2) then
+        if (ws == 0) then
+          cdw(l) = cw
+        else
+          cdw(l) = ((0.239 + 0.0433 * ((ws - 8.271) + (0.12 * (ws - 8.271) ** 2 + 0.181) ** (1/2))) / ws) ** 2
+        end if
+      end if
 
       ! ... Define variables used in cals. and equal to all surface cells
       ea    = saturated_vapor_pressure (Ta+273.) * Rh
@@ -5092,8 +5094,18 @@ SUBROUTINE DistributeMomentumHeatSources
       coeffH = (a_h(irg)+b_h(irg)*ws**p_h(irg)+c_h(irg)*(ws-8.)**2.)*1.e-3
       coeffE = (a_e(irg)+b_e(irg)*ws**p_e(irg)+c_e(irg)*(ws-8.)**2.)*1.e-3
 
-      ! ... Calculate drag coefficient (Amorocho & DeVries)
-      cdw(l) = 0.0015 * 1./(1.0+ EXP((12.5-ws)/1.56))+0.00104
+      ! ... Calculate drag coefficient | Amorocho & DeVries (1980) or Andreas et al (2012)
+      if (icw == 0) then
+        cdw(l) = cw
+      else if (icw == 1) then
+        cdw(l) = 0.0015 * 1. / (1.0 + EXP((12.5 - ws) / 1.56)) + 0.00104
+      else if (icw == 2) then
+        if (ws == 0) then
+          cdw(l) = cw
+        else
+          cdw(l) = ((0.239 + 0.0433 * ((ws - 8.271) + (0.12 * (ws - 8.271) ** 2 + 0.181) ** (1/2))) / ws) ** 2
+        end if
+      end if
 
       ! ... Define variables used in cals. and equal to all surface cells
       Qbra  = Qlw * ( 1. - Al )
@@ -5348,8 +5360,18 @@ END DO
       coeffH = (a_h(irg)+b_h(irg)*ws**p_h(irg)+c_h(irg)*(ws-8.)**2.)*1.e-3
       coeffE = (a_e(irg)+b_e(irg)*ws**p_e(irg)+c_e(irg)*(ws-8.)**2.)*1.e-3
 
-      ! ... Calculate drag coefficient (Amorocho & DeVries)
-      cdw(l) = 0.0015 * 1./(1.0+ EXP((12.5-ws)/1.56))+0.00104
+      ! ... Calculate drag coefficient | Amorocho & DeVries (1980) or Andreas et al (2012)
+      if (icw == 0) then
+        cdw(l) = cw
+      else if (icw == 1) then
+        cdw(l) = 0.0015 * 1. / (1.0 + EXP((12.5 - ws) / 1.56)) + 0.00104
+      else if (icw == 2) then
+        if (ws == 0) then
+          cdw(l) = cw
+        else
+          cdw(l) = ((0.239 + 0.0433 * ((ws - 8.271) + (0.12 * (ws - 8.271) ** 2 + 0.181) ** (1/2))) / ws) ** 2
+        end if
+      end if
 
       ! ... Define variables used in cals. and equal to all surface cells
       ea    = saturated_vapor_pressure (Ta+273.) * Rh
@@ -5416,8 +5438,18 @@ END DO
       coeffH = (a_h(irg)+b_h(irg)*ws**p_h(irg)+c_h(irg)*(ws-8.)**2.)*1.e-3
       coeffE = (a_e(irg)+b_e(irg)*ws**p_e(irg)+c_e(irg)*(ws-8.)**2.)*1.e-3
 
-      ! ... Calculate drag coefficient (Amorocho & DeVries)
-      cdw(l) = 0.0015 * 1./(1.0+ EXP((12.5-ws)/1.56))+0.00104
+      ! ... Calculate drag coefficient | Amorocho & DeVries (1980) or Andreas et al (2012)
+      if (icw == 0) then
+        cdw(l) = cw
+      else if (icw == 1) then
+        cdw(l) = 0.0015 * 1. / (1.0 + EXP((12.5 - ws) / 1.56)) + 0.00104
+      else if (icw == 2) then
+        if (ws == 0) then
+          cdw(l) = cw
+        else
+          cdw(l) = ((0.239 + 0.0433 * ((ws - 8.271) + (0.12 * (ws - 8.271) ** 2 + 0.181) ** (1/2))) / ws) ** 2
+        end if
+      end if
 
       ! ... Define variables used in cals. and equal to all surface cells
       Qbra  = Qlw * ( 1. - Al )

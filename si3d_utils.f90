@@ -50,7 +50,7 @@ SUBROUTINE input
   ! ... Read parameters controlling solution algorithm .................
   READ (UNIT=i5,FMT='(///(14X,G20.2))',IOSTAT=ios) itrap,niter,ismooth, &
       & beta, iturb, Av0, Dv0, iadv, itrmom, ihd, Ax0, Ay0, f, theta,   &
-      & ibc,isal, itrsca, cd, ifsurfbc, dtsurfbc, cw, wa, phi, idbg, num_threads
+      & ibc,isal, itrsca, cd, ifsurfbc, dtsurfbc, icw, cw, wa, phi, idbg, num_threads
   IF (ios /= 0) CALL input_error ( ios, 4 )
 
   !.....Read node numbers for time series output .......................
@@ -1189,10 +1189,10 @@ SUBROUTINE outt(n,thrs)
             & k = k1,kmz(l)+1)
      ENDIF
 
-   4 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PE15.7 / &
-                  & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PE15.7 ))
-   5 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),26(0PF15.7)/ &
-                  & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),26(0PF15.7)))
+   4 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PE15.5 / &
+                  & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PE15.5 ))
+   5 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),26(0PF15.5)/ &
+                  & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),26(0PF15.5)))
    END DO
 
    !.....Compute CPU time spent in subroutine.....
@@ -3902,9 +3902,9 @@ PURE FUNCTION densty_s ( temperature, salinity, elevation )
             + salinity**(3/2)*(-5.72466e-3                        &
             + 1.0227e-4*temperature                               &
             - 1.6546e-6*temperature**2) + 4.8314e-4*salinity**2
-    IF (elevation < 4) THEN
-      densty_s = densws
-    ELSE
+    ! IF (elevation < 4) THEN
+    !   densty_s = densws
+    ! ELSE
       ! Fixed Method root finding for density equation with Pressure. SV
       rhoguess = densws
       delta = 1
@@ -3944,7 +3944,7 @@ PURE FUNCTION densty_s ( temperature, salinity, elevation )
         rhoguess = densty_s
         iter = iter + 1
       END DO
-    END IF
+    ! END IF
 
 END FUNCTION densty_s
 

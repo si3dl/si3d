@@ -452,7 +452,7 @@
       END IF
       TimeEnd = TIMER(0.0)
 
-      PRINT *, 'Time spent in step ', n, ' = ', TimeEnd - TimeStart, ' seconds'
+      PRINT *, 'Time =',thrs, ' hours | Step =',n, 'Time =', TimeEnd - TimeStart, ' sec'
       END IF
 
    END DO
