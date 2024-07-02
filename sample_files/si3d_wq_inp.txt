@@ -141,9 +141,9 @@ HgII Parameters
  atm_HgII        !    13.70           ! [ng/m2/d] Mercury deposition rate
  kw23            !     0.02592        ! [1/d] Methylation rate constant for HgII in water
  ks23            !     0.02592        ! [1/d] Methylation rate constant for HgII in sediment
- KDO             !     0.2            ! [mg/L] Half saturation constant for DO in water column
- KSO4            !  1921.2            ! [ug-SO4/L] Half saturation constant for SO4
- SO4             !  1000.0            ! [ug-SO4/L] Sulfate concentration at sediments 
+ KDO             !   200.0            ! [mg/m3] Half saturation constant for DO in water column
+ KSO4            !  1921.2            ! [mg-SO4/m3] Half saturation constant for SO4
+ SO4             !  1000.0            ! [mg-SO4/m3] Sulfate concentration at sediments 
  miu_so4         !     1.0            ! [-] Maximum effect of SO4 on methylation rate
  kd_wdoc2        !     0.012          ! [m3/mg]
  kd_sdoc2        !     0.012          ! [m3/mg]
@@ -163,8 +163,8 @@ Hg0 Parameters
 --------------------------------------------------------------------------------------------------------
 Sediment Concentrations
 --------------------------------------------------------------------------------------------------------
- MeHg_sed        !  109888.066        ! [ng/m3] MeHg concentration in sediment layer
- HgII_sed        !  1112.86104        ! [ng/m3] HgII concentration in sediment layer
- Hg0_sed         !     0.0            ! [ng/m3] Hg0 concentration in sediment layer
- POC_sed         !                    ! [mg/m3] Concentration of POC in the sediment layer
- DOC_sed         !                    ! [mg/m3] Concentration of DOC in the sediment layer
+ MeHg_sed        !  5909723.8389      ! [ng/m3] MeHg concentration in sediment layer
+ HgII_sed        !  52359.0979        ! [ng/m3] HgII concentration in sediment layer
+ Hg0_sed         !  0.0               ! [ng/m3] Hg0 concentration in sediment layer
+ POC_sed         !  7330823.4892      ! [mg/m3] Concentration of POC in the sediment layer
+ DOC_sed         !  73308.2349        ! [mg/m3] Concentration of DOC in the sediment layer
