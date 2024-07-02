@@ -761,8 +761,8 @@ SUBROUTINE WQinput
 
   ! concentration units mg/m3 to ng/m3
   KDO = KDO * 1000 * 1000
-  KSO4 = KSO4 * 1000
-  SO4 = SO4 * 1000
+  KSO4 = KSO4 * 1000 * 1000
+  SO4 = SO4 * 1000 * 1000
   POC_sed = POC_sed * 1000 * 1000
   DOC_sed = DOC_sed * 1000 * 1000
 
