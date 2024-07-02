@@ -649,7 +649,7 @@ SUBROUTINE WQinput
     READ (UNIT=i99, FMT='(///////(18X,G20.5))', IOSTAT=ios)
   end if
 
-  READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) MeHg_sed
+  READ (UNIT=i99, FMT='(///(18X,G20.5))', IOSTAT=ios) MeHg_sed
   IF (ios /= 0) CALL input_error ( ios, 140)
   READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) HgII_sed
   IF (ios /= 0) CALL input_error ( ios, 141)
