@@ -1096,11 +1096,11 @@ SUBROUTINE outt(n,thrs)
          WRITE (UNIT=i60, FMT=2)
        2 FORMAT( 1X,"   time     ","  step     ","  zeta ","   depth   " &
                     "    u       ","  v      "," w       ",              &
-                    "   Av       ","        Dv      ","  scalar    "," Tracers-> " )
+                    "   Av       ","        Dv      ","             scalar","              Tracers-> " )
          WRITE (UNIT=i60, FMT=3)
        3 FORMAT( 1X,"    hrs     ","   no      ","   cm       "," m    " &
                     "   cm/s   "  ,"   cm/s   " ,"  cm/s      " ,      &
-                    " cm2/s      ","     cm2/s     ","  oC        ","  g/l   -> " )
+                    " cm2/s      ","     cm2/s","                     oC","                  M/V   ->" )
 
       END DO
    END IF
@@ -1140,7 +1140,7 @@ SUBROUTINE outt(n,thrs)
         IF (ntr>0) THEN
           DO it = 1, ntr
             IF ((it .ge. LSS1) .and. (it .le. LSS1 + sedNumber)) then
-              trout(k,it) = tracer(k,l,it) !* sed_dens(LSS1 + 1 - it)
+              trout(k,it) = tracer(k,l,it)
             ELSE
               trout(k,it) = tracer(k,l,it)
             END IF
@@ -1189,10 +1189,10 @@ SUBROUTINE outt(n,thrs)
             & k = k1,kmz(l)+1)
      ENDIF
 
-   4 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PE15.5 / &
-                  & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PE15.5 ))
-   5 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),26(0PF15.5)/ &
-                  & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),26(0PF15.5)))
+   4 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PE21.5 / &
+                  & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PE21.5 ))
+   5 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),26(0PF21.5)/ &
+                  & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),26(0PF21.5)))
    END DO
 
    !.....Compute CPU time spent in subroutine.....

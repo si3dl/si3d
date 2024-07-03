@@ -486,7 +486,7 @@ SUBROUTINE WQinput
     IF (ios /= 0) CALL input_error ( ios, 102)
     READ (UNIT=i99,FMT='(18X,5I)', IOSTAT=ios) (sed_type(nn), nn = 1, sedNumber)
     IF (ios /= 0) CALL input_error ( ios, 103)
-  ELSE IF (sedNumber == 0) THEN
+  ELSE
     READ (UNIT=i99, FMT='(18X,I20)', IOSTAT=ios)
     READ (UNIT=i99, FMT='(18X,G20.2)', IOSTAT=ios) sed_h
     READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
