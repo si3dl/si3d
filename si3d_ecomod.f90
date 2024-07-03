@@ -649,7 +649,7 @@ SUBROUTINE WQinput
     READ (UNIT=i99, FMT='(///////(18X,G20.5))', IOSTAT=ios)
   end if
 
-  if (iSS == 1) then
+  if ((iMeHg == 1) .or. (iHgII == 1) .or. (iHg0 == 1)) then
     READ (UNIT=i99, FMT='(///(18X,G20.5))', IOSTAT=ios) MeHg_sed
     IF (ios /= 0) CALL input_error ( ios, 140)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) HgII_sed
@@ -660,7 +660,7 @@ SUBROUTINE WQinput
     IF (ios /= 0) CALL input_error ( ios, 143)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) DOC_sed
     IF (ios /= 0) CALL input_error ( ios, 144)
-  else if (iSS == 0) then
+  else
     READ (UNIT=i99, FMT='(///////(18X,G20.5))', IOSTAT=ios)
   end if
   !.....Close wq input file.....
