@@ -698,20 +698,21 @@ SUBROUTINE WQinput
 
   ! DO
   R_reaer   =  R_reaer/86400.0        ! [m/s]
-
-  R_SOD   = R_SOD/86400.0
-  ATM_DON = ATM_DON/86400.0
-  ATM_NH4 = ATM_NH4/86400.0
-  ATM_NO3 = ATM_NO3/86400.0
-  ATM_DOP = ATM_DOP/86400.0
-  ATM_PO4 = ATM_PO4/86400.0
-  ATM_DOC = ATM_DOC/86400.0
-  SED_DON = SED_DON/86400.0
-  SED_NH4 = SED_NH4/86400.0
-  SED_NO3 = SED_NO3/86400.0
-  SED_DOP = SED_DOP/86400.0
-  SED_PO4 = SED_PO4/86400.0
-  SED_DOC = SED_DOC/86400.0
+  
+  ! Areal rates in the literature when concentrations are mg/L, but we used mg/m3 for consistency of units
+  R_SOD   = 1000*R_SOD/86400.0
+  ATM_DON = 1000*ATM_DON/86400.0
+  ATM_NH4 = 1000*ATM_NH4/86400.0
+  ATM_NO3 = 1000*ATM_NO3/86400.0
+  ATM_DOP = 1000*ATM_DOP/86400.0
+  ATM_PO4 = 1000*ATM_PO4/86400.0
+  ATM_DOC = 1000*ATM_DOC/86400.0
+  SED_DON = 1000*SED_DON/86400.0
+  SED_NH4 = 1000*SED_NH4/86400.0
+  SED_NO3 = 1000*SED_NO3/86400.0
+  SED_DOP = 1000*SED_DOP/86400.0
+  SED_PO4 = 1000*SED_PO4/86400.0
+  SED_DOC = 1000*SED_DOC/86400.0
 
   ! Tranform units for SS
   ! To convert sediment density from kg/m3 to mg/m3
