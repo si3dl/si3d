@@ -121,27 +121,30 @@ SUBROUTINE input
   IF (ios /= 0) CALL input_error ( ios, 7 )
 
   !.....Read info on open boundaries.....................................
-  READ (UNIT=i5, FMT='(///14X,I20)', IOSTAT=ios) nopen
-  IF (ios /= 0) CALL input_error ( ios, 8 )
-  IF (nopen > 0) THEN
-    READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) dtsecopenbc
-    IF (ios /= 0) CALL input_error ( ios, 8 )
-    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iside(nn), nn = 1, nopen)
-    IF (ios /= 0) CALL input_error ( ios, 8 )
-    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (itype(nn), nn = 1, nopen)
-    IF (ios /= 0) CALL input_error ( ios, 8 )
-    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (isbc(nn), nn = 1, nopen)
-    IF (ios /= 0) CALL input_error ( ios, 8 )
-    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jsbc(nn), nn = 1, nopen)
-    IF (ios /= 0) CALL input_error ( ios, 8 )
-    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iebc(nn), nn = 1, nopen)
-    IF (ios /= 0) CALL input_error ( ios, 8 )
-    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jebc(nn), nn = 1, nopen)
-    IF (ios /= 0) CALL input_error ( ios, 8 )
-  ELSE IF (nopen == 0) THEN
+   READ (UNIT=i5, FMT='(///14X,I20)', IOSTAT=ios) nopen
+   IF (ios /= 0) CALL input_error ( ios, 8 )
+   IF (nopen > 0) THEN
+      READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) dtsecopenbc
+      IF (ios /= 0) CALL input_error ( ios, 8 )
+      DO nn = 1, nopen
+         READ (UNIT=i5, FMT='(/(14X,I20))', IOSTAT=ios) iside(nn)
+         IF (ios /= 0) CALL input_error ( ios, 8 )
+         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) itype(nn)
+         IF (ios /= 0) CALL input_error ( ios, 8 )
+         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) isbc(nn)
+         IF (ios /= 0) CALL input_error ( ios, 8 )
+         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) jsbc(nn)
+         IF (ios /= 0) CALL input_error ( ios, 8 )
+         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) iebc(nn)
+         IF (ios /= 0) CALL input_error ( ios, 8 )
+         READ (UNIT=i5, FMT='(14X,I20)', IOSTAT=ios) jebc(nn)
+         IF (ios /= 0) CALL input_error ( ios, 8 )
+      END DO
+    ELSE IF (nopen == 0) THEN
     READ (UNIT=i5, FMT='(//////)', IOSTAT=ios)
     IF (ios /= 0) CALL input_error ( ios, 8 )
-  END IF
+  
+   END IF
 
   !.....Read info to output nested grid boundaries ......................
   IF (ioNBTOGGLE > 0 ) THEN
@@ -204,25 +207,29 @@ SUBROUTINE input
     ! Read time in seconds between consecutive records from time files
     READ (UNIT=i5, FMT='(14X,G20.2)', IOSTAT=ios) dtsecpss
 
-    ! ... Allocate space for arrays holding location
-    !     of point sources and sinks and devices
-    ALLOCATE ( ipss  (iopss), jpss   (iopss), &
-    iodev (iopss), STAT=istat)
-    IF (istat /= 0) CALL allocate_error ( istat, 100 )
+     ! ... Allocate space for arrays holding location
+     !     of point sources and sinks and devices
+     ALLOCATE ( ipss  (iopss), jpss   (iopss), &
+                iodev (iopss), STAT=istat)
+     IF (istat /= 0) CALL allocate_error ( istat, 100 )
 
-    ! ... Read in locations & characteristics of diffusers
-    !     At this point, they are pressumed constants in time
-    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (ipss(nn), nn=1, iopss)
-    IF (ios/= 0) CALL input_error ( ios, 10)
-    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jpss(nn), nn=1, iopss)
-    IF (ios/= 0) CALL input_error ( ios, 10)
-    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iodev(nn), nn=1, iopss)
-    IF (ios/= 0) CALL input_error ( ios, 10)
+     ! ... Read in locations & characteristics of diffusers
+     !     At this point, they are pressumed constants in time
+     READ (UNIT=i5, FMT='(A)', IOSTAT=ios) commentline
+     i = 0;
+     DO j = 1, iopss
+       IF (ios/= 0) CALL input_error ( ios, 10)
+       READ (UNIT=i5, FMT='(9X,3I4)', IOSTAT=ios)  &
+            ipss(j), jpss(j), iodev(j)
+       IF (ios/= 0) CALL input_error ( ios, 10 )
+       IF (iodev(j).NE.i) i = iodev(j)
+     END DO
+     IF (i .NE. npssdev) THEN
+       PRINT *, '*** ERROR ***'
+       PRINT *, 'No. of devices causing point sources'
+       STOP
+     ENDIF
 
-    IF (iodev(npssdev) /= npssdev) THEN  ! iodev es el identificador del dispositivo. Nodev es el numero de dispositivos. Entonces, el ultimo valor de iodev debe ser igual al Nodev. 
-      PRINT*, '*** ERROR *** No. of Devices causing point sources'
-      STOP
-    END IF
     ! ... Read sources & sinks specifications -
     CALL PointSourceSinkInput
   ELSE IF (iopss == 0) THEN
@@ -4334,7 +4341,7 @@ SUBROUTINE PointSourceSinkInput
       IF (ios /= 0) CALL input_error ( ios, 48 )
 
       ! Read type of source-sink simulated (plumes, boundary conditions, pumped inflows)
-      READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) ptype(nn)
+      READ (UNIT=i52, FMT='(10X,G7.2)', IOSTAT=ios) ptype(nn)
       IF (ios /= 0) CALL input_error ( ios, 48 )
 
       ! Read number of points in file (it has to be equal in all arrays)
