@@ -630,7 +630,7 @@ SUBROUTINE sourceALG1(kwq, lwq)
 !--------------------------------------------------------------------------
   ! ... Arguments
   INTEGER, INTENT (IN) :: kwq,lwq
-
+  INTEGER :: iwq,jwq
   !. . .Local Variables
   REAL::  mu1, f_L1, f_T, f_N, f_P, N_conc
   REAL::  growth1, mort1, graz1, sett1, resus1
@@ -682,6 +682,7 @@ SUBROUTINE sourceALG1(kwq, lwq)
        f_P =5.000/(KSP + 5.000)
     END IF
 
+
   !. . Calculate growth
   mu1 = mu_max1 * MIN(f_L1,f_N,f_P)
   growth1 = mu1 * f_T * tracerpp(kwq,lwq,LALG1) * hpp(kwq,lwq)
@@ -696,6 +697,20 @@ SUBROUTINE sourceALG1(kwq, lwq)
   IF ((tracerpp(kwq,lwq,LALG1)- mort1 ) .le. 10.00) THEN
     mort1 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
+
+! I NEED TO HARDCODE GROWTH AND MORTALITY TO ZERO IF INSIDE OF THE DOMAIN OF INTEREST - LG sonic remediation strategy
+  ! ... 3D-(i,j) indexes for l ...........
+  iwq = l2i(lwq); jwq = l2j(lwq);
+
+  IF (iwq .gt. 227 .AND. iwq .lt. 236) THEN 
+    IF(jwq .gt. 7 .AND. jwq .lt. 16) THEN       !This is about 800 x 800 m square near Cache Creek dam (LA)
+      IF(kwq .gt. (k1z(lwq)+3) .AND. kwq .lt. (k1z(lwq)+8)) THEN ! layer from 2 m to 4 m below the surface
+        growth1 = 0.0
+        !mort1 = 0.0
+      END IF
+    END IF      
+  END IF
+
 
   !. . Calculate grazing
   graz1   = R_gr1 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG1) * hpp(kwq,lwq)  
