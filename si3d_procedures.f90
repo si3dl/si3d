@@ -345,10 +345,43 @@ SUBROUTINE InitializeScalarFields
           end if
           do l = 1, lm1
             kms = kmz(l)
+            i = l2i(l)
+            j = l2j(l)
             if ((nn .eq. LHg0) .or. (nn .eq. LHgII) .or. (nn .eq. LMeHg)) then
               tracer(kms + 1, l, nn) = hg_sed
+              if (((i >= 1) .and. (i <= 142)) .and. ((j >=1) .and. (j <= 195))) then
+                if (nn .eq. LHg0) then
+                  tracer(kms + 1, l, LHg0) =    3579721.578
+                elseif (nn .eq. LHgII) then
+                  tracer(kms + 1, l, LHgII) = 352948076.807
+                elseif (nn .eq. LMeHg) then
+                  tracer(kms + 1, l, LMeHg) =   1444359.508
+                end if
+              elseif ((i > 142) .and. ((j >= 1) .and. (j <= 76))) then
+                if (nn .eq. LHg0) then
+                  tracer(kms + 1, l, LHg0) =    3275651.557
+                elseif (nn .eq. LHgII) then
+                  tracer(kms + 1, l, LHgII) = 323039805.063
+                elseif (nn .eq. LMeHg) then
+                  tracer(kms + 1, l, LMeHg) =   1249699.173
+                end if
+              elseif (((i > 142) .and. (i <= 159)) .and. ((j > 76) .and. (j <= 89))) then
+                if (nn .eq. LHg0) then
+                  tracer(kms + 1, l, LHg0) =    3275651.557
+                elseif (nn .eq. LHgII) then
+                  tracer(kms + 1, l, LHgII) = 323039805.063
+                elseif (nn .eq. LMeHg) then
+                  tracer(kms + 1, l, LMeHg) =   1249699.173 
+                end if
+              end if
             elseif ((nn .eq. LSS1) .or. (nn .eq. LSS2) .or. (nn .eq. LSS3)) then
-              tracer(kms + 1, l, nn) = 0.6 * sed_dens(nn - LSS1 + 1) * sed_frac(nn - LSS1 + 1)
+              tracer(kms + 1, l, nn) = 0.6 * sed_frac(nn - LSS1 + 1) * sed_dens(nn - LSS1 + 1)
+            elseif ((nn .eq. LDOC)) then
+              tracer(kms + 1, l, nn) = DOC_sed
+            elseif ((nn .eq. LPOC)) then
+              tracer(kms + 1, l, nn) = POC_sed
+            elseif ((nn .eq. LDO)) then
+              tracer(kms + 1, l, nn) = 0.0
             end if
           end do
         END DO ! ... End loop over tracers
@@ -4251,7 +4284,7 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
             vel = 0.0
         else
           if ((nt .eq. LSS1) .or. (nt .eq. LSS2) .or. (nt .eq. LSS3)) then
-            call fvs_ss(vs_ss, sed_diameter(nt - LSS1 + 1), sed_dens(nt - LSS1 + 1), (rhop(k,l)+1000) * (1000 * 1000))
+            call fvs_ss(vs_ss, sed_diameter(nt - LSS1 + 1), sed_dens(nt - LSS1 + 1), (rhop(k,l)+1000))
             vel = wp(k,l) - vs_ss
           elseif (nt .eq. LPON) then
             vel = wp(k,l) !- R_settl
@@ -4340,7 +4373,7 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
       ENDIF
     ENDDO
 
-    Bex(kms + 1, l) = hpp(kms + 1, l)*tracerpp(kms + 1, l, nt) / twodt1
+    Bex(kms + 1, l) = hpp(kms + 1, l) * tracerpp(kms + 1, l, nt) / twodt1
 
   ENDDO
 
@@ -4470,6 +4503,16 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
       aa( 2, kms + 1) = hn(kms + 1) / twodt1
       ds(kms + 1) = Bex(kms + 1, l) + sourcesink(kms + 1, l, nt)
       tracer(kms + 1, l, nt) = ds(kms + 1) / aa(2, kms + 1)
+
+      ! if (l .eq. 106) then
+      !   if (nt .eq. LSS1) then
+      !     print*, 'Bex(kms + 1,l) =', Bex(kms+1,l)
+      !     print*, 'sourcesink =', sourcesink(kms + 1, l, nt)
+      !     print*, 'tracerpp =', tracerpp(kms + 1, l, nt)
+      !     print*, 'aa(2, kms+1) =',aa(2, kms + 1)
+      !     print*, 'tracer =', tracer(kms+1,l,nt)
+      !   end if
+      ! end if
 
       do k = k1-1, kms+1
         if (tracer(k, l, nt) .lt. 0.0) then

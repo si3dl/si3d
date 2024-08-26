@@ -649,16 +649,20 @@ SUBROUTINE WQinput
     READ (UNIT=i99, FMT='(///////(18X,G20.5))', IOSTAT=ios)
   end if
 
-  READ (UNIT=i99, FMT='(///(18X,G20.5))', IOSTAT=ios) MeHg_sed
-  IF (ios /= 0) CALL input_error ( ios, 140)
-  READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) HgII_sed
-  IF (ios /= 0) CALL input_error ( ios, 141)
-  READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) Hg0_sed
-  IF (ios /= 0) CALL input_error ( ios, 142)
-  READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) POC_sed
-  IF (ios /= 0) CALL input_error ( ios, 143)
-  READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) DOC_sed
-  IF (ios /= 0) CALL input_error ( ios, 144)
+  if ((iMeHg == 1) .or. (iHgII == 1) .or. (iHg0 == 1)) then
+    READ (UNIT=i99, FMT='(///(18X,G20.5))', IOSTAT=ios) MeHg_sed
+    IF (ios /= 0) CALL input_error ( ios, 140)
+    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) HgII_sed
+    IF (ios /= 0) CALL input_error ( ios, 141)
+    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) Hg0_sed
+    IF (ios /= 0) CALL input_error ( ios, 142)
+    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) POC_sed
+    IF (ios /= 0) CALL input_error ( ios, 143)
+    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) DOC_sed
+    IF (ios /= 0) CALL input_error ( ios, 144)
+  else
+    READ (UNIT=i99, FMT='(///////(18X,G20.5))', IOSTAT=ios)
+  end if
 
   !.....Close wq input file.....
    CLOSE (UNIT=i99)
@@ -711,8 +715,8 @@ SUBROUTINE WQinput
   SED_DOC = SED_DOC/86400.0
 
   ! Tranform units for SS
-  ! To convert sediment density from kg/m3 to mg/m3
-  sed_dens = sed_dens * 1000 * 1000
+  ! To convert sediment density from kg/m3 ----------
+  sed_dens = sed_dens
   ! To convert sediment diameter from um to m
   sed_diameter = sed_diameter * 0.000001
 
@@ -730,13 +734,13 @@ SUBROUTINE WQinput
   kws = kws / 86400.0
   
   ! kd units - m3/mg to m3/ng 
-  kd_wdoc3 = kd_wdoc3 / (1000 * 1000)
-  kd_sdoc3 = kd_sdoc3 / (1000 * 1000)
-  kd_wpa3 =  kd_wpa3 / (1000 * 1000)
-  kd_wpom3 = kd_wpom3 / (1000 * 1000)
-  kd_spom3 = kd_spom3 / (1000 * 1000)
-  kd_wpn3 = kd_wpn3 / (1000 * 1000)
-  kd_spn3 = kd_spn3 / (1000 * 1000)
+  ! kd_wdoc3 = kd_wdoc3 / (1000 * 1000)
+  ! kd_sdoc3 = kd_sdoc3 / (1000 * 1000)
+  ! kd_wpa3 =  kd_wpa3 / (1000 * 1000)
+  ! kd_wpom3 = kd_wpom3 / (1000 * 1000)
+  ! kd_spom3 = kd_spom3 / (1000 * 1000)
+  ! kd_wpn3 = kd_wpn3 / (1000 * 1000)
+  ! kd_spn3 = kd_spn3 / (1000 * 1000)
 
   ! ------------ HgII ----------
   ! time units - days -> seconds
@@ -746,13 +750,13 @@ SUBROUTINE WQinput
   ks23 = ks23 / 86400.0
 
   ! kd units m3/mg to m3/ng
-  kd_wdoc2 = kd_wdoc2 / (1000 * 1000) 
-  kd_sdoc2 = kd_sdoc2 / (1000 * 1000)
-  kd_wpa2 = kd_wpa2 / (1000 * 1000)
-  kd_wpom2 = kd_wpom2 / (1000 * 1000)
-  kd_spom2 = kd_spom2 / (1000 * 1000)
-  kd_wpn2 = kd_wpn2 / (1000 * 1000)
-  kd_spn2 = kd_spn2 / (1000 * 1000)
+  ! kd_wdoc2 = kd_wdoc2 / (1000 * 1000) 
+  ! kd_sdoc2 = kd_sdoc2 / (1000 * 1000)
+  ! kd_wpa2 = kd_wpa2 / (1000 * 1000)
+  ! kd_wpom2 = kd_wpom2 / (1000 * 1000)
+  ! kd_spom2 = kd_spom2 / (1000 * 1000)
+  ! kd_wpn2 = kd_wpn2 / (1000 * 1000)
+  ! kd_spn2 = kd_spn2 / (1000 * 1000)
 
   ! ------------- Hg0 ------------
   ! time units - days to seconds
@@ -760,11 +764,11 @@ SUBROUTINE WQinput
   k_Hg0atm = k_Hg0atm / 86400.0
 
   ! concentration units mg/m3 to ng/m3
-  KDO = KDO * 1000 * 1000
-  KSO4 = KSO4 * 1000 * 1000
-  SO4 = SO4 * 1000 * 1000
-  POC_sed = POC_sed * 1000 * 1000
-  DOC_sed = DOC_sed * 1000 * 1000
+  ! KDO = KDO * 1000 * 1000
+  ! KSO4 = KSO4 * 1000 * 1000
+  ! SO4 = SO4 * 1000 * 1000
+  ! POC_sed = POC_sed * 1000 * 1000
+  ! DOC_sed = DOC_sed * 1000 * 1000
 
   IF (idbg == 1) THEN
     PRINT*, 'iDO  = ', iDO , 'iPOC = ', iPOC, 'iDOC = ', iDOC
@@ -810,8 +814,8 @@ SUBROUTINE WQinput
     print*, 'kd_wdoc3 =', kd_wdoc3
     print*, 'kd_sdoc3 =', kd_sdoc3
     print*, 'kd_wpa3 =', kd_wpa3
-    print*, 'kd_wpom3 =', kd_wpom3
-    print*, 'kd_spom3 =', kd_spom3
+    print*, 'kd_wpoc3 =', kd_wpom3
+    print*, 'kd_spoc3 =', kd_spom3
     print*, 'kd_wpn3 =', kd_wpn3
     print*, 'kd_spn3 =', kd_spn3
 
@@ -827,8 +831,8 @@ SUBROUTINE WQinput
     print*, 'kd_wdoc2 =', kd_wdoc2
     print*, 'kd_sdoc2 =', kd_sdoc2
     print*, 'kd_wpa2 =', kd_wpa2
-    print*, 'kd_wpom2 =', kd_wpom2
-    print*, 'kd_spom2 =', kd_spom2
+    print*, 'kd_wpoc2 =', kd_wpom2
+    print*, 'kd_spoc2 =', kd_spom2
     print*, 'kd_wpn2 =', kd_wpn2
     print*, 'kd_spn2 =', kd_spn2
 
@@ -1018,7 +1022,7 @@ SUBROUTINE srcsnkWQ(n)
 
   !... Local variables
   INTEGER:: i, k, l, liter, k1s, kms, iteration
-  integer, intent(in) :: n 
+  integer, intent(in) :: n
 
   ! reset soursesink = 0
   sourcesink = 0.0
@@ -1092,6 +1096,7 @@ SUBROUTINE srcsnkWQ(n)
     END DO
   END DO
 
+  !$omp barrier
 END SUBROUTINE srcsnkWQ
 
 !***********************************************************************

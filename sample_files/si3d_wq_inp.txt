@@ -67,7 +67,7 @@ Model rates: Four algae groups, oxygen, SOD, and Nutrientes
  R_miner_dop     !      0.01          ! [1/d] Mineralization rate of DOP 
  R_decom_poc     !      0.01          ! [1/d] Rate of decomposition of POC
  R_miner_doc     !      0.000         ! [1/d] Rate of mineralization of DOC
- R_reaer         !      0.1           ! [1/d] Reaeration rate
+ R_reaer         !      0.1183        ! [1/d] Reaeration rate
  R_settl         !      0.0000        ! [m/d] Rate of settling of nutrients         
  R_resusp        !      0.0000        ! [m/d] Rate of resuspension of nutrients
  vspa            !      0.0000        ! [m/d] Settling velocity of algae
@@ -130,10 +130,10 @@ MeHg Parameters
  kd_wdoc3        !     0.0015         ! [m3/mg]
  kd_sdoc3        !     0.0015         ! [m3/mg]
  kd_wpa3         !     0.001          ! [m3/mg]
- kd_wpom3        !     0.001          ! [m3/mg]
- kd_spom3        !     0.001          ! [m3/mg]
- kd_wpn3 [m3/mg] ! 0.0002, 0.1
- kd_spn3 [m3/mg] ! 0.0002, 0.1
+ kd_wpoc3        !     0.001          ! [m3/mg]
+ kd_spoc3        !     0.001          ! [m3/mg]
+ kd_wpn3 [m3/kg] ! 200.0, 0.1
+ kd_spn3 [m3/kg] ! 200.0, 0.1
 --------------------------------------------------------------------------------------------------------
 HgII Parameters
 --------------------------------------------------------------------------------------------------------
@@ -148,10 +148,10 @@ HgII Parameters
  kd_wdoc2        !     0.012          ! [m3/mg]
  kd_sdoc2        !     0.012          ! [m3/mg]
  kd_wpa2         !     0.01           ! [m3/mg]
- kd_wpom2        !     0.01           ! [m3/mg]
- kd_spom2        !     0.01           ! [m3/mg]
- kd_wpn2 [m3/mg] ! 0.003, 9.9
- kd_spn2 [m3/mg] ! 0.003, 9.9
+ kd_wpoc2        !     0.01           ! [m3/mg]
+ kd_spoc2        !     0.01           ! [m3/mg]
+ kd_wpn2 [m3/kg] ! 3000.0, 9.9
+ kd_spn2 [m3/kg] ! 3000.0, 9.9
 --------------------------------------------------------------------------------------------------------
 Hg0 Parameters
 --------------------------------------------------------------------------------------------------------

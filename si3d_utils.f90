@@ -1150,7 +1150,7 @@ SUBROUTINE outt(n,thrs)
         if (k == kmz(l) + 1) then
           zlevel_export(k) = zlevel(k) + sed_h
         end if
-     END DO
+      END DO
 
      ! ... Write variables to output file
      IF (ntr <= 0) THEN

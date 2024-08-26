@@ -31,6 +31,7 @@ SUBROUTINE sourceDO(kwq,lwq)
   !. . . Local Variables
   REAL    ::   Tk, lnOS, OS, Patm, ln_Pwv, Pwv, theta2, f_SOD 
   REAL    :: reaeration, sedoxydemand
+  real    :: ws
 
   ! ...Calculate DO saturation
   Tk = salp(kwq,lwq) + 273
@@ -50,14 +51,13 @@ SUBROUTINE sourceDO(kwq,lwq)
   OS = OS*Patm*((1-Pwv/Patm) *(1-theta2*Patm))&
   &           /((1-Pwv)*(1-theta2) )
 
-
-
   ! ...Calculate reaeration only at the lake surface
   ! for now using constant reaeration defined in wq_inp, but in future, can have
-  ! alternatives for reaeration rates. 
+  ! alternatives for reaeration rates.
   IF (kwq .eq. k1z(lwq)) THEN
-     reaeration  = R_reaer*(OS - tracerpp(kwq,lwq,LDO)) 
-     ! Units: [mg/m^2/s] = [m/s] * [mg/m^3]
+    ws = SQRT(uair(lwq)**2. + vair(lwq)**2.)
+    reaeration  = (R_reaer * (ws ** 1.64)) * (OS - tracerpp(kwq,lwq,LDO)) 
+    ! Units: [mg/m^2/s] = [m/s] * [mg/m^3]
   ELSE
      reaeration  = 0.0
   END IF
