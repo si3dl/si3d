@@ -126,7 +126,7 @@ MeHg Parameters
  K_H_MeHgw       !     0.000016       ! [-] Henry's law constant for MeHg
  kw32            !     0.013824       ! [1/d] Demethylation rate constant for MeHg in water
  ks32            !     0.013824       ! [1/d] Demethylation rate constant for MeHg in sediment 
- kws             !     0.02           ! [m/d] Mass transfer for mercury diffusion
+ kws             !     0.0002         ! [m/d] Mass transfer for mercury diffusion
  kd_wdoc3        !     0.0015         ! [m3/mg]
  kd_sdoc3        !     0.0015         ! [m3/mg]
  kd_wpa3         !     0.001          ! [m3/mg]
