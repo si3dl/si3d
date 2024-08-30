@@ -22,6 +22,7 @@ SUBROUTINE sourceDO(kwq,lwq)
 !  oxygen concentrations
 !  Important: Sinksource term must have flux units [M/L^2/T], or
 !             [M/L^3]*L*(1/T)
+!  Units of DO in the input file are mg/m3
 !
 !-----------------------------------------------------------------------
 
@@ -50,14 +51,28 @@ SUBROUTINE sourceDO(kwq,lwq)
   &                    6.436*1E-8 * salp(kwq,lwq)**2.
   OS = OS*Patm*((1-Pwv/Patm) *(1-theta2*Patm))&
   &           /((1-Pwv)*(1-theta2) )
+  ! Estimate of OS is in mg/L. Si3D uses mg/m3 then:
+  OS = OS * 1000
 
   ! ...Calculate reaeration only at the lake surface
   ! for now using constant reaeration defined in wq_inp, but in future, can have
   ! alternatives for reaeration rates.
   IF (kwq .eq. k1z(lwq)) THEN
     ws = SQRT(uair(lwq)**2. + vair(lwq)**2.)
-    reaeration  = (R_reaer * (ws ** 1.64)) * (OS - tracerpp(kwq,lwq,LDO)) 
-    ! Units: [mg/m^2/s] = [m/s] * [mg/m^3]
+    ! if ((R_reaer * (ws ** 1.64)) .lt. R_reaer) then
+      ! reaeration = R_reaer * (OS - tracerpp(kwq, lwq, LDO))
+    ! else
+      reaeration  = (R_reaer * (ws ** 1.64)) * (OS - tracerpp(kwq,lwq,LDO)) 
+      ! Units: [mg/m^2/s] = [m/s] * [mg/m^3]
+    ! end if
+    ! if ((l2i(lwq) .eq. 185) .and. (l2j(lwq) .eq. 80)) then
+    !   print*, 'l2i and l2j', l2i(1), l2j(1), l2i(lm1), l2j(lm1)
+    !   print*, '------------- WATER COLUMN ----------------'
+    !   print*,'k = ', kwq
+    !   print*,'ws =', ws, 'ws1.64 =', ws ** 1.64
+    !   print*,'OS =', OS, 'DO =', tracerpp(kwq, lwq, LDO)
+    !   print*,'reaeration=', reaeration
+    ! end if
   ELSE
      reaeration  = 0.0
   END IF
@@ -65,7 +80,8 @@ SUBROUTINE sourceDO(kwq,lwq)
   ! ...Calculate the sediment oxygen demand from the sediments (only bottom cell)
   IF (kwq .eq. kmz(lwq)) THEN
      f_SOD = tracerpp(kwq,lwq,LDO) /(KSOD + tracerpp(kwq,lwq,LDO) ) ! DO inhibition of sediment oxygen demand
-     sedoxydemand = R_SOD * f_SOD* (Theta_SOD**(salp(kwq,lwq) - 20)) 
+     ! Units of KSDO need to be mg/m3
+     sedoxydemand = R_SOD * f_SOD * (Theta_SOD ** (salp(kwq, lwq) - 20)) 
      ! Units: [mg/m^2/s] = [mg/m^2/s] * [-] * [-] 
   ELSE
      sedoxydemand = 0.0
@@ -132,8 +148,7 @@ SUBROUTINE sourcePON(kwq,lwq)
                         &    - decompositionPON             &   
                         &    - settlingPON                  &                   
                         &    + resuspensionPON
-                        !    + mortality  - only if IALG = 1; calcualted in sourceALG
-                              
+                        !    + mortality  - only if IALG = 1; calcualted in sourceALG                         
 
   ! Add contribution of decomposition to DON concentration
   IF (iDON == 1) THEN
@@ -180,6 +195,7 @@ SUBROUTINE sourceDON(kwq,lwq)
       IF (IDO == 1) THEN
          ! Calculate DO inhibition of sediment flux
          f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
+         ! f_sedflux = KSED / (KSED + tracerpp(kwq,lwq,LDO))
       ELSE
          f_sedflux = 1.0
       END IF
@@ -220,7 +236,7 @@ SUBROUTINE sourceNH4(kwq,lwq)
 
   ! ... Eliminate negative values of NH4 (min detection)
   IF (tracerpp(kwq,lwq,LNH4) .lt. 0) THEN
-     tracerpp(kwq,lwq,LNH4) = 0.001
+     tracerpp(kwq,lwq,LNH4) = 1.000
   END IF
 
   !. . . Calculate nitrification
@@ -245,7 +261,8 @@ SUBROUTINE sourceNH4(kwq,lwq)
   IF (kwq .eq. kmz(lwq)) THEN
       IF (IDO == 1) THEN
          ! Calculate DO inhibition of sediment flux
-         f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
+         ! f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
+         f_sedflux = KSED / (KSED + tracerpp(kwq,lwq,LDO))
       ELSE
          f_sedflux = 1.0
       END IF
@@ -293,7 +310,7 @@ SUBROUTINE sourceNO3(kwq,lwq)
 
   ! ... Eliminate negative values of NO3 (min detection)
   IF (tracerpp(kwq,lwq,LNO3) .lt. 0) THEN
-     tracerpp(kwq,lwq,LNO3) = 0.001
+     tracerpp(kwq,lwq,LNO3) = 1.000
   END IF
 
   ! ... Denitrification (release of N2 gas)
@@ -428,7 +445,8 @@ SUBROUTINE sourceDOP(kwq, lwq)
   IF (kwq .eq. kmz(lwq)) THEN
       IF (IDO == 1) THEN
          ! Calculate DO inhibition of sediment flux
-         f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
+         ! f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
+         f_sedflux = KSED /(KSED + tracerpp(kwq,lwq,LDO) )
       ELSE
          f_sedflux = 1.0
       END IF
@@ -479,7 +497,8 @@ SUBROUTINE sourcePO4(kwq, lwq)
    IF (kwq .eq. kmz(lwq)) THEN
       IF (IDO == 1) THEN
          ! Calculate DO inhibition of sediment flux
-         f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
+         ! f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
+         f_sedflux = KSED /(KSED + tracerpp(kwq,lwq,LDO) )
       ELSE
          f_sedflux = 1.0
       END IF
@@ -593,7 +612,8 @@ SUBROUTINE sourceDOC(kwq, lwq)
   IF (kwq .eq. kmz(lwq)) THEN
       IF (IDO == 1) THEN
          ! Calculate DO inhibition of sediment flux
-         f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
+         ! f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
+         f_sedflux = KSED /(KSED + tracerpp(kwq,lwq,LDO) )
       ELSE
          f_sedflux = 1.0
       END IF
@@ -666,7 +686,7 @@ SUBROUTINE sourceALG1(kwq, lwq)
     END IF
 
     IF (f_N .lt. 0) THEN ! Assume low nutrient concentration when f_N<0
-      f_N =0.005/(KSN + 0.005)
+      f_N =5.000/(KSN + 5.000)
     END IF
 
     IF (IPO4 ==1) THEN
@@ -676,28 +696,28 @@ SUBROUTINE sourceALG1(kwq, lwq)
     END IF
 
     IF (f_P .lt. 0) THEN ! Assume low nutrient concentration when f_P<0
-       f_P =0.005/(KSP + 0.005)
+       f_P =5.000/(KSP + 5.000)
     END IF
 
   !. . Calculate growth
   mu1 = mu_max1 * MIN(f_L1,f_N,f_P)
   growth1 = mu1 * f_T * tracerpp(kwq,lwq,LALG1) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG1) + growth1) .le. 0.01) THEN
+  IF ((tracerpp(kwq,lwq,LALG1) + growth1) .le. 10.00) THEN
     growth1 = 0.0 ! This limits growth to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then growth will be zero
   END IF
 
   !. . Calculate mortality, respiration & excretion
   mort1   = R_mor1 * Theta_mor**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG1) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG1)- mort1 ) .le. 0.01) THEN
+  IF ((tracerpp(kwq,lwq,LALG1)- mort1 ) .le. 10.00) THEN
     mort1 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
   !. . Calculate grazing
   graz1   = R_gr1 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG1) * hpp(kwq,lwq)  
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG1)- graz1) .le. 0.01) THEN
+  IF ((tracerpp(kwq,lwq,LALG1)- graz1) .le. 10.00) THEN
     graz1 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
@@ -799,7 +819,7 @@ SUBROUTINE sourceALG2(kwq, lwq)
     END IF
 
     IF (f_N .lt. 0) THEN ! Assume low nutrient concentration when f_N<0
-      f_N =0.005/(KSN + 0.005)
+      f_N =5.0/(KSN + 5.0)
     END IF
 
     IF (IPO4 ==1) THEN
@@ -809,28 +829,28 @@ SUBROUTINE sourceALG2(kwq, lwq)
     END IF
 
     IF (f_P .lt. 0) THEN ! Assume low nutrient concentration when f_P<0
-       f_P =0.005/(KSP + 0.005)
+       f_P =5.0/(KSP + 5.0)
     END IF
 
   !. . Calculate growth
   mu2 = mu_max2 * MIN(f_L2,f_N,f_P)
   growth2 = mu2 * f_T * tracerpp(kwq,lwq,LALG2) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG2) + growth2) .le. 0.01) THEN
+  IF ((tracerpp(kwq,lwq,LALG2) + growth2) .le. 10.0) THEN
     growth2 = 0.0 ! This limits growth to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then growth will be zero
   END IF
 
   !. . Calculate mortality, respiration & excretion
   mort2   = R_mor2 * Theta_mor**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG2) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG2)- mort2 ) .le. 0.01) THEN
+  IF ((tracerpp(kwq,lwq,LALG2)- mort2 ) .le. 10.0) THEN
     mort2 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
   !. . Calculate grazing
   graz2   = R_gr2 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG2) * hpp(kwq,lwq)  
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG2)- graz2) .le. 0.01) THEN
+  IF ((tracerpp(kwq,lwq,LALG2)- graz2) .le. 10.0) THEN
     graz2 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
@@ -932,7 +952,7 @@ SUBROUTINE sourceALG3(kwq, lwq)
     END IF
 
     IF (f_N .lt. 0) THEN ! Assume low nutrient concentration when f_N<0
-      f_N =0.005/(KSN + 0.005)
+      f_N =5.000/(KSN + 5.000)
     END IF
 
     IF (IPO4 ==1) THEN
@@ -942,28 +962,28 @@ SUBROUTINE sourceALG3(kwq, lwq)
     END IF
 
     IF (f_P .lt. 0) THEN ! Assume low nutrient concentration when f_P<0
-       f_P =0.005/(KSP + 0.005)
+       f_P =5.000/(KSP + 5.000)
     END IF
 
   !. . Calculate growth
   mu3 = mu_max3 * MIN(f_L3,f_N,f_P)
   growth3 = mu3 * f_T * tracerpp(kwq,lwq,LALG3) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG3) + growth3) .le. 0.01) THEN
+  IF ((tracerpp(kwq,lwq,LALG3) + growth3) .le. 10.0) THEN
     growth3 = 0.0 ! This limits growth to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then growth will be zero
   END IF
 
   !. . Calculate mortality, respiration & excretion
   mort3   = R_mor3 * Theta_mor**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG3) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG3)- mort3 ) .le. 0.01) THEN
+  IF ((tracerpp(kwq,lwq,LALG3)- mort3 ) .le. 10.0) THEN
     mort3 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
   !. . Calculate grazing
   graz3   = R_gr3 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG3) * hpp(kwq,lwq)  
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG3)- graz3) .le. 0.01) THEN
+  IF ((tracerpp(kwq,lwq,LALG3)- graz3) .le. 10.0) THEN
     graz3 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
@@ -1065,7 +1085,7 @@ SUBROUTINE sourceALG4(kwq, lwq)
     END IF
 
     IF (f_N .lt. 0) THEN ! Assume low nutrient concentration when f_N<0
-      f_N =0.005/(KSN + 0.005)
+      f_N =5.000/(KSN + 5.000)
     END IF
 
     IF (IPO4 ==1) THEN
@@ -1075,28 +1095,28 @@ SUBROUTINE sourceALG4(kwq, lwq)
     END IF
 
     IF (f_P .lt. 0) THEN ! Assume low nutrient concentration when f_P<0
-       f_P =0.005/(KSP + 0.005)
+       f_P =5.000/(KSP + 5.000)
     END IF
 
   !. . Calculate growth
   mu4 = mu_max4 * MIN(f_L4,f_N,f_P)
   growth4 = mu4 * f_T * tracerpp(kwq,lwq,LALG4) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG4) + growth4) .le. 0.01) THEN
+  IF ((tracerpp(kwq,lwq,LALG4) + growth4) .le. 10.0) THEN
     growth4 = 0.0 ! This limits growth to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then growth will be zero
   END IF
 
   !. . Calculate mortality, respiration & excretion
   mort4   = R_mor4 * Theta_mor**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG4) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG4)- mort4 ) .le. 0.01) THEN
+  IF ((tracerpp(kwq,lwq,LALG4)- mort4 ) .le. 10.0) THEN
     mort4 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
   !. . Calculate grazing
   graz4   = R_gr4 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG4) * hpp(kwq,lwq)  
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG4)- graz4) .le. 0.01) THEN
+  IF ((tracerpp(kwq,lwq,LALG4)- graz4) .le. 10.0) THEN
     graz4 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
@@ -1198,7 +1218,7 @@ SUBROUTINE sourceALG5(kwq, lwq)
     END IF
 
     IF (f_N .lt. 0) THEN ! Assume low nutrient concentration when f_N<0
-      f_N =0.005/(KSN + 0.005)
+      f_N =5.000/(KSN + 5.000)
     END IF
 
     IF (IPO4 ==1) THEN
@@ -1208,28 +1228,28 @@ SUBROUTINE sourceALG5(kwq, lwq)
     END IF
 
     IF (f_P .lt. 0) THEN ! Assume low nutrient concentration when f_P<0
-       f_P =0.005/(KSP + 0.005)
+       f_P =5.000/(KSP + 5.000)
     END IF
 
   !. . Calculate growth
   mu5 = mu_max5 * MIN(f_L5,f_N,f_P)
   growth5 = mu5 * f_T * tracerpp(kwq,lwq,LALG5) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG5) + growth5) .le. 0.01) THEN
+  IF ((tracerpp(kwq,lwq,LALG5) + growth5) .le. 10.0) THEN
     growth5 = 0.0 ! This limits growth to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then growth will be zero
   END IF
 
   !. . Calculate mortality, respiration & excretion
   mort5   = R_mor5 * Theta_mor**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG5) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG5)- mort5 ) .le. 0.01) THEN
+  IF ((tracerpp(kwq,lwq,LALG5)- mort5 ) .le. 10.0) THEN
     mort5 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
   !. . Calculate grazing
   graz5   = R_gr5 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG5) * hpp(kwq,lwq)  
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG5)- graz5) .le. 0.01) THEN
+  IF ((tracerpp(kwq,lwq,LALG5)- graz5) .le. 10.0) THEN
     graz5 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 

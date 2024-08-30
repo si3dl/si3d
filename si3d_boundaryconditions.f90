@@ -4861,7 +4861,6 @@ SUBROUTINE DistributeMomentumHeatSources
 
   ! ... Initialize Heat Source
   HeatSource = 0.0E0
-  print *,"hello"
   SELECT CASE (ifSurfbc)
 
   CASE (1) ! Heat budget on PRE-PROCESS mode - spatially uniform conditions
@@ -4902,6 +4901,11 @@ SUBROUTINE DistributeMomentumHeatSources
 
       ! ... Map 2D-l into 3D(i,j) indexes ........................
       i = l2i(l); j = l2j(l);
+
+      if (Qsw .lt. 0.0) then
+        Qsw = 0.0
+      end if
+      Qsw_wq(l) = Qsw
 
       ! ... Define bulk aerodynamic coefficients for neutral conditions
       !     based on Kondo, 1975. Air-sea bulk transfer coefficients in diabatic
@@ -4950,6 +4954,11 @@ SUBROUTINE DistributeMomentumHeatSources
 
       ! ... Map 2D-l into 3D(i,j) indexes ........................
       i = l2i(l); j = l2j(l);
+
+      if (Qsw .lt. 0.0) then
+        Qsw = 0.0
+      end if
+      Qsw_wq(l) = Qsw
 
       ! ... Define bulk aerodynamic coefficients for neutral conditions
       !     based on Kondo, 1975. Air-sea bulk transfer coefficients in diabatic
@@ -5003,6 +5012,11 @@ SUBROUTINE DistributeMomentumHeatSources
       ! ... Interpolate met records to grid points (added 12/2010 SWA)
       CALL InterpMetData (i,j,Qswresid,Taresid,RHresid,Qlwresid,uresid,vresid, &
                         & Qsw,Ta,RH,Qlw,uair(l),vair(l))
+
+      if (Qsw .lt. 0.0) then
+        Qsw = 0.0
+      end if
+      Qsw_wq(l) = Qsw
 
       ! ... Wind speed over the water column
       ws  = SQRT (uair(l)**2.+vair(l)**2.);
@@ -5065,10 +5079,8 @@ SUBROUTINE DistributeMomentumHeatSources
     ENDDO
 
   CASE (11) ! Interpolation
-    print *,"hello1"
     ! Calculate residuals from first Barnes pass at met station points (added 12/2010 SWA)
     CALL CalculateMetResiduals (Qswresid,Taresid,RHresid,Qlwresid,uresid,vresid)
-    print *,"hello2"
     ! ... Interpolate other variables & compute heat fluxes
     DO l = 1, lm;
 
@@ -5078,6 +5090,11 @@ SUBROUTINE DistributeMomentumHeatSources
       ! ... Interpolate met records to grid points (added 12/2010 SWA)
       CALL InterpMetData (i,j,Qswresid,Taresid,RHresid,Qlwresid,uresid,vresid, &
                         & Qsw,Ta,RH,Qlw,uair(l),vair(l))
+
+      if (Qsw .lt. 0.0) then
+        Qsw = 0.0
+      end if
+      Qsw_wq(l) = Qsw
 
       ! ... Wind speed over the water column
       ws  = SQRT (uair(l)**2.+vair(l)**2.);
@@ -5135,7 +5152,6 @@ SUBROUTINE DistributeMomentumHeatSources
       END DO
 
     ENDDO
-    print *,"hello3"
   END SELECT
 
 END SUBROUTINE DistributeMomentumHeatSources
@@ -5240,6 +5256,11 @@ END DO
       ! ... Map 2D-l into 3D(i,j) indexes ........................
       i = l2i(l); j = l2j(l);
 
+      if (Qsw .lt. 0.0) then
+        Qsw = 0.0
+      end if
+      Qsw_wq(l) = Qsw
+
       ! ... Define bulk aerodynamic coefficients for neutral conditions
       !     based on Kondo, 1975. Air-sea bulk transfer coefficients in diabatic
       !     conditions. In Boundary-Layer Meteorology 9 (1975) 91-112
@@ -5289,6 +5310,11 @@ END DO
 
       ! ... Map 2D-l into 3D(i,j) indexes ........................
       i = l2i(l); j = l2j(l);
+
+      if (Qsw .lt. 0.0) then
+        Qsw = 0.0
+      end if
+      Qsw_wq(l) = Qsw
 
       ! ... Define bulk aerodynamic coefficients for neutral conditions
       !     based on Kondo, 1975. Air-sea bulk transfer coefficients in diabatic
@@ -5344,6 +5370,11 @@ END DO
       ! ... Interpolate met records to grid points (added 12/2010 SWA)
       CALL InterpMetData (i,j,Qswresid,Taresid,RHresid,Qlwresid,uresid,vresid, &
                         & Qsw,Ta,RH,Qlw,uair(l),vair(l))
+
+      if (Qsw .lt. 0.0) then
+        Qsw = 0.0
+      end if
+      Qsw_wq(l) = Qsw
 
       ! ... Wind speed over the water column
       ws  = SQRT (uair(l)**2.+vair(l)**2.);
@@ -5423,6 +5454,10 @@ END DO
       CALL InterpMetData (i,j,Qswresid,Taresid,RHresid,Qlwresid,uresid,vresid, &
                         & Qsw,Ta,RH,Qlw,uair(l),vair(l))
 
+      if (Qsw .lt. 0.0) then
+        Qsw = 0.0
+      end if
+      Qsw_wq(l) = Qsw
       ! ... Wind speed over the water column
       ws  = SQRT (uair(l)**2.+vair(l)**2.);
 

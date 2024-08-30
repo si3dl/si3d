@@ -34,14 +34,14 @@ Parameters controlling solution algorithm
  dz0         !    1.E-3           ! Constant vert. eddy diffusivity (if iturb = 0) (m2/s)
  iadv        !        1           ! 0 = mom. advection OFF; 1 = mom. advection ON
  itrmom      !        1           ! Algorithm for mom. horizontal advection 1=centered; 2=upwind
- ihd         !        1           ! 0 = horizontal diffusion (of mom. or scalar) OFF 1 = horiz. diffusion ON  2 = Smagorisnki
+ ihd         !        2           ! 0 = horizontal diffusion (of mom. or scalar) OFF 1 = horiz. diffusion ON  2 = Smagorisnki
  ax0         !    1.E-2           ! Horizontal eddy diffusivity/viscosity in EW-direction (ms-2)
  ay0         !    1.E-2           ! Horizontal eddy diffusivity/viscosity in NS-direction(ms-2)
  f           !    9.1e-5          ! f Coriolis parameter (s-1)
  theta       !        1.          ! Weighting parameter for semi-implicit solution (0.5-1) - Not used
  ibc         !        1           ! 1 = Baroclinic terms in included in mom. solution (0 otherwise)
  isal        !        1           ! 1 = Solve scalar transport equation (0 otherwise)
- itrsch      !        4           ! Scalar advection 1=centered(C);2=upwind(U);3=U at k=k1z+1; (4)=Flux limiter
+ itrsch      !        1           ! Scalar advection 1=centered(C);2=upwind(U);3=U at k=k1z+1; (4)=Flux limiter
  cd          !      0.002         ! Bottom drag coefficient (adimensional)
  ifsbc       !        0           ! Surface BC; 0 = constant ; 1 = preprocess mode ; 2 = runtime mode
  dtsbc       !    3600.           ! Time (s) between records in surbc.txt (when ifsbc = 1)
@@ -54,14 +54,14 @@ Parameters controlling solution algorithm
 -------------------------------------------------------
 Output specifications for time files (individual nodes)
 -------------------------------------------------------  
- ipt         !       360          ! No. of time step between consecutive output to time file  (2h)
+ ipt         !       180          ! No. of time step between consecutive output to time file  (2h)
  nnodes      !         3          ! ASN ASS TB MK GB
  inodes      !   2,6,11
  jnodes      !   6,6,6
 -------------------------------------------------------
 Output specifications for H-plane files (plot in matlab with LoadPlotSheetFile3L)
 -------------------------------------------------------
- iop         !       360          ! No. of time step between consecutive output to plane file  (2h)
+ iop         !         0          ! No. of time step between consecutive output to plane file  (2h)
  itspfh      !         0          ! No. of time steps before first output to horizontal plane file 
  nplanes     !         1          !
  planes      !   2
@@ -72,7 +72,7 @@ Output specifications for X-section files (plot in matlab with LoadPlotSectionFi
 -------------------------------------------------------
 Output specifications for 3D space files
 -------------------------------------------------------
- ipxml       !       360          ! No. of time step between consecutive output to 3D-space file (1h)
+ ipxml       !         0          ! No. of time step between consecutive output to 3D-space file (1h)
  itspf       !         0          ! No. of time steps before first output to 3D-space file
  iTurbVars   !         0          ! 0 for only velocity and temperature outputs and 1 to include turbulent parameters
 -------------------------------------------------------  
@@ -102,10 +102,10 @@ Specification for tracer (other than oxygen) simulation
 -------------------------------------------------------     
  ntr         !        4           ! No. of tracers sim. 
  ecomod      !        1           !
- iotr        !      360           ! (10 min)
+ iotr        !        0           ! (10 min)
  itspftr     !        0           !
  ipwq        !        1           ! Frequency to run WQ module in time steps
- nswq        !        0           ! Time Steps to Restore WQ field values. 
+ nswq        !     8640           ! Time Steps to Restore WQ field values. 
 -------------------------------------------------------       
 Specification for oxgygenation system simulations
 -------------------------------------------------------            

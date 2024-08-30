@@ -480,6 +480,7 @@
    real :: kd_spom3
    real, allocatable, dimension(:)     :: kd_wpn3
    real, allocatable, dimension(:)     :: kd_spn3
+   real, allocatable, dimension(:) :: Qsw_wq
    
    ! Sediment concentrations
    real :: MeHg_sed

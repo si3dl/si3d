@@ -423,7 +423,7 @@ SUBROUTINE AllocateSpace
             & rr  (lm1), hhs (lm1), &
             & hhu (lm1), hhv (lm1), &
             & uair(lm1), vair(lm1), &
-            & cdw (lm1), STAT=istat )
+            & cdw (lm1), Qsw_wq(lm1), STAT=istat )
    IF (istat /= 0) CALL allocate_error ( istat, 5 )
 
    ! .... Allocate arrays used in model output

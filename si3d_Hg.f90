@@ -220,7 +220,7 @@ SUBROUTINE sourceHg(kwq, lwq)
   call HgIIw_methylation(HgIIw_methy, kwq, lwq, HgII_wddoc)
   call MeHgw_demethylation(MeHgw_demethy, kwq, lwq, MeHg_wddoc)
   call MeHg_photodegradation(MeHgw_photodeg, kwq, lwq, MeHg_wddoc)
-  call Hg0_oxidation(Hg0w_oxidation, Hg0w, HgII_wddoc, HgIIw_reduction, lwq)
+  call Hg0_oxidation(Hg0w_oxidation, Hg0w, HgII_wddoc, HgIIw_reduction, kwq, lwq)
 
   if (kwq .eq. k1s) then
     call HgII_atm_deposition(HgIIw_atmdep, kwq, lwq)
@@ -255,7 +255,6 @@ SUBROUTINE sourceHg(kwq, lwq)
   end if
 
   if ((l2i(lwq) .eq. 185) .and. (l2j(lwq) .eq. 80)) then
-  ! if (lwq == 106) then
     print*,'------------ WATER COLUMN ------------'
     print*,'k = ',kwq
     print*,'h = ',h(kwq + 1,lwq)
@@ -395,9 +394,6 @@ SUBROUTINE HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, &
     DOC = tracerpp(kwq + 1, lwq, LDOC)
     POC = tracerpp(kwq + 1, lwq, LPOC)
 
-    ! DOC = 5000.0
-    ! POC = 0.0
-
     do i = 1, sedNumber
       HgII_SS(i) = kd_spn2(i) * tracerpp(kwq + 1, lwq, LSS1 + i - 1)
     end do
@@ -412,9 +408,9 @@ SUBROUTINE HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, &
       HgII_spn(i) = fspn2(i) * HgIIs
     end do
 
-    HgII_sd = fwd2 * HgIIs
-    HgII_sdoc = fwdoc2 * HgIIs
-    HgII_spom = fwpom2 * HgIIs
+    HgII_sd = fsd2 * HgIIs
+    HgII_sdoc = fsdoc2 * HgIIs
+    HgII_spom = fspom2 * HgIIs
   end if 
 
 END SUBROUTINE HgII_partitioning
@@ -466,10 +462,6 @@ SUBROUTINE MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, f
   POC = tracerpp(kwq, lwq, LPOC)
 
   ! Values assumed for testing of partitioning
-  ! DOC = 5000.0 !mg/m3
-  ! ALG = 0.0
-  ! POC = 0.0
-
   do i = 1, sedNumber
     MeHg_SS(i) = kd_wpn3(i) * tracerpp(kwq, lwq, LSS1 + i - 1)
   end do
@@ -493,9 +485,6 @@ SUBROUTINE MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, f
   if (kwq .eq. kms) then
     DOC = tracerpp(kwq + 1, lwq, LDOC)
     POC = tracerpp(kwq + 1, lwq, LPOC)
-
-    ! DOC = 5000.0 ! mg/m3
-    ! POC = 0.0
 
     do i = 1, sedNumber
       MeHg_SS(i) = kd_spn3(i) * tracerpp(kwq + 1, lwq, LSS1 + i - 1)
@@ -540,9 +529,9 @@ SUBROUTINE HgII_reduction(HgIIw_reduction, kwq, lwq, HgII)
   
   select case (ifSurfbc)
   case (1, 2, 3)
-    Io = Qsw
+    Io = Qsw_wq(lwq)
   case (10, 11)
-    Io = Qsw
+    Io = Qsw_wq(lwq)
   end select
 
   HgIIw_reduction = h(kwq, lwq) * (Io * QswFr(kwq, lwq)) * kw21 * HgII
@@ -550,7 +539,7 @@ SUBROUTINE HgII_reduction(HgIIw_reduction, kwq, lwq, HgII)
 END SUBROUTINE HgII_reduction
 
 !*************************************************************************
-SUBROUTINE Hg0_oxidation(Hg0w_oxidation, Hg0w, HgIIwd, HgIIw_reduction, lwq)
+SUBROUTINE Hg0_oxidation(Hg0w_oxidation, Hg0w, HgIIwd, HgIIw_reduction, kwq, lwq)
 !*************************************************************************
 !
 !  Purpose: To estimate the oxidation of Hg0_w. This plays as a source
@@ -570,9 +559,10 @@ SUBROUTINE Hg0_oxidation(Hg0w_oxidation, Hg0w, HgIIwd, HgIIw_reduction, lwq)
   real                :: DOC
   real                :: PH
   integer, intent(in) :: lwq
+  integer, intent(in) :: kwq
 
   DGMr = Hg0w / HgIIwd
-  DOC = 10.0 
+  DOC = tracerpp(kwq, lwq, LDOC) / 1000
   PH = 7.0
   DGMra = 0.00188 * DOC ** (-0.73385) * PH ** (2.0409)
 
