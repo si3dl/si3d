@@ -43,6 +43,7 @@ SUBROUTINE sourceSS(kwq,lwq)
   erosion_flux(:) = 0.0
   deposition_flux(:) = 0.0
   burial_flux(:) = 0.0
+  erosion_wqpn(:) = 0.0
 
   kms = kmz(lwq)
   if (kwq .eq. kms) then
@@ -59,9 +60,11 @@ SUBROUTINE sourceSS(kwq,lwq)
       ! Estimate erosion flux
       if (taub .ge. tauCrt(i)) then
         if (sed_type(i) == 0) then
-          call erosion_noncohesive(erosion_flux(i), ustarb, Rep(i), settling_vel(i), sed_frac(i), sed_dens(i))
+          call erosion_noncohesive(erosion_flux(i), ustarb, Rep(i), settling_vel(i), lwq)
+          erosion_flux(i) = erosion_flux(i) * sed_frac(i) * sed_dens(i)
         else if (sed_type(i) == 1) then
-          call erosion_cohesive(erosion_flux(i), taub, tauCrt(i), sed_frac(i), sed_dens(i))
+          call erosion_cohesive(erosion_flux(i), taub, tauCrt(i))
+          erosion_flux(i) = erosion_flux(i) * sed_frac(i) * sed_dens(i)
         end if 
       else
         erosion_flux(i) = 0.0
@@ -84,43 +87,37 @@ SUBROUTINE sourceSS(kwq,lwq)
 
       sourcesink(kwq, lwq, LSS1 + i - 1) = erosion_flux(i) - deposition_flux(i)
 
-      if ((l2i(lwq) .eq. 185) .and. (l2j(lwq) .eq. 80)) then
-      ! if (lwq == 106) then
-        print*, '--------- SS Model ------------'
-        print*, 'k =',kwq,'l =',lwq,'i = ',l2i(lwq),'j = ',l2j(lwq)
-        ! print*, 'dt = ',dt,'h = ',hp(kwq+1,lwq)
-        print*, 'sed_dens =', sed_dens(i)
-        ! print*, 'submerged_spec_g = ', sed_dens(i) / w_dens - 1
-        print*, 'vs = ', settling_vel(i)
-        ! print*, 'sed_frac = ', sed_frac(i)
-        print*, 'cb = ',cb
-        print*, 'sed_conc = ',tracerpp(kwq + 1, lwq, LSS1 + i - 1)
-        print*, 'taub =',taub
-        print*, 'tauCr =', tauCrt(i)
-        print*, 'erosion_flux = ', erosion_flux(i)
-        print*, 'depositionFlux = ', deposition_flux(i)
-        print*, 'sourcesink = ', sourcesink(kwq, lwq, LSS1+i-1)
-        print*, 'sourcesinklim = ', -cb * hp(kwq,lwq) / dt
-      end if
-
       call burial(burial_flux(i), erosion_flux(i), deposition_flux(i))
 
       ! Estimate source and sink for the sediment cell.
       sourcesink(kwq + 1,lwq, LSS1 + i - 1) = deposition_flux(i) - erosion_flux(i) - burial_flux(i)
-      ! Estimate erosion for mercury
-      if ((iHg0 .eq. 1) .or. (iMeHg .eq. 1) .or. (iHgII .eq. 1)) then
-        erosion_Hgpn(i) = erosion_flux(i) / (sed_dens(i) * sed_frac(i))
-      end if
+
+      erosion_wqpn(i) = erosion_flux(i) / (sed_frac(i) * sed_dens(i))
+
+      ! if ((l2i(lwq) .eq. 185) .and. (l2j(lwq) .eq. 80)) then
+      !   print*, '--------- SS Model ------------'
+      !   print*, 'vs =', settling_vel(i)
+      !   print*, 'taub =',taub
+      !   print*, 'tauCr =', tauCrt(i)
+      !   print*, 'sed_frac = ', sed_frac(i)
+      !   print*, 'sed_dens = ', sed_dens(i)
+      !   print*, 'erosion_flux = ', erosion_flux(i)
+      !   print*, 'depositionFlux = ', deposition_flux(i)
+      !   print*, 'sourcesink = ', sourcesink(kwq, lwq, LSS1+i-1)
+      !   print*, 'sourcesinklim = ', cb * hp(kwq,lwq) / dt
+      !   print*, 'erosion_wqpn', erosion_wqpn(i)
+      ! end if
     end do
 
   elseif (kwq .ne. kms) then 
     do i = 1, sedNumber
       sourcesink(kwq,lwq,LSS1 + i - 1) = 0.0
-      if ((iHg0 .eq. 1) .or. (iMeHg .eq. 1) .or. (iHgII .eq. 1)) then
-        erosion_Hgpn(i) = 0.0
-      end if
+      erosion_wqpn(i) = 0.0
     end do
   end if
+
+  fluxes_out(kwq + 1, lwq, 33) = sum(erosion_flux)
+  fluxes_out(kwq + 1, lwq, 34) = sum(deposition_flux)
 
 END SUBROUTINE sourceSS
 
@@ -144,22 +141,12 @@ SUBROUTINE totalMass(sed_frac, kwq, lwq)
   totalMass_bed = 0.0
   do i = 1, sedNumber
     massSed(i) = tracerpp(kwq+1,lwq,LSS1 + i - 1) * dx * dy * h(kwq+1,lwq)
-    ! if (lwq == 5) then
-    ! print*,'i = ',i,'h = ',h(kwq + 1, lwq),'dx = ',dx,'dy = ',dy
-    ! print*,'LSS1 + i -1 = ',LSS1 + i - 1
-    ! print*,'tracer LSS1 + i -1 = ', tracerpp(kwq+1,lwq,LSS1 + i - 1)
-    ! print*,'massSed = ',massSed(i)
-    ! end if 
   end do
 
   totalMass_bed = sum(massSed)
   do i = 1, sedNumber
     if (totalMass_bed .gt. 0.0) then
       sed_frac(i) = massSed(i) / totalMass_bed
-      ! if (lwq == 45) then
-      ! print*,'total_mass = ',totalMass_bed
-      ! print*,'i = ',i,' sed_frac(i) = ',sed_frac(i)
-      ! end if
     else
       sed_frac(i) = 1 / sedNumber
     end if
@@ -168,7 +155,7 @@ SUBROUTINE totalMass(sed_frac, kwq, lwq)
 END SUBROUTINE totalMass
 
 ! ********************************************************************
-SUBROUTINE erosion_noncohesive(erosion_flux, ustarb, Rep, settling_vel, sed_frac, sed_dens)
+SUBROUTINE erosion_noncohesive(erosion_flux, ustarb, Rep, settling_vel, lwq)
 ! ********************************************************************
 !
 ! Purpose: To estimate the erosion caused by the flow at the bottom
@@ -180,11 +167,10 @@ SUBROUTINE erosion_noncohesive(erosion_flux, ustarb, Rep, settling_vel, sed_frac
   real, intent(in)  :: ustarb       !< (m/s) Shear velocity at bottom
   real, intent(in)  :: Rep          !< Explicit Particle Reynolds Number
   real, intent(in)  :: settling_vel !< (m/s) Settling velocity of sediment
-  real, intent(in)  :: sed_frac     !< fraction of bed of a given sediment type
-  real, intent(in)  :: sed_dens     !< Sediment density to keep units consistent
   real              :: z_u          !< Similarity variable for uniform sediment
   real              :: E_s          !< Dimensionless coefficient for sediment entrainment. Under quasi-equilibrium conditions (Garcia & Parker 1991)
   real, intent(out) :: erosion_flux  !< Vertical erosion flux
+  integer, intent(in) :: lwq
 
   if ((Rep .gt. 0.1) .and. (Rep .le. 1)) then
     z_u = 1 * ustarb * (Rep ** 3.75) / settling_vel
@@ -196,13 +182,16 @@ SUBROUTINE erosion_noncohesive(erosion_flux, ustarb, Rep, settling_vel, sed_frac
 
   ! Sediment entrainment coefficient
   E_s = Ased * (z_u ** 5) / (1 + (z_u ** 5) * Ased/0.3)
+  erosion_flux = E_s * settling_vel
 
-  erosion_flux = E_s * settling_vel * sed_frac * sed_dens
+  ! if ((l2i(lwq) .eq. 185) .and. (l2j(lwq) .eq. 80)) then
+  !   print*,'E_s = ', E_s,'Z_u = ',z_u, 'vs = ', settling_vel
+  ! end if
   return
 END SUBROUTINE erosion_noncohesive
 
 ! ********************************************************************
-SUBROUTINE erosion_cohesive(erosion_flux, taub, tauCrt, sed_frac, sed_dens)
+SUBROUTINE erosion_cohesive(erosion_flux, taub, tauCrt)
 ! ********************************************************************
 !
 ! Purpose: To estimate the erosion caused by the flow at the bottom
@@ -212,20 +201,15 @@ SUBROUTINE erosion_cohesive(erosion_flux, taub, tauCrt, sed_frac, sed_dens)
   ! Arguments
   real, intent(in)  :: taub         !< (Pa) Shear stress at bottom
   real, intent(in)  :: tauCrt       !< Critical shear stress for sediment type
-  real, intent(in)  :: sed_frac     !< fraction of bed of a given sediment type
-  real, intent(in)  :: sed_dens     !< Sediment density to keep units consistent
   real              :: M_param      !< Surface erosion rate 
   real              :: Beta         !< Dimensionless coefficient for method
   real, intent(out) :: erosion_flux  !< Vertical erosion flux
 
   !Beta CAN BE BETWEEN 1 AND 3.6 
   M_param = 3.6e-4
-
-  print*, 'M =', M_param
-  Beta = 3
+  Beta = 1
   ! Sediment entrainment flux
-  erosion_flux = M_param * (taub / tauCrt - 1) ** Beta * sed_frac * sed_dens
-
+  erosion_flux = M_param * ((taub - tauCrt) / tauCrt) ** Beta
   return
 END SUBROUTINE erosion_cohesive
 
@@ -271,7 +255,7 @@ SUBROUTINE deposition_cohesive(deposition_flux, settling_vel, tauCrt, taub, cb)
     if (taub .le. tauCrt) then
       deposition_flux = settling_vel * cb * (1 - taub/tauCrt)
     else
-      deposition_flux = 0
+      deposition_flux = settling_vel * cb
     end if
 
   return

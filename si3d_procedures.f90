@@ -351,25 +351,25 @@ SUBROUTINE InitializeScalarFields
               tracer(kms + 1, l, nn) = hg_sed
               if (((i >= 1) .and. (i <= 142)) .and. ((j >=1) .and. (j <= 195))) then
                 if (nn .eq. LHg0) then
-                  tracer(kms + 1, l, LHg0) =    3579721.578
+                  tracer(kms + 1, l, LHg0) = 0.0
                 elseif (nn .eq. LHgII) then
-                  tracer(kms + 1, l, LHgII) = 352948076.807
+                  tracer(kms + 1, l, LHgII) = 356527798.386
                 elseif (nn .eq. LMeHg) then
                   tracer(kms + 1, l, LMeHg) =   1444359.508
                 end if
               elseif ((i > 142) .and. ((j >= 1) .and. (j <= 76))) then
                 if (nn .eq. LHg0) then
-                  tracer(kms + 1, l, LHg0) =    3275651.557
+                  tracer(kms + 1, l, LHg0) = 0.0
                 elseif (nn .eq. LHgII) then
-                  tracer(kms + 1, l, LHgII) = 323039805.063
+                  tracer(kms + 1, l, LHgII) = 326315456.621
                 elseif (nn .eq. LMeHg) then
                   tracer(kms + 1, l, LMeHg) =   1249699.173
                 end if
               elseif (((i > 142) .and. (i <= 159)) .and. ((j > 76) .and. (j <= 89))) then
                 if (nn .eq. LHg0) then
-                  tracer(kms + 1, l, LHg0) =    3275651.557
+                  tracer(kms + 1, l, LHg0) = 0.0
                 elseif (nn .eq. LHgII) then
-                  tracer(kms + 1, l, LHgII) = 323039805.063
+                  tracer(kms + 1, l, LHgII) = 326315456.621
                 elseif (nn .eq. LMeHg) then
                   tracer(kms + 1, l, LMeHg) =   1249699.173 
                 end if
@@ -386,7 +386,7 @@ SUBROUTINE InitializeScalarFields
           end do
         END DO ! ... End loop over tracers
       END IF
-      tracerpp = tracer;
+      tracerpp = tracer
     END IF
 
   ! ... Deallocate array holding scalar concs.
@@ -4287,15 +4287,13 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
             call fvs_ss(vs_ss, sed_diameter(nt - LSS1 + 1), sed_dens(nt - LSS1 + 1), (rhop(k,l)+1000))
             vel = wp(k,l) - vs_ss
           elseif (nt .eq. LPON) then
-            vel = wp(k,l) !- R_settl
+            vel = wp(k,l) - R_settl
           elseif (nt .eq. LPOP) then
-            vel = wp(k,l) !- R_settl
-          elseif (nt .eq. LPO4) then
-            vel = wp(k,l) !- R_settl
+            vel = wp(k,l) - R_settl
           elseif (nt .eq. LPOC) then
-            vel = wp(k,l) !- vspoc
+            vel = wp(k,l) - vspoc
           elseif (nt .eq. LALG1) then
-            vel = wp(k,l) !- vspa
+            vel = wp(k,l) - vspa
           elseif (nt .eq. LALG2) then
             vel = wp(k,l) !- vspa
           elseif (nt .eq. LALG3) then
@@ -4503,16 +4501,6 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
       aa( 2, kms + 1) = hn(kms + 1) / twodt1
       ds(kms + 1) = Bex(kms + 1, l) + sourcesink(kms + 1, l, nt)
       tracer(kms + 1, l, nt) = ds(kms + 1) / aa(2, kms + 1)
-
-      ! if (l .eq. 106) then
-      !   if (nt .eq. LSS1) then
-      !     print*, 'Bex(kms + 1,l) =', Bex(kms+1,l)
-      !     print*, 'sourcesink =', sourcesink(kms + 1, l, nt)
-      !     print*, 'tracerpp =', tracerpp(kms + 1, l, nt)
-      !     print*, 'aa(2, kms+1) =',aa(2, kms + 1)
-      !     print*, 'tracer =', tracer(kms+1,l,nt)
-      !   end if
-      ! end if
 
       do k = k1-1, kms+1
         if (tracer(k, l, nt) .lt. 0.0) then

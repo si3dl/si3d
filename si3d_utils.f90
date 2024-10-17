@@ -429,7 +429,7 @@ SUBROUTINE AllocateSpace
    ! .... Allocate arrays used in model output
    ALLOCATE(  uout (km1) , vout (km1) , wout(km1),  &
             & Avout(km1) , Dvout(km1) , sal1(ndz),  &
-            & uhout(km1) , scout(km1),  trout(km1,ntrmax), STAT=istat )
+            & uhout(km1) , scout(km1),  trout(km1,ntrmax), fluxes_out(km1, lm1, 34), STAT=istat )
    IF (istat /= 0) CALL allocate_error ( istat, 7 )
 
    ! ...  Allocate space for output routines
@@ -1017,6 +1017,135 @@ SUBROUTINE outr
 END SUBROUTINE outr
 
 !***********************************************************************
+SUBROUTINE out_fluxes(n, thrs)
+!***********************************************************************
+!
+!  Purpose: To write output to timefile(s). A separate timefile is
+!           opened for each node where output is requested.
+!
+!-----------------------------------------------------------------------
+
+  INTEGER,INTENT(IN) :: n
+  REAL, INTENT(IN) :: thrs
+
+  !.....Local variables.....
+  CHARACTER :: date*8, time*10, zone*5
+  CHARACTER(LEN=9)  :: nodeno    ="         "
+  CHARACTER(LEN=15) :: filenm    ="               "
+  REAL :: qu, stidal, tdays
+  INTEGER, DIMENSION(8)     :: values
+  INTEGER :: nn, i, j, k, l, kkk, itdays, ios, nchar, it, laux, tr
+  INTEGER, SAVE :: i10, i30, i100
+  LOGICAL, SAVE :: first_entry = .TRUE.
+  REAL, DIMENSION(km1) :: zlevel_export
+
+  !.....Timing.....
+  REAL, EXTERNAL :: TIMER
+  REAL :: btime, etime
+  btime = TIMER(0.0)
+
+  !.....Open timefiles on first entry into the subroutine.....
+  IF( first_entry ) THEN
+    first_entry = .FALSE.
+    DO nn = 1, nnodes
+
+      i = inode(nn)
+      j = jnode(nn)
+
+      ! Convert node numbers to a character variable
+      CALL nodech ( i, j, nodeno, nchar )
+
+      ! Name the standard si3d timefile
+      filenm = 'fl'//nodeno(1:nchar)//'.txt'
+
+      ! Open the timefile
+      i100 = i_fluxes + nn    ! Use file numbers 61-80
+      OPEN ( UNIT=i100, FILE=filenm, IOSTAT=ios )
+      IF(ios /= 0) CALL open_error ( "Error opening "//filenm, ios )
+
+      !.....Get date and time of run.....
+      CALL date_and_time ( date, time, zone, values )
+
+      !.....Output run title and column headings for standard si3d format.....
+      WRITE (UNIT=i100, FMT='(A)') title
+      WRITE (UNIT=i100, FMT='("Run number = ", A8, A4,                      &
+      & ",  Start date of run:  ",I2,                              &
+      & "/",I2,"/",I4," at ",I4.4," hours")') date,time(1:4),      &
+      & imon,iday,iyr,ihr
+      IF (idt .GE. 0.01 .AND. ddz .GE. 0.01) THEN ! idt real
+           WRITE (UNIT=i100, FMT=1) i,j,(kmz(ij2l(i,j))-k1+1),idt,hhs(ij2l(i,j)),ddz,         &
+                                    & iexplt,itrap,cd,ismooth,beta,niter,iextrp, &
+                                    & f,tramp,iupwind
+      ELSE ! idt real
+           WRITE (UNIT=i100, FMT=8) i,j,(kmz(ij2l(i,j))-k1+1),idt,hhs(ij2l(i,j)),ddz,         &
+                                    & iexplt,itrap,cd,ismooth,beta,niter,iextrp, &
+                                    & f,tramp,iupwind
+      ENDIF ! idt real
+       1 FORMAT( "i =",I4,"  j =",I4, "  km =", I4,"   dt =",F5.2," sec",     & ! idt real
+                  & "  hhs =", F6.3," m","   dz =", F5.2," m"/                & ! idt real
+                  & "iexplt =",I2, "  itrap =", I2, "  cd = ", F7.4, 2X,      &
+                  & "ismooth =", I2, "  beta =", F6.3," niter =", I2/         &
+                  & "iextrp =",  I2, "  f =", F7.4, "  tramp=", F9.1, 2X,     &
+                  & "iupwind =", I2 )
+       8 FORMAT( "i =",I4,"  j =",I4, "  km =", I4,"   dt =",F5.4," sec",     & ! idt real
+                  & "  hhs =", F6.3," m","   dz =", F5.4," m"/                & ! idt real
+                  & "iexplt =",I2, "  itrap =", I2, "  cd = ", F7.4, 2X,      &
+                  & "ismooth =", I2, "  beta =", F6.3," niter =", I2/         &
+                  & "iextrp =",  I2, "  f =", F7.4, "  tramp=", F9.1, 2X,     &
+                  & "iupwind =", I2 )
+
+      WRITE (UNIT=i100, FMT=2)
+      2 FORMAT( 1X,"   time     ","  step   "," depth   ", "  HeatSource", "     reaeration", "   sedoxydemand", "      decom_POC", "       depo_POC", "      resus_POC", "    atmdepo_DOC", "    mineral_DOC", "    sedflux_DOC", &
+        & "    growth_ALG1", "      mort_ALG1", "      graz_ALG1", "      depo_ALG1", "     resus_ALG1", "      Hg0w_diff", "       Hg0w_vol", " Hg0w_oxidation", " MeHgw_photodeg", "    HgIIw_reduc", "   HgIIw_atmdep", "     HgIIw_diff", &
+        & "     HgIIw_depo", "     HgII_methy", "  HgIIs_erosion", "   HgIIs_burial", "  MeHgw_demethy", "   MeHgw_atmdep", "     MeHgw_diff", "      MeHgw_vol", "     MeHgw_depo", &
+        & "  MeHgs_erosion", "   MeHgs_burial", "     SS_erosion", "        SS_depo")
+      WRITE (UNIT=i100, FMT=3)
+      3 FORMAT( 1X,"    hrs     ","   no      ", "   m    ", "      m/soC","       mg/m^2/s","       mg/m^2/s","       mg/m^2/s","       mg/m^2/s","       mg/m^2/s","       mg/m^2/s","       mg/m^2/s","       mg/m^2/s","       mg/m^2/s", &
+        & "       mg/m^2/s","       mg/m^2/s","       mg/m^2/s","       mg/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s", &
+        & "       ng/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s","       kg/m^2/s","       kg/m^2/s" )
+    END DO
+  END IF
+
+  !.....Output values at time step  n  to timefile(s).....
+  DO nn = 1, nnodes
+
+    i = inode(nn);
+    j = jnode(nn);
+    i100 = i_fluxes + nn;
+
+    ! ... Map (i,j)- into l-index
+    l = ij2l(i,j)
+
+    DO k  = k1, kmz(l) + 1
+      IF (h(k,l) <= ZERO) CYCLE
+      zlevel_export(k) = zlevel(k + 1)
+      if (k == kmz(l) + 1) then
+        zlevel_export(k) = zlevel(k) + sed_h
+      end if
+    END DO
+
+    ! ... Write variables to output file
+    IF (ntr <= 0) THEN
+      WRITE(UNIT=i100, FMT='(F10.4, I10, F10.4)') thrs, n, (zlevel_export(k), fluxes_out(k, l, 1), k=k1, kmz(l) + 1)
+    ELSE
+      do k = k1, kmz(l) + 1
+        if (h(k, l) .le. ZERO) cycle
+        if (k == 2) then
+          write(UNIT=i100, FMT='(F8.3, I10, F10.2)', advance='no') thrs, n, zlevel_export(k)
+        else
+          write(UNIT=i100, FMT='(18X, F10.2)', advance='no') zlevel_export(k)
+        end if
+        do tr = 1, 34
+          write(UNIT=i100, FMT='(1x, E14.4)', advance='no') fluxes_out(k, l, tr)
+        end do
+        write(UNIT=i100, FMT='(A)') ' '
+      end do
+    END IF
+  END DO
+
+END SUBROUTINE out_fluxes
+
+!***********************************************************************
 SUBROUTINE outt(n,thrs)
 !***********************************************************************
 !
@@ -1096,11 +1225,11 @@ SUBROUTINE outt(n,thrs)
          WRITE (UNIT=i60, FMT=2)
        2 FORMAT( 1X,"   time     ","  step     ","  zeta ","   depth   " &
                     "    u       ","  v      "," w       ",              &
-                    "   Av       ","        Dv      ","             scalar","              Tracers-> " )
+                    "   Av       ","        Dv      ","  scalar","              Tracers -> " )
          WRITE (UNIT=i60, FMT=3)
        3 FORMAT( 1X,"    hrs     ","   no      ","   cm       "," m    " &
                     "   cm/s   "  ,"   cm/s   " ,"  cm/s      " ,      &
-                    " cm2/s      ","     cm2/s","                     oC","                  M/V   ->" )
+                    " cm2/s      ","     cm2/s","          oC","                  M/V ->" )
 
       END DO
    END IF
@@ -1189,10 +1318,10 @@ SUBROUTINE outt(n,thrs)
             & k = k1,kmz(l)+1)
      ENDIF
 
-   4 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PE21.5 / &
-                  & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PE21.5 ))
-   5 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),26(0PF21.5)/ &
-                  & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),26(0PF21.5)))
+   4 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PF10.5 / &
+                  & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PF10.5 ))
+   5 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7), 0PF10.4, 25(0PE21.5)/ &
+                  & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),0PF10.4, 25(0PE21.5)))
    END DO
 
    !.....Compute CPU time spent in subroutine.....

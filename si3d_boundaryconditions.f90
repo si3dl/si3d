@@ -4716,9 +4716,7 @@ SUBROUTINE DistributeQswH
          !     Probably it is not needed in deep lakes but could account for
          !     overheating for shallower lakes.
          remFr = 1. - SUM ( QswFr (k1s:kms,l) )
-         IF ( remFr > 1.e-6 ) THEN
-           QswFr (k1s:kms,l) = QswFr (k1s:kms,l) + remFr / nwlayers
-         END IF
+        QswFr (k1s:kms,l) = QswFr (k1s:kms,l) + remFr / nwlayers
 
        END SELECT
 
@@ -4772,9 +4770,8 @@ SUBROUTINE DistributeQsw
          !     Probably it is not needed in deep lakes but could account for
          !     overheating for shallower lakes.
          remFr = 1. - SUM ( QswFr (k1s:kms,l) )
-         IF ( remFr > 1.e-6 ) THEN
-           QswFr (k1s:kms,l) = QswFr (k1s:kms,l) + remFr / nwlayers
-         END IF
+         QswFr (k1s:kms,l) = QswFr (k1s:kms,l) + remFr / nwlayers
+
 
        END SELECT
 
@@ -5153,6 +5150,7 @@ SUBROUTINE DistributeMomentumHeatSources
 
     ENDDO
   END SELECT
+  fluxes_out(:, :, 1) = HeatSource(:, :) 
 
 END SUBROUTINE DistributeMomentumHeatSources
 
@@ -5516,6 +5514,7 @@ END DO
     ENDDO
 
   END SELECT
+  fluxes_out(:, :, 1) = HeatSource(:, :) 
 
 END SUBROUTINE DistributeMomentumHeatSourcesH
 

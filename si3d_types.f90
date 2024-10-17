@@ -20,7 +20,7 @@
    INTEGER, PARAMETER :: i4=4, i5=50, i6=60, i82=82, i83=83, i93=93,    &
                        & i94=94, i96=96, i97=97, i98=98, i99 = 99
    INTEGER, PARAMETER :: i54=i6-6, i55=i6-5, i56=i6-4, i57=i6-3,        &
-                       & i58=i6-2, i59=i6-1, i53=i6-7, i52=i6-8
+                       & i58=i6-2, i59=i6-1, i53=i6-7, i52=i6-8, i_fluxes=100
 
    !.....Define kind numbers for single- and double-precision reals.....
    INTEGER, PARAMETER :: SPV = KIND(1.0)
@@ -293,6 +293,7 @@
    REAL   , ALLOCATABLE, DIMENSION(:,:)  :: fluxXtr, fluxY2, fluxZ2, fluxXsal
    REAL   , ALLOCATABLE, DIMENSION(:,:,:):: tracer, tracerpp, sourcesink
    REAL   , ALLOCATABLE, DIMENSION(:,:)  :: trout
+   real, allocatable, dimension(:, :, :) :: fluxes_out
    INTEGER, ALLOCATABLE, DIMENSION(:  )  :: trct0, trctn
    REAL   , ALLOCATABLE, DIMENSION(:  )  :: trcx0, trcy0, trcz0, &
                                             trcsx, trcsy, trcsz, trcpk
@@ -417,7 +418,7 @@
    integer                              :: LSS1, LSS2, LSS3 !< integers that determine the index of the constituent within tracer matrix
    integer                              :: sedMax = 3       !< Max number of sediments to model
    integer                              :: sedNumber        !< Number of sediments to model
-   real                                 :: sed_h = 0.5      !< [m] Sediment Layer thickness
+   real                                 :: sed_h            !< [m] Sediment Layer thickness
    real, allocatable, dimension (:)     :: sed_diameter     !< (um) Sediment diameter D50 in micrometers
    real, allocatable, dimension (:)     :: sed_dens         !< (kg/m3) Sediment density
    real, allocatable, dimension (:)     :: sed_frac         !< Fraction of type of sediment in total suspended sediment
@@ -432,7 +433,7 @@
    real, allocatable, dimension(:,:,:)  :: udir_tmp
    real                                 :: Ti_4_stwave = 3.0 !< [hrs] 0.25Ti 1/4 of the internal wave period
    real, allocatable, dimension(:) :: settling_vel     !< (m/s) Settling velocity of sediment
-   real, allocatable, dimension(:) :: erosion_Hgpn     !<
+   real, allocatable, dimension(:) :: erosion_wqpn     !<
 
    
    ! ----------------------------- Mercury module (HgM) ----------------------------------
@@ -442,8 +443,9 @@
    integer  :: iHg0      !< integer switch to model Elemental Mercury
    integer  :: LMeHg, LHgII, LHg0 !< Integers that determine index of the constituent within tracer matrix
    integer  :: inst_eq   !< integer to swithc if instantaneous equilibrium or kinetics are used for adsorption and desorption
+   real     :: DO_anox   !< DO concentration above which methylation is 0
    real     :: kw31      !< [m2/W 1/s] Reduction rate constant for HgII_to_Hg0
-   real     :: atm_MeHg !< [ng/m2/d] Mercury deposition rate
+   real     :: atm_MeHg  !< [ng/m2/d] Mercury deposition rate
    real     :: k_MeHgw   !< [m/d] Mass transfer coefficient for Hg0 in water
    real     :: k_MeHgatm !< [m/d] Mass transfer coefficient for Hg0 in atmosphere
    real     :: MeHgatm   !< [ng/L] concentration of Hg0 in the atmosphere

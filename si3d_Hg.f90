@@ -225,8 +225,8 @@ SUBROUTINE sourceHg(kwq, lwq)
   if (kwq .eq. k1s) then
     call HgII_atm_deposition(HgIIw_atmdep, kwq, lwq)
     call MeHg_atm_deposition(MeHgw_atmdep, kwq, lwq)
-    ! call MeHg_volatilization(MeHgw_vol, MeHg_wddoc)
-    ! call Hg0_volatilization(Hg0w_vol, Hg0w)
+    call MeHg_volatilization(MeHgw_vol, MeHg_wddoc)
+    call Hg0_volatilization(Hg0w_vol, Hg0w)
   end if
 
   if (kwq .eq. kms) then
@@ -254,67 +254,89 @@ SUBROUTINE sourceHg(kwq, lwq)
     sourcesink(kwq + 1, lwq, LMeHg) = - MeHgw_diffusion - MeHgs_demethy + HgIIs_methy + MeHgw_deposition - MeHgs_erosion  - MeHgs_burial
   end if
 
-  if ((l2i(lwq) .eq. 185) .and. (l2j(lwq) .eq. 80)) then
-    print*,'------------ WATER COLUMN ------------'
-    print*,'k = ',kwq
-    print*,'h = ',h(kwq + 1,lwq)
-    print*,'MeHgw = ', MeHgw
-    print*,'MeHg_wd = ', MeHg_wd, 'MeHg_wdoc = ', MeHg_wdoc, 'MeHg_wpa = ', MeHg_wpa, 'MeHg_wpom = ', MeHg_wpom
-    print*,'MeHg_wpn = ', MeHg_wpn
-    print*,'MeHg_wddoc = ',MeHg_wddoc
-    print*,'MeHgw_veri = ', MeHg_wd + MeHg_wdoc + MeHg_wpa + MeHg_wpom + sum(MeHg_wpn)
+  ! if ((l2i(lwq) .eq. 185) .and. (l2j(lwq) .eq. 80)) then
+  !   print*,'------------ WATER COLUMN ------------'
+  !   print*,'k = ',kwq
+  !   print*,'h = ',h(kwq + 1,lwq)
+  !   print*,'MeHgw = ', MeHgw
+  !   print*,'MeHg_wd = ', MeHg_wd, 'MeHg_wdoc = ', MeHg_wdoc, 'MeHg_wpa = ', MeHg_wpa, 'MeHg_wpom = ', MeHg_wpom
+  !   print*,'MeHg_wpn = ', MeHg_wpn
+  !   print*,'MeHg_wddoc = ',MeHg_wddoc
+  !   print*,'MeHgw_veri = ', MeHg_wd + MeHg_wdoc + MeHg_wpa + MeHg_wpom + sum(MeHg_wpn)
 
-    print*,'HgIIw = ', HgIIw
-    print*,'HgII_wd = ', HgII_wd, 'HgII_wdoc = ', HgII_wdoc
-    print*,'HgII_wpa = ', HgII_wpa, 'HgII_wpom = ', HgII_wpom
-    print*,'HgII_wpn = ', HgII_wpn
-    print*,'HgII_wddoc = ',HgII_wddoc
-    print*,'HgIIw_veri = ', HgII_wd + HgII_wdoc + HgII_wpa + HgII_wpom + sum(HgII_wpn)
+  !   print*,'HgIIw = ', HgIIw
+  !   print*,'HgII_wd = ', HgII_wd, 'HgII_wdoc = ', HgII_wdoc
+  !   print*,'HgII_wpa = ', HgII_wpa, 'HgII_wpom = ', HgII_wpom
+  !   print*,'HgII_wpn = ', HgII_wpn
+  !   print*,'HgII_wddoc = ',HgII_wddoc
+  !   print*,'HgIIw_veri = ', HgII_wd + HgII_wdoc + HgII_wpa + HgII_wpom + sum(HgII_wpn)
 
-    print*,'Hg0w = ', Hg0w
-    print*,'MeHg_atmdep = ', MeHgw_atmdep
-    print*,'HgII_atmdep = ', HgIIw_atmdep
-    print*,'HgII_reduction =', HgIIw_reduction
-    print*,'Hg0_oxidation =', Hg0w_oxidation
-    ! print*,'MeHg_volatilization =', MeHgw_vol
-    ! print*,'Hg0_volatilization =', Hg0w_vol
-    print*,'MeHgw_diffusion = ', MeHgw_diffusion
-    print*,'HgIIw_diffusion = ', HgIIw_diffusion
-    print*,'Hg0w_diffusion = ', Hg0w_diffusion
-    print*,'MeHgw_demethy = ', MeHgw_demethy
-    print*,'HgIIw_methy = ', HgIIw_methy
+  !   print*,'Hg0w = ', Hg0w
+  !   print*,'MeHg_atmdep = ', MeHgw_atmdep
+  !   print*,'HgII_atmdep = ', HgIIw_atmdep
+  !   print*,'HgII_reduction =', HgIIw_reduction
+  !   print*,'Hg0_oxidation =', Hg0w_oxidation
+  !   ! print*,'MeHg_volatilization =', MeHgw_vol
+  !   ! print*,'Hg0_volatilization =', Hg0w_vol
+  !   print*,'MeHgw_diffusion = ', MeHgw_diffusion
+  !   print*,'HgIIw_diffusion = ', HgIIw_diffusion
+  !   print*,'Hg0w_diffusion = ', Hg0w_diffusion
+  !   print*,'MeHgw_demethy = ', MeHgw_demethy
+  !   print*,'HgIIw_methy = ', HgIIw_methy
     
-    print*,'MeHgw_photodeg = ', MeHgw_photodeg
-    print*,'sourcesink MeHg= ', sourcesink(kwq, lwq, LMeHg)
-    print*,'sourcesink HgII= ', sourcesink(kwq, lwq, LHgII)
-    print*,'sourcesink Hg0= ', sourcesink(kwq, lwq, LHg0)
-    if (kwq == kms) then
-      print*,'----------- SEDIMENT LAYER --------------'
-      print*,'POC = ', tracerpp(kwq + 1, lwq, LPOC)
-      print*,'DOC = ', tracerpp(kwq + 1, lwq, LDOC)
-      print*,'DO = ', tracerpp(kwq + 1, lwq, LDO)
-      print*,'MeHgs = ', MeHgs
-      print*,'MeHg_sd = ', MeHg_sd, 'MeHg_sdoc = ', MeHg_sdoc, 'MeHg_spom = ', MeHg_spom
-      print*,'MeHg_spn = ', MeHg_spn
-      print*,'MeHgs_veri = ', MeHg_sd + MeHg_sdoc + MeHg_spom + sum(MeHg_spn)
-      print*,'HgIIs = ', HgIIs
-      print*,'HgII_sd = ', HgII_sd, 'HgII_sdoc = ', HgII_sdoc, 'HgII_spom = ', HgII_spom
-      print*,'HgII_spn = ', HgII_spn
-      print*,'HgIIs_veri = ', HgII_sd + HgII_sdoc + HgII_spom + sum(HgII_spn)
-      print*,'Hg0s = ', Hg0s
-      print*, 'HgIIs_erosion = ', HgIIs_erosion
-      print*, 'HgIIw_deposition = ', HgIIw_deposition
-      ! print*, 'HgIIs_burial = ', HgIIs_burial
-      print*,'MeHgs_erosion = ', MeHgs_erosion
-      print*,'MeHgw_deposition = ', MeHgw_deposition
-      ! print*,'MeHgs_burial = ', MeHgs_burial
-      print*,'MeHgs_demethy = ', MeHgs_demethy
-      print*,'HgIIs_methy = ', HgIIs_methy
-      print*,'sourcesink_sed MeHg= ',sourcesink(kwq + 1, lwq, LMeHg)
-      print*,'sourcesink_sed HgII= ',sourcesink(kwq + 1, lwq, LHgII)
-      print*,'sourcesink_sed Hg0= ',sourcesink(kwq + 1, lwq, LHg0)
-    end if 
-  end if
+  !   print*,'MeHgw_photodeg = ', MeHgw_photodeg
+  !   print*,'sourcesink MeHg= ', sourcesink(kwq, lwq, LMeHg)
+  !   print*,'sourcesink HgII= ', sourcesink(kwq, lwq, LHgII)
+  !   print*,'sourcesink Hg0= ', sourcesink(kwq, lwq, LHg0)
+  !   if (kwq == kms) then
+  !     print*,'----------- SEDIMENT LAYER --------------'
+  !     print*,'POC = ', tracerpp(kwq + 1, lwq, LPOC)
+  !     print*,'DOC = ', tracerpp(kwq + 1, lwq, LDOC)
+  !     print*,'DO = ', tracerpp(kwq + 1, lwq, LDO)
+  !     print*,'MeHgs = ', MeHgs
+  !     print*,'MeHg_sd = ', MeHg_sd, 'MeHg_sdoc = ', MeHg_sdoc, 'MeHg_spom = ', MeHg_spom
+  !     print*,'MeHg_spn = ', MeHg_spn
+  !     print*,'MeHgs_veri = ', MeHg_sd + MeHg_sdoc + MeHg_spom + sum(MeHg_spn)
+  !     print*,'HgIIs = ', HgIIs
+  !     print*,'HgII_sd = ', HgII_sd, 'HgII_sdoc = ', HgII_sdoc, 'HgII_spom = ', HgII_spom
+  !     print*,'HgII_spn = ', HgII_spn
+  !     print*,'HgIIs_veri = ', HgII_sd + HgII_sdoc + HgII_spom + sum(HgII_spn)
+  !     print*,'Hg0s = ', Hg0s
+  !     print*, 'HgIIs_erosion = ', HgIIs_erosion
+  !     print*, 'HgIIw_deposition = ', HgIIw_deposition
+  !     ! print*, 'HgIIs_burial = ', HgIIs_burial
+  !     print*,'MeHgs_erosion = ', MeHgs_erosion
+  !     print*,'MeHgw_deposition = ', MeHgw_deposition
+  !     ! print*,'MeHgs_burial = ', MeHgs_burial
+  !     print*,'MeHgs_demethy = ', MeHgs_demethy
+  !     print*,'HgIIs_methy = ', HgIIs_methy
+  !     print*,'sourcesink_sed MeHg= ',sourcesink(kwq + 1, lwq, LMeHg)
+  !     print*,'sourcesink_sed HgII= ',sourcesink(kwq + 1, lwq, LHgII)
+  !     print*,'sourcesink_sed Hg0= ',sourcesink(kwq + 1, lwq, LHg0)
+  !   end if 
+  ! end if
+
+  fluxes_out(kwq + 1, lwq, 15) = Hg0w_diffusion
+  fluxes_out(kwq, lwq, 16) = Hg0w_vol
+  fluxes_out(kwq, lwq, 17) = Hg0w_oxidation
+  fluxes_out(kwq, lwq, 18) = MeHgw_photodeg
+  fluxes_out(kwq, lwq, 19) = HgIIw_reduction
+
+  fluxes_out(kwq, lwq, 20) = HgIIw_atmdep
+  fluxes_out(kwq + 1, lwq, 21) = HgIIw_diffusion
+  fluxes_out(kwq + 1, lwq, 22) = HgIIw_deposition 
+  fluxes_out(kwq, lwq, 23) = HgIIw_methy
+  fluxes_out(kwq + 1, lwq, 23) = HgIIs_methy
+  fluxes_out(kwq + 1, lwq, 24) = HgIIs_erosion
+  fluxes_out(kwq + 1, lwq, 25) = HgIIs_burial
+  fluxes_out(kwq, lwq, 26) = MeHgw_demethy
+  fluxes_out(kwq + 1, lwq, 26) = MeHgs_demethy
+  fluxes_out(kwq, lwq, 27) = MeHgw_atmdep 
+  fluxes_out(kwq + 1, lwq, 28) = MeHgw_diffusion
+  fluxes_out(kwq, lwq, 29) = MeHgw_vol
+  fluxes_out(kwq + 1, lwq, 30) = MeHgw_deposition
+  fluxes_out(kwq + 1, lwq, 31) = MeHgs_erosion
+  fluxes_out(kwq + 1, lwq, 32) = MeHgs_burial
 
 END SUBROUTINE sourceHg
 
@@ -362,11 +384,6 @@ SUBROUTINE HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, &
   DOC = tracerpp(kwq, lwq, LDOC)
   ALG = tracerpp(kwq, lwq, LALG1)
   POC = tracerpp(kwq, lwq, LPOC)
-
-  ! Values assumed for testing of partitioning
-  ! DOC = 5000.0 ! mg/m3
-  ! ALG = 0.0
-  ! POM = 0.0
 
   do i = 1, sedNumber
     HgII_SS(i) = kd_wpn2(i) * tracerpp(kwq, lwq, LSS1 + i - 1)
@@ -503,7 +520,7 @@ SUBROUTINE MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, f
     MeHg_sd = fsd3 * MeHgs
     MeHg_sdoc = fsdoc3 * MeHgs
     MeHg_spom = fspom3 * MeHgs
-  end if 
+  end if
 
 END SUBROUTINE MeHg_partitioning
 
@@ -594,16 +611,12 @@ SUBROUTINE MeHg_photodegradation(MeHgw_photodeg, kwq, lwq, MeHg)
   ! Current state of the model considers constant surface shortwave radiation over the whole surface regardless of the case selected
   select case (ifSurfbc)
   case (1, 2, 3)
-    Io = Qsw
+    Io = Qsw_wq(lwq)
   case (10, 11)
-    Io = Qsw
+    Io = Qsw_wq(lwq)
   end select
 
   MeHgw_photodeg = h(kwq, lwq) * (Io * QswFr(kwq, lwq)) * kw31 * MeHg
-
-  ! if (lwq == 50) then
-  !   print*,'kw31 = ',kw31,'MeHg_reduction = ',MeHgw_photodeg,'h = ',h(kwq, lwq)
-  ! end if
 
 END SUBROUTINE MeHg_photodegradation
 
@@ -705,16 +718,10 @@ SUBROUTINE HgIIw_methylation(HgIIw_methy, kwq, lwq, HgII)
   Q10_methyl = 2.0 ! Source Reed
   T_methyl = 15.0
   Q10 = Q10_methyl ** ((salp(kwq, lwq) - T_methyl) / 10)
-
-  ! if (kwq .lt. 9) then
-  !   DO_w = 8000.0 ! mg/m3 because KDO is input as mg/m3 it needs consistency for now. Pay attention how the variable is modeled. 
-  ! else
-  !   DO_w = 0.0
-  ! end if
     
   DO_w = tracerpp(kwq, lwq, LDO)
 
-  if (DO_w .lt. 4000.0) then
+  if (DO_w .lt. DO_anox) then
     Canox = KDO / (DO_w + KDO)
   else
     Canox = 0.0
@@ -926,7 +933,7 @@ SUBROUTINE HgII_erosion(HgIIs_erosion, HgII_spn)
   integer                                :: i
 
   do i = 1, sedNumber
-    flux(i) = erosion_Hgpn(i) * HgII_spn(i)
+    flux(i) = erosion_wqpn(i) * HgII_spn(i)
   end do
 
   HgIIs_erosion = sum(flux)
@@ -949,7 +956,7 @@ SUBROUTINE MeHg_erosion(MeHgs_erosion, MeHg_spn)
   integer                                :: i
 
   do i = 1, sedNumber
-    flux(i) = erosion_Hgpn(i) * MeHg_spn(i)
+    flux(i) = erosion_wqpn(i) * MeHg_spn(i)
   end do
 
   MeHgs_erosion = sum(flux)

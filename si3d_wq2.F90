@@ -8,8 +8,6 @@
 !-------------------------------------------------------------------------
 
  USE si3d_types
- USE si3d_sed
- USE si3d_Hg
  IMPLICIT NONE
  SAVE
 
@@ -29,16 +27,11 @@ SUBROUTINE sourceDO(kwq,lwq)
 !-----------------------------------------------------------------------
 
   ! ... Arguments
-  INTEGER, INTENT (IN) :: kwq, lwq
+  INTEGER, INTENT (IN) :: kwq,lwq
 
   !. . . Local Variables
   REAL    ::   Tk, lnOS, OS, Patm, ln_Pwv, Pwv, theta2, f_SOD 
   REAL    :: reaeration, sedoxydemand
-  real    :: ws, R_SOD_ij
-  integer :: i, j
-
-  reaeration = 0.0
-  sedoxydemand = 0.0
 
   ! ...Calculate DO saturation
   Tk = salp(kwq,lwq) + 273
@@ -47,6 +40,7 @@ SUBROUTINE sourceDO(kwq,lwq)
   &                 + 1.243800*1E10/(Tk**3.) &
   &                 - 8.621949*1E11/(Tk**4.)
   OS = EXP(lnos)
+  
 
   ! Correct for Patmospheric (Pa - declared in si3d_types and defined in surfbc0)
 
@@ -57,40 +51,24 @@ SUBROUTINE sourceDO(kwq,lwq)
   &                    6.436*1E-8 * salp(kwq,lwq)**2.
   OS = OS*Patm*((1-Pwv/Patm) *(1-theta2*Patm))&
   &           /((1-Pwv)*(1-theta2) )
-  ! Estimate of OS is in mg/L. Si3D uses mg/m3 then:
-  OS = OS * 1000
+  OS = OS*1000 ! Units: [mg/m3]
+
 
   ! ...Calculate reaeration only at the lake surface
   ! for now using constant reaeration defined in wq_inp, but in future, can have
-  ! alternatives for reaeration rates.
+  ! alternatives for reaeration rates. 
   IF (kwq .eq. k1z(lwq)) THEN
-    ws = SQRT(uair(lwq)**2. + vair(lwq)**2.)
-    if ((R_reaer * (ws ** 1.64)) .lt. R_reaer) then
-      reaeration = R_reaer * (OS - tracerpp(kwq, lwq, LDO))
-    else
-      reaeration  = R_reaer * (ws ** 1.64)* (OS - tracerpp(kwq,lwq,LDO)) 
-      ! Units: [mg/m^2/s] = [m/s] * [mg/m^3]
-    end if
+     reaeration  = R_reaer*(OS - tracerpp(kwq,lwq,LDO)) 
+     ! Units: [mg/m^2/s] = [m/s] * [mg/m^3]
   ELSE
      reaeration  = 0.0
   END IF
 
   ! ...Calculate the sediment oxygen demand from the sediments (only bottom cell)
   IF (kwq .eq. kmz(lwq)) THEN
-    f_SOD = tracerpp(kwq,lwq,LDO) /(KSOD + tracerpp(kwq,lwq,LDO) ) ! DO inhibition of sediment oxygen demand
-    i = l2i(lwq)
-    j = l2j(lwq)
-    if (((i >= 1) .and. (i <= 142)) .and. ((j >=1) .and. (j <= 195))) then
-      R_SOD_ij = R_SOD * 0.1
-    elseif ((i > 142) .and. ((j >= 1) .and. (j <= 76))) then
-      R_SOD_ij = R_SOD * 0.2
-    elseif (((i > 142) .and. (i <= 159)) .and. ((j > 76) .and. (j <= 89))) then
-      R_SOD_ij = R_SOD * 1.0
-    else
-      R_SOD_ij = R_SOD
-    end if
+     f_SOD = tracerpp(kwq,lwq,LDO) /(KSOD + tracerpp(kwq,lwq,LDO) ) ! DO inhibition of sediment oxygen demand. 
      ! Units of KSDO need to be mg/m3
-     sedoxydemand = R_SOD_ij * f_SOD * (Theta_SOD ** (salp(kwq, lwq) - 20)) 
+     sedoxydemand = R_SOD * f_SOD* (Theta_SOD**(salp(kwq,lwq) - 20)) 
      ! Units: [mg/m^2/s] = [mg/m^2/s] * [-] * [-] 
   ELSE
      sedoxydemand = 0.0
@@ -101,9 +79,6 @@ SUBROUTINE sourceDO(kwq,lwq)
    sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO)    &
               & +  reaeration                           &
               & -  sedoxydemand
-
-  fluxes_out(kwq, lwq, 2) = reaeration
-  fluxes_out(kwq + 1, lwq, 3) = sedoxydemand
 
   ! If ALG are modeled: Add photosynthetic oxygen production and respiration consumption  by phytoplankton
   ! If NH4 is modeled: Add consumption  by nitrification
@@ -124,10 +99,8 @@ SUBROUTINE sourcePON(kwq,lwq)
     INTEGER, INTENT (IN) :: kwq,lwq
 
   !... Local variables
-  REAL:: decompositionPON, f_decom, depositionPON, resuspensionPON
+  REAL:: decompositionPON, f_decom, settlingPON, resuspensionPON
 
-  depositionPON = 0.0
-  resuspensionPON = 0.0
   !... Calculate decompositionN
     ! Calculate DO inhibition of decomposition
     IF (IDO == 1) THEN
@@ -139,27 +112,31 @@ SUBROUTINE sourcePON(kwq,lwq)
   decompositionPON = R_decom_pon * f_decom * (Theta_decom**(salp(kwq,lwq) - 20.0)) *tracerpp(kwq,lwq,LPON) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] = [1/s] * [-] * [-] * [mg/m^3] * [m]
 
-  ! ... Calculate deposition of PON only in the bottom layer
+  ! ... Calculate settling of PON only in the bottom layer
   IF (kwq .eq. kmz(lwq)) THEN
-    depositionPON = R_settl * tracerpp(kwq,lwq,LPON) 
-    ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3] 
-    ! ... Calculate resusupension of PON only in the bottom layer
-    resuspensionPON = erosion_wqpn(1) * tracerpp(kwq,lwq,LPON)
-    ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
+      settlingPON = R_settl * tracerpp(kwq,lwq,LPON) 
+      ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3] 
+  ELSE
+      settlingPON = 0.0
 
-    ! resuspensionPON = R_resusp * tracerpp(kwq,lwq,LPON) 
-    ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
-    if (depositionPON .gt. (tracerpp(kwq, lwq, LPON) * hp(kwq, lwq) / dt)) then
-      depositionPON = tracerpp(kwq, lwq, LPON) * hp(kwq, lwq) / dt
-    end if
+  END IF
+
+  ! ... Calculate resusupension of PON only in the bottom layer
+  IF (kwq .eq. kmz(lwq)) THEN
+      resuspensionPON = R_resusp * tracerpp(kwq,lwq,LPON) 
+      ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
+  ELSE
+      resuspensionPON = 0.0
+
   END IF
 
   ! ... Incorporate all terms to the source-sink PON term
   sourcesink(kwq,lwq,LPON) = sourcesink(kwq,lwq,LPON)       &
                         &    - decompositionPON             &   
-                        &    - depositionPON                  &                   
+                        &    - settlingPON                  &                   
                         &    + resuspensionPON
-                        !    + mortality  - only if IALG = 1; calcualted in sourceALG                         
+                        !    + mortality  - only if IALG = 1; calcualted in sourceALG
+                              
 
   ! Add contribution of decomposition to DON concentration
   IF (iDON == 1) THEN
@@ -206,7 +183,6 @@ SUBROUTINE sourceDON(kwq,lwq)
       IF (IDO == 1) THEN
          ! Calculate DO inhibition of sediment flux
          f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
-         ! f_sedflux = KSED / (KSED + tracerpp(kwq,lwq,LDO))
       ELSE
          f_sedflux = 1.0
       END IF
@@ -272,8 +248,7 @@ SUBROUTINE sourceNH4(kwq,lwq)
   IF (kwq .eq. kmz(lwq)) THEN
       IF (IDO == 1) THEN
          ! Calculate DO inhibition of sediment flux
-         ! f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
-         f_sedflux = KSED / (KSED + tracerpp(kwq,lwq,LDO))
+         f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
       ELSE
          f_sedflux = 1.0
       END IF
@@ -374,11 +349,7 @@ SUBROUTINE sourcePOP(kwq,lwq)
   INTEGER, INTENT (IN) :: kwq,lwq
 
   !... Local variables
-  REAL:: decompositionPOP, f_decom, depositionPOP, resuspensionPOP
-
-  depositionPOP = 0.0
-  resuspensionPOP = 0.0
-  decompositionPOP = 0.0
+  REAL:: decompositionPOP, f_decom, settlingPOP, resuspensionPOP
 
   !... Calculate decompositionPOP
     ! Calculate DO inhibition of decomposition
@@ -391,31 +362,34 @@ SUBROUTINE sourcePOP(kwq,lwq)
   decompositionPOP = R_decom_pop * f_decom * (Theta_decom**(salp(kwq,lwq) - 20.0)) *tracerpp(kwq,lwq,LPOP) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] = [1/s] * [-] * [-] * [mg/m^3] * [m]
 
-  ! ... Calculate deposition of POP only in the bottom layer
+  ! ... Calculate settling of POP only in the bottom layer
   IF (kwq .eq. kmz(lwq)) THEN
-    depositionPOP = R_settl * tracerpp(kwq, lwq, LPOP)
-    ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3] 
-    ! ... Calculate resusupension of POP only in the bottom layer
-    resuspensionPOP = erosion_wqpn(1) * tracerpp(kwq,lwq,LPOP)
-    ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
+      settlingPOP = R_settl * tracerpp(kwq,lwq,LPOP)
+      ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3] 
+  ELSE
+      settlingPOP = 0.0
 
-    ! resuspensionPOP = R_resusp * tracerpp(kwq, lwq, LPOP)
-    ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
-    if (depositionPOP .gt. (tracerpp(kwq, lwq, LPOP) * hp(kwq, lwq) / dt)) then
-      depositionPOP = tracerpp(kwq, lwq, LPOP) * hp(kwq, lwq) / dt
-    end if
+  END IF
+
+  ! ... Calculate resusupension of POP only in the bottom layer
+  IF (kwq .eq. kmz(lwq)) THEN
+      resuspensionPOP = R_resusp * tracerpp(kwq,lwq,LPOP)
+      ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
+  ELSE
+      resuspensionPOP = 0.0
+
   END IF
 
   ! ... Incorporate all terms to the source-sink POP term
   sourcesink(kwq,lwq,LPOP) = sourcesink(kwq,lwq,LPOP)       &
                         &    - decompositionPOP             &   
-                        &    - depositionPOP                  &                   
+                        &    - settlingPOP                  &                   
                         &    + resuspensionPOP
                         !    + mortality  - only if IALG = 1; calcualted in sourceALG
                               
   ! Add contribution of decomposition to DOP concentration
   IF (iDOP == 1) THEN
-    sourcesink(kwq, lwq, LDOP) = sourcesink(kwq, lwq, LDOP) +  decompositionPOP
+    sourcesink(kwq,lwq,LDOP) = sourcesink(kwq,lwq,LDOP) +  decompositionPOP
   END IF
 
 END SUBROUTINE sourcePOP
@@ -435,9 +409,6 @@ SUBROUTINE sourceDOP(kwq, lwq)
   !. . . Local variables
   REAL:: mineralizationDOP, f_miner, atmosdepositionDOP, f_sedflux, sedfluxDOP
 
-  atmosdepositionDOP = 0.0
-  sedfluxDOP = 0.0
-
   !. . Mineralization by bacteria
     ! Calculate DO inhibition of mineralization
     IF (IDO == 1) THEN
@@ -452,19 +423,22 @@ SUBROUTINE sourceDOP(kwq, lwq)
   IF (kwq .eq. k1z(lwq)) THEN
     atmosdepositionDOP = ATM_DOP
     ! Units: [mg/m^2/s] =  [mg/m^2/s] 
+  ELSE
+    atmosdepositionDOP = 0.0
   END IF
 
   !. . .Add contribution from sediment flux to the bottom layer
   IF (kwq .eq. kmz(lwq)) THEN
-    IF (IDO == 1) THEN
-      ! Calculate DO inhibition of sediment flux
-      ! f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
-      f_sedflux = KSED /(KSED + tracerpp(kwq,lwq,LDO) )
-    ELSE
-      f_sedflux = 1.0
-    END IF
-    sedfluxDOP = SED_DOP * f_sedflux* (Theta_sedflux**(salp(kwq,lwq) - 20))  
-    ! Units: [mg/m^2/s] =  [mg/m^2/s] * [-] * [-]
+      IF (IDO == 1) THEN
+         ! Calculate DO inhibition of sediment flux
+         f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
+      ELSE
+         f_sedflux = 1.0
+      END IF
+      sedfluxDOP = SED_DOP * f_sedflux* (Theta_sedflux**(salp(kwq,lwq) - 20))  
+      ! Units: [mg/m^2/s] =  [mg/m^2/s] * [-] * [-]
+  ELSE
+      sedfluxDOP = 0.0
   END IF
 
   ! ... Incorporate all terms to the source-sink DON term
@@ -496,35 +470,34 @@ SUBROUTINE sourcePO4(kwq, lwq)
   !. . . Local Variables
   REAL:: atmosdepositionPO4, sedfluxPO4, f_sedflux
 
-  atmosdepositionPO4 = 0.0
-
   !. . .Add contribution from atmospheric deposition to top layer
   IF (kwq .eq. k1z(lwq)) THEN
     atmosdepositionPO4 = ATM_PO4
     ! Units: [mg/m^2/s] =  [mg/m^2/s] 
+  ELSE
+    atmosdepositionPO4 = 0.0
   END IF
 
   !. . . Add contribution from sediment flux to the bottom layer
-  IF (kwq .eq. kmz(lwq)) THEN
-    IF (IDO == 1) THEN
-      ! Calculate DO inhibition of sediment flux
-      ! f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
-      f_sedflux = KSED / (KSED + tracerpp(kwq, lwq, LDO))
-    ELSE
-      f_sedflux = 1.0
-    END IF
-    sedfluxPO4 = SED_PO4 * f_sedflux * (Theta_sedflux ** (salp(kwq, lwq) - 20))  
-    ! Units: [mg/m^2/s] =  [mg/m^2/s] * [-] * [-]
+   IF (kwq .eq. kmz(lwq)) THEN
+      IF (IDO == 1) THEN
+         ! Calculate DO inhibition of sediment flux
+         f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
+      ELSE
+         f_sedflux = 1.0
+      END IF
+      sedfluxPO4 = SED_PO4 * f_sedflux* (Theta_sedflux**(salp(kwq,lwq) - 20))  
+      ! Units: [mg/m^2/s] =  [mg/m^2/s] * [-] * [-]
   ELSE
-    sedfluxPO4 = 0.0
+      sedfluxPO4 = 0.0
   END IF
 
   ! ... Incorporate all terms to the source-sink PO4 term
-  sourcesink(kwq,lwq,LPO4) = sourcesink(kwq, lwq, LPO4)         &
-                          & + atmosdepositionPO4        &
-                          & + sedfluxPO4
-                          ! + mineralizationDOP - if IDOP = 1; calculated in sourceDOP
-                          ! - algal uptake      - if IALG = 1; calculated in sourceALG
+  sourcesink(kwq,lwq,LPO4) = sourcesink(kwq,lwq,LPO4)         &
+                         &        + atmosdepositionPO4        &
+                         &        + sedfluxPO4
+                        !         + mineralizationDOP - if IDOP = 1; calculated in sourceDOP
+                        !         - algal uptake      - if IALG = 1; calculated in sourceALG
 
 END SUBROUTINE sourcePO4
 
@@ -541,51 +514,48 @@ SUBROUTINE sourcePOC (kwq, lwq)
   INTEGER, INTENT (IN) :: kwq,lwq
 
   !... Local variables
-  REAL:: decompositionPOC, f_decom, depositionPOC, resuspensionPOC
-
-  depositionPOC = 0.0
-  resuspensionPOC = 0.0
-  decompositionPOC = 0.0
+  REAL:: decompositionPOC, f_decom, settlingPOC, resuspensionPOC
 
   !... Calculate decompositionPOC
-  ! Calculate DO inhibition of decomposition
-  IF (IDO == 1) THEN
-    f_decom = tracerpp(kwq, lwq, LDO) / (KDECMIN + tracerpp(kwq, lwq, LDO) )   ! We assume that decomposition and mineralzation 
-                                                                          ! half-saturation values are very similar
-  ELSE
-    f_decom = 1.0
-  END IF
-  
-  decompositionPOC = R_decom_poc * f_decom * (Theta_decom ** (salp(kwq, lwq) - 20.0)) * tracerpp(kwq, lwq, LPOC) * hpp(kwq, lwq)
+    ! Calculate DO inhibition of decomposition
+    IF (IDO == 1) THEN
+      f_decom = tracerpp(kwq,lwq,LDO) /(KDECMIN + tracerpp(kwq,lwq,LDO) )  ! We assume that decomposition and mineralzation 
+                                                                            ! half-saturation values are very similar
+    ELSE
+      f_decom = 1.0
+    END IF
+  decompositionPOC = R_decom_poc * f_decom * (Theta_decom**(salp(kwq,lwq) - 20.0)) * tracerpp(kwq,lwq,LPOC) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [-] * [mg/m^3] * [m]
 
-  ! ... Calculate deposition of POC only in the bottom layer
+  ! ... Calculate settling of POC only in the bottom layer
   IF (kwq .eq. kmz(lwq)) THEN
-    depositionPOC = vspoc * tracerpp(kwq,lwq,LPOC)
-    ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3] 
-    ! ... Calculate resusupension of POC only in the bottom layer
-    resuspensionPOC = R_resusp * tracerpp(kwq,lwq,LPOC)
-    ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
-    if (depositionPOC .gt. (tracerpp(kwq, lwq, LPOC) * hp(kwq, lwq) / dt)) then
-      depositionPOC = tracerpp(kwq, lwq, LPOC) * hp(kwq, lwq) / dt
-    end if
+      settlingPOC = R_settl * tracerpp(kwq,lwq,LPOC)
+      ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3] 
+  ELSE
+      settlingPOC = 0.0
+
+  END IF
+
+  ! ... Calculate resusupension of POC only in the bottom layer
+  IF (kwq .eq. kmz(lwq)) THEN
+      resuspensionPOC = R_resusp * tracerpp(kwq,lwq,LPOC)
+      ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
+  ELSE
+      resuspensionPOC = 0.0
+
   END IF
 
   ! ... Incorporate all terms to the source-sink POC term
   sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC)       &
-  &    - decompositionPOC             &   
-  &    - depositionPOC                  &                   
-  &    + resuspensionPOC
-  !    + mortality  - only if IALG = 1; calcualted in sourceALG
-      
+                        &    - decompositionPOC             &   
+                        &    - settlingPOC                  &                   
+                        &    + resuspensionPOC
+                        !    + mortality  - only if IALG = 1; calcualted in sourceALG
+                              
   ! Add contribution of decomposition to DOC concentration
   IF (iDOC == 1) THEN
-  sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + decompositionPOC
+      sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) +  decompositionPOC
   END IF
-
-  fluxes_out(kwq, lwq, 4) = decompositionPOC
-  fluxes_out(kwq + 1, lwq, 5) = depositionPOC
-  fluxes_out(kwq + 1, lwq, 6) = resuspensionPOC
 
 END SUBROUTINE sourcePOC
 
@@ -602,13 +572,7 @@ SUBROUTINE sourceDOC(kwq, lwq)
   INTEGER, INTENT (IN) :: kwq,lwq
 
   !. . . Local variables
-  REAL:: mineralizationDOC, f_miner, atmosdepositionDOC, f_sedflux, sedfluxDOC, SED_DOC_ij
-
-  mineralizationDOC = 0.0
-  f_miner = 0.0
-  atmosdepositionDOC = 0.0
-  f_sedflux = 0.0
-  sedfluxDOC = 0.0
+  REAL:: mineralizationDOC, f_miner, atmosdepositionDOC, f_sedflux, sedfluxDOC
 
   !. . Mineralization of DO by bacteria into inorganic nutrients (there is biological oxygen demand)
     ! Calculate DO inhibition of mineralization
@@ -632,21 +596,11 @@ SUBROUTINE sourceDOC(kwq, lwq)
   IF (kwq .eq. kmz(lwq)) THEN
       IF (IDO == 1) THEN
          ! Calculate DO inhibition of sediment flux
-         ! f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
-         f_sedflux = KSED /(KSED + tracerpp(kwq,lwq,LDO) )
+         f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
       ELSE
          f_sedflux = 1.0
       END IF
-      if (((i >= 1) .and. (i <= 142)) .and. ((j >=1) .and. (j <= 195))) then
-        SED_DOC_ij = SED_DOC * 0.1
-      elseif ((i > 142) .and. ((j >= 1) .and. (j <= 76))) then
-        SED_DOC_ij = SED_DOC * 0.2
-      elseif (((i > 142) .and. (i <= 159)) .and. ((j > 76) .and. (j <= 89))) then
-        SED_DOC_ij = SED_DOC * 1.0
-      else
-        SED_DOC_ij = SED_DOC
-      end if
-      sedfluxDOC = SED_DOC_ij * f_sedflux* (Theta_sedflux**(salp(kwq,lwq) - 20))
+      sedfluxDOC = SED_DOC * f_sedflux* (Theta_sedflux**(salp(kwq,lwq) - 20))
       ! Units: [mg/m^2/s] =  [mg/m^2/s] * [-] * [-] 
   ELSE
       sedfluxDOC = 0.0
@@ -664,10 +618,6 @@ SUBROUTINE sourceDOC(kwq, lwq)
       sourcesink(kwq,lwq,LDO) = sourcesink(kwq,lwq,LDO) - roc*mineralizationDOC
   END IF
 
-  fluxes_out(kwq, lwq, 7) = atmosdepositionDOC
-  fluxes_out(kwq, lwq, 8) = mineralizationDOC
-  fluxes_out(kwq + 1, lwq, 9) = sedfluxDOC
-
 END SUBROUTINE sourceDOC
 
 !************************************************************************
@@ -683,63 +633,60 @@ SUBROUTINE sourceALG1(kwq, lwq)
 
   !. . .Local Variables
   REAL::  mu1, f_L1, f_T, f_N, f_P, N_conc
-  REAL::  growth1, mort1, graz1, deposi1, resus1
+  REAL::  growth1, mort1, graz1, sett1, resus1
   REAL::  Tmax1, Tmin1
 
-  deposi1 = 0.0
-  resus1 = 0.0
-
   !. .  Calculate growth limiting factors
-  ! Light Limitation
-  f_L1 = ((Qsw*QswFr(kwq,lwq))/light_sat1) *EXP(1 -((Qsw*QswFr(kwq,lwq))/light_sat1)) ! Steele (1962) = Photoinhibited
-  IF (f_L1 .lt. 0.01) THEN
-    f_L1 = 0.01
-  END IF
+    ! Light Limitation
+    f_L1 = ((Qsw*QswFr(kwq,lwq))/light_sat1) *EXP(1 -((Qsw*QswFr(kwq,lwq))/light_sat1)) ! Steele (1962) = Photoinhibited
+    IF (f_L1 .lt. 0.01) THEN
+        f_L1 = 0.01
+    END IF
 
-  ! temperature limitaton
-  Tmax1 = 30
-  Tmin1 = 5
-  IF (salp(kwq,lwq) .lt. Tmin1) THEN
-    f_T = 0
-  ELSE IF ((salp(kwq,lwq) .gt. Tmin1) .AND. (salp(kwq,lwq) .lt. Topt1)) THEN
-    f_T = (salp(kwq,lwq) - Tmin1) / (Topt1 - Tmin1)
-  ELSE IF (salp(kwq,lwq) .gt. Topt1) THEN 
-    f_T = (Tmax1 - salp(kwq,lwq)) / (Tmax1 - Topt1)
-  END IF
+    ! temperature limitaton
+    Tmax1 = 30
+    Tmin1 = 5
+    IF (salp(kwq,lwq) .lt. Tmin1) THEN
+      f_T = 0
+    ELSE IF ((salp(kwq,lwq) .gt. Tmin1) .AND. (salp(kwq,lwq) .lt. Topt1)) THEN
+      f_T = (salp(kwq,lwq) - Tmin1) / (Topt1 - Tmin1)
+    ELSE IF (salp(kwq,lwq) .gt. Topt1) THEN 
+      f_T = (Tmax1 - salp(kwq,lwq)) / (Tmax1 - Topt1)
+    END IF
 
-  ! nutrient limitation - but only if the nutrients are modeled
-  IF ((INH4 ==1) .AND. (INO3 ==1)) THEN
-    N_conc = tracerpp(kwq,lwq,LNH4) + tracerpp(kwq,lwq,LNO3)
-    f_N = N_conc/(KSN + N_conc)
-  ELSE IF (INH4 == 1 .AND. INO3 ==0) THEN
-    N_conc = tracerpp(kwq,lwq,LNH4)
-    f_N = N_conc/(KSN + N_conc)
-  ELSE IF (INH4 == 0 .AND. INO3 ==1) THEN
-    N_conc = tracerpp(kwq,lwq,LNO3)
-    f_N = N_conc/(KSN + N_conc)
-  ELSE
-    f_N = 1.0
-  END IF
+    ! nutrient limitation - but only if the nutrients are modeled
+    IF ((INH4 ==1) .AND. (INO3 ==1)) THEN
+      N_conc = tracerpp(kwq,lwq,LNH4) + tracerpp(kwq,lwq,LNO3)
+      f_N = N_conc/(KSN + N_conc)
+    ELSE IF (INH4 == 1 .AND. INO3 ==0) THEN
+      N_conc = tracerpp(kwq,lwq,LNH4)
+      f_N = N_conc/(KSN + N_conc)
+    ELSE IF (INH4 == 0 .AND. INO3 ==1) THEN
+      N_conc = tracerpp(kwq,lwq,LNO3)
+      f_N = N_conc/(KSN + N_conc)
+    ELSE
+      f_N = 1.0
+    END IF
 
-  IF (f_N .lt. 0) THEN ! Assume low nutrient concentration when f_N<0
-    f_N =5.000/(KSN + 5.000)
-  END IF
+    IF (f_N .lt. 0) THEN ! Assume low nutrient concentration when f_N<0
+      f_N =5.000/(KSN + 5.000)
+    END IF
 
-  IF (IPO4 ==1) THEN
-    f_P = tracerpp(kwq,lwq,LPO4) /(KSP + tracerpp(kwq,lwq,LPO4) )
-  ELSE
-    f_P = 1.0
-  END IF
+    IF (IPO4 ==1) THEN
+      f_P = tracerpp(kwq,lwq,LPO4) /(KSP + tracerpp(kwq,lwq,LPO4) )
+    ELSE
+      f_P = 1.0
+    END IF
 
-  IF (f_P .lt. 0) THEN ! Assume low nutrient concentration when f_P<0
-    f_P =5.000/(KSP + 5.000)
-  END IF
+    IF (f_P .lt. 0) THEN ! Assume low nutrient concentration when f_P<0
+       f_P =5.000/(KSP + 5.000)
+    END IF
 
   !. . Calculate growth
   mu1 = mu_max1 * MIN(f_L1,f_N,f_P)
   growth1 = mu1 * f_T * tracerpp(kwq,lwq,LALG1) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF (tracerpp(kwq,lwq,LALG1) + (growth1 * dt / hpp(kwq, lwq)) .le. 10.00) THEN
+  IF ((tracerpp(kwq,lwq,LALG1) + growth1) .le. 10.00) THEN
     growth1 = 0.0 ! This limits growth to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then growth will be zero
   END IF
 
@@ -753,21 +700,19 @@ SUBROUTINE sourceALG1(kwq, lwq)
   !. . Calculate grazing
   graz1   = R_gr1 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG1) * hpp(kwq,lwq)  
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF (tracerpp(kwq,lwq,LALG1) - (graz1 * dt / hpp(kwq, lwq)) .le. 10.00) THEN
+  IF ((tracerpp(kwq,lwq,LALG1)- graz1) .le. 10.00) THEN
     graz1 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
-  if (kwq .eq. kmz(lwq)) then
-    !. . Calculate deposition
-    deposi1 = vspa * tracerpp(kwq,lwq,LALG1)
-    ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]  
-    !. . Calculate resuspension
-    resus1 = R_resusp * tracerpp(kwq, lwq, LALG1) * 0
-    ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
-  end if
+  !. . Calculate settling
+  sett1   = R_settl * tracerpp(kwq,lwq,LALG1)
+  ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]  
+  !. . Calculate resuspension
+  resus1   = R_resusp * tracerpp(kwq,lwq,LALG1)
+  ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3] 
 
   ! Source-Sink equation
-  sourcesink(kwq,lwq,LALG1) = sourcesink(kwq,lwq,LALG1) + growth1 - mort1 - graz1 - deposi1 + resus1
+  sourcesink(kwq,lwq,LALG1) = sourcesink(kwq,lwq,LALG1) + growth1 - mort1 - graz1 - sett1 + resus1
 
   ! .... Contributions from algae to other sub-routines (nutrients)
   ! If dissolved oxygen is modeled, alter sourcesink(kwq,lwq,LDO) to reflect photosynthetic oxygen production 
@@ -805,12 +750,6 @@ SUBROUTINE sourceALG1(kwq, lwq)
   IF (IPOC == 1) THEN
     sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + mort1
   END IF
-
-  fluxes_out(kwq, lwq, 10) = growth1
-  fluxes_out(kwq, lwq, 11) = mort1
-  fluxes_out(kwq, lwq, 12) = graz1
-  fluxes_out(kwq + 1, lwq, 13) = deposi1
-  fluxes_out(kwq + 1, lwq, 14) = resus1
 
 END SUBROUTINE sourceALG1
 
@@ -863,7 +802,7 @@ SUBROUTINE sourceALG2(kwq, lwq)
     END IF
 
     IF (f_N .lt. 0) THEN ! Assume low nutrient concentration when f_N<0
-      f_N =5.0/(KSN + 5.0)
+      f_N =0.005/(KSN + 0.005)
     END IF
 
     IF (IPO4 ==1) THEN
@@ -873,32 +812,32 @@ SUBROUTINE sourceALG2(kwq, lwq)
     END IF
 
     IF (f_P .lt. 0) THEN ! Assume low nutrient concentration when f_P<0
-       f_P =5.0/(KSP + 5.0)
+       f_P =0.005/(KSP + 0.005)
     END IF
 
   !. . Calculate growth
   mu2 = mu_max2 * MIN(f_L2,f_N,f_P)
   growth2 = mu2 * f_T * tracerpp(kwq,lwq,LALG2) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG2) + growth2) .le. 10.0) THEN
+  IF ((tracerpp(kwq,lwq,LALG2) + growth2) .le. 0.01) THEN
     growth2 = 0.0 ! This limits growth to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then growth will be zero
   END IF
 
   !. . Calculate mortality, respiration & excretion
   mort2   = R_mor2 * Theta_mor**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG2) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG2)- mort2 ) .le. 10.0) THEN
+  IF ((tracerpp(kwq,lwq,LALG2)- mort2 ) .le. 0.01) THEN
     mort2 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
   !. . Calculate grazing
   graz2   = R_gr2 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG2) * hpp(kwq,lwq)  
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG2)- graz2) .le. 10.0) THEN
+  IF ((tracerpp(kwq,lwq,LALG2)- graz2) .le. 0.01) THEN
     graz2 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
-  !. . Calculate deposition
+  !. . Calculate settling
   sett2   = R_settl * tracerpp(kwq,lwq,LALG2)
   ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]  
   !. . Calculate resuspension
@@ -996,7 +935,7 @@ SUBROUTINE sourceALG3(kwq, lwq)
     END IF
 
     IF (f_N .lt. 0) THEN ! Assume low nutrient concentration when f_N<0
-      f_N =5.000/(KSN + 5.000)
+      f_N =0.005/(KSN + 0.005)
     END IF
 
     IF (IPO4 ==1) THEN
@@ -1006,32 +945,32 @@ SUBROUTINE sourceALG3(kwq, lwq)
     END IF
 
     IF (f_P .lt. 0) THEN ! Assume low nutrient concentration when f_P<0
-       f_P =5.000/(KSP + 5.000)
+       f_P =0.005/(KSP + 0.005)
     END IF
 
   !. . Calculate growth
   mu3 = mu_max3 * MIN(f_L3,f_N,f_P)
   growth3 = mu3 * f_T * tracerpp(kwq,lwq,LALG3) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG3) + growth3) .le. 10.0) THEN
+  IF ((tracerpp(kwq,lwq,LALG3) + growth3) .le. 0.01) THEN
     growth3 = 0.0 ! This limits growth to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then growth will be zero
   END IF
 
   !. . Calculate mortality, respiration & excretion
   mort3   = R_mor3 * Theta_mor**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG3) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG3)- mort3 ) .le. 10.0) THEN
+  IF ((tracerpp(kwq,lwq,LALG3)- mort3 ) .le. 0.01) THEN
     mort3 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
   !. . Calculate grazing
   graz3   = R_gr3 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG3) * hpp(kwq,lwq)  
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG3)- graz3) .le. 10.0) THEN
+  IF ((tracerpp(kwq,lwq,LALG3)- graz3) .le. 0.01) THEN
     graz3 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
-  !. . Calculate deposition
+  !. . Calculate settling
   sett3   = R_settl * tracerpp(kwq,lwq,LALG3)
   ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]  
   !. . Calculate resuspension
@@ -1129,7 +1068,7 @@ SUBROUTINE sourceALG4(kwq, lwq)
     END IF
 
     IF (f_N .lt. 0) THEN ! Assume low nutrient concentration when f_N<0
-      f_N =5.000/(KSN + 5.000)
+      f_N =0.005/(KSN + 0.005)
     END IF
 
     IF (IPO4 ==1) THEN
@@ -1139,32 +1078,32 @@ SUBROUTINE sourceALG4(kwq, lwq)
     END IF
 
     IF (f_P .lt. 0) THEN ! Assume low nutrient concentration when f_P<0
-       f_P =5.000/(KSP + 5.000)
+       f_P =0.005/(KSP + 0.005)
     END IF
 
   !. . Calculate growth
   mu4 = mu_max4 * MIN(f_L4,f_N,f_P)
   growth4 = mu4 * f_T * tracerpp(kwq,lwq,LALG4) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG4) + growth4) .le. 10.0) THEN
+  IF ((tracerpp(kwq,lwq,LALG4) + growth4) .le. 0.01) THEN
     growth4 = 0.0 ! This limits growth to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then growth will be zero
   END IF
 
   !. . Calculate mortality, respiration & excretion
   mort4   = R_mor4 * Theta_mor**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG4) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG4)- mort4 ) .le. 10.0) THEN
+  IF ((tracerpp(kwq,lwq,LALG4)- mort4 ) .le. 0.01) THEN
     mort4 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
   !. . Calculate grazing
   graz4   = R_gr4 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG4) * hpp(kwq,lwq)  
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG4)- graz4) .le. 10.0) THEN
+  IF ((tracerpp(kwq,lwq,LALG4)- graz4) .le. 0.01) THEN
     graz4 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
-  !. . Calculate deposition
+  !. . Calculate settling
   sett4   = R_settl * tracerpp(kwq,lwq,LALG4)
   ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]  
   !. . Calculate resuspension
@@ -1262,7 +1201,7 @@ SUBROUTINE sourceALG5(kwq, lwq)
     END IF
 
     IF (f_N .lt. 0) THEN ! Assume low nutrient concentration when f_N<0
-      f_N =5.000/(KSN + 5.000)
+      f_N =0.005/(KSN + 0.005)
     END IF
 
     IF (IPO4 ==1) THEN
@@ -1272,32 +1211,32 @@ SUBROUTINE sourceALG5(kwq, lwq)
     END IF
 
     IF (f_P .lt. 0) THEN ! Assume low nutrient concentration when f_P<0
-       f_P =5.000/(KSP + 5.000)
+       f_P =0.005/(KSP + 0.005)
     END IF
 
   !. . Calculate growth
   mu5 = mu_max5 * MIN(f_L5,f_N,f_P)
   growth5 = mu5 * f_T * tracerpp(kwq,lwq,LALG5) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG5) + growth5) .le. 10.0) THEN
+  IF ((tracerpp(kwq,lwq,LALG5) + growth5) .le. 0.01) THEN
     growth5 = 0.0 ! This limits growth to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then growth will be zero
   END IF
 
   !. . Calculate mortality, respiration & excretion
   mort5   = R_mor5 * Theta_mor**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG5) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG5)- mort5 ) .le. 10.0) THEN
+  IF ((tracerpp(kwq,lwq,LALG5)- mort5 ) .le. 0.01) THEN
     mort5 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
   !. . Calculate grazing
   graz5   = R_gr5 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG5) * hpp(kwq,lwq)  
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG5)- graz5) .le. 10.0) THEN
+  IF ((tracerpp(kwq,lwq,LALG5)- graz5) .le. 0.01) THEN
     graz5 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
-  !. . Calculate deposition
+  !. . Calculate settling
   sett5   = R_settl * tracerpp(kwq,lwq,LALG5)
   ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]  
   !. . Calculate resuspension

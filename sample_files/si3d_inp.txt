@@ -42,7 +42,7 @@ Parameters controlling solution algorithm
  ibc         !        1           ! 1 = Baroclinic terms in included in mom. solution (0 otherwise)
  isal        !        1           ! 1 = Solve scalar transport equation (0 otherwise)
  itrsch      !        1           ! Scalar advection 1=centered(C);2=upwind(U);3=U at k=k1z+1; (4)=Flux limiter
- cd          !      0.002         ! Bottom drag coefficient (adimensional)
+ cd          !      0.003         ! Bottom drag coefficient (adimensional)
  ifsbc       !        0           ! Surface BC; 0 = constant ; 1 = preprocess mode ; 2 = runtime mode
  dtsbc       !    3600.           ! Time (s) between records in surbc.txt (when ifsbc = 1)
  icw         !        1           ! Wind drag equation 0 = constant cw, 1 = Amorocho Devries (1980), 2 = Andreas et al (2012) only when isurfbc = 10,11
@@ -105,7 +105,7 @@ Specification for tracer (other than oxygen) simulation
  iotr        !        0           ! (10 min)
  itspftr     !        0           !
  ipwq        !        1           ! Frequency to run WQ module in time steps
- nswq        !     8640           ! Time Steps to Restore WQ field values. 
+ nswq        !    30240           ! Time Steps to Restore WQ field values. 
 -------------------------------------------------------       
 Specification for oxgygenation system simulations
 -------------------------------------------------------            

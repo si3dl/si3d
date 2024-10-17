@@ -86,6 +86,8 @@
    !.....Output initial conditions.....
    IF (idbg == 1) PRINT *, " Before entry to SUB outt"
    IF (nnodes> 0) CALL outt(n,thrs)   ! Point depthiles
+   IF (idbg == 1) PRINT *, " Before entry to SUB fluxes_out"
+   IF (nnodes> 0) CALL out_fluxes(n,thrs)   ! Point flux file
    IF (idbg == 1) PRINT *, " Before entry to SUB outv"
    IF (iox   > 0) CALL outv(n)   ! Cross-sections
    IF (idbg == 1) PRINT *, " Before entry to SUB outh"
@@ -428,6 +430,7 @@
 
       !.....Output results.....
     3 IF((nnodes > 0) .AND. (MOD(n,MAX(ipt,  1)) == 0)) CALL outt(n,thrs)
+      IF((nnodes > 0) .AND. (MOD(n,MAX(ipt,  1)) == 0)) CALL out_fluxes(n,thrs)
       IF((iox    > 0) .AND. (MOD(n,MAX(iox,  1)) == 0)) CALL outv(n)
       IF((iop    > 0) .AND. (n .GE. itspfh)  .AND. (MOD(n,MAX(iop,  1)) == 0)) CALL outh(n)
       IF((iop    > 0) .AND. (MOD(n,MAX(iop,  1)) == 0)) CALL outw(n)

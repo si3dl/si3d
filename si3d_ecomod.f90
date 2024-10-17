@@ -439,7 +439,7 @@ SUBROUTINE WQinput
   IF (ios /= 0) CALL input_error ( ios, 93)
 
   !. . . Read model rates
-  READ (UNIT=i99,FMT='(///(18X,G20.2))',IOSTAT=ios)  mu_max1, R_mor1, R_gr1,  &
+  READ (UNIT=i99,FMT='(///(18X,G20.8))',IOSTAT=ios)  mu_max1, R_mor1, R_gr1,  &
   &    mu_max2, R_mor2, R_gr2, mu_max3, R_mor3, R_gr3, mu_max4, R_mor4, R_gr4, mu_max5, R_mor5, R_gr5, &
   &    R_decom_pon, R_miner_don, R_nitrif, R_denit, &
   &    R_decom_pop, R_miner_dop, R_decom_poc, R_miner_doc, &
@@ -447,14 +447,14 @@ SUBROUTINE WQinput
   IF (ios /= 0) CALL input_error ( ios, 94)
 
   !. . . Read model temperature correction factors [-]
-  READ (UNIT=i99,FMT='(///(18X,G20.2))',IOSTAT=ios) Topt1, Topt2, Topt3, Topt4, Topt5, &
+  READ (UNIT=i99,FMT='(///(18X,G20.4))',IOSTAT=ios) Topt1, Topt2, Topt3, Topt4, Topt5, &
   &     Theta_SOD, Theta_mor, Theta_gr, &
   &     Theta_decom, Theta_miner, Theta_sedflux, Theta_nitrif , Theta_denit
 
   IF (ios /= 0) CALL input_error ( ios, 95)
 
   !. . . Read miscillaneous fluxes in mg/m2/d
-  READ (UNIT=i99,FMT='(///(18X,G20.2))',IOSTAT=ios) R_SOD, ATM_DON, ATM_NH4,    &
+  READ (UNIT=i99,FMT='(///(18X,G20.3))',IOSTAT=ios) R_SOD, ATM_DON, ATM_NH4,    &
   &    ATM_NO3, ATM_DOP, ATM_PO4,  ATM_DOC, SED_DON, SED_NH4, SED_NO3, &
   &    SED_DOP, SED_PO4, SED_DOC
   IF (ios /= 0) CALL input_error ( ios, 96)
@@ -498,25 +498,27 @@ SUBROUTINE WQinput
 
   if (iMeHg == 1) then
     allocate(kd_wpn3(sedNumber), kd_spn3(sedNumber))
-    READ (UNIT=i99, FMT='(///(18X,G20.5))', IOSTAT=ios) inst_eq
+    READ (UNIT=i99, FMT='(///(18X,I20))', IOSTAT=ios) inst_eq
     IF (ios /= 0) CALL input_error ( ios, 105)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kw31
+    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) DO_anox
+    IF (ios /= 0) CALL input_error ( ios, 105)
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) kw31
     IF (ios /= 0) CALL input_error ( ios, 106)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) atm_MeHg
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) atm_MeHg
     IF (ios /= 0) CALL input_error ( ios, 107)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) k_MeHgw
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) k_MeHgw
     IF (ios /= 0) CALL input_error ( ios, 108)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) k_MeHgatm
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) k_MeHgatm
     IF (ios /= 0) CALL input_error ( ios, 109)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) MeHgatm
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) MeHgatm
     IF (ios /= 0) CALL input_error ( ios, 110)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) K_H_MeHgw
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) K_H_MeHgw
     IF (ios /= 0) CALL input_error ( ios, 111)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kw32
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) kw32
     IF (ios /= 0) CALL input_error ( ios, 112)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) ks32
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) ks32
     IF (ios /= 0) CALL input_error ( ios, 113)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kws
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) kws
     IF (ios /= 0) CALL input_error ( ios, 114)
 
     ! if (iDOC == 1) then
@@ -564,33 +566,33 @@ SUBROUTINE WQinput
     ! end if
 
   else if (iMeHg == 0) then
-    READ (UNIT=i99, FMT='(///////////////////(18X,G20.5))', IOSTAT=ios)
+    READ (UNIT=i99, FMT='(////////////////////(18X,G20.5))', IOSTAT=ios)
     IF (ios /= 0) CALL input_error ( ios, 122)
   end if
 
   if (iHgII == 1) then
     allocate(kd_wpn2(sedNumber), kd_spn2(sedNumber))
-    READ (UNIT=i99, FMT='(///(18X,G20.5))', IOSTAT=ios) kw21
+    READ (UNIT=i99, FMT='(///(18X,G20.8))', IOSTAT=ios) kw21
     IF (ios /= 0) CALL input_error ( ios, 123)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) atm_HgII
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) atm_HgII
     IF (ios /= 0) CALL input_error ( ios, 124)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kw23
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) kw23
     IF (ios /= 0) CALL input_error ( ios, 125)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) ks23
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) ks23
     IF (ios /= 0) CALL input_error ( ios, 126)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) KDO
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) KDO
     IF (ios /= 0) CALL input_error ( ios, 127)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) KSO4
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) KSO4
     IF (ios /= 0) CALL input_error ( ios, 128)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) SO4
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) SO4
     IF (ios /= 0) CALL input_error ( ios, 129)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) miu_so4
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) miu_so4
     IF (ios /= 0) CALL input_error ( ios, 130)
 
     ! if (iDOC == 1) then
-      READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wdoc2
+      READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) kd_wdoc2
       IF (ios /= 0) CALL input_error ( ios, 131)
-      READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_sdoc2
+      READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) kd_sdoc2
       IF (ios /= 0) CALL input_error ( ios, 131)
     ! else
       ! READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
@@ -600,7 +602,7 @@ SUBROUTINE WQinput
     ! end if
 
     ! if (iALG1 == 1) then
-      READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wpa2
+      READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) kd_wpa2
       IF (ios /= 0) CALL input_error ( ios, 132)
     ! else
       ! READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
@@ -608,9 +610,9 @@ SUBROUTINE WQinput
     ! end if
 
     ! if (iPOC == 1) then
-      READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_wpom2
+      READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) kd_wpom2
       IF (ios /= 0) CALL input_error ( ios, 133)
-      READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) kd_spom2
+      READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) kd_spom2
       IF (ios /= 0) CALL input_error ( ios, 133)
     ! else
       ! READ (UNIT=i99, FMT='(18X,G20.5)', IOSTAT=ios)
@@ -635,15 +637,15 @@ SUBROUTINE WQinput
   end if
 
   if (iHg0 == 1) then
-    READ (UNIT=i99, FMT='(///(18X,G20.5))', IOSTAT=ios) DGMra
+    READ (UNIT=i99, FMT='(///(18X,G20.8))', IOSTAT=ios) DGMra
     IF (ios /= 0) CALL input_error ( ios, 135)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) k_Hg0w
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) k_Hg0w
     IF (ios /= 0) CALL input_error ( ios, 136)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) k_Hg0atm
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) k_Hg0atm
     IF (ios /= 0) CALL input_error ( ios, 137)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) Hg0atm
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) Hg0atm
     IF (ios /= 0) CALL input_error ( ios, 138)
-    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) K_H_Hg0w
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) K_H_Hg0w
     IF (ios /= 0) CALL input_error ( ios, 139)
   else if (iHg0 == 0) then
     READ (UNIT=i99, FMT='(///////(18X,G20.5))', IOSTAT=ios)
@@ -694,11 +696,13 @@ SUBROUTINE WQinput
   R_miner_dop =  R_miner_dop/86400.0
   R_decom_poc =  R_decom_poc/86400.0
   R_miner_doc =  R_miner_doc/86400.0
-  R_settl =  R_settl/86400.0          ! [m/s]
-  R_resusp =  R_resusp/86400.0        ! [m/s]
+  R_settl =  R_settl/86400.0
+  vspa = vspa / 86400.0
+  vspoc = vspoc / 86400.0
+  R_resusp =  R_resusp/86400.0
 
   ! DO
-  R_reaer   =  R_reaer/86400.0        ! [m/s]
+  R_reaer   =  R_reaer/86400.0
 
   R_SOD   = R_SOD/86400.0
   ATM_DON = ATM_DON/86400.0
@@ -786,12 +790,13 @@ SUBROUTINE WQinput
     print*, 'R_nitrif = ', R_nitrif, 'R_denit = ', R_denit
     print*, 'R_decom_pop =' , R_decom_pop, 'R_miner_dop = ', R_miner_dop
     print*, 'R_decom_poc =' , R_decom_poc, 'R_miner_doc = ', R_miner_doc
-    print*, 'R_settl = ', R_settl, 'R_resusp = ', R_resusp
+    print*, 'R_settl = ', R_settl, 'vspoc = ', vspoc, 'vspa =', vspa, 'R_resusp = ', R_resusp
     print*, 'R_reaer = ', R_reaer, 'R_SOD = ', R_SOD
     print*, 'ATM_DOC = ', ATM_DOC, 'ATM_DON = ', ATM_DON, 'ATM_DOP = ', ATM_DOP
     print*, 'ATM_NH4 = ', ATM_NH4, 'ATM_NO3 = ', ATM_NO3, 'ATM_PO4 = ', ATM_NO3
     print*, 'SED_DOC = ', SED_DOC, 'SED_DON = ', SED_DON, 'SED_DOP = ', SED_DOP
     print*, 'SED_NH4 = ', SED_NH4, 'SED_NO3 = ', SED_NO3, 'SED_PO4 = ', SED_PO4
+    print*
     
     print*, '-------- SS Model -------'
     PRINT*, 'sed_h = ', sed_h
@@ -850,6 +855,9 @@ SUBROUTINE WQinput
     print*, 'SO4 =', SO4
     print*, 'POC_sed =', POC_sed
     print*, 'DOC_sed =', DOC_sed
+    print*, 'MeHg_sed = ', MeHg_sed
+    print*, 'HgII_sed = ', HgII_sed
+    print*, 'Hg0_sed = ', Hg0_sed
   END IF
 
 END SUBROUTINE WQinput
@@ -905,9 +913,9 @@ SUBROUTINE WQinit
   end do
 
   if (iSS == 1) then
-    allocate(settling_vel(sedNumber), erosion_Hgpn(sedNumber))
+    allocate(settling_vel(sedNumber), erosion_wqpn(sedNumber))
     settling_vel(:) = 0.0
-    erosion_Hgpn(:) = 0.0
+    erosion_wqpn(:) = 0.0
   end if
 
   print*, 'Constituents to model:'
@@ -1025,7 +1033,7 @@ SUBROUTINE srcsnkWQ(n)
   integer, intent(in) :: n
 
   ! reset soursesink = 0
-  sourcesink = 0.0
+  sourcesink(:, :, :) = 0.0
 
   ! STWAVE controlling section. (SergioValbuena 03-11-2023) 
   if ((iSS == 1) .and. (iSTWAVE == 1)) then
@@ -1041,7 +1049,9 @@ SUBROUTINE srcsnkWQ(n)
     k1s = k1z(l)
 
     DO k = k1s, kms;
-
+      IF (iSS == 1) THEN
+        call sourceSS(k, l)
+      END IF
       IF (iDO == 1) THEN
         CALL sourceDO(k,l)
       END IF
@@ -1086,9 +1096,6 @@ SUBROUTINE srcsnkWQ(n)
       END IF
       IF (iALG5 == 1) THEN
         CALL sourceALG5(k,l)
-      END IF
-      IF (iSS == 1) THEN
-        call sourceSS(k, l)
       END IF
       IF ((iHg0 == 1) .OR. (iHgII == 1) .OR. (iMeHg == 1)) THEN
         CALL sourceHg(k, l)
