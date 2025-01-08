@@ -75,7 +75,7 @@ Model rates: Four algae groups, oxygen, SOD, and Nutrientes
 --------------------------------------------------------------------------------------------------------
 Temperature Correction Factors
 --------------------------------------------------------------------------------------------------------
- Topt1           !       27.0         ! (degC) Optimal temperature for growth of algea - 1
+ Topt1           !       25.0         ! (degC) Optimal temperature for growth of algea - 1
  Topt2           !       15.0         ! (degC) Optimal temperature for growth of algea - 2
  Topt3           !       15.0         ! (degC) Optimal temperature for growth of algea - 3
  Topt4           !       15.0         ! (degC) Optimal temperature for growth of algea - 4
@@ -127,18 +127,19 @@ MeHg Parameters
  K_H_MeHgw       !     0.000016       ! [-] Henry's law constant for MeHg
  kw32            !     0.013824       ! [1/d] Demethylation rate constant for MeHg in water
  ks32            !     0.013824       ! [1/d] Demethylation rate constant for MeHg in sediment 
- kws             !     0.002          ! [m/d] Mass transfer for mercury diffusion
+ kws3            !     0.002          ! [m/d] Mass transfer for mercury diffusion MeHg
  kd_wdoc3        !     0.0015         ! [m3/mg]
  kd_sdoc3        !     0.0015         ! [m3/mg]
  kd_wpa3         !     0.001          ! [m3/mg]
  kd_wpom3        !     0.001          ! [m3/mg]
  kd_spom3        !     0.001          ! [m3/mg]
- kd_wpn3 [m3/kg] ! 200.0, 0.1
- kd_spn3 [m3/kg] ! 200.0, 0.1
+ kd_wpn3 [m3/kg] ! 70.0, 0.1
+ kd_spn3 [m3/kg] ! 70.0, 0.1
 --------------------------------------------------------------------------------------------------------
 HgII Parameters
 --------------------------------------------------------------------------------------------------------
  kw21            !     0.03           ! [m2/W 1/d] Reduction rate constant for HgII_to_Hg0
+ kws2            !     0.002          ! [m/d] Mass transfer for mercury diffusion HgII
  atm_HgII        !    13.70           ! [ng/m2/d] Mercury deposition rate
  kw23            !     0.02592        ! [1/d] Methylation rate constant for HgII in water
  ks23            !     0.02592        ! [1/d] Methylation rate constant for HgII in sediment
@@ -156,6 +157,7 @@ HgII Parameters
 --------------------------------------------------------------------------------------------------------
 Hg0 Parameters
 --------------------------------------------------------------------------------------------------------
+ kws1            !     0.002          ! [m/d] Mass transfer for mercury diffusion Hg0
  DGMra           !     0.018411       ! [-] Desired ratio from DOC and PH relatonship (Method in DSM2 model) 
  k_Hg0w          !     0.5            ! [m/d] Mass transfer coefficient for Hg0 in water
  k_Hg0atm        !   100.0            ! [m/d] Mass transfer coefficient for Hg0 in atmosphere

@@ -50,11 +50,11 @@ Parameters controlling solution algorithm
  ws          !      0.001         ! Wind speed (constant in m/s) when ifsbc = 0
  phi         !    000.0           ! Wind direction (constant in degress) when ifsbc = 0
  idbg        !        0           ! 0 = no check messages 1 = check messages output for debug purposes
- nth         !       16           ! Number of processors used in parallelization
+ nth         !       32           ! Number of processors used in parallelization
 -------------------------------------------------------
 Output specifications for time files (individual nodes)
 -------------------------------------------------------  
- ipt         !       180          ! No. of time step between consecutive output to time file  (2h)
+ ipt         !       360          ! No. of time step between consecutive output to time file  (2h)
  nnodes      !         3          ! ASN ASS TB MK GB
  inodes      !   2,6,11
  jnodes      !   6,6,6

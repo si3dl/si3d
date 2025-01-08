@@ -1253,12 +1253,12 @@ c
  10   z(i) = r(i)
       return
       end
-      subroutine split (accel,suba,subat,subq,subqt,subql,subqlt,
+      subroutine split_nspcg (accel,suba,subat,subq,subqt,subql,subqlt,
      a                  subqr,subqrt,subadp,
      a                  coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
 c
-c ... split determines how to apply the splitting based on
+c ... split_nspcg determines how to apply the splitting based on
 c     iqlr.
 c
       external accel, suba, subat, subq, subqt, subql, subqlt,
@@ -1310,7 +1310,7 @@ c
 c
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + n
-      call split (accel,suba8,suba9,copy,copy,copy,copy,
+      call split_nspcg (accel,suba8,suba9,copy,copy,copy,copy,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,
      a            ier)
@@ -1331,7 +1331,7 @@ c
 c
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + n
-      call split (accel,suba8,suba9,subq1,subq1,subq1,subq1,
+      call split_nspcg (accel,suba8,suba9,subq1,subq1,subq1,subq1,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       if (keygs .eq. 1) irpnt = irpnt - n
@@ -1358,7 +1358,7 @@ c
          call ershow (ier,'sor1')
          return
       endif
-      call split (accel,suba8,suba9,subq78,subq78,subq78,subq78,
+      call split_nspcg (accel,suba8,suba9,subq78,subq78,subq78,subq78,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
@@ -1391,7 +1391,7 @@ c
          call ershow (ier,'ssor1')
          return
       endif
-      call split (accel,suba8,suba9,subq79,subq80,subq81,subq82,
+      call split_nspcg (accel,suba8,suba9,subq79,subq80,subq81,subq82,
      a            subq83,subq84,subq85,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       if (isymm .ne. 0) irpnt = irpnt - n
@@ -1432,7 +1432,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + n
-      call split (accel,suba8,suba9,subq86,subq87,subq88,subq89,
+      call split_nspcg (accel,suba8,suba9,subq86,subq87,subq88,subq89,
      a            subq90,subq91,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
@@ -1472,7 +1472,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + n
-      call split (accel,suba8,suba9,subq86,subq87,subq88,subq89,
+      call split_nspcg (accel,suba8,suba9,subq86,subq87,subq88,subq89,
      a            subq90,subq91,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
@@ -1501,7 +1501,7 @@ c
       irpnt = irpnt + 2*n
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + n
-      call split (accel,suba8,suba9,subq92,subq93,subq92,subq93,
+      call split_nspcg (accel,suba8,suba9,subq92,subq93,subq92,subq93,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*n
@@ -1528,7 +1528,7 @@ c
       irpnt = irpnt + n
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + n
-      call split (accel,suba8,suba9,subq94,subq95,subq94,subq95,
+      call split_nspcg (accel,suba8,suba9,subq94,subq95,subq94,subq95,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
@@ -1544,7 +1544,7 @@ c
       integer   iparm(30), jcoef(*), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
-      call split (accel,suba1,suba1,copy,copy,copy,copy,
+      call split_nspcg (accel,suba1,suba1,copy,copy,copy,copy,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
@@ -1558,7 +1558,7 @@ c
       integer   iparm(30), jcoef(*), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
-      call split (accel,suba1,suba1,subq1,subq1,subq1,subq1,
+      call split_nspcg (accel,suba1,suba1,subq1,subq1,subq1,subq1,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
@@ -1583,7 +1583,7 @@ c
       t2 = timer (dummy)
       timfac = t2 - t1
       if (ier .lt. 0) return
-      call split (accel,suba1,suba1,subq2,subq2,subq2,subq2,
+      call split_nspcg (accel,suba1,suba1,subq2,subq2,subq2,subq2,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
@@ -1608,7 +1608,7 @@ c
       t2 = timer (dummy)
       timfac = t2 - t1
       if (ier .lt. 0) return
-      call split (accel,suba1,suba1,subq4,subq4,subq4,subq4,
+      call split_nspcg (accel,suba1,suba1,subq4,subq4,subq4,subq4,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
@@ -1632,7 +1632,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = iipnt
       iipnt = iipnt + maxnz
-      call split (accel,suba1,suba1,subq6,subq6,subq6,subq6,
+      call split_nspcg (accel,suba1,suba1,subq6,subq6,subq6,subq6,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       iipnt = iipnt - maxnz
@@ -1658,7 +1658,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = iipnt
       iipnt = iipnt + maxnz
-      call split (accel,suba1,suba1,subq7,subq7,subq8,subq9,
+      call split_nspcg (accel,suba1,suba1,subq7,subq7,subq8,subq9,
      a            subq10,subq11,subq12,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       iipnt = iipnt - maxnz
@@ -1691,7 +1691,7 @@ c
       leniw = max0 (maxnz,nfacti)
       iwkpt1 = iipnt
       iipnt = iipnt + leniw
-      call split (accel,suba1,suba1,subq13,subq13,subq14,subq15,
+      call split_nspcg (accel,suba1,suba1,subq13,subq13,subq14,subq15,
      a            subq16,subq17,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       iipnt = iipnt - leniw
@@ -1724,7 +1724,7 @@ c
       leniw = max0 (maxnz,nfacti)
       iwkpt1 = iipnt
       iipnt = iipnt + leniw
-      call split (accel,suba1,suba1,subq13,subq13,subq14,subq15,
+      call split_nspcg (accel,suba1,suba1,subq13,subq13,subq14,subq15,
      a            subq16,subq17,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       iipnt = iipnt - leniw
@@ -1750,7 +1750,7 @@ c
       call ainfn (n,ndim,maxnz,jcoef,coef,2,ainf,wksp(irpnt))
       iwkpt1 = irpnt
       irpnt = irpnt + 2*n
-      call split (accel,suba1,suba1,subq18,subq18,subq18,subq18,
+      call split_nspcg (accel,suba1,suba1,subq18,subq18,subq18,subq18,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*n
@@ -1773,7 +1773,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + n
-      call split (accel,suba1,suba1,subq19,subq19,subq19,subq19,
+      call split_nspcg (accel,suba1,suba1,subq19,subq19,subq19,subq19,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
@@ -1801,7 +1801,7 @@ c
       t2 = timer (dummy)
       timfac = t2 - t1
       if (ier .lt. 0) return
-      call split (accel,suba1,suba1,subq20,subq20,subq20,subq20,
+      call split_nspcg (accel,suba1,suba1,subq20,subq20,subq20,subq20,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
@@ -1832,7 +1832,7 @@ c
       iwkpt1 = irpnt
       irpnt = irpnt + n
       if (ier .lt. 0) return
-      call split (accel,suba1,suba1,subq21,subq21,subq21,subq21,
+      call split_nspcg (accel,suba1,suba1,subq21,subq21,subq21,subq21,
      a            copy,copy,subq22,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
@@ -1865,7 +1865,7 @@ c
       iwkpt1 = irpnt
       irpnt = irpnt + kblsz
       if (ier .lt. 0) return
-      call split (accel,suba1,suba1,subq25,subq25,subq25,subq25,
+      call split_nspcg (accel,suba1,suba1,subq25,subq25,subq25,subq25,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - kblsz
@@ -1899,7 +1899,7 @@ c
       iwkpt1 = irpnt
       irpnt = irpnt + kblsz
       if (ier .lt. 0) return
-      call split (accel,suba1,suba1,subq25,subq25,subq25,subq25,
+      call split_nspcg (accel,suba1,suba1,subq25,subq25,subq25,subq25,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - kblsz
@@ -1932,7 +1932,7 @@ c
       iwkpt1 = irpnt
       irpnt = irpnt + kblsz
       if (ier .lt. 0) return
-      call split (accel,suba1,suba1,subq25,subq25,subq25,subq25,
+      call split_nspcg (accel,suba1,suba1,subq25,subq25,subq25,subq25,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - kblsz
@@ -1966,7 +1966,7 @@ c
       iwkpt1 = irpnt
       irpnt = irpnt + kblsz
       if (ier .lt. 0) return
-      call split (accel,suba1,suba1,subq25,subq25,subq25,subq25,
+      call split_nspcg (accel,suba1,suba1,subq25,subq25,subq25,subq25,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - kblsz
@@ -2003,7 +2003,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + 2*n
-      call split (accel,suba1,suba1,subq23,subq23,subq23,subq23,
+      call split_nspcg (accel,suba1,suba1,subq23,subq23,subq23,subq23,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*n
@@ -2035,7 +2035,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + 2*n
-      call split (accel,suba1,suba1,subq24,subq24,subq24,subq24,
+      call split_nspcg (accel,suba1,suba1,subq24,subq24,subq24,subq24,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*n
@@ -2050,7 +2050,7 @@ c
       integer   iparm(30), jcoef(*), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
-      call split (accel,suba4,suba5,copy,copy,copy,copy,
+      call split_nspcg (accel,suba4,suba5,copy,copy,copy,copy,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
@@ -2064,7 +2064,7 @@ c
       integer   iparm(30), jcoef(*), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
-      call split (accel,suba4,suba5,subq1,subq1,subq1,subq1,
+      call split_nspcg (accel,suba4,suba5,subq1,subq1,subq1,subq1,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
@@ -2089,7 +2089,7 @@ c
       t2 = timer (dummy)
       timfac = t2 - t1
       if (ier .lt. 0) return
-      call split (accel,suba4,suba5,subq2,subq3,subq2,subq3,
+      call split_nspcg (accel,suba4,suba5,subq2,subq3,subq2,subq3,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
@@ -2114,7 +2114,7 @@ c
       t2 = timer (dummy)
       timfac = t2 - t1
       if (ier .lt. 0) return
-      call split (accel,suba4,suba5,subq4,subq5,subq4,subq5,
+      call split_nspcg (accel,suba4,suba5,subq4,subq5,subq4,subq5,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
@@ -2142,7 +2142,7 @@ c
      a            iwksp(iipnt),maxt,maxb)
       iwkpt1 = iipnt
       iipnt = iipnt + maxnz
-      call split (accel,suba4,suba5,subq40,subq40,subq40,subq40,
+      call split_nspcg (accel,suba4,suba5,subq40,subq40,subq40,subq40,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       iipnt = iipnt - maxnz
@@ -2175,7 +2175,7 @@ c
       irpnt = irpnt + n
       iwkpt2 = iipnt
       iipnt = iipnt + maxnz
-      call split (accel,suba4,suba5,subq41,subq42,subq43,subq44,
+      call split_nspcg (accel,suba4,suba5,subq41,subq42,subq43,subq44,
      a            subq45,subq46,subq47,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
@@ -2218,7 +2218,7 @@ c
       leniw = max0 (maxnz,nfacti)
       iwkpt1 = iipnt
       iipnt = iipnt + leniw
-      call split (accel,suba4,suba5,subq48,subq49,subq50,subq51,
+      call split_nspcg (accel,suba4,suba5,subq48,subq49,subq50,subq51,
      a            subq52,subq53,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       iipnt = iipnt - leniw
@@ -2260,7 +2260,7 @@ c
       leniw = max0 (maxnz,nfacti)
       iwkpt1 = iipnt
       iipnt = iipnt + leniw
-      call split (accel,suba4,suba5,subq48,subq49,subq50,subq51,
+      call split_nspcg (accel,suba4,suba5,subq48,subq49,subq50,subq51,
      a            subq52,subq53,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       iipnt = iipnt - leniw
@@ -2286,7 +2286,7 @@ c
       call ainfn (n,ndim,maxnz,jcoef,coef,3,ainf,wksp(irpnt))
       iwkpt1 = irpnt
       irpnt = irpnt + 2*n
-      call split (accel,suba4,suba5,subq54,subq55,subq54,subq55,
+      call split_nspcg (accel,suba4,suba5,subq54,subq55,subq54,subq55,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*n
@@ -2309,7 +2309,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + n
-      call split (accel,suba4,suba5,subq56,subq57,subq56,subq57,
+      call split_nspcg (accel,suba4,suba5,subq56,subq57,subq56,subq57,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
@@ -2337,7 +2337,7 @@ c
       t2 = timer (dummy)
       timfac = t2 - t1
       if (ier .lt. 0) return
-      call split (accel,suba4,suba5,subq58,subq58,subq58,subq58,
+      call split_nspcg (accel,suba4,suba5,subq58,subq58,subq58,subq58,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
@@ -2369,7 +2369,7 @@ c
       iwkpt1 = irpnt
       irpnt = irpnt + n
       if (ier .lt. 0) return
-      call split (accel,suba4,suba5,subq59,subq60,subq61,subq62,
+      call split_nspcg (accel,suba4,suba5,subq59,subq60,subq61,subq62,
      a            subq63,subq64,subq65,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
@@ -2403,7 +2403,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + 2*kblsz
-      call split (accel,suba4,suba5,subq70,subq71,subq72,subq73,
+      call split_nspcg (accel,suba4,suba5,subq70,subq71,subq72,subq73,
      a            subq74,subq75,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*kblsz
@@ -2438,7 +2438,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + 2*kblsz
-      call split (accel,suba4,suba5,subq70,subq71,subq72,subq73,
+      call split_nspcg (accel,suba4,suba5,subq70,subq71,subq72,subq73,
      a            subq74,subq75,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*kblsz
@@ -2473,7 +2473,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + 2*kblsz
-      call split (accel,suba4,suba5,subq70,subq71,subq72,subq73,
+      call split_nspcg (accel,suba4,suba5,subq70,subq71,subq72,subq73,
      a            subq74,subq75,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*kblsz
@@ -2508,7 +2508,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + 2*kblsz
-      call split (accel,suba4,suba5,subq70,subq71,subq72,subq73,
+      call split_nspcg (accel,suba4,suba5,subq70,subq71,subq72,subq73,
      a            subq74,subq75,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*kblsz
@@ -2545,7 +2545,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + 2*n
-      call split (accel,suba4,suba5,subq66,subq67,subq66,subq67,
+      call split_nspcg (accel,suba4,suba5,subq66,subq67,subq66,subq67,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*n
@@ -2577,7 +2577,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + 2*n
-      call split (accel,suba4,suba5,subq68,subq69,subq68,subq69,
+      call split_nspcg (accel,suba4,suba5,subq68,subq69,subq68,subq69,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*n
@@ -2597,7 +2597,7 @@ c
 c
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + 2*n
-      call split (accel,suba12,suba12,copy,copy,copy,copy,
+      call split_nspcg (accel,suba12,suba12,copy,copy,copy,copy,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       if (keygs .eq. 1) irpnt = irpnt - 2*n
@@ -2617,7 +2617,7 @@ c
 c
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + 2*n
-      call split (accel,suba12,suba12,subq1,subq1,subq1,subq1,
+      call split_nspcg (accel,suba12,suba12,subq1,subq1,subq1,subq1,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       if (keygs .eq. 1) irpnt = irpnt - 2*n
@@ -2646,7 +2646,7 @@ c
       irpnt = irpnt + 2*n
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + 2*n
-      call split (accel,suba12,suba12,sub110,sub110,sub110,sub110,
+      call split_nspcg (accel,suba12,suba12,sub110,sub110,sub110,sub110,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*n
@@ -2673,7 +2673,7 @@ c
       irpnt = irpnt + n
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + 2*n
-      call split (accel,suba12,suba12,sub111,sub111,sub111,sub111,
+      call split_nspcg (accel,suba12,suba12,sub111,sub111,sub111,sub111,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
@@ -2694,7 +2694,7 @@ c
 c
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + 2*n
-      call split (accel,suba13,suba14,copy,copy,copy,copy,
+      call split_nspcg (accel,suba13,suba14,copy,copy,copy,copy,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       if (keygs .eq. 1) irpnt = irpnt - 2*n
@@ -2714,7 +2714,7 @@ c
 c
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + 2*n
-      call split (accel,suba13,suba14,subq1,subq1,subq1,subq1,
+      call split_nspcg (accel,suba13,suba14,subq1,subq1,subq1,subq1,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       if (keygs .eq. 1) irpnt = irpnt - 2*n
@@ -2743,7 +2743,7 @@ c
       irpnt = irpnt + 2*n
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + 2*n
-      call split (accel,suba13,suba14,sub112,sub113,sub112,sub113,
+      call split_nspcg (accel,suba13,suba14,sub112,sub113,sub112,sub113,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*n
@@ -2770,7 +2770,7 @@ c
       irpnt = irpnt + n
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + 2*n
-      call split (accel,suba13,suba14,sub114,sub115,sub114,sub115,
+      call split_nspcg (accel,suba13,suba14,sub114,sub115,sub114,sub115,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
@@ -2791,7 +2791,7 @@ c
 c
       iwkpt1 = irpnt
       irpnt = irpnt + n
-      call split (accel,suba8,suba8,subq96,subq96,subq96,subq96,
+      call split_nspcg (accel,suba8,suba8,subq96,subq96,subq96,subq96,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
@@ -2815,7 +2815,7 @@ c
 c
       iwkpt1 = irpnt
       irpnt = irpnt + n + ncmax
-      call split (accel,suba8,suba9,subq97,subq98,subq99,sub100,
+      call split_nspcg (accel,suba8,suba9,subq97,subq98,subq99,sub100,
      a            sub101,sub102,sub103,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n - ncmax
@@ -2848,7 +2848,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + n
-      call split (accel,suba8,suba9,sub104,sub105,sub106,sub107,
+      call split_nspcg (accel,suba8,suba9,sub104,sub105,sub106,sub107,
      a            sub108,sub109,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
@@ -2881,7 +2881,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + n
-      call split (accel,suba8,suba9,sub104,sub105,sub106,sub107,
+      call split_nspcg (accel,suba8,suba9,sub104,sub105,sub106,sub107,
      a            sub108,sub109,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
@@ -2919,7 +2919,7 @@ c
      a             wksp(irpnt))
       iwkpt1 = irpnt
       irpnt = irpnt + n + nb
-      call split (accel,suba10,suba11,subq1,subq1,subq1,subq1,
+      call split_nspcg (accel,suba10,suba11,subq1,subq1,subq1,subq1,
      a            copy,copy,noadp,
      a            coef,jcoef,nr,u,ubar,wksp(irhs),wksp,iwksp,
      a            iparm,rparm,ier)
@@ -2947,7 +2947,7 @@ c
       t2 = timer (dummy)
       timfac = t2 - t1
       if (ier .lt. 0) return
-      call split (accel,suba2,suba2,subq26,subq26,subq26,subq26,
+      call split_nspcg (accel,suba2,suba2,subq26,subq26,subq26,subq26,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
@@ -2977,7 +2977,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + n
-      call split (accel,suba2,suba3,subq27,subq28,subq29,subq30,
+      call split_nspcg (accel,suba2,suba3,subq27,subq28,subq29,subq30,
      a            subq31,subq32,subq33,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
@@ -3013,7 +3013,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + 2*ncmax
-      call split (accel,suba2,suba3,subq34,subq35,subq36,subq37,
+      call split_nspcg (accel,suba2,suba3,subq34,subq35,subq36,subq37,
      a            subq38,subq39,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*ncmax
@@ -3049,7 +3049,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + 2*ncmax
-      call split (accel,suba2,suba3,subq34,subq35,subq36,subq37,
+      call split_nspcg (accel,suba2,suba3,subq34,subq35,subq36,subq37,
      a            subq38,subq39,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*ncmax
@@ -3085,7 +3085,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + 2*ncmax
-      call split (accel,suba2,suba3,subq34,subq35,subq36,subq37,
+      call split_nspcg (accel,suba2,suba3,subq34,subq35,subq36,subq37,
      a            subq38,subq39,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*ncmax
@@ -3121,7 +3121,7 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + 2*ncmax
-      call split (accel,suba2,suba3,subq34,subq35,subq36,subq37,
+      call split_nspcg (accel,suba2,suba3,subq34,subq35,subq36,subq37,
      a            subq38,subq39,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*ncmax
@@ -3168,7 +3168,7 @@ c
      a             coef,wksp(irhs),rhs,wksp(ifactr),wksp(irpnt))
       iwkpt1 = irpnt
       irpnt = irpnt + nb
-      call split (accel,suba6,suba7,subq76,subq77,subq76,subq77,
+      call split_nspcg (accel,suba6,suba7,subq76,subq77,subq76,subq77,
      a            copy,copy,noadp,
      a            coef,jcoef,nr,u,ubar,wksp(irhs),wksp,iwksp,
      a            iparm,rparm,ier)
@@ -16810,7 +16810,7 @@ c
  25   continue
       lbhb = ipt
 c
-c ... split zero diagonal block into super and sub diagonals.
+c ... split_nspcg zero diagonal block into super and sub diagonals.
 c
       jlim = iblock(3,2)
       do 30 j = 1,jlim
@@ -16899,7 +16899,7 @@ c
  35      continue
          lbhb(k) = ipt
 c
-c ... split zero diagonal block into super and sub diagonals.
+c ... split_nspcg zero diagonal block into super and sub diagonals.
 c
          jlim = iblock(3,k,2)
          do 40 j = 1,jlim

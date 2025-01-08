@@ -1,7 +1,7 @@
 #!/bin/bash
 
-export FORTRAN_COMPILER=IFORT
-export SI3DDIR=../psi3d
+export FORTRAN_COMPILER=ifx
+export SI3DDIR=../si3d
 export GOTMDIR=../gotm
 #export SI3DDIR=/home/sv/GitHub/psi3d
 #export GOTMDIR=/home/sv/GitHub/gotm
@@ -28,7 +28,7 @@ fi
 if $IFSI3D
 then
 	cd $SI3DDIR
-	make omp
+	make omp_ifx
 	rm *.o
 else
 	cd $SI3DDIR

@@ -41,7 +41,7 @@ SUBROUTINE sourceDO(kwq,lwq)
   sedoxydemand = 0.0
 
   ! ...Calculate DO saturation
-  Tk = salp(kwq,lwq) + 273
+  Tk = salp(kwq, lwq) + 273
   lnOS = -139.34410 + 1.575701*1E5 /(Tk    ) &
   &                 - 6.642308*1E7 /(Tk**2.) &
   &                 + 1.243800*1E10/(Tk**3.) &
@@ -49,7 +49,6 @@ SUBROUTINE sourceDO(kwq,lwq)
   OS = EXP(lnos)
 
   ! Correct for Patmospheric (Pa - declared in si3d_types and defined in surfbc0)
-
   Patm   = Pa * 0.00000986923; ! Transform atmospheric pressure from Pa to atm
   ln_Pwv = 11.8751 - (3840.70/Tk) - (216961/(Tk**2.))
   Pwv    = EXP(ln_Pwv)
@@ -65,12 +64,12 @@ SUBROUTINE sourceDO(kwq,lwq)
   ! alternatives for reaeration rates.
   IF (kwq .eq. k1z(lwq)) THEN
     ws = SQRT(uair(lwq)**2. + vair(lwq)**2.)
-    if ((R_reaer * (ws ** 1.64)) .lt. R_reaer) then
-      reaeration = R_reaer * (OS - tracerpp(kwq, lwq, LDO))
-    else
+    ! if ((R_reaer * (ws ** 1.64)) .lt. R_reaer) then
+      ! reaeration = R_reaer * (OS - tracerpp(kwq, lwq, LDO))
+    ! else
       reaeration  = R_reaer * (ws ** 1.64)* (OS - tracerpp(kwq,lwq,LDO)) 
       ! Units: [mg/m^2/s] = [m/s] * [mg/m^3]
-    end if
+    ! end if
   ELSE
      reaeration  = 0.0
   END IF
@@ -80,18 +79,18 @@ SUBROUTINE sourceDO(kwq,lwq)
     f_SOD = tracerpp(kwq,lwq,LDO) /(KSOD + tracerpp(kwq,lwq,LDO) ) ! DO inhibition of sediment oxygen demand
     i = l2i(lwq)
     j = l2j(lwq)
-    if (((i >= 1) .and. (i <= 142)) .and. ((j >=1) .and. (j <= 195))) then
-      R_SOD_ij = R_SOD * 0.1
-    elseif ((i > 142) .and. ((j >= 1) .and. (j <= 76))) then
-      R_SOD_ij = R_SOD * 0.2
-    elseif (((i > 142) .and. (i <= 159)) .and. ((j > 76) .and. (j <= 89))) then
-      R_SOD_ij = R_SOD * 1.0
+    if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
+      R_SOD_ij = R_SOD * 0.35
+    elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
+      R_SOD_ij = R_SOD * 0.35
+    elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
+      R_SOD_ij = R_SOD * 0.35
     else
       R_SOD_ij = R_SOD
     end if
-     ! Units of KSDO need to be mg/m3
-     sedoxydemand = R_SOD_ij * f_SOD * (Theta_SOD ** (salp(kwq, lwq) - 20)) 
-     ! Units: [mg/m^2/s] = [mg/m^2/s] * [-] * [-] 
+    ! Units of KSDO need to be mg/m3
+    sedoxydemand = R_SOD_ij * f_SOD * (Theta_SOD ** (salp(kwq, lwq) - 20)) 
+    ! Units: [mg/m^2/s] = [mg/m^2/s] * [-] * [-] 
   ELSE
      sedoxydemand = 0.0
 
@@ -542,6 +541,8 @@ SUBROUTINE sourcePOC (kwq, lwq)
 
   !... Local variables
   REAL:: decompositionPOC, f_decom, depositionPOC, resuspensionPOC
+  real :: R_resusp_ij
+  integer :: i, j
 
   depositionPOC = 0.0
   resuspensionPOC = 0.0
@@ -562,9 +563,20 @@ SUBROUTINE sourcePOC (kwq, lwq)
   ! ... Calculate deposition of POC only in the bottom layer
   IF (kwq .eq. kmz(lwq)) THEN
     depositionPOC = vspoc * tracerpp(kwq,lwq,LPOC)
+    i = l2i(lwq)
+    j = l2j(lwq)
     ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3] 
     ! ... Calculate resusupension of POC only in the bottom layer
-    resuspensionPOC = R_resusp * tracerpp(kwq,lwq,LPOC)
+    if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
+      R_resusp_ij = R_resusp * 1.0
+    elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
+      R_resusp_ij = R_resusp * 0.0
+    elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
+      R_resusp_ij = R_resusp * 0.0
+    else
+      R_resusp_ij = R_resusp * 1.0
+    end if
+    resuspensionPOC = R_resusp_ij * tracerpp(kwq,lwq,LPOC)
     ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
     if (depositionPOC .gt. (tracerpp(kwq, lwq, LPOC) * hp(kwq, lwq) / dt)) then
       depositionPOC = tracerpp(kwq, lwq, LPOC) * hp(kwq, lwq) / dt
@@ -603,6 +615,7 @@ SUBROUTINE sourceDOC(kwq, lwq)
 
   !. . . Local variables
   REAL:: mineralizationDOC, f_miner, atmosdepositionDOC, f_sedflux, sedfluxDOC, SED_DOC_ij
+  integer :: i, j
 
   mineralizationDOC = 0.0
   f_miner = 0.0
@@ -630,24 +643,26 @@ SUBROUTINE sourceDOC(kwq, lwq)
 
   !. . .Add contribution from sediment flux to the bottom layer
   IF (kwq .eq. kmz(lwq)) THEN
-      IF (IDO == 1) THEN
-         ! Calculate DO inhibition of sediment flux
-         ! f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
-         f_sedflux = KSED /(KSED + tracerpp(kwq,lwq,LDO) )
-      ELSE
-         f_sedflux = 1.0
-      END IF
-      if (((i >= 1) .and. (i <= 142)) .and. ((j >=1) .and. (j <= 195))) then
-        SED_DOC_ij = SED_DOC * 0.1
-      elseif ((i > 142) .and. ((j >= 1) .and. (j <= 76))) then
-        SED_DOC_ij = SED_DOC * 0.2
-      elseif (((i > 142) .and. (i <= 159)) .and. ((j > 76) .and. (j <= 89))) then
-        SED_DOC_ij = SED_DOC * 1.0
-      else
-        SED_DOC_ij = SED_DOC
-      end if
-      sedfluxDOC = SED_DOC_ij * f_sedflux* (Theta_sedflux**(salp(kwq,lwq) - 20))
-      ! Units: [mg/m^2/s] =  [mg/m^2/s] * [-] * [-] 
+    IF (IDO == 1) THEN
+       ! Calculate DO inhibition of sediment flux
+       f_sedflux = tracerpp(kwq,lwq,LDO) /(KSED + tracerpp(kwq,lwq,LDO) )
+       ! f_sedflux = KSED /(KSED + tracerpp(kwq,lwq,LDO) )
+    ELSE
+       f_sedflux = 1.0
+    END IF
+    i = l2i(lwq)
+    j = l2j(lwq)
+    if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
+      SED_DOC_ij = SED_DOC * 0.3
+    elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
+      SED_DOC_ij = SED_DOC * 1.0
+    elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
+      SED_DOC_ij = SED_DOC * 1.0
+    else
+      SED_DOC_ij = SED_DOC
+    end if
+    sedfluxDOC = SED_DOC_ij * f_sedflux * (Theta_sedflux**(salp(kwq,lwq) - 20))
+    ! Units: [mg/m^2/s] =  [mg/m^2/s] * [-] * [-] 
   ELSE
       sedfluxDOC = 0.0
   END IF
@@ -681,6 +696,8 @@ SUBROUTINE sourceALG1(kwq, lwq)
   ! ... Arguments
   INTEGER, INTENT (IN) :: kwq,lwq
 
+  integer :: i,j
+
   !. . .Local Variables
   REAL::  mu1, f_L1, f_T, f_N, f_P, N_conc
   REAL::  growth1, mort1, graz1, deposi1, resus1
@@ -703,8 +720,10 @@ SUBROUTINE sourceALG1(kwq, lwq)
     f_T = 0
   ELSE IF ((salp(kwq,lwq) .gt. Tmin1) .AND. (salp(kwq,lwq) .lt. Topt1)) THEN
     f_T = (salp(kwq,lwq) - Tmin1) / (Topt1 - Tmin1)
-  ELSE IF (salp(kwq,lwq) .gt. Topt1) THEN 
+  ELSE IF ((salp(kwq,lwq) .gt. Topt1) .AND. (salp(kwq, lwq) .lt. Tmax1)) THEN 
     f_T = (Tmax1 - salp(kwq,lwq)) / (Tmax1 - Topt1)
+  ELSE IF (salp(kwq, lwq) .gt. Tmax1) THEN
+    f_T = 0
   END IF
 
   ! nutrient limitation - but only if the nutrients are modeled
@@ -737,6 +756,19 @@ SUBROUTINE sourceALG1(kwq, lwq)
 
   !. . Calculate growth
   mu1 = mu_max1 * MIN(f_L1,f_N,f_P)
+
+  i = l2i(lwq)
+  j = l2j(lwq)
+  if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
+    mu1 = mu1 * 1.0
+  elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
+    mu1 = mu1 * 1.5
+  elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
+    mu1 = mu1 * 1.0
+  else
+    mu1 = mu1
+  end if
+
   growth1 = mu1 * f_T * tracerpp(kwq,lwq,LALG1) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
   IF (tracerpp(kwq,lwq,LALG1) + (growth1 * dt / hpp(kwq, lwq)) .le. 10.00) THEN
@@ -746,7 +778,7 @@ SUBROUTINE sourceALG1(kwq, lwq)
   !. . Calculate mortality, respiration & excretion
   mort1   = R_mor1 * Theta_mor**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG1) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF ((tracerpp(kwq,lwq,LALG1)- mort1 ) .le. 10.00) THEN
+  IF ((tracerpp(kwq,lwq,LALG1) - mort1 ) .le. 10.00) THEN
     mort1 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
@@ -762,7 +794,7 @@ SUBROUTINE sourceALG1(kwq, lwq)
     deposi1 = vspa * tracerpp(kwq,lwq,LALG1)
     ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]  
     !. . Calculate resuspension
-    resus1 = R_resusp * tracerpp(kwq, lwq, LALG1) * 0
+    resus1 = R_settl * tracerpp(kwq, lwq, LALG1)
     ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
   end if
 

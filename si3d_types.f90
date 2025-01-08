@@ -452,7 +452,9 @@
    real     :: K_H_MeHgw !< [-] Henry's law constant for Hg0
    real     :: kw32      !< [1/d] Demethylation rate constant for MeHg in water
    real     :: ks32      !< [1/d] Demethylation rate constant for MeHg in sediment 
-   real     :: kws       !< [m/s] Mass transfer for mercury diffusion
+   real     :: kws3      !< [m/s] Mass transfer for mercury diffusion MeHg
+   real     :: kws2      !< [m/s] Mass transfer for mercury diffusion HgII
+   real     :: kws1      !< [m/s] Mass transfer for mercury diffusion Hg0
    real     :: kw21      !< [m2/W 1/s] Photodegradation rate constant for MeHg_to_Hg0
    real     :: atm_HgII  !< [ng/m2/d] Mercury deposition rate
    real     :: kw23      !< [1/d] Methylation rate constant for HgII in water

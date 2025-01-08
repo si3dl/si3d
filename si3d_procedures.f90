@@ -334,7 +334,7 @@ SUBROUTINE InitializeScalarFields
       ELSE
         DO  nn = 1, ntr
           DO k = 1, km1
-              tracer(k,:,nn) = Scalardepthile(k,nn+1)
+            tracer(k,:,nn) = Scalardepthile(k,nn+1)
           END DO
           if (nn .eq. LHg0) then
             hg_sed = Hg0_sed
@@ -348,31 +348,40 @@ SUBROUTINE InitializeScalarFields
             i = l2i(l)
             j = l2j(l)
             if ((nn .eq. LHg0) .or. (nn .eq. LHgII) .or. (nn .eq. LMeHg)) then
-              tracer(kms + 1, l, nn) = hg_sed
-              if (((i >= 1) .and. (i <= 142)) .and. ((j >=1) .and. (j <= 195))) then
+              if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
                 if (nn .eq. LHg0) then
+                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.008
                   tracer(kms + 1, l, LHg0) = 0.0
                 elseif (nn .eq. LHgII) then
-                  tracer(kms + 1, l, LHgII) = 356527798.386
+                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.008
+                  tracer(kms + 1, l, LHgII) = 349529609.386
                 elseif (nn .eq. LMeHg) then
-                  tracer(kms + 1, l, LMeHg) =   1444359.508
+                  tracer(kms + 1, l, LMeHg) = 1419531.508
                 end if
-              elseif ((i > 142) .and. ((j >= 1) .and. (j <= 76))) then
+              elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
                 if (nn .eq. LHg0) then
+                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.008
                   tracer(kms + 1, l, LHg0) = 0.0
                 elseif (nn .eq. LHgII) then
+                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.008
                   tracer(kms + 1, l, LHgII) = 326315456.621
                 elseif (nn .eq. LMeHg) then
-                  tracer(kms + 1, l, LMeHg) =   1249699.173
+                  tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 0.2
+                  tracer(kms + 1, l, LMeHg) = 1249699.173
                 end if
-              elseif (((i > 142) .and. (i <= 159)) .and. ((j > 76) .and. (j <= 89))) then
+              elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
                 if (nn .eq. LHg0) then
+                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.008
                   tracer(kms + 1, l, LHg0) = 0.0
                 elseif (nn .eq. LHgII) then
+                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.008
                   tracer(kms + 1, l, LHgII) = 326315456.621
                 elseif (nn .eq. LMeHg) then
-                  tracer(kms + 1, l, LMeHg) =   1249699.173 
+                  tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 0.2
+                  tracer(kms + 1, l, LMeHg) = 1249699.173 
                 end if
+              else
+                tracer(kms + 1, l, nn) = hg_sed
               end if
             elseif ((nn .eq. LSS1) .or. (nn .eq. LSS2) .or. (nn .eq. LSS3)) then
               tracer(kms + 1, l, nn) = 0.6 * sed_frac(nn - LSS1 + 1) * sed_dens(nn - LSS1 + 1)

@@ -518,7 +518,7 @@ SUBROUTINE WQinput
     IF (ios /= 0) CALL input_error ( ios, 112)
     READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) ks32
     IF (ios /= 0) CALL input_error ( ios, 113)
-    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) kws
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) kws3
     IF (ios /= 0) CALL input_error ( ios, 114)
 
     ! if (iDOC == 1) then
@@ -566,13 +566,15 @@ SUBROUTINE WQinput
     ! end if
 
   else if (iMeHg == 0) then
-    READ (UNIT=i99, FMT='(////////////////////(18X,G20.5))', IOSTAT=ios)
+    READ (UNIT=i99, FMT='(/////////////////////(18X,G20.5))', IOSTAT=ios)
     IF (ios /= 0) CALL input_error ( ios, 122)
   end if
 
   if (iHgII == 1) then
     allocate(kd_wpn2(sedNumber), kd_spn2(sedNumber))
     READ (UNIT=i99, FMT='(///(18X,G20.8))', IOSTAT=ios) kw21
+    IF (ios /= 0) CALL input_error ( ios, 123)
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) kws2
     IF (ios /= 0) CALL input_error ( ios, 123)
     READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) atm_HgII
     IF (ios /= 0) CALL input_error ( ios, 124)
@@ -633,11 +635,13 @@ SUBROUTINE WQinput
     !   IF (ios /= 0) CALL input_error ( ios, 134)
     ! end if
   else if (iHgII == 0) then
-    READ (UNIT=i99, FMT='(/////////////////(18X,G20.5))', IOSTAT=ios)
+    READ (UNIT=i99, FMT='(//////////////////(18X,G20.5))', IOSTAT=ios)
   end if
 
   if (iHg0 == 1) then
-    READ (UNIT=i99, FMT='(///(18X,G20.8))', IOSTAT=ios) DGMra
+    READ (UNIT=i99, FMT='(///(18X,G20.8))', IOSTAT=ios) kws1
+    IF (ios /= 0) CALL input_error ( ios, 135)
+    READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) DGMra
     IF (ios /= 0) CALL input_error ( ios, 135)
     READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) k_Hg0w
     IF (ios /= 0) CALL input_error ( ios, 136)
@@ -648,7 +652,7 @@ SUBROUTINE WQinput
     READ (UNIT=i99, FMT='((18X,G20.8))', IOSTAT=ios) K_H_Hg0w
     IF (ios /= 0) CALL input_error ( ios, 139)
   else if (iHg0 == 0) then
-    READ (UNIT=i99, FMT='(///////(18X,G20.5))', IOSTAT=ios)
+    READ (UNIT=i99, FMT='(////////(18X,G20.5))', IOSTAT=ios)
   end if
 
   if ((iMeHg == 1) .or. (iHgII == 1) .or. (iHg0 == 1)) then
@@ -735,16 +739,7 @@ SUBROUTINE WQinput
   k_MeHgatm = k_MeHgatm / 86400.0
   kw32 = kw32 / 86400.0
   ks32 = ks32 / 86400.0
-  kws = kws / 86400.0
-  
-  ! kd units - m3/mg to m3/ng 
-  ! kd_wdoc3 = kd_wdoc3 / (1000 * 1000)
-  ! kd_sdoc3 = kd_sdoc3 / (1000 * 1000)
-  ! kd_wpa3 =  kd_wpa3 / (1000 * 1000)
-  ! kd_wpom3 = kd_wpom3 / (1000 * 1000)
-  ! kd_spom3 = kd_spom3 / (1000 * 1000)
-  ! kd_wpn3 = kd_wpn3 / (1000 * 1000)
-  ! kd_spn3 = kd_spn3 / (1000 * 1000)
+  kws3 = kws3 / 86400.0
 
   ! ------------ HgII ----------
   ! time units - days -> seconds
@@ -752,27 +747,14 @@ SUBROUTINE WQinput
   atm_HgII = atm_HgII / 86400.0
   kw23 = kw23 / 86400.0
   ks23 = ks23 / 86400.0
-
-  ! kd units m3/mg to m3/ng
-  ! kd_wdoc2 = kd_wdoc2 / (1000 * 1000) 
-  ! kd_sdoc2 = kd_sdoc2 / (1000 * 1000)
-  ! kd_wpa2 = kd_wpa2 / (1000 * 1000)
-  ! kd_wpom2 = kd_wpom2 / (1000 * 1000)
-  ! kd_spom2 = kd_spom2 / (1000 * 1000)
-  ! kd_wpn2 = kd_wpn2 / (1000 * 1000)
-  ! kd_spn2 = kd_spn2 / (1000 * 1000)
+  kws2 = kws2 / 86400.0
 
   ! ------------- Hg0 ------------
   ! time units - days to seconds
   k_Hg0w = k_Hg0w / 86400.0
   k_Hg0atm = k_Hg0atm / 86400.0
+  kws1 = kws1 / 86400.0
 
-  ! concentration units mg/m3 to ng/m3
-  ! KDO = KDO * 1000 * 1000
-  ! KSO4 = KSO4 * 1000 * 1000
-  ! SO4 = SO4 * 1000 * 1000
-  ! POC_sed = POC_sed * 1000 * 1000
-  ! DOC_sed = DOC_sed * 1000 * 1000
 
   IF (idbg == 1) THEN
     PRINT*, 'iDO  = ', iDO , 'iPOC = ', iPOC, 'iDOC = ', iDOC
@@ -815,7 +797,7 @@ SUBROUTINE WQinput
     print*, 'K_H_MeHgw =', K_H_MeHgw
     print*, 'kw32 =', kw32
     print*, 'ks32 =', ks32
-    print*, 'kws =', kws
+    print*, 'kws3 =', kws3
     print*, 'kd_wdoc3 =', kd_wdoc3
     print*, 'kd_sdoc3 =', kd_sdoc3
     print*, 'kd_wpa3 =', kd_wpa3
@@ -829,6 +811,7 @@ SUBROUTINE WQinput
     print*, 'atm_HgII =', atm_HgII
     print*, 'kw23 =', kw23
     print*, 'ks23 =', ks23
+    print*, 'kws2 =', kws2
     print*, 'KDO =', KDO
     print*, 'KSO4 =', KSO4
     print*, 'SO4 =', SO4
@@ -842,6 +825,7 @@ SUBROUTINE WQinput
     print*, 'kd_spn2 =', kd_spn2
 
     print*, '----- Settings Hg0 -----'
+    print*, 'kws1 =', kws1
     print*, 'DGMra =', DGMra
     print*, 'k_Hg0w =', k_Hg0w
     print*, 'k_Hg0atm =', k_Hg0atm
