@@ -456,6 +456,7 @@
       TimeEnd = TIMER(0.0)
 
       PRINT *, 'Time =',thrs, ' hours | Step =',n, 'Time =', TimeEnd - TimeStart, ' sec'
+      flush(unit=6)
       END IF
 
    END DO

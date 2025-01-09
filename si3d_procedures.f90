@@ -578,7 +578,12 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
     END IF
     !$omp barrier
     DO itr = 1, ntr
-      IF (ecomod < 0 .AND. ( trct0(itr) > n .OR. trctn(itr) < n ) ) CYCLE
+      ! IF (ecomod < 0 .AND. ( trct0(itr) > n .OR. trctn(itr) < n ) ) CYCLE
+      IF (ecomod < 0) THEN
+        IF ( trct0(itr) > n .OR. trctn(itr) < n ) THEN
+          CYCLE
+        END IF
+      END IF
       CALL exTracer (itr,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH,lWCH,Bex,thrs)
       !$omp barrier
       CALL imTracer (itr,Bstart,Bend,Bex)

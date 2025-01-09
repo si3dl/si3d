@@ -3,9 +3,8 @@
 export FORTRAN_COMPILER=ifx
 export SI3DDIR=../si3d
 export GOTMDIR=../gotm
-#export SI3DDIR=/home/sv/GitHub/psi3d
-#export GOTMDIR=/home/sv/GitHub/gotm
-export MODDIR=$GOTMDIR/modules
+# export MODDIR=$GOTMDIR/modules
+export MODDIR=$SI3DDIR/modules
 export INCDIR=$GOTMDIR/include
 export BINDIR=$GOTMDIR/bin
 export LIBDIR=$GOTMDIR/lib
@@ -30,6 +29,8 @@ then
 	cd $SI3DDIR
 	make omp_ifx
 	rm *.o
+	cd $MODDIR
+	rm *.mod
 else
 	cd $SI3DDIR
 	make si3d
