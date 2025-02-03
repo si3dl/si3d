@@ -195,13 +195,16 @@ SUBROUTINE InitializeScalarFields
 
   !.....Local variables.....
   INTEGER :: i, j, k, l, ios, imm1, jmm1, kmm1, ncols, ncols1, nc, &
-            nsets, ia, ib, nn, ntr1, kms
+            nsets, ia, ib, nn, kms
   REAL    :: Vamp, rhoamp, Ts, Tb,   &  ! Used to initialize IW-problem
             NBV, meandepth, length, &
             rhohere, x, z, rhos, rhob, hg_sed
   CHARACTER(LEN=18)  :: initfmt
   INTEGER, PARAMETER :: InitProc = 4
   REAL, ALLOCATABLE, DIMENSION(:,:) :: Scalardepthile
+  real :: hg0sed, hgiised, mehgsed
+  integer :: im_hgsed, jm_hgsed, l_hgsed, iter
+  integer :: ihg_sed = 200
 
   SELECT CASE (initproc)
 
@@ -336,52 +339,33 @@ SUBROUTINE InitializeScalarFields
           DO k = 1, km1
             tracer(k,:,nn) = Scalardepthile(k,nn+1)
           END DO
-          if (nn .eq. LHg0) then
-            hg_sed = Hg0_sed
-          elseif (nn .eq. LHgII) then
-            hg_sed = HgII_sed
-          elseif (nn .eq. LMeHg) then
-            hg_sed = MeHg_sed
-          end if
-          do l = 1, lm1
+          DO l = 1, lm1
             kms = kmz(l)
             i = l2i(l)
             j = l2j(l)
             if ((nn .eq. LHg0) .or. (nn .eq. LHgII) .or. (nn .eq. LMeHg)) then
               if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
                 if (nn .eq. LHg0) then
-                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.008
-                  tracer(kms + 1, l, LHg0) = 0.0
+                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.1
                 elseif (nn .eq. LHgII) then
-                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.008
-                  tracer(kms + 1, l, LHgII) = 349529609.386
-                elseif (nn .eq. LMeHg) then
-                  tracer(kms + 1, l, LMeHg) = 1419531.508
+                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 1
                 end if
               elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
                 if (nn .eq. LHg0) then
-                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.008
-                  tracer(kms + 1, l, LHg0) = 0.0
+                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.1
                 elseif (nn .eq. LHgII) then
-                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.008
-                  tracer(kms + 1, l, LHgII) = 326315456.621
+                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.1
                 elseif (nn .eq. LMeHg) then
                   tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 0.2
-                  tracer(kms + 1, l, LMeHg) = 1249699.173
                 end if
               elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
                 if (nn .eq. LHg0) then
-                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.008
-                  tracer(kms + 1, l, LHg0) = 0.0
+                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.1
                 elseif (nn .eq. LHgII) then
-                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.008
-                  tracer(kms + 1, l, LHgII) = 326315456.621
+                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.1
                 elseif (nn .eq. LMeHg) then
                   tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 0.2
-                  tracer(kms + 1, l, LMeHg) = 1249699.173 
                 end if
-              else
-                tracer(kms + 1, l, nn) = hg_sed
               end if
             elseif ((nn .eq. LSS1) .or. (nn .eq. LSS2) .or. (nn .eq. LSS3)) then
               tracer(kms + 1, l, nn) = 0.6 * sed_frac(nn - LSS1 + 1) * sed_dens(nn - LSS1 + 1)
@@ -392,8 +376,30 @@ SUBROUTINE InitializeScalarFields
             elseif ((nn .eq. LDO)) then
               tracer(kms + 1, l, nn) = 0.0
             end if
-          end do
+          END DO
         END DO ! ... End loop over tracers
+
+        if ((iHg0 .eq. 1) .or. (iHgII .eq. 1) .or. (iMeHg .eq. 1)) then
+          open(unit=ihg_sed, file='si3d_init_hgsed.txt', status='old', form='formatted', iostat=ios)
+          if(ios /= 0) call open_error('Error opening si3d_init_hgsed.txt', ios)
+
+          read(ihg_sed, fmt='(/)', iostat=ios)
+          if(ios /= 0) call input_error(ios, 15)
+          
+          read(unit=ihg_sed, fmt='(3X,I10)', iostat=ios) l_hgsed
+          if(ios /= 0) call input_error(ios, 15)
+          read(ihg_sed, fmt='(A)', iostat=ios)
+          if(ios /= 0) call input_error(ios, 15)
+          do iter = 1, l_hgsed
+            read(unit=ihg_sed, fmt='(I8,I8,G16.6,G16.6,G16.6)', iostat=ios) im_hgsed, jm_hgsed, hg0sed, hgiised, mehgsed
+            if(ios /= 0) call input_error(ios, 15)
+            l = ij2l(im_hgsed, jm_hgsed)
+            kms = kmz(l)
+            tracer(kms + 1, l, LHg0) = hg0sed
+            tracer(kms + 1, l, LHgII) = hgiised
+            tracer(kms + 1, l, LMeHg) = mehgsed
+          end do
+        end if
       END IF
       tracerpp = tracer
     END IF
@@ -403,6 +409,7 @@ SUBROUTINE InitializeScalarFields
 
   ! ... Close io file
   CLOSE (i4)
+  close(ihg_sed)
 
   END SELECT
 

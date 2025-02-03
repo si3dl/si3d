@@ -239,8 +239,8 @@ SUBROUTINE sourceHg(kwq, lwq)
     call MeHg_erosion(MeHgs_erosion, MeHg_spn, MeHg_wpom, lwq)
     call HgIIs_methylation(HgIIs_methy, kwq + 1, lwq, HgII_sddoc)
     call MeHgs_demethylation(MeHgs_demethy, kwq + 1, lwq, MeHg_sddoc)
-    call HgII_burial(HgIIs_burial, HgIIw_deposition, HgIIs_erosion)
-    call MeHg_burial(MeHgs_burial, MeHgw_deposition, MeHgs_erosion)
+    call HgII_burial(HgIIs_burial, HgIIs_erosion, HgIIw_deposition)
+    call MeHg_burial(MeHgs_burial, MeHgs_erosion, MeHgw_deposition)
   end if
 
   sourcesink(kwq, lwq, LHg0)  = HgIIw_reduction + MeHgw_photodeg + Hg0w_diffusion - Hg0w_oxidation - Hg0w_vol

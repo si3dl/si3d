@@ -429,7 +429,11 @@ SUBROUTINE AllocateSpace
    ! .... Allocate arrays used in model output
    ALLOCATE(  uout (km1) , vout (km1) , wout(km1),  &
             & Avout(km1) , Dvout(km1) , sal1(ndz),  &
-            & uhout(km1) , scout(km1),  trout(km1,ntrmax), fluxes_out(km1, lm1, 34), STAT=istat )
+            & uhout(km1) , scout(km1), trout(km1,ntr), fluxes_out(km1, lm1, 34), STAT=istat )
+  !  if (ntr > 0) then
+  !   allocate(trout(km1,ntrmax), fluxes_out(km1, lm1, ntr), STAT=istat)
+  !  endif
+
    IF (istat /= 0) CALL allocate_error ( istat, 7 )
 
    ! ...  Allocate space for output routines
@@ -1254,6 +1258,19 @@ SUBROUTINE outt(n,thrs)
       scout = -99.0
       trout = -99.0
 
+      ! do k = k1, kmz(l) + 1
+      !   if (h(k, l) .le. ZERO) cycle
+      !   if (k == 2) then
+      !     write(UNIT=i60, FMT='(F8.3, I10, F10.2)', advance='no') thrs, n, zlevel_export(k)
+      !   else
+      !     write(UNIT=i60, FMT='(18X, F10.2)', advance='no') zlevel_export(k)
+      !   end if
+      !   do tr = 1, ntr
+      !     write(UNIT=i60, FMT='(1x, E14.4)', advance='no') fluxes_out(k, l, tr)
+      !   end do
+      !   write(UNIT=i60, FMT='(A)') ' '
+      ! end do
+
       DO k  = k1, kmz(l) + 1
         IF (h(k,l)<=ZERO) CYCLE
         !uout(k)  = 0.5 * (u  (k,l) + u  (k,lWC(l)))
@@ -1287,6 +1304,7 @@ SUBROUTINE outt(n,thrs)
            & uout (k), vout(k), wout(k), Avout(k), Dvout(k),      &
            & scout(k), k =k1,kmz(l)+1)
      ELSE
+
        WRITE (UNIT=i60, FMT=5) thrs, n, s(l), (zlevel_export(k) ,     &
             & uout (k), vout(k) , wout(k), Avout(k), Dvout(k),     &
             & scout(k  ),                                          &

@@ -78,7 +78,7 @@ SUBROUTINE openbc0
       ENDIF
 
       ! Write the format of the data records into an internal file
-      WRITE (UNIT=openbcfmt, FMT='("(10X,",I3,"G11.2)")') ntr+2
+      WRITE (UNIT=openbcfmt, FMT='("(10X,",I3,"G11.4)")') ntr+2
 
       ! Read data array
       DO j = 1, nptsOpenBC
