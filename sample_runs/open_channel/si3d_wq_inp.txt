@@ -97,7 +97,7 @@ Fluxes (atmospheric and sediments)
 Sediment Parameters
 --------------------------------------------------------------------------------------------------------
  SedNumber       !         1          ! Number of Particles to simulate
- Diameter (um)   ! 3000.
- Density (kg/m3) ! 1192.
- ParticleFrac    !    1.
+ Diameter (um)   ! 3000.0     
+ Density (kg/m3) ! 1800.0
+ ParticleFrac    !    1.0
 --------------------------------------------------------------------------------------------------------
