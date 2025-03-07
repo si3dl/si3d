@@ -1,0 +1,9 @@
+Open boundary condition file for si3d modelLake Pool Test Hg Model -
+Time is in hours from day 2023-01-01 00:00:00 UTC    - 
+Data for Inflow open boundary condition
+(1) Time [hrs],  (2) Qin [m3/s], (3) T [oC], (4...) Tracers 
+-------------------------------------------------- 
+   npts  =   3
+    0.0000     0.0310     4.0000    0.0000
+    1.0000     0.0310     4.0000    0.0000
+    2.0000     0.0310     4.0000    0.0000

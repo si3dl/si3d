@@ -230,9 +230,9 @@ SUBROUTINE sourceHg(kwq, lwq)
   end if
 
   if (kwq .eq. kms) then
-    call Hg0_diffusion(Hg0w_diffusion, Hg0w, Hg0s)
-    call MeHg_diffusion(MeHgw_diffusion, MeHg_wddoc, MeHg_sddoc)
-    call HgII_diffusion(HgIIw_diffusion, HgII_wddoc, HgII_sddoc)
+    call Hg0_diffusion(Hg0w_diffusion, Hg0w, Hg0s, lwq)
+    call MeHg_diffusion(MeHgw_diffusion, MeHg_wddoc, MeHg_sddoc, lwq)
+    call HgII_diffusion(HgIIw_diffusion, HgII_wddoc, HgII_sddoc, lwq)
     call HgII_deposition(HgIIw_deposition, HgII_wpa, HgII_wpom, HgII_wpn)
     call MeHg_deposition(MeHgw_deposition, MeHg_wpa, MeHg_wpom, MeHg_wpn)
     call HgII_erosion(HgIIs_erosion, HgII_spn, HgII_wpom, lwq)
@@ -316,6 +316,7 @@ SUBROUTINE sourceHg(kwq, lwq)
   !   end if 
   ! end if
 
+  fluxes_out(kwq, lwq, 15) = Hg0w_diffusion
   fluxes_out(kwq + 1, lwq, 15) = Hg0w_diffusion
   fluxes_out(kwq, lwq, 16) = Hg0w_vol
   fluxes_out(kwq, lwq, 17) = Hg0w_oxidation
@@ -323,18 +324,24 @@ SUBROUTINE sourceHg(kwq, lwq)
   fluxes_out(kwq, lwq, 19) = HgIIw_reduction
 
   fluxes_out(kwq, lwq, 20) = HgIIw_atmdep
+  fluxes_out(kwq, lwq, 21) = HgIIw_diffusion
   fluxes_out(kwq + 1, lwq, 21) = HgIIw_diffusion
+  fluxes_out(kwq, lwq, 22) = HgIIw_deposition
   fluxes_out(kwq + 1, lwq, 22) = HgIIw_deposition 
   fluxes_out(kwq, lwq, 23) = HgIIw_methy
   fluxes_out(kwq + 1, lwq, 23) = HgIIs_methy
+  fluxes_out(kwq, lwq, 24) = HgIIs_erosion
   fluxes_out(kwq + 1, lwq, 24) = HgIIs_erosion
   fluxes_out(kwq + 1, lwq, 25) = HgIIs_burial
   fluxes_out(kwq, lwq, 26) = MeHgw_demethy
   fluxes_out(kwq + 1, lwq, 26) = MeHgs_demethy
   fluxes_out(kwq, lwq, 27) = MeHgw_atmdep 
+  fluxes_out(kwq, lwq, 28) = MeHgw_diffusion
   fluxes_out(kwq + 1, lwq, 28) = MeHgw_diffusion
   fluxes_out(kwq, lwq, 29) = MeHgw_vol
+  fluxes_out(kwq, lwq, 30) = MeHgw_deposition
   fluxes_out(kwq + 1, lwq, 30) = MeHgw_deposition
+  fluxes_out(kwq, lwq, 31) = MeHgs_erosion
   fluxes_out(kwq + 1, lwq, 31) = MeHgs_erosion
   fluxes_out(kwq + 1, lwq, 32) = MeHgs_burial
 
@@ -572,20 +579,20 @@ SUBROUTINE Hg0_oxidation(Hg0w_oxidation, Hg0w, HgIIwd, HgIIw_reduction, kwq, lwq
   real, intent(in)    :: HgIIw_reduction
   real, intent(out)   :: Hg0w_oxidation
   real                :: DGMr
-  real                :: DGMra
+  real                :: DGMra_2
   real                :: DOC
-  real                :: PH
+  real                :: PH_2
   integer, intent(in) :: lwq
   integer, intent(in) :: kwq
 
   DGMr = Hg0w / HgIIwd
   DOC = tracerpp(kwq, lwq, LDOC) / 1000
-  PH = 7.0
-  DGMra = 0.00188 * DOC ** (-0.73385) * PH ** (2.0409)
+  PH_2 = 8.1
+  DGMra_2 = 0.00188 * DOC ** (-0.73385) * PH_2 ** (2.0409)
 
-  if (DGMr > DGMra) then
-    Hg0w_oxidation = HgIIw_reduction * (DGMr / DGMra)
-  else if (DGMr .le. DGMra) then
+  if (DGMr > DGMra_2) then
+    Hg0w_oxidation = HgIIw_reduction * (DGMr / DGMra_2)
+  else if (DGMr .le. DGMra_2) then
     Hg0w_oxidation = 0
   end if
 
@@ -649,8 +656,17 @@ SUBROUTINE HgII_atm_deposition(HgIIw_atmdep, kwq, lwq)
   integer, intent(in)  :: kwq
   integer, intent(in)  :: lwq
   real,    intent(out) :: HgIIw_atmdep !< Source/Sink term for the balance of MeHg dissolved in water
+  integer   :: i, j
+  real      :: C
+  i = l2i(lwq)
+  j = l2j(lwq)
 
-  HgIIw_atmdep = atm_HgII
+  ! if ((i .ge. 190) .and. (j .ge. 67)) then
+  !   C = 5
+  ! else
+    C = 1
+  ! end if
+  HgIIw_atmdep = C * atm_HgII
 
 END SUBROUTINE HgII_atm_deposition
 
@@ -760,7 +776,7 @@ SUBROUTINE MeHgw_demethylation(MeHgw_demethy, kwq, lwq, MeHg)
 END SUBROUTINE MeHgw_demethylation
 
 !***********************************************************************
-SUBROUTINE MeHg_diffusion(MeHgw_diffusion, MeHgw, MeHgs)
+SUBROUTINE MeHg_diffusion(MeHgw_diffusion, MeHgw, MeHgs, lwq)
 !***********************************************************************
 !
 !  Purpose: This estimates the diffusion of MeHg in the water column 
@@ -769,16 +785,29 @@ SUBROUTINE MeHg_diffusion(MeHgw_diffusion, MeHgw, MeHgs)
 !           sediment layer into the water column 
 !-----------------------------------------------------------------------
   ! Arguments
+  integer, intent(in) :: lwq
   real, intent(in)  :: MeHgw
   real, intent(in)  :: MeHgs
   real, intent(out) :: MeHgw_diffusion
+  real              :: C
+  integer           :: i
+  integer           :: j
 
-  MeHgw_diffusion = kws3 * (MeHgs - MeHgw)
+  i = l2i(lwq)
+  j = l2j(lwq)
+
+  if ((i .ge. 190) .and. (j .ge. 67)) then
+    C = 1
+  else
+    C = 1
+  end if
+
+  MeHgw_diffusion = C * kws3 * (MeHgs - MeHgw)
 
 END SUBROUTINE MeHg_diffusion
 
 !***********************************************************************
-SUBROUTINE HgII_diffusion(HgIIw_diffusion, HgIIw, HgIIs)
+SUBROUTINE HgII_diffusion(HgIIw_diffusion, HgIIw, HgIIs, lwq)
 !***********************************************************************
 !
 !  Purpose: This estimates the diffusion of HgII in the water column 
@@ -787,16 +816,31 @@ SUBROUTINE HgII_diffusion(HgIIw_diffusion, HgIIw, HgIIs)
 !           sediment layer into the water column 
 !-----------------------------------------------------------------------
   ! Arguments
+  integer, intent(in) :: lwq
   real, intent(in)  :: HgIIw
   real, intent(in)  :: HgIIs
   real, intent(out) :: HgIIw_diffusion
+  real              :: C
+  integer           :: i
+  integer           :: j
 
-  HgIIw_diffusion = kws2 * (HgIIs - HgIIw)
+  i = l2i(lwq)
+  j = l2j(lwq)
+
+  if ((i .ge. 190) .and. (j .ge. 67)) then
+    C = 1
+  else
+    C = 1
+  end if
+
+  ! C = 1
+
+  HgIIw_diffusion = C * kws2 * (HgIIs - HgIIw)
 
 END SUBROUTINE HgII_diffusion
 
 !***********************************************************************
-SUBROUTINE Hg0_diffusion(Hg0w_diffusion, Hg0w, Hg0s)
+SUBROUTINE Hg0_diffusion(Hg0w_diffusion, Hg0w, Hg0s, lwq)
 !***********************************************************************
 !
 !  Purpose: This estimates the diffusion of Hg0 in the water column 
@@ -805,15 +849,30 @@ SUBROUTINE Hg0_diffusion(Hg0w_diffusion, Hg0w, Hg0s)
 !           sediment layer into the water column 
 !-----------------------------------------------------------------------
   ! Arguments
+  integer, intent(in) :: lwq
   real, intent(in)  :: Hg0w
   real, intent(in)  :: Hg0s
   real, intent(out) :: Hg0w_diffusion
+  real              :: C
+  integer           :: i
+  integer           :: j
 
-  Hg0w_diffusion = kws1 * (Hg0s - Hg0w)
+  i = l2i(lwq)
+  j = l2j(lwq)
+
+  if ((i .ge. 190) .and. (j .ge. 67)) then
+    C = 1
+  else
+    C = 1
+  end if
+
+  ! C = 1
+
+  Hg0w_diffusion = C * kws1 * (Hg0s - Hg0w)
 
 END SUBROUTINE Hg0_diffusion
 
-! ********** FROM NOW ON ARE THE PROCESSES IN SEDIMENT LAYER *************
+! ********** BELOW ARE THE PROCESSES IN SEDIMENT LAYER *************
 
 !***********************************************************************
 SUBROUTINE HgIIs_methylation(HgIIs_methy, kwq, lwq, HgII)
@@ -947,15 +1006,17 @@ SUBROUTINE HgII_erosion(HgIIs_erosion, HgII_spn, HgII_wpom, lwq)
   i = l2i(lwq)
   j = l2j(lwq)
   ! ... Calculate resusupension of HgII adsorbed to POC
-  if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
-    erosion_poc = R_resusp * 1.0 * HgII_wpom
-  elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
-    erosion_poc = R_resusp * 0.0 * HgII_wpom
-  elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
-    erosion_poc = R_resusp * 0.0 * HgII_wpom
-  else
-    erosion_poc = R_resusp * 1.0 * HgII_wpom
-  end if
+  ! if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
+  !   erosion_poc = R_resusp * 1.0 * HgII_wpom
+  ! elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
+  !   erosion_poc = R_resusp * 0.0 * HgII_wpom
+  ! elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
+  !   erosion_poc = R_resusp * 0.0 * HgII_wpom
+  ! else
+  !   erosion_poc = R_resusp * 1.0 * HgII_wpom
+  ! end if
+
+  erosion_poc = R_resusp * HgII_wpom
 
   HgIIs_erosion = sum(flux) + erosion_poc
 
@@ -987,15 +1048,17 @@ SUBROUTINE MeHg_erosion(MeHgs_erosion, MeHg_spn, MeHg_wpom, lwq)
   i = l2i(lwq)
   j = l2j(lwq)
   ! ... Calculate resusupension of HgII adsorbed to POC
-  if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
-    erosion_poc = R_resusp * 1.0 * MeHg_wpom
-  elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
-    erosion_poc = R_resusp * 0.0 * MeHg_wpom
-  elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
-    erosion_poc = R_resusp * 0.0 * MeHg_wpom
-  else
-    erosion_poc = R_resusp * 1.0 * MeHg_wpom
-  end if
+  ! if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
+  !   erosion_poc = R_resusp * 1.0 * MeHg_wpom
+  ! elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
+  !   erosion_poc = R_resusp * 0.0 * MeHg_wpom
+  ! elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
+  !   erosion_poc = R_resusp * 0.0 * MeHg_wpom
+  ! else
+  !   erosion_poc = R_resusp * 1.0 * MeHg_wpom
+  ! end if
+
+  erosion_poc = R_resusp * MeHg_wpom
 
   MeHgs_erosion = sum(flux) + erosion_poc
 

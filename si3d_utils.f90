@@ -1100,9 +1100,9 @@ SUBROUTINE out_fluxes(n, thrs)
 
       WRITE (UNIT=i100, FMT=2)
       2 FORMAT( 1X,"   time     ","  step   "," depth   ", "  HeatSource", "     reaeration", "   sedoxydemand", "      decom_POC", "       depo_POC", "      resus_POC", "    atmdepo_DOC", "    mineral_DOC", "    sedflux_DOC", &
-        & "    growth_ALG1", "      mort_ALG1", "      graz_ALG1", "      depo_ALG1", "     resus_ALG1", "      Hg0w_diff", "       Hg0w_vol", " Hg0w_oxidation", " MeHgw_photodeg", "    HgIIw_reduc", "   HgIIw_atmdep", "     HgIIw_diff", &
-        & "     HgIIw_depo", "     HgII_methy", "  HgIIs_erosion", "   HgIIs_burial", "  MeHgw_demethy", "   MeHgw_atmdep", "     MeHgw_diff", "      MeHgw_vol", "     MeHgw_depo", &
-        & "  MeHgs_erosion", "   MeHgs_burial", "     SS_erosion", "        SS_depo")
+        & "    growth_ALG1", "      mort_ALG1", "      graz_ALG1", "      depo_ALG1", "     resus_ALG1", "       Hg0_diff", "        Hg0_vol", "  Hg0_oxidation", "  MeHg_photodeg", "     HgII_reduc", "    HgII_atmdep", "      HgII_diff", &
+        & "      HgII_depo", "     HgII_methy", "   HgII_erosion", "    HgII_burial", "   MeHg_demethy", "    MeHg_atmdep", "      MeHg_diff", "       MeHg_vol", "      MeHg_depo", &
+        & "   MeHg_erosion", "    MeHg_burial", "     SS_erosion", "        SS_depo")
       WRITE (UNIT=i100, FMT=3)
       3 FORMAT( 1X,"    hrs     ","   no      ", "   m    ", "      m/soC","       mg/m^2/s","       mg/m^2/s","       mg/m^2/s","       mg/m^2/s","       mg/m^2/s","       mg/m^2/s","       mg/m^2/s","       mg/m^2/s","       mg/m^2/s", &
         & "       mg/m^2/s","       mg/m^2/s","       mg/m^2/s","       mg/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s","       ng/m^2/s", &

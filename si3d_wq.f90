@@ -32,7 +32,7 @@ SUBROUTINE sourceDO(kwq,lwq)
   INTEGER, INTENT (IN) :: kwq, lwq
 
   !. . . Local Variables
-  REAL    ::   Tk, lnOS, OS, Patm, ln_Pwv, Pwv, theta2, f_SOD 
+  REAL    ::   Tk, lnOS, OS, Patm_do, ln_Pwv, Pwv, theta2, f_SOD 
   REAL    :: reaeration, sedoxydemand
   real    :: ws, R_SOD_ij
   integer :: i, j
@@ -49,12 +49,12 @@ SUBROUTINE sourceDO(kwq,lwq)
   OS = EXP(lnos)
 
   ! Correct for Patmospheric (Pa - declared in si3d_types and defined in surfbc0)
-  Patm   = Pa * 0.00000986923; ! Transform atmospheric pressure from Pa to atm
+  Patm_do   = Pa * 0.00000986923; ! Transform atmospheric pressure from Pa to atm
   ln_Pwv = 11.8751 - (3840.70/Tk) - (216961/(Tk**2.))
   Pwv    = EXP(ln_Pwv)
   theta2 = 0.000975 - 1.426*1E-5 * salp(kwq,lwq) + &
   &                    6.436*1E-8 * salp(kwq,lwq)**2.
-  OS = OS*Patm*((1-Pwv/Patm) *(1-theta2*Patm))&
+  OS = OS*Patm_do*((1-Pwv/Patm_do) *(1-theta2*Patm_do))&
   &           /((1-Pwv)*(1-theta2) )
   ! Estimate of OS is in mg/L. Si3D uses mg/m3 then:
   OS = OS * 1000
@@ -80,11 +80,11 @@ SUBROUTINE sourceDO(kwq,lwq)
     i = l2i(lwq)
     j = l2j(lwq)
     if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
-      R_SOD_ij = R_SOD * 0.35
+      R_SOD_ij = R_SOD * 1.0 !0.35
     elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
-      R_SOD_ij = R_SOD * 0.35
+      R_SOD_ij = R_SOD * 1.0 !0.35
     elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
-      R_SOD_ij = R_SOD * 0.35
+      R_SOD_ij = R_SOD * 1.0 !0.35
     else
       R_SOD_ij = R_SOD
     end if
@@ -102,6 +102,7 @@ SUBROUTINE sourceDO(kwq,lwq)
               & -  sedoxydemand
 
   fluxes_out(kwq, lwq, 2) = reaeration
+  fluxes_out(kwq, lwq, 3) = sedoxydemand
   fluxes_out(kwq + 1, lwq, 3) = sedoxydemand
 
   ! If ALG are modeled: Add photosynthetic oxygen production and respiration consumption  by phytoplankton
@@ -570,9 +571,9 @@ SUBROUTINE sourcePOC (kwq, lwq)
     if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
       R_resusp_ij = R_resusp * 1.0
     elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
-      R_resusp_ij = R_resusp * 0.0
+      R_resusp_ij = R_resusp * 1.0 !0.0
     elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
-      R_resusp_ij = R_resusp * 0.0
+      R_resusp_ij = R_resusp * 1.0 !0.0
     else
       R_resusp_ij = R_resusp * 1.0
     end if
@@ -596,6 +597,8 @@ SUBROUTINE sourcePOC (kwq, lwq)
   END IF
 
   fluxes_out(kwq, lwq, 4) = decompositionPOC
+  fluxes_out(kwq, lwq, 5) = depositionPOC
+  fluxes_out(kwq, lwq, 6) = resuspensionPOC
   fluxes_out(kwq + 1, lwq, 5) = depositionPOC
   fluxes_out(kwq + 1, lwq, 6) = resuspensionPOC
 
@@ -653,7 +656,7 @@ SUBROUTINE sourceDOC(kwq, lwq)
     i = l2i(lwq)
     j = l2j(lwq)
     if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
-      SED_DOC_ij = SED_DOC * 0.3
+      SED_DOC_ij = SED_DOC * 1.0 !0.3
     elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
       SED_DOC_ij = SED_DOC * 1.0
     elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
@@ -681,6 +684,7 @@ SUBROUTINE sourceDOC(kwq, lwq)
 
   fluxes_out(kwq, lwq, 7) = atmosdepositionDOC
   fluxes_out(kwq, lwq, 8) = mineralizationDOC
+  fluxes_out(kwq, lwq, 9) = sedfluxDOC
   fluxes_out(kwq + 1, lwq, 9) = sedfluxDOC
 
 END SUBROUTINE sourceDOC
@@ -714,7 +718,7 @@ SUBROUTINE sourceALG1(kwq, lwq)
   END IF
 
   ! temperature limitaton
-  Tmax1 = 30
+  Tmax1 = 35
   Tmin1 = 5
   IF (salp(kwq,lwq) .lt. Tmin1) THEN
     f_T = 0
@@ -761,9 +765,9 @@ SUBROUTINE sourceALG1(kwq, lwq)
   j = l2j(lwq)
   if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
     mu1 = mu1 * 1.0
-  elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
+  elseif ((i > 170) .and. ((j >= 1) .and. (j <= 65))) then
     mu1 = mu1 * 1.5
-  elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
+  elseif (((i > 139) .and. (i <= 170)) .and. ((j > 65) .and. (j <= 70))) then
     mu1 = mu1 * 1.0
   else
     mu1 = mu1
@@ -841,7 +845,9 @@ SUBROUTINE sourceALG1(kwq, lwq)
   fluxes_out(kwq, lwq, 10) = growth1
   fluxes_out(kwq, lwq, 11) = mort1
   fluxes_out(kwq, lwq, 12) = graz1
+  fluxes_out(kwq, lwq, 13) = deposi1
   fluxes_out(kwq + 1, lwq, 13) = deposi1
+  fluxes_out(kwq, lwq, 14) = resus1
   fluxes_out(kwq + 1, lwq, 14) = resus1
 
 END SUBROUTINE sourceALG1

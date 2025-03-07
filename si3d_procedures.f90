@@ -339,6 +339,13 @@ SUBROUTINE InitializeScalarFields
           DO k = 1, km1
             tracer(k,:,nn) = Scalardepthile(k,nn+1)
           END DO
+          ! if (nn .eq. LHg0) then
+          !   hg_sed = Hg0_sed
+          ! elseif (nn .eq. LHgII) then
+          !   hg_sed = HgII_sed
+          ! elseif (nn .eq. LMeHg) then
+          !   hg_sed = MeHg_sed
+          ! end if
           DO l = 1, lm1
             kms = kmz(l)
             i = l2i(l)
@@ -346,25 +353,27 @@ SUBROUTINE InitializeScalarFields
             if ((nn .eq. LHg0) .or. (nn .eq. LHgII) .or. (nn .eq. LMeHg)) then
               if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
                 if (nn .eq. LHg0) then
-                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.1
+                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 1.0 !0.01
                 elseif (nn .eq. LHgII) then
-                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 1
+                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 1.0 !0.01
+                elseif (nn .eq. LMeHg) then
+                  tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 1.0
                 end if
               elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
                 if (nn .eq. LHg0) then
-                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.1
+                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 1.0 !0.01
                 elseif (nn .eq. LHgII) then
-                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.1
+                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 1.0 !0.01
                 elseif (nn .eq. LMeHg) then
-                  tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 0.2
+                  tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 1.0 !0.2
                 end if
               elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
                 if (nn .eq. LHg0) then
-                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.1
+                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 1.0 !0.01
                 elseif (nn .eq. LHgII) then
-                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.1
+                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 1.0 !0.01
                 elseif (nn .eq. LMeHg) then
-                  tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 0.2
+                  tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 1.0 !0.2
                 end if
               end if
             elseif ((nn .eq. LSS1) .or. (nn .eq. LSS2) .or. (nn .eq. LSS3)) then
