@@ -110,6 +110,7 @@ Sediment Parameters
  SedNumber       !         1          ! Number of Particles to simulate
  istwave         !         0          ! 1 = STWAVE runs, 0 = STWAVE bottom shear stress not added
  sed_thickness   !        0.1         ! [m] Sediment Layer thickness
+ sed_porosity    !        0.35        ! [-] Sediment porosity
  Diameter (um)   !  040., 353.     
  Density (kg/m3) ! 1600., 1850.
  Vol_Part_Frac   !   1.0, 0.5
@@ -171,3 +172,4 @@ Sediment Concentrations
  Hg0_sed         !  22300974.811      ! [ng/m3] Hg0 concentration in sediment layer
  POC_sed         !  55616146.789      ! [mg/m3] Concentration of POC in the sediment layer
  DOC_sed         !  556161.4679       ! [mg/m3] Concentration of DOC in the sediment layer
+ grnd_Hg         !       0.243        ! [ng/m2/s] Ground water flux for area close to OA SBMM

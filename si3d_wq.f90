@@ -62,14 +62,18 @@ SUBROUTINE sourceDO(kwq,lwq)
   ! ...Calculate reaeration only at the lake surface
   ! for now using constant reaeration defined in wq_inp, but in future, can have
   ! alternatives for reaeration rates.
-  IF (kwq .eq. k1z(lwq)) THEN
+  IF (kwq .le. k1z(lwq) + 1) THEN
     ws = SQRT(uair(lwq)**2. + vair(lwq)**2.)
-    ! if ((R_reaer * (ws ** 1.64)) .lt. R_reaer) then
-      ! reaeration = R_reaer * (OS - tracerpp(kwq, lwq, LDO))
-    ! else
-      reaeration  = R_reaer * (ws ** 1.64)* (OS - tracerpp(kwq,lwq,LDO)) 
-      ! Units: [mg/m^2/s] = [m/s] * [mg/m^3]
+    ! if (ws .le. 0.6) then
+    !   ws = 0.6
     ! end if
+    ! if (kwq .eq. k1z(lwq)) then
+      reaeration = R_reaer * (ws ** 1.64)* (OS - tracerpp(kwq,lwq,LDO))
+    ! else
+    !   reaeration = 1/2 * (R_reaer * (ws ** 1.64))* (OS - tracerpp(kwq,lwq,LDO))
+    ! end if
+
+    ! Units: [mg/m^2/s] = [m/s] * [mg/m^3]
   ELSE
      reaeration  = 0.0
   END IF
@@ -80,11 +84,11 @@ SUBROUTINE sourceDO(kwq,lwq)
     i = l2i(lwq)
     j = l2j(lwq)
     if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
-      R_SOD_ij = R_SOD * 1.0 !0.35
-    elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
-      R_SOD_ij = R_SOD * 1.0 !0.35
+      R_SOD_ij = R_SOD * 0.45
+    elseif ((i > 170) .and. ((j >= 1) .and. (j <= 63))) then
+      R_SOD_ij = R_SOD * 0.05
     elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
-      R_SOD_ij = R_SOD * 1.0 !0.35
+      R_SOD_ij = R_SOD * 0.05
     else
       R_SOD_ij = R_SOD
     end if
@@ -144,7 +148,7 @@ SUBROUTINE sourcePON(kwq,lwq)
     depositionPON = R_settl * tracerpp(kwq,lwq,LPON) 
     ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3] 
     ! ... Calculate resusupension of PON only in the bottom layer
-    resuspensionPON = erosion_wqpn(1) * tracerpp(kwq,lwq,LPON)
+    resuspensionPON = R_resusp * tracerpp(kwq,lwq,LPON)
     ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
 
     ! resuspensionPON = R_resusp * tracerpp(kwq,lwq,LPON) 
@@ -396,7 +400,7 @@ SUBROUTINE sourcePOP(kwq,lwq)
     depositionPOP = R_settl * tracerpp(kwq, lwq, LPOP)
     ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3] 
     ! ... Calculate resusupension of POP only in the bottom layer
-    resuspensionPOP = erosion_wqpn(1) * tracerpp(kwq,lwq,LPOP)
+    resuspensionPOP = R_resusp * tracerpp(kwq,lwq,LPOP)
     ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
 
     ! resuspensionPOP = R_resusp * tracerpp(kwq, lwq, LPOP)
@@ -543,11 +547,13 @@ SUBROUTINE sourcePOC (kwq, lwq)
   !... Local variables
   REAL:: decompositionPOC, f_decom, depositionPOC, resuspensionPOC
   real :: R_resusp_ij
+  real :: decomp_poc_sed
   integer :: i, j
 
   depositionPOC = 0.0
   resuspensionPOC = 0.0
   decompositionPOC = 0.0
+  decomp_poc_sed = 0.0
 
   !... Calculate decompositionPOC
   ! Calculate DO inhibition of decomposition
@@ -564,41 +570,34 @@ SUBROUTINE sourcePOC (kwq, lwq)
   ! ... Calculate deposition of POC only in the bottom layer
   IF (kwq .eq. kmz(lwq)) THEN
     depositionPOC = vspoc * tracerpp(kwq,lwq,LPOC)
-    i = l2i(lwq)
-    j = l2j(lwq)
     ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3] 
     ! ... Calculate resusupension of POC only in the bottom layer
-    if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
-      R_resusp_ij = R_resusp * 1.0
-    elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
-      R_resusp_ij = R_resusp * 1.0 !0.0
-    elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
-      R_resusp_ij = R_resusp * 1.0 !0.0
-    else
-      R_resusp_ij = R_resusp * 1.0
-    end if
-    resuspensionPOC = R_resusp_ij * tracerpp(kwq,lwq,LPOC)
+    resuspensionPOC = R_resusp * tracerpp(kwq,lwq,LPOC)
     ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
     if (depositionPOC .gt. (tracerpp(kwq, lwq, LPOC) * hp(kwq, lwq) / dt)) then
       depositionPOC = tracerpp(kwq, lwq, LPOC) * hp(kwq, lwq) / dt
     end if
+
+    decomp_poc_sed = R_decom_poc *  (Theta_decom ** (salp(kwq, lwq) - 20.0)) * tracerpp(kwq + 1, lwq, LPOC) * hpp(kwq + 1, lwq)
+    sourcesink(kwq + 1, lwq, LPOC) = sourcesink(kwq + 1, lwq, LPOC) - decomp_poc_sed + depositionPOC - resuspensionPOC
   END IF
 
   ! ... Incorporate all terms to the source-sink POC term
-  sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC)       &
-  &    - decompositionPOC             &   
-  &    - depositionPOC                  &                   
-  &    + resuspensionPOC
+  sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) - decompositionPOC  - depositionPOC + resuspensionPOC
   !    + mortality  - only if IALG = 1; calcualted in sourceALG
       
   ! Add contribution of decomposition to DOC concentration
   IF (iDOC == 1) THEN
-  sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + decompositionPOC
+    sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) + decompositionPOC
+    if (kwq .eq. kmz(lwq)) then
+      sourcesink(kwq + 1, lwq, LDOC) = sourcesink(kwq + 1, lwq, LDOC) + decomp_poc_sed
+    end if
   END IF
 
   fluxes_out(kwq, lwq, 4) = decompositionPOC
   fluxes_out(kwq, lwq, 5) = depositionPOC
   fluxes_out(kwq, lwq, 6) = resuspensionPOC
+  fluxes_out(kwq + 1, lwq, 4) = decomp_poc_sed
   fluxes_out(kwq + 1, lwq, 5) = depositionPOC
   fluxes_out(kwq + 1, lwq, 6) = resuspensionPOC
 
@@ -617,14 +616,16 @@ SUBROUTINE sourceDOC(kwq, lwq)
   INTEGER, INTENT (IN) :: kwq,lwq
 
   !. . . Local variables
-  REAL:: mineralizationDOC, f_miner, atmosdepositionDOC, f_sedflux, sedfluxDOC, SED_DOC_ij
+  REAL:: mineralizationDOC, f_miner, atmosdepositionDOC, f_sedflux, sedfluxDOC
   integer :: i, j
+  real :: doc_miner_sed
 
   mineralizationDOC = 0.0
   f_miner = 0.0
   atmosdepositionDOC = 0.0
   f_sedflux = 0.0
   sedfluxDOC = 0.0
+  doc_miner_sed = 0.0
 
   !. . Mineralization of DO by bacteria into inorganic nutrients (there is biological oxygen demand)
     ! Calculate DO inhibition of mineralization
@@ -633,7 +634,7 @@ SUBROUTINE sourceDOC(kwq, lwq)
     ELSE
       f_miner = 1.0
     END IF
-  mineralizationDOC = R_miner_doc * f_miner * (Theta_miner**(salp(kwq,lwq) - 20.0)) *tracerpp(kwq,lwq,LDOC) * hpp(kwq,lwq)
+  mineralizationDOC = R_miner_doc * f_miner * (Theta_miner**(salp(kwq,lwq) - 20.0)) * tracerpp(kwq,lwq,LDOC) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [-] * [mg/m^3] * [m]
 
   !. . .Add contribution from atmospheric deposition to top layer
@@ -653,28 +654,16 @@ SUBROUTINE sourceDOC(kwq, lwq)
     ELSE
        f_sedflux = 1.0
     END IF
-    i = l2i(lwq)
-    j = l2j(lwq)
-    if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
-      SED_DOC_ij = SED_DOC * 1.0 !0.3
-    elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
-      SED_DOC_ij = SED_DOC * 1.0
-    elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
-      SED_DOC_ij = SED_DOC * 1.0
-    else
-      SED_DOC_ij = SED_DOC
-    end if
-    sedfluxDOC = SED_DOC_ij * f_sedflux * (Theta_sedflux**(salp(kwq,lwq) - 20))
-    ! Units: [mg/m^2/s] =  [mg/m^2/s] * [-] * [-] 
+    sedfluxDOC = SED_DOC * f_sedflux * (Theta_sedflux**(salp(kwq,lwq) - 20))
+    ! Units: [mg/m^2/s] =  [mg/m^2/s] * [-] * [-]
+    doc_miner_sed = R_miner_doc * (Theta_miner ** (salp(kwq, lwq) - 20.0)) * tracerpp(kwq + 1, lwq, LDOC) * hpp(kwq + 1, lwq)
+    sourcesink(kwq + 1, lwq, LDOC) = sourcesink(kwq + 1, lwq, LDOC) - doc_miner_sed
   ELSE
       sedfluxDOC = 0.0
   END IF
 
   ! ... Incorporate all terms to the source-sink DON term
-  sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC)         &
-                         &        -  mineralizationDOC        &
-                         &        + atmosdepositionDOC        &
-                         &        + sedfluxDOC
+  sourcesink(kwq,lwq,LDOC) = sourcesink(kwq,lwq,LDOC) - mineralizationDOC + atmosdepositionDOC + sedfluxDOC
                         !         + decompositionPOC - only if IPOC = 1; caluclated in sourcePOC
 
   ! Remove oxygen due to microbial uptake (DOC mineralization)
@@ -766,7 +755,7 @@ SUBROUTINE sourceALG1(kwq, lwq)
   if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
     mu1 = mu1 * 1.0
   elseif ((i > 170) .and. ((j >= 1) .and. (j <= 65))) then
-    mu1 = mu1 * 1.5
+    mu1 = mu1 * 1.3
   elseif (((i > 139) .and. (i <= 170)) .and. ((j > 65) .and. (j <= 70))) then
     mu1 = mu1 * 1.0
   else
@@ -796,7 +785,10 @@ SUBROUTINE sourceALG1(kwq, lwq)
   if (kwq .eq. kmz(lwq)) then
     !. . Calculate deposition
     deposi1 = vspa * tracerpp(kwq,lwq,LALG1)
-    ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]  
+    ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3] 
+    if (deposi1 .gt. (tracerpp(kwq, lwq, LALG1) * hp(kwq, lwq) / dt)) then
+      deposi1 = tracerpp(kwq, lwq, LALG1) * hp(kwq, lwq) / dt
+    end if 
     !. . Calculate resuspension
     resus1 = R_settl * tracerpp(kwq, lwq, LALG1)
     ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]

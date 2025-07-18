@@ -422,6 +422,7 @@
    real, allocatable, dimension (:)     :: sed_diameter     !< (um) Sediment diameter D50 in micrometers
    real, allocatable, dimension (:)     :: sed_dens         !< (kg/m3) Sediment density
    real, allocatable, dimension (:)     :: sed_frac         !< Fraction of type of sediment in total suspended sediment
+   real                                 :: sed_por          !< Porosity of sediment
    integer, allocatable, dimension (:)  :: sed_type         !< Type of sediment 0 for non-cohesive and 1 for cohesive
    real, parameter                      :: Ased = 1.3d-7    !< Constant value for estimates of sediment fluxes. Garcia and Parker 1991,1993, Reardon 2014, etc
    real                                 :: kinematic_viscosity = 1.3081d-6   !< Kinematic viscosity of water 10C
@@ -431,10 +432,8 @@
    real, allocatable, dimension(:,:)    :: tau_stwave
    real, allocatable, dimension(:,:,:)  :: uair_tmp
    real, allocatable, dimension(:,:,:)  :: udir_tmp
-   real                                 :: Ti_4_stwave = 3.0 !< [hrs] 0.25Ti 1/4 of the internal wave period
-   real, allocatable, dimension(:) :: settling_vel     !< (m/s) Settling velocity of sediment
-   real, allocatable, dimension(:) :: erosion_wqpn     !<
-
+   real                                 :: Ti_4_stwave = 2.0 !< [hrs] 0.25Ti 1/4 of the internal wave period
+   real(kind=8), allocatable, dimension(:) :: settling_vel     !< (m/s) Settling velocity of sediment
    
    ! ----------------------------- Mercury module (HgM) ----------------------------------
    ! Parameters
@@ -492,6 +491,7 @@
    real :: Hg0_sed
    real :: POC_sed
    real :: DOC_sed
+   real :: grnd_Hg
 !                        -----Data Dictionary-----
 
 END MODULE si3d_types

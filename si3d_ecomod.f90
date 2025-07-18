@@ -478,6 +478,8 @@ SUBROUTINE WQinput
     IF (ios /= 0) CALL input_error ( ios, 98)
     READ (UNIT=i99,FMT='(18X,G20.2)',IOSTAT=ios) sed_h
     IF (ios /= 0) CALL input_error ( ios, 99)
+    READ (UNIT=i99,FMT='(18X,G20.2)',IOSTAT=ios) sed_por
+    IF (ios /= 0) CALL input_error ( ios, 99)
     READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_diameter(nn), nn = 1, sedNumber)
     IF (ios /= 0) CALL input_error ( ios, 100)
     READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios) (sed_dens(nn), nn = 1, sedNumber)
@@ -489,6 +491,7 @@ SUBROUTINE WQinput
   ELSE
     READ (UNIT=i99, FMT='(18X,I20)', IOSTAT=ios)
     READ (UNIT=i99, FMT='(18X,G20.2)', IOSTAT=ios) sed_h
+    READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
     READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
     READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
     READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
@@ -666,8 +669,10 @@ SUBROUTINE WQinput
     IF (ios /= 0) CALL input_error ( ios, 143)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) DOC_sed
     IF (ios /= 0) CALL input_error ( ios, 144)
+    READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) grnd_Hg
+    IF (ios /= 0) CALL input_error ( ios, 145)
   else
-    READ (UNIT=i99, FMT='(///////(18X,G20.5))', IOSTAT=ios)
+    READ (UNIT=i99, FMT='(////////(18X,G20.5))', IOSTAT=ios)
   end if
 
   !.....Close wq input file.....
@@ -786,6 +791,8 @@ SUBROUTINE WQinput
     PRINT*,'sed_dens = ',sed_dens
     PRINT*,'sed_frac = ',sed_frac
     PRINT*, 'sed_type = ',sed_type
+    print*, 'iSTWAVE = ', iSTWAVE
+    print*, 'sed_prosity = ', sed_por
     print*, 'inst_eq =',inst_eq
     
     print*, '----- Settings MeHg -----'
@@ -897,9 +904,8 @@ SUBROUTINE WQinit
   end do
 
   if (iSS == 1) then
-    allocate(settling_vel(sedNumber), erosion_wqpn(sedNumber))
+    allocate(settling_vel(sedNumber))
     settling_vel(:) = 0.0
-    erosion_wqpn(:) = 0.0
   end if
 
   print*, 'Constituents to model:'

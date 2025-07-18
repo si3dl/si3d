@@ -353,31 +353,31 @@ SUBROUTINE InitializeScalarFields
             if ((nn .eq. LHg0) .or. (nn .eq. LHgII) .or. (nn .eq. LMeHg)) then
               if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
                 if (nn .eq. LHg0) then
-                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 1.0 !0.01
+                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.1
                 elseif (nn .eq. LHgII) then
-                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 1.0 !0.01
+                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.1
                 elseif (nn .eq. LMeHg) then
                   tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 1.0
                 end if
               elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
                 if (nn .eq. LHg0) then
-                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 1.0 !0.01
+                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.1
                 elseif (nn .eq. LHgII) then
-                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 1.0 !0.01
+                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.1
                 elseif (nn .eq. LMeHg) then
-                  tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 1.0 !0.2
+                  tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 0.2
                 end if
               elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
                 if (nn .eq. LHg0) then
-                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 1.0 !0.01
+                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.1
                 elseif (nn .eq. LHgII) then
-                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 1.0 !0.01
+                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.1
                 elseif (nn .eq. LMeHg) then
-                  tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 1.0 !0.2
+                  tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 0.2
                 end if
               end if
             elseif ((nn .eq. LSS1) .or. (nn .eq. LSS2) .or. (nn .eq. LSS3)) then
-              tracer(kms + 1, l, nn) = 0.6 * sed_frac(nn - LSS1 + 1) * sed_dens(nn - LSS1 + 1)
+              tracer(kms + 1, l, nn) = (1 - sed_por) * sed_frac(nn - LSS1 + 1) * sed_dens(nn - LSS1 + 1)
             elseif ((nn .eq. LDOC)) then
               tracer(kms + 1, l, nn) = DOC_sed
             elseif ((nn .eq. LPOC)) then
@@ -4167,7 +4167,8 @@ SUBROUTINE exTracer  (nt,Bstart,Bend,Bhaxpp,Bhaypp,Bth3,Bth4,Bth2,lSCH,lNCH,lECH
 
   ! ... Local variables
   INTEGER :: i, j, k, l, k1s, kms, gamma1, istat,liter
-  REAL    :: vel, ratio, C_f, delz, twodt1, hd, vs_ss
+  REAL    :: vel, ratio, C_f, delz, twodt1, hd 
+  real(kind=8) :: vs_ss
   REAL, DIMENSION (4          ) :: ss
 
   !.....Timing.....
