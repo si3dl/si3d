@@ -339,13 +339,6 @@ SUBROUTINE InitializeScalarFields
           DO k = 1, km1
             tracer(k,:,nn) = Scalardepthile(k,nn+1)
           END DO
-          ! if (nn .eq. LHg0) then
-          !   hg_sed = Hg0_sed
-          ! elseif (nn .eq. LHgII) then
-          !   hg_sed = HgII_sed
-          ! elseif (nn .eq. LMeHg) then
-          !   hg_sed = MeHg_sed
-          ! end if
           DO l = 1, lm1
             kms = kmz(l)
             i = l2i(l)
@@ -377,9 +370,27 @@ SUBROUTINE InitializeScalarFields
                 end if
               end if
             elseif ((nn .eq. LSS1) .or. (nn .eq. LSS2) .or. (nn .eq. LSS3)) then
-              tracer(kms + 1, l, nn) = (1 - sed_por) * sed_frac(nn - LSS1 + 1) * sed_dens(nn - LSS1 + 1)
+
+              if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
+                tracer(kms + 1, l, nn) = (1 - sed_por) * sed_frac(nn - LSS1 + 1) * sed_dens(nn - LSS1 + 1)
+              elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
+                tracer(kms + 1, l, nn) = (1 - sed_por) * sed_frac(nn - LSS1 + 1) * sed_dens(nn - LSS1 + 1)
+              elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
+                tracer(kms + 1, l, nn) = (1 - sed_por) * sed_frac(nn - LSS1 + 1) * sed_dens(nn - LSS1 + 1)
+              else
+                tracer(kms + 1, l, nn) = (1 - sed_por) * sed_frac(nn - LSS1 + 1) * sed_dens(nn - LSS1 + 1)
+              end if
+
             elseif ((nn .eq. LDOC)) then
-              tracer(kms + 1, l, nn) = DOC_sed
+              if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
+                tracer(kms + 1, l, nn) = DOC_sed * 0.8
+              elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
+                tracer(kms + 1, l, nn) = DOC_sed * 0.94
+              elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
+                tracer(kms + 1, l, nn) = DOC_sed * 0.94
+              else
+                tracer(kms + 1, l, nn) = DOC_sed * 1.0 
+              end if
             elseif ((nn .eq. LPOC)) then
               tracer(kms + 1, l, nn) = POC_sed
             elseif ((nn .eq. LDO)) then

@@ -59,11 +59,10 @@ SUBROUTINE sourceSS(kwq,lwq)
       ! if (taub .gt. tauCrt(i)) then
         if (sed_type(i) == 0) then
           call resuspension_noncohesive(resus_flux(i), ustarb, Rep(i), settling_vel(i), lwq)
-          resus_flux(i) = resus_flux(i) * sed_frac(i) * sed_dens(i)
         else if (sed_type(i) == 1) then
           call resuspension_cohesive(resus_flux(i), taub, tauCrt(i))
-          resus_flux(i) = resus_flux(i) * sed_frac(i) * sed_dens(i)
         end if
+        resus_flux(i) = resus_flux(i) * sed_frac(i) * sed_dens(i)
       ! else
         ! resus_flux(i) = 0.0
       ! end if
@@ -97,8 +96,9 @@ SUBROUTINE sourceSS(kwq,lwq)
       !   print*, 'tauCr =', tauCrt(i)
       !   print*, 'rho = ', w_dens
       !   print*, 'Rep = ', Rep(i)
-      !   ! print*, 'sed_frac = ', sed_frac(i)
+      !   print*, 'sed_frac = ', sed_frac(i)
       !   print*, 'resuspension_flux = ', resus_flux(i)
+      !   print*, 'Es * vs = ', resus_flux(i) / sed_frac(i) / sed_dens(i)
       !   print*, 'depositionFlux = ', deposition_flux(i)
       ! end if
     end do
