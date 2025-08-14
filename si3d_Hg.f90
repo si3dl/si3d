@@ -467,15 +467,15 @@ SUBROUTINE HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, &
 
   ! Kd per basin
   if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
-    kd_wpn2_ij = kd_wpn2 * 1.0 !0.4 
+    kd_wpn2_ij = kd_wpn2 * 0.4 
     kd_wdoc2_ij = kd_wdoc2 * 1.0
     kd_wpa2_ij = kd_wpa2 * 1.0
     kd_wpom2_ij = kd_wpom2 * 1.0
-    kd_spn2_ij = kd_spn2 * 1.0 !1.5
+    kd_spn2_ij = kd_spn2 * 1.5
     kd_sdoc2_ij = kd_sdoc2 * 1.0
     kd_spom2_ij = kd_spom2 * 1.0
   elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
-    kd_wpn2_ij = kd_wpn2 * 1.0 !0.3 
+    kd_wpn2_ij = kd_wpn2 * 0.3 
     kd_wdoc2_ij = kd_wdoc2 * 1.0
     kd_wpa2_ij = kd_wpa2 * 1.0
     kd_wpom2_ij = kd_wpom2 * 1.0
@@ -601,19 +601,19 @@ SUBROUTINE MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, f
 
   ! Kd per basin
   if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
-    kd_wpn3_ij = kd_wpn3 * 1.0 !0.9 
+    kd_wpn3_ij = kd_wpn3 * 0.9 
     kd_wdoc3_ij = kd_wdoc3 * 1.0
     kd_wpa3_ij = kd_wpa3 * 1.0
     kd_wpom3_ij = kd_wpom3 * 1.0
-    kd_spn3_ij = kd_spn3 * 1.0 !1.5
+    kd_spn3_ij = kd_spn3 * 1.5
     kd_sdoc3_ij = kd_sdoc3 * 1.0
     kd_spom3_ij = kd_spom3 * 1.0
   elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
-    kd_wpn3_ij = kd_wpn3 * 1.0 !0.85 
+    kd_wpn3_ij = kd_wpn3 * 0.85 
     kd_wdoc3_ij = kd_wdoc3 * 1.0
     kd_wpa3_ij = kd_wpa3 * 1.0
     kd_wpom3_ij = kd_wpom3 * 1.0
-    kd_spn3_ij = kd_spn3 * 1.0 !0.85
+    kd_spn3_ij = kd_spn3 * 0.85
     kd_sdoc3_ij = kd_sdoc3 * 1.0
     kd_spom3_ij = kd_spom3 * 1.0
   elseif (((l2i(lwq) > 139) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then

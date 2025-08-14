@@ -392,7 +392,15 @@ SUBROUTINE InitializeScalarFields
                 tracer(kms + 1, l, nn) = DOC_sed * 1.0 
               end if
             elseif ((nn .eq. LPOC)) then
-              tracer(kms + 1, l, nn) = POC_sed
+              if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
+                tracer(kms + 1, l, nn) = POC_sed * 1.32
+              elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
+                tracer(kms + 1, l, nn) = POC_sed * 0.94
+              elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
+                tracer(kms + 1, l, nn) = POC_sed * 0.94
+              else
+                tracer(kms + 1, l, nn) = POC_sed * 1.0 
+              end if
             elseif ((nn .eq. LDO)) then
               tracer(kms + 1, l, nn) = 0.0
             end if

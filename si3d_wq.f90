@@ -578,7 +578,7 @@ SUBROUTINE sourcePOC (kwq, lwq)
       depositionPOC = tracerpp(kwq, lwq, LPOC) * hp(kwq, lwq) / dt
     end if
 
-    decomp_poc_sed = R_decom_poc *  (Theta_decom ** (salp(kwq, lwq) - 20.0)) * tracerpp(kwq + 1, lwq, LPOC) * hpp(kwq + 1, lwq)
+    decomp_poc_sed = 0.1 * R_decom_poc * (Theta_decom ** (salp(kwq, lwq) - 20.0)) * tracerpp(kwq + 1, lwq, LPOC) * hpp(kwq + 1, lwq)
     sourcesink(kwq + 1, lwq, LPOC) = sourcesink(kwq + 1, lwq, LPOC) - decomp_poc_sed + depositionPOC - resuspensionPOC
   END IF
 
@@ -656,7 +656,7 @@ SUBROUTINE sourceDOC(kwq, lwq)
     END IF
     sedfluxDOC = SED_DOC * f_sedflux * (Theta_sedflux**(salp(kwq,lwq) - 20))
     ! Units: [mg/m^2/s] =  [mg/m^2/s] * [-] * [-]
-    doc_miner_sed = R_miner_doc * (Theta_miner ** (salp(kwq, lwq) - 20.0)) * tracerpp(kwq + 1, lwq, LDOC) * hpp(kwq + 1, lwq)
+    doc_miner_sed = 0.1 * R_miner_doc * (Theta_miner ** (salp(kwq, lwq) - 20.0)) * tracerpp(kwq + 1, lwq, LDOC) * hpp(kwq + 1, lwq)
     sourcesink(kwq + 1, lwq, LDOC) = sourcesink(kwq + 1, lwq, LDOC) - doc_miner_sed
   ELSE
       sedfluxDOC = 0.0
@@ -832,6 +832,9 @@ SUBROUTINE sourceALG1(kwq, lwq)
   ! If POC is modeled, alter sourcesink(kwq,lwq,LPOC) to include mortality
   IF (IPOC == 1) THEN
     sourcesink(kwq,lwq,LPOC) = sourcesink(kwq,lwq,LPOC) + mort1
+    if (kwq .eq. kmz(lwq)) then
+      sourcesink(kwq + 1, lwq, LPOC) = sourcesink(kwq + 1, lwq, LPOC) + deposi1 - resus1
+    end if
   END IF
 
   fluxes_out(kwq, lwq, 10) = growth1
