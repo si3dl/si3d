@@ -46,6 +46,7 @@ SUBROUTINE sourceHg(kwq, lwq)
   real(kind=8), dimension(sedNumber) :: fspn2
   real(kind=8), dimension(sedNumber) :: HgII_wpn
   real(kind=8), dimension(sedNumber) :: HgII_spn
+  real                       :: HgII_sdpw
 
   real                       :: fwd3
   real                       :: fwdoc3
@@ -65,6 +66,7 @@ SUBROUTINE sourceHg(kwq, lwq)
   real(kind=8), dimension(sedNumber) :: fspn3
   real(kind=8), dimension(sedNumber) :: MeHg_wpn
   real(kind=8), dimension(sedNumber) :: MeHg_spn
+  real                       :: MeHg_sdpw
 
   real :: HgII_wddoc
   real :: MeHg_wddoc
@@ -152,6 +154,7 @@ SUBROUTINE sourceHg(kwq, lwq)
   fspn2(:) = 0.0
   HgII_wpn(:) = 0.0
   HgII_spn(:) = 0.0
+  HgII_sdpw = 0.0
 
   fwd3 = 0.0
   fwdoc3 = 0.0
@@ -171,6 +174,9 @@ SUBROUTINE sourceHg(kwq, lwq)
   fspn3(:) = 0.0
   MeHg_wpn(:) = 0.0
   MeHg_spn(:) = 0.0
+  MeHg_sdpw = 0.0
+
+
   HgII_cb = 0.0
   MeHg_cb = 0.0
 
@@ -194,7 +200,7 @@ SUBROUTINE sourceHg(kwq, lwq)
     ! Define partitioning (Instantaneous) 
     call HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, fwpom2, fwpn2, &
        & fsd2, fsdoc2, fspom2, fspn2, HgII_wpn, HgII_wd, HgII_wdoc, HgII_wpa, &
-       & HgII_wpom, HgII_spn, HgII_sd, HgII_sdoc, HgII_spom)
+       & HgII_wpom, HgII_spn, HgII_sd, HgII_sdoc, HgII_spom, HgII_sdpw)
   end if
 
   if (iMeHg .eq. 1) then
@@ -206,7 +212,7 @@ SUBROUTINE sourceHg(kwq, lwq)
     ! Define partitioning (Instantaneous)
     call MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, fwpom3, fwpn3, &
           & fsd3, fsdoc3, fspom3, fspn3, MeHg_wpn, MeHg_wd, MeHg_wdoc, &
-          & MeHg_wpa, MeHg_wpom, MeHg_spn, MeHg_sd, MeHg_sdoc, MeHg_spom)
+          & MeHg_wpa, MeHg_wpom, MeHg_spn, MeHg_sd, MeHg_sdoc, MeHg_spom, MeHg_sdpw)
   end if
 
   !--------------------------------------------------------------------------------
@@ -237,22 +243,18 @@ SUBROUTINE sourceHg(kwq, lwq)
   end if
 
   if (kwq .eq. kms) then
-    call Hg0_diffusion(Hg0w_diffusion, Hg0w, Hg0s, lwq)
-    call MeHg_diffusion(MeHgw_diffusion, MeHg_wddoc, MeHg_sddoc, lwq)
-    call HgII_diffusion(HgIIw_diffusion, HgII_wddoc, HgII_sddoc, lwq)
-    call HgII_deposition(HgIIw_deposition, HgII_wpa, HgII_wpom, HgII_wpn)
-    call MeHg_deposition(MeHgw_deposition, MeHg_wpa, MeHg_wpom, MeHg_wpn)
+    call Hg0_diffusion(Hg0w_diffusion, Hg0w, Hg0s, kwq, lwq)
+    ! call MeHg_diffusion(MeHgw_diffusion, MeHg_wddoc, MeHg_sddoc, lwq)
+    ! call HgII_diffusion(HgIIw_diffusion, HgII_wddoc, HgII_sddoc, lwq)
+    call MeHg_diffusion(MeHgw_diffusion, MeHg_wddoc, MeHg_sdpw, kwq, lwq)
+    call HgII_diffusion(HgIIw_diffusion, HgII_wddoc, HgII_sdpw, kwq, lwq)
+    call HgII_deposition(HgIIw_deposition, HgII_wpa, HgII_wpom, HgII_wpn, kwq, lwq)
+    call MeHg_deposition(MeHgw_deposition, MeHg_wpa, MeHg_wpom, MeHg_wpn, kwq, lwq)
     call HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, kwq, lwq)
     call MeHg_resuspension(MeHgs_resus, MeHg_wpa, MeHg_wpom, MeHg_wpn, kwq, lwq)
     call HgIIs_methylation(HgIIs_methy, kwq + 1, lwq, HgII_sddoc)
     call MeHgs_demethylation(MeHgs_demethy, kwq + 1, lwq, MeHg_sddoc)
     call Hg_grdflux(lwq, Hg_gwf)
-    if (HgIIw_deposition .gt. (HgII_cb * hp(kwq, lwq) / dt)) then
-      HgIIw_deposition = HgII_cb * hp(kwq, lwq) / dt
-    end if
-    if (MeHgw_deposition .gt. (MeHg_cb * hp(kwq, lwq) / dt)) then
-      MeHgw_deposition = MeHg_cb * hp(kwq, lwq) / dt
-    end if
     call HgII_burial(HgIIs_burial, HgIIs_resus, HgIIw_deposition)
     call MeHg_burial(MeHgs_burial, MeHgs_resus, MeHgw_deposition)
 
@@ -269,6 +271,7 @@ SUBROUTINE sourceHg(kwq, lwq)
     !   print*, 'MeHg_spom', MeHg_spom
     !   print*, 'MeHgw', MeHgw
     !   print*, 'MeHgs', MeHgs
+    !   print*, 'MeHg_pw', MeHg_sdpw
 
     !   print*, 'HgII_wd', HgII_wd + HgII_wdoc
     !   print*, 'HgII_sd', HgII_sd + HgII_sdoc
@@ -281,42 +284,50 @@ SUBROUTINE sourceHg(kwq, lwq)
     !   print*, 'HgII_spom', HgII_spom
     !   print*, 'HgIIw', HgIIw
     !   print*, 'HgIIs', HgIIs
+    !   print*, 'HgII_pw', HgII_sdpw
 
     !   print*, 'MeHgw_diffusion', MeHgw_diffusion
     !   print*, 'HgIIw_diffusion', HgIIw_diffusion
 
-    !   print*, 'grnd_Hg', Hg_gwf
+    !   print*, 'DOC', tracerpp(kwq + 1, lwq, LDOC)
+    !   print*, 'POC', tracerpp(kwq + 1, lwq, LPOC)
+    !   print*, 'Alg', tracerpp(kwq + 1, lwq, LALG1)
     !   stop
     ! end if
     ! if ((l2i(lwq) .eq. 83) .and. (l2j(lwq) .eq. 134)) then
-    !     print*, '-------------- Hg MODEL UA06 ----------------'
-    !     print*, 'MeHg_wd', MeHg_wd + MeHg_wdoc
-    !     print*, 'MeHg_sd', MeHg_sd + MeHg_sdoc
-    !     print*, 'MeHg_wdoc', MeHg_wdoc
-    !     print*, 'MeHg_wpn', MeHg_wpn
-    !     print*, 'MeHg_wpa', MeHg_wpa
-    !     print*, 'MeHg_wpom', MeHg_wpom
-    !     print*, 'MeHg_sdoc', MeHg_sdoc
-    !     print*, 'MeHg_spn', MeHg_spn
-    !     print*, 'MeHg_spom', MeHg_spom
-    !     print*, 'MeHgw', MeHgw
-    !     print*, 'MeHgs', MeHgs
+    !   print*, '-------------- Hg MODEL UA06 ----------------'
+    !   print*, 'MeHg_wd', MeHg_wd + MeHg_wdoc
+    !   print*, 'MeHg_sd', MeHg_sd + MeHg_sdoc
+    !   print*, 'MeHg_wdoc', MeHg_wdoc
+    !   print*, 'MeHg_wpn', MeHg_wpn
+    !   print*, 'MeHg_wpa', MeHg_wpa
+    !   print*, 'MeHg_wpom', MeHg_wpom
+    !   print*, 'MeHg_sdoc', MeHg_sdoc
+    !   print*, 'MeHg_spn', MeHg_spn
+    !   print*, 'MeHg_spom', MeHg_spom
+    !   print*, 'MeHgw', MeHgw
+    !   print*, 'MeHgs', MeHgs
+    !   print*, 'MeHg_pw', MeHg_sdpw
 
-    !     print*, 'HgII_wd', HgII_wd + HgII_wdoc
-    !     print*, 'HgII_sd', HgII_sd + HgII_sdoc
-    !     print*, 'HgII_wdoc', HgII_wdoc
-    !     print*, 'HgII_wpn', HgII_wpn
-    !     print*, 'HgII_wpa', HgII_wpa
-    !     print*, 'HgII_wpom', HgII_wpom
-    !     print*, 'HgII_sdoc', HgII_sdoc
-    !     print*, 'HgII_spn', HgII_spn
-    !     print*, 'HgII_spom', HgII_spom
-    !     print*, 'HgIIw', HgIIw
-    !     print*, 'HgIIs', HgIIs
+    !   print*, 'HgII_wd', HgII_wd + HgII_wdoc
+    !   print*, 'HgII_sd', HgII_sd + HgII_sdoc
+    !   print*, 'HgII_wdoc', HgII_wdoc
+    !   print*, 'HgII_wpn', HgII_wpn
+    !   print*, 'HgII_wpa', HgII_wpa
+    !   print*, 'HgII_wpom', HgII_wpom
+    !   print*, 'HgII_sdoc', HgII_sdoc
+    !   print*, 'HgII_spn', HgII_spn
+    !   print*, 'HgII_spom', HgII_spom
+    !   print*, 'HgIIw', HgIIw
+    !   print*, 'HgIIs', HgIIs
+    !   print*, 'HgII_pw', HgII_sdpw
 
-    !     print*, 'MeHgw_diffusion', MeHgw_diffusion
-    !     print*, 'HgIIw_diffusion', HgIIw_diffusion
-    !     print*, 'grnd_Hg', Hg_gwf
+    !   print*, 'MeHgw_diffusion', MeHgw_diffusion
+    !   print*, 'HgIIw_diffusion', HgIIw_diffusion
+
+    !   print*, 'DOC', tracerpp(kwq + 1, lwq, LDOC)
+    !   print*, 'POC', tracerpp(kwq + 1, lwq, LPOC)
+    !   print*, 'Alg', tracerpp(kwq + 1, lwq, LALG1)
     ! end if
     ! if ((l2i(lwq) .eq. 170) .and. (l2j(lwq) .eq. 47)) then
     !   print*, '-------------- Hg MODEL LA03 ----------------'
@@ -331,6 +342,7 @@ SUBROUTINE sourceHg(kwq, lwq)
     !   print*, 'MeHg_spom', MeHg_spom
     !   print*, 'MeHgw', MeHgw
     !   print*, 'MeHgs', MeHgs
+    !   print*, 'MeHg_pw', MeHg_sdpw
 
     !   print*, 'HgII_wd', HgII_wd + HgII_wdoc
     !   print*, 'HgII_sd', HgII_sd + HgII_sdoc
@@ -343,10 +355,14 @@ SUBROUTINE sourceHg(kwq, lwq)
     !   print*, 'HgII_spom', HgII_spom
     !   print*, 'HgIIw', HgIIw
     !   print*, 'HgIIs', HgIIs
+    !   print*, 'HgII_pw', HgII_sdpw
 
     !   print*, 'MeHgw_diffusion', MeHgw_diffusion
     !   print*, 'HgIIw_diffusion', HgIIw_diffusion
-    !   print*, 'grnd_Hg', Hg_gwf
+
+    !   print*, 'DOC', tracerpp(kwq + 1, lwq, LDOC)
+    !   print*, 'POC', tracerpp(kwq + 1, lwq, LPOC)
+    !   print*, 'Alg', tracerpp(kwq + 1, lwq, LALG1)
     ! end if
 
   end if  
@@ -407,7 +423,7 @@ SUBROUTINE Hg_grdflux(lwq, Hg_gwf)
   
   i = l2i(lwq)
   j = l2j(lwq)
-  if ((i .ge. 185) .and. ((j .ge. 67) .and. (j .lt. 81))) then
+  if ((i .ge. 199) .and. ((j .ge. 66) .and. (j .lt. 82))) then
   ! if (((i .ge. 188) .and. (i .le. 210)) .and. ((j .ge. 67) .and. (j .le. 76))) then
     Hg_gwf = grnd_Hg ! ng/m2/s ground water flux
   else
@@ -419,7 +435,7 @@ END SUBROUTINE Hg_grdflux
 !*************************************************************************
 SUBROUTINE HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, &
           & fwpom2, fwpn2, fsd2, fsdoc2, fspom2, fspn2, HgII_wpn, HgII_wd, &
-          & HgII_wdoc, HgII_wpa, HgII_wpom, HgII_spn, HgII_sd, HgII_sdoc, HgII_spom)
+          & HgII_wdoc, HgII_wpa, HgII_wpom, HgII_spn, HgII_sd, HgII_sdoc, HgII_spom, HgII_sdpw)
 !*************************************************************************
 !  Purpose:
 !
@@ -455,6 +471,7 @@ SUBROUTINE HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, &
   real, intent(out)                       :: HgII_sd
   real, intent(out)                       :: HgII_sdoc
   real, intent(out)                       :: HgII_spom
+  real, intent(out)                       :: HgII_sdpw
   real                                    :: sed_por_ij = 1.0
   
   real, dimension(sedNumber) :: kd_wpn2_ij, kd_spn2_ij
@@ -467,15 +484,15 @@ SUBROUTINE HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, &
 
   ! Kd per basin
   if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
-    kd_wpn2_ij = kd_wpn2 * 0.4 
+    kd_wpn2_ij = kd_wpn2 * 1.0 !0.4 
     kd_wdoc2_ij = kd_wdoc2 * 1.0
     kd_wpa2_ij = kd_wpa2 * 1.0
     kd_wpom2_ij = kd_wpom2 * 1.0
-    kd_spn2_ij = kd_spn2 * 1.5
+    kd_spn2_ij = kd_spn2 * 1.0 !1.6
     kd_sdoc2_ij = kd_sdoc2 * 1.0
     kd_spom2_ij = kd_spom2 * 1.0
   elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
-    kd_wpn2_ij = kd_wpn2 * 0.3 
+    kd_wpn2_ij = kd_wpn2 * 1.0 !0.3 
     kd_wdoc2_ij = kd_wdoc2 * 1.0
     kd_wpa2_ij = kd_wpa2 * 1.0
     kd_wpom2_ij = kd_wpom2 * 1.0
@@ -544,6 +561,7 @@ SUBROUTINE HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, &
     HgII_sd = fsd2 * HgIIs
     HgII_sdoc = fsdoc2 * HgIIs
     HgII_spom = fspom2 * HgIIs
+    HgII_sdpw = (HgII_sd + HgII_sdoc) / sed_por
   end if 
 
 END SUBROUTINE HgII_partitioning
@@ -551,7 +569,7 @@ END SUBROUTINE HgII_partitioning
 !*************************************************************************
 SUBROUTINE MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, fwpom3, fwpn3, &
           & fsd3, fsdoc3, fspom3, fspn3, MeHg_wpn, MeHg_wd, MeHg_wdoc, &
-          & MeHg_wpa, MeHg_wpom, MeHg_spn, MeHg_sd, MeHg_sdoc, MeHg_spom)
+          & MeHg_wpa, MeHg_wpom, MeHg_spn, MeHg_sd, MeHg_sdoc, MeHg_spom, MeHg_sdpw)
 !*************************************************************************
 ! Purposes: 
 !
@@ -588,6 +606,7 @@ SUBROUTINE MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, f
   real(kind=8), intent(out), dimension(sedNumber) :: fspn3
   real(kind=8), intent(out), dimension(sedNumber) :: MeHg_wpn
   real(kind=8), intent(out), dimension(sedNumber) :: MeHg_spn
+  real                                    :: MeHg_sdpw
   real                                    :: sed_por_ij = 1.0
 
   real, dimension(sedNumber) :: kd_wpn3_ij, kd_spn3_ij
@@ -601,19 +620,19 @@ SUBROUTINE MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, f
 
   ! Kd per basin
   if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
-    kd_wpn3_ij = kd_wpn3 * 0.9 
+    kd_wpn3_ij = kd_wpn3 * 1.0 !0.9 
     kd_wdoc3_ij = kd_wdoc3 * 1.0
     kd_wpa3_ij = kd_wpa3 * 1.0
     kd_wpom3_ij = kd_wpom3 * 1.0
-    kd_spn3_ij = kd_spn3 * 1.5
+    kd_spn3_ij = kd_spn3 * 1.0 !1.6
     kd_sdoc3_ij = kd_sdoc3 * 1.0
     kd_spom3_ij = kd_spom3 * 1.0
   elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
-    kd_wpn3_ij = kd_wpn3 * 0.85 
+    kd_wpn3_ij = kd_wpn3 * 1.0 !0.85 
     kd_wdoc3_ij = kd_wdoc3 * 1.0
     kd_wpa3_ij = kd_wpa3 * 1.0
     kd_wpom3_ij = kd_wpom3 * 1.0
-    kd_spn3_ij = kd_spn3 * 0.85
+    kd_spn3_ij = kd_spn3 * 1.0 !0.85
     kd_sdoc3_ij = kd_sdoc3 * 1.0
     kd_spom3_ij = kd_spom3 * 1.0
   elseif (((l2i(lwq) > 139) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then
@@ -679,6 +698,7 @@ SUBROUTINE MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, f
     MeHg_sd = fsd3 * MeHgs
     MeHg_sdoc = fsdoc3 * MeHgs
     MeHg_spom = fspom3 * MeHgs
+    MeHg_sdpw = (MeHg_sd + MeHg_sdoc) / sed_por
   end if
 
 END SUBROUTINE MeHg_partitioning
@@ -712,9 +732,9 @@ SUBROUTINE HgII_reduction(HgIIw_reduction, kwq, lwq, HgII)
 
   HgIIw_reduction = h(kwq, lwq) * (Io * QswFr(kwq, lwq)) * kw21 * HgII
 
-  if (HgIIw_reduction .gt. (HgII * hp(kwq, lwq) / dt)) then
-    HgIIw_reduction = HgII * hp(kwq, lwq) / dt
-  end if
+  ! if (HgIIw_reduction .gt. (HgII * hp(kwq, lwq) / dt)) then
+  !   HgIIw_reduction = HgII * hp(kwq, lwq) / dt
+  ! end if
 
 END SUBROUTINE HgII_reduction
 
@@ -758,9 +778,9 @@ SUBROUTINE Hg0_oxidation(Hg0w_oxidation, Hg0w, HgIIwd, MeHgwd, HgIIw_reduction, 
     Hg0w_oxidation = 0
   end if
 
-  if (Hg0w_oxidation .gt. Hg0w * hp(kwq, lwq) / dt) then
-    Hg0w_oxidation = Hg0w * hp(kwq, lwq) / dt
-  end if
+  ! if (Hg0w_oxidation .gt. Hg0w * hp(kwq, lwq) / dt) then
+  !   Hg0w_oxidation = Hg0w * hp(kwq, lwq) / dt
+  ! end if
 
   END SUBROUTINE Hg0_oxidation
 
@@ -791,9 +811,9 @@ SUBROUTINE MeHg_photodegradation(MeHgw_photodeg, kwq, lwq, MeHg)
 
   MeHgw_photodeg = h(kwq, lwq) * (Io * QswFr(kwq, lwq)) * kw31 * MeHg
 
-  if (MeHgw_photodeg .gt. (MeHg * hp(kwq, lwq) / dt)) then
-    MeHgw_photodeg = MeHg * hp(kwq, lwq) / dt
-  end if
+  ! if (MeHgw_photodeg .gt. (MeHg * hp(kwq, lwq) / dt)) then
+  !   MeHgw_photodeg = MeHg * hp(kwq, lwq) / dt
+  ! end if
 
 END SUBROUTINE MeHg_photodegradation
 
@@ -972,7 +992,7 @@ SUBROUTINE MeHgw_demethylation(MeHgw_demethy, kwq, lwq, MeHg)
 END SUBROUTINE MeHgw_demethylation
 
 !***********************************************************************
-SUBROUTINE MeHg_diffusion(MeHgw_diffusion, MeHgw, MeHgs, lwq)
+SUBROUTINE MeHg_diffusion(MeHgw_diffusion, MeHgw, MeHgs, kwq, lwq)
 !***********************************************************************
 !
 !  Purpose: This estimates the diffusion of MeHg in the water column 
@@ -981,7 +1001,7 @@ SUBROUTINE MeHg_diffusion(MeHgw_diffusion, MeHgw, MeHgs, lwq)
 !           sediment layer into the water column 
 !-----------------------------------------------------------------------
   ! Arguments
-  integer, intent(in) :: lwq
+  integer, intent(in) :: kwq, lwq
   real, intent(in)  :: MeHgw
   real, intent(in)  :: MeHgs
   real, intent(out) :: MeHgw_diffusion
@@ -992,22 +1012,22 @@ SUBROUTINE MeHg_diffusion(MeHgw_diffusion, MeHgw, MeHgs, lwq)
   i = l2i(lwq)
   j = l2j(lwq)
 
-  ! if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
-  !   sed_por_ij = sed_por * 0.7
-  ! elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
-  !   sed_por_ij = sed_por * 0.7
-  ! elseif (((l2i(lwq) > 139) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then
-  !   sed_por_ij = sed_por * 0.7
-  ! else
-  !   sed_por_ij = sed_por * 1.0
-  ! end if
+  MeHgw_diffusion = kws3 * (MeHgs - MeHgw)
 
-  MeHgw_diffusion = sed_por * kws3 * (MeHgs - MeHgw)
+  if (MeHgw .gt. MeHgs) then
+    if (MeHgw_diffusion .gt. (MeHgw * hp(kwq, lwq) / dt)) then
+      MeHgw_diffusion = -MeHgw * hp(kwq, lwq) / dt
+    end if
+  else
+    if (MeHgw_diffusion .gt. (MeHgs * hp(kwq, lwq) / dt)) then
+      MeHgw_diffusion = MeHgs * hp(kwq, lwq) / dt
+    end if
+  end if
 
 END SUBROUTINE MeHg_diffusion
 
 !***********************************************************************
-SUBROUTINE HgII_diffusion(HgIIw_diffusion, HgIIw, HgIIs, lwq)
+SUBROUTINE HgII_diffusion(HgIIw_diffusion, HgIIw, HgIIs, kwq,lwq)
 !***********************************************************************
 !
 !  Purpose: This estimates the diffusion of HgII in the water column 
@@ -1016,7 +1036,7 @@ SUBROUTINE HgII_diffusion(HgIIw_diffusion, HgIIw, HgIIs, lwq)
 !           sediment layer into the water column 
 !-----------------------------------------------------------------------
   ! Arguments
-  integer, intent(in) :: lwq
+  integer, intent(in) :: kwq, lwq
   real, intent(in)  :: HgIIw
   real, intent(in)  :: HgIIs
   real, intent(out) :: HgIIw_diffusion
@@ -1027,22 +1047,22 @@ SUBROUTINE HgII_diffusion(HgIIw_diffusion, HgIIw, HgIIs, lwq)
   i = l2i(lwq)
   j = l2j(lwq)
 
-  ! if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
-  !   sed_por_ij = sed_por * 0.7
-  ! elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
-  !   sed_por_ij = sed_por * 0.7
-  ! elseif (((l2i(lwq) > 139) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then
-  !   sed_por_ij = sed_por * 0.7
-  ! else
-  !   sed_por_ij = sed_por * 1.0
-  ! end if
+  HgIIw_diffusion = kws2 * (HgIIs - HgIIw)
 
-  HgIIw_diffusion = sed_por * kws2 * (HgIIs - HgIIw)
+  if (HgIIw .gt. HgIIs) then
+    if (HgIIw_diffusion .gt. (HgIIw * hp(kwq, lwq) / dt)) then
+      HgIIw_diffusion = -HgIIw * hp(kwq, lwq) / dt
+    end if
+  else
+    if (HgIIw_diffusion .gt. (HgIIs * hp(kwq, lwq) / dt)) then
+      HgIIw_diffusion = HgIIs * hp(kwq, lwq) / dt
+    end if
+  end if
 
 END SUBROUTINE HgII_diffusion
 
 !***********************************************************************
-SUBROUTINE Hg0_diffusion(Hg0w_diffusion, Hg0w, Hg0s, lwq)
+SUBROUTINE Hg0_diffusion(Hg0w_diffusion, Hg0w, Hg0s, kwq, lwq)
 !***********************************************************************
 !
 !  Purpose: This estimates the diffusion of Hg0 in the water column 
@@ -1051,7 +1071,7 @@ SUBROUTINE Hg0_diffusion(Hg0w_diffusion, Hg0w, Hg0s, lwq)
 !           sediment layer into the water column 
 !-----------------------------------------------------------------------
   ! Arguments
-  integer, intent(in) :: lwq
+  integer, intent(in) :: kwq, lwq
   real, intent(in)  :: Hg0w
   real, intent(in)  :: Hg0s
   real, intent(out) :: Hg0w_diffusion
@@ -1062,17 +1082,18 @@ SUBROUTINE Hg0_diffusion(Hg0w_diffusion, Hg0w, Hg0s, lwq)
   i = l2i(lwq)
   j = l2j(lwq)
 
-  ! if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
-  !   sed_por_ij = sed_por * 0.7
-  ! elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
-  !   sed_por_ij = sed_por * 0.7
-  ! elseif (((l2i(lwq) > 139) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then
-  !   sed_por_ij = sed_por * 0.7
-  ! else
-  !   sed_por_ij = sed_por * 1.0
-  ! end if
+  Hg0w_diffusion = kws1 * (Hg0s - Hg0w)
 
-  Hg0w_diffusion = sed_por * kws1 * (Hg0s - Hg0w)
+  ! Mass conservation of the dissolved phase flux
+  if (Hg0w .gt. Hg0s) then
+    if (Hg0w_diffusion .gt. (Hg0w * hp(kwq, lwq) / dt)) then
+      Hg0w_diffusion = - Hg0w * hp(kwq, lwq) / dt
+    end if
+  else
+    if (Hg0w_diffusion .gt. (Hg0s * hp(kwq, lwq) / dt)) then
+      Hg0w_diffusion = Hg0s * hp(kwq, lwq) / dt
+    end if
+  end if
 
 END SUBROUTINE Hg0_diffusion
 
@@ -1132,7 +1153,7 @@ SUBROUTINE MeHgs_demethylation(MeHgs_demethy, kwq, lwq, MeHg)
 END SUBROUTINE MeHgs_demethylation
 
 !***********************************************************************
-SUBROUTINE HgII_deposition(HgIIw_deposition, HgII_wpa, HgII_wpom, HgII_wpn)
+SUBROUTINE HgII_deposition(HgIIw_deposition, HgII_wpa, HgII_wpom, HgII_wpn, kwq, lwq)
 !***********************************************************************
 !
 !  Purpose: This estimates the deposition of HgII from the water column 
@@ -1140,13 +1161,14 @@ SUBROUTINE HgII_deposition(HgIIw_deposition, HgII_wpa, HgII_wpom, HgII_wpn)
 !           It only applies to the particulate phase
 !-----------------------------------------------------------------------
   ! Arguments
+  integer, intent(in)  :: kwq, lwq
   real, intent(in)                       :: HgII_wpa
   real, intent(in)                       :: HgII_wpom
   real(kind=8), intent(in), dimension(sedNumber) :: HgII_wpn
   real, intent(out)                      :: HgIIw_deposition
   real(kind=8),             dimension(sedNumber) :: settling_pn
   integer                                :: i
-
+  real :: HgII_cb
 
   if (inst_eq .eq. 1) then
     do i = 1, sedNumber
@@ -1156,10 +1178,16 @@ SUBROUTINE HgII_deposition(HgIIw_deposition, HgII_wpa, HgII_wpom, HgII_wpn)
 
   HgIIw_deposition = vspa * HgII_wpa + vspoc * HgII_wpom + sum(settling_pn)
 
+  HgII_cb = HgII_wpa + HgII_wpom + sum(HgII_wpn)
+  if (HgIIw_deposition .gt. (HgII_cb * hp(kwq, lwq) / dt)) then
+      HgIIw_deposition = HgII_cb * hp(kwq, lwq) / dt
+  end if
+
+
 END SUBROUTINE HgII_deposition
 
 !***********************************************************************
-SUBROUTINE MeHg_deposition(MeHgw_deposition, MeHg_wpa, MeHg_wpom, MeHg_wpn)
+SUBROUTINE MeHg_deposition(MeHgw_deposition, MeHg_wpa, MeHg_wpom, MeHg_wpn, kwq, lwq)
 !***********************************************************************
 !
 !  Purpose: This estimates the deposition of MeHg from the water column 
@@ -1167,12 +1195,14 @@ SUBROUTINE MeHg_deposition(MeHgw_deposition, MeHg_wpa, MeHg_wpom, MeHg_wpn)
 !           It only applies to the particulate phase
 !-----------------------------------------------------------------------
   ! Arguments
+  integer, intent(in)  :: kwq, lwq
   real, intent(in)                       :: MeHg_wpa
   real, intent(in)                       :: MeHg_wpom
   real(kind=8), intent(in), dimension(sedNumber) :: MeHg_wpn
   real, intent(out)                      :: MeHgw_deposition
   real(kind=8),             dimension(sedNumber) :: settling_pn
   integer                                :: i
+  real :: MeHg_cb
 
   if (inst_eq .eq. 1) then
     do i = 1, sedNumber
@@ -1181,6 +1211,12 @@ SUBROUTINE MeHg_deposition(MeHgw_deposition, MeHg_wpa, MeHg_wpom, MeHg_wpn)
   end if
 
   MeHgw_deposition = vspa * MeHg_wpa + vspoc * MeHg_wpom + sum(settling_pn)
+
+  MeHg_cb = MeHg_wpa + MeHg_wpom + sum(MeHg_wpn)
+  if (MeHgw_deposition .gt. (MeHg_cb * hp(kwq, lwq) / dt)) then
+      MeHgw_deposition = MeHg_cb * hp(kwq, lwq) / dt
+  end if
+
 
 END SUBROUTINE MeHg_deposition
 
