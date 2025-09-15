@@ -995,18 +995,22 @@ SUBROUTINE WQinit
   END IF
 
   if (iSS .eq. 1) then
-    if (sedNumber .gt. 1) then
-      if ((LSS2 - LSS1 .ne.  1) .or. (LSS3 - LSS2 .ne.  1 )) then
-      print*,'ERROR - SS1, SS2, and SS3 must be consecutive within si3d_init'
-      stop
+    if (sedNumber .eq. 2) then
+      if ((LSS2 - LSS1 .ne.  1)) then
+        print*,'ERROR - SS1 and SS2 must be consecutive within si3d_init'
+        stop
       end if
-    else
-      if ((LSS1 .gt. LHg0) .and. (LHg0 .eq. 1))then
-        print*,'ERROR - SS1 must be before Hg variables within si3d_init'
+    elseif (sedNumber .eq. 3) then
+      if ((LSS2 - LSS1 .ne.  1) .or. (LSS3 - LSS2 .ne. 1)) then
+        print*,'ERROR - SS1, SS2, and SS3 must be consecutive within si3d_init'
         stop
       end if
     end if
-  end if 
+    if ((LSS1 .gt. LHg0) .and. (LHg0 .eq. 1))then
+      print*,'ERROR - SS1 must be before Hg variables within si3d_init'
+      stop
+    end if
+  end if
 
 END SUBROUTINE WQinit
 

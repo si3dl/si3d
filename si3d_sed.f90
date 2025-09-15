@@ -38,12 +38,14 @@ SUBROUTINE sourceSS(kwq,lwq)
   real, dimension(sedNumber) :: deposition_flux   !<
   real, dimension(sedNumber) :: burial_flux
   real                       :: cb
+  real                      :: f_sed
 
   resus_flux(:) = 0.0
   deposition_flux(:) = 0.0
   burial_flux(:) = 0.0
 
   kms = kmz(lwq)
+
   if (kwq .eq. kms) then
     w_dens = (rhop(kwq, lwq) + 1000)
     ! Estimate bottom shear stress
@@ -53,8 +55,17 @@ SUBROUTINE sourceSS(kwq,lwq)
     do i = 1, sedNumber
       ! Estimate properties of sediment for a given water density at bottom cell
       cb = tracerpp(kwq,lwq,LSS1 + i - 1) ! kg/m3
+      if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
+        f_sed = 1.0
+      elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
+        f_sed = 1.0
+      elseif (((l2i(lwq) > 139) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then
+        f_sed = 1.0
+      else
+        f_sed = 1.0
+      end if
       
-      call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
+      call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i) * f_sed, w_dens)
       ! Estimate erosion flux
       ! if (taub .gt. tauCrt(i)) then
         if (sed_type(i) == 0) then
@@ -90,7 +101,7 @@ SUBROUTINE sourceSS(kwq,lwq)
       sourcesink(kwq + 1,lwq, LSS1 + i - 1) = deposition_flux(i) - resus_flux(i) - burial_flux(i)
 
       ! if ((l2i(lwq) .eq. 185) .and. (l2j(lwq) .eq. 80)) then
-      !   print*, '----------------- SS Model ------------------'
+      !   print*, '----------------- OA04 SS Model ------------------'
       !   print*, 'vs =', settling_vel(i) * 24 * 3600, 'm/day'
       !   print*, 'taub =',taub
       !   print*, 'tauCr =', tauCrt(i)
@@ -100,6 +111,33 @@ SUBROUTINE sourceSS(kwq,lwq)
       !   print*, 'resuspension_flux = ', resus_flux(i)
       !   print*, 'Es * vs = ', resus_flux(i) / sed_frac(i) / sed_dens(i)
       !   print*, 'depositionFlux = ', deposition_flux(i)
+      !   print*, 'sed_conc = ', tracerpp(kwq + 1,lwq,LSS1 + i - 1)
+      ! end if
+      ! if ((l2i(lwq) .eq. 83) .and. (l2j(lwq) .eq. 134)) then
+      !   print*, '----------------- UA06 SS Model ------------------'
+      !   print*, 'vs =', settling_vel(i) * 24 * 3600, 'm/day'
+      !   print*, 'taub =',taub
+      !   print*, 'tauCr =', tauCrt(i)
+      !   print*, 'rho = ', w_dens
+      !   print*, 'Rep = ', Rep(i)
+      !   print*, 'sed_frac = ', sed_frac(i)
+      !   print*, 'resuspension_flux = ', resus_flux(i)
+      !   print*, 'Es * vs = ', resus_flux(i) / sed_frac(i) / sed_dens(i)
+      !   print*, 'depositionFlux = ', deposition_flux(i)
+      !   print*, 'sed_conc = ', tracerpp(kwq + 1,lwq,LSS1 + i - 1)
+      ! end if
+      ! if ((l2i(lwq) .eq. 170) .and. (l2j(lwq) .eq. 47)) then
+      !   print*, '----------------- LA03 SS Model ------------------'
+      !   print*, 'vs =', settling_vel(i) * 24 * 3600, 'm/day'
+      !   print*, 'taub =',taub
+      !   print*, 'tauCr =', tauCrt(i)
+      !   print*, 'rho = ', w_dens
+      !   print*, 'Rep = ', Rep(i)
+      !   print*, 'sed_frac = ', sed_frac(i)
+      !   print*, 'resuspension_flux = ', resus_flux(i)
+      !   print*, 'Es * vs = ', resus_flux(i) / sed_frac(i) / sed_dens(i)
+      !   print*, 'depositionFlux = ', deposition_flux(i)
+      !   print*, 'sed_conc = ', tracerpp(kwq + 1,lwq,LSS1 + i - 1)
       ! end if
     end do
 

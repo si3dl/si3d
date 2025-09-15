@@ -225,9 +225,6 @@ SUBROUTINE sourceHg(kwq, lwq)
   MeHg_sddoc = MeHg_sd + MeHg_sdoc
   HgII_sddoc = HgII_sd + HgII_sdoc
 
-  HgII_cb = HgII_wpa + HgII_wpom + sum(HgII_wpn)
-  MeHg_cb = MeHg_wpa + MeHg_wpom + sum(MeHg_wpn)
-
 
   call HgII_reduction(HgIIw_reduction, kwq, lwq, HgII_wddoc)
   call HgIIw_methylation(HgIIw_methy, kwq, lwq, HgII_wddoc)
@@ -243,6 +240,8 @@ SUBROUTINE sourceHg(kwq, lwq)
   end if
 
   if (kwq .eq. kms) then
+    HgII_cb = HgII_wpa + HgII_wpom + sum(HgII_wpn)
+    MeHg_cb = MeHg_wpa + MeHg_wpom + sum(MeHg_wpn)
     call Hg0_diffusion(Hg0w_diffusion, Hg0w, Hg0s, kwq, lwq)
     ! call MeHg_diffusion(MeHgw_diffusion, MeHg_wddoc, MeHg_sddoc, lwq)
     ! call HgII_diffusion(HgIIw_diffusion, HgII_wddoc, HgII_sddoc, lwq)
@@ -288,6 +287,12 @@ SUBROUTINE sourceHg(kwq, lwq)
 
     !   print*, 'MeHgw_diffusion', MeHgw_diffusion
     !   print*, 'HgIIw_diffusion', HgIIw_diffusion
+    !   print*, 'MeHgs_resus', MeHgs_resus
+    !   print*, 'HgIIs_resus', HgIIs_resus
+    !   print*, 'MeHgw_deposition', MeHgw_deposition
+    !   print*, 'HgIIw_deposition', HgIIw_deposition
+    !   print*, 'HgII_ero', HgIIs_resus - HgIIw_deposition
+    !   print*, 'MeHg_ero', MeHgs_resus - MeHgw_deposition
 
     !   print*, 'DOC', tracerpp(kwq + 1, lwq, LDOC)
     !   print*, 'POC', tracerpp(kwq + 1, lwq, LPOC)
@@ -324,10 +329,14 @@ SUBROUTINE sourceHg(kwq, lwq)
 
     !   print*, 'MeHgw_diffusion', MeHgw_diffusion
     !   print*, 'HgIIw_diffusion', HgIIw_diffusion
+    !   print*, 'MeHgs_resus', MeHgs_resus
+    !   print*, 'HgIIs_resus', HgIIs_resus
+    !   print*, 'MeHgw_deposition', MeHgw_deposition
+    !   print*, 'HgIIw_deposition', HgIIw_deposition
+    !   print*, 'HgII_ero', HgIIs_resus - HgIIw_deposition
+    !   print*, 'MeHg_ero', MeHgs_resus - MeHgw_deposition
 
-    !   print*, 'DOC', tracerpp(kwq + 1, lwq, LDOC)
-    !   print*, 'POC', tracerpp(kwq + 1, lwq, LPOC)
-    !   print*, 'Alg', tracerpp(kwq + 1, lwq, LALG1)
+    
     ! end if
     ! if ((l2i(lwq) .eq. 170) .and. (l2j(lwq) .eq. 47)) then
     !   print*, '-------------- Hg MODEL LA03 ----------------'
@@ -359,6 +368,12 @@ SUBROUTINE sourceHg(kwq, lwq)
 
     !   print*, 'MeHgw_diffusion', MeHgw_diffusion
     !   print*, 'HgIIw_diffusion', HgIIw_diffusion
+    !   print*, 'MeHgs_resus', MeHgs_resus
+    !   print*, 'HgIIs_resus', HgIIs_resus
+    !   print*, 'MeHgw_deposition', MeHgw_deposition
+    !   print*, 'HgIIw_deposition', HgIIw_deposition
+    !   print*, 'HgII_ero', HgIIs_resus - HgIIw_deposition
+    !   print*, 'MeHg_ero', MeHgs_resus - MeHgw_deposition
 
     !   print*, 'DOC', tracerpp(kwq + 1, lwq, LDOC)
     !   print*, 'POC', tracerpp(kwq + 1, lwq, LPOC)
@@ -366,7 +381,9 @@ SUBROUTINE sourceHg(kwq, lwq)
     ! end if
 
   end if  
-
+! print*, 'DOC', tracerpp(kwq + 1, lwq, LDOC)
+    ! print*, 'POC', tracerpp(kwq + 1, lwq, LPOC)
+    ! print*, 'Alg', tracerpp(kwq + 1, lwq, LALG1)
   sourcesink(kwq, lwq, LHg0)  = HgIIw_reduction + MeHgw_photodeg + Hg0w_diffusion - Hg0w_oxidation - Hg0w_vol
   sourcesink(kwq, lwq, LHgII) = HgIIw_atmdep + HgIIw_diffusion + Hg0w_oxidation + MeHgw_demethy - HgIIw_reduction - HgIIw_methy - HgIIw_deposition + HgIIs_resus + Hg_gwf
   sourcesink(kwq, lwq, LMeHg) = MeHgw_atmdep + MeHgw_diffusion + HgIIw_methy - MeHgw_vol - MeHgw_photodeg - MeHgw_demethy - MeHgw_deposition + MeHgs_resus
@@ -423,8 +440,8 @@ SUBROUTINE Hg_grdflux(lwq, Hg_gwf)
   
   i = l2i(lwq)
   j = l2j(lwq)
-  if ((i .ge. 199) .and. ((j .ge. 66) .and. (j .lt. 82))) then
-  ! if (((i .ge. 188) .and. (i .le. 210)) .and. ((j .ge. 67) .and. (j .le. 76))) then
+  ! if ((i .ge. 199) .and. ((j .ge. 66) .and. (j .lt. 82))) then
+  if (((i .ge. 201) .and. (i .le. 210)) .and. ((j .ge. 67) .and. (j .le. 76))) then
     Hg_gwf = grnd_Hg ! ng/m2/s ground water flux
   else
     Hg_gwf = 0.0
@@ -1015,11 +1032,11 @@ SUBROUTINE MeHg_diffusion(MeHgw_diffusion, MeHgw, MeHgs, kwq, lwq)
   MeHgw_diffusion = kws3 * (MeHgs - MeHgw)
 
   if (MeHgw .gt. MeHgs) then
-    if (MeHgw_diffusion .gt. (MeHgw * hp(kwq, lwq) / dt)) then
+    if (abs(MeHgw_diffusion) .gt. (MeHgw * hp(kwq, lwq) / dt)) then
       MeHgw_diffusion = -MeHgw * hp(kwq, lwq) / dt
     end if
   else
-    if (MeHgw_diffusion .gt. (MeHgs * hp(kwq, lwq) / dt)) then
+    if (abs(MeHgw_diffusion) .gt. (MeHgs * hp(kwq, lwq) / dt)) then
       MeHgw_diffusion = MeHgs * hp(kwq, lwq) / dt
     end if
   end if
@@ -1050,11 +1067,11 @@ SUBROUTINE HgII_diffusion(HgIIw_diffusion, HgIIw, HgIIs, kwq,lwq)
   HgIIw_diffusion = kws2 * (HgIIs - HgIIw)
 
   if (HgIIw .gt. HgIIs) then
-    if (HgIIw_diffusion .gt. (HgIIw * hp(kwq, lwq) / dt)) then
+    if (abs(HgIIw_diffusion) .gt. (HgIIw * hp(kwq, lwq) / dt)) then
       HgIIw_diffusion = -HgIIw * hp(kwq, lwq) / dt
     end if
   else
-    if (HgIIw_diffusion .gt. (HgIIs * hp(kwq, lwq) / dt)) then
+    if (abs(HgIIw_diffusion) .gt. (HgIIs * hp(kwq, lwq) / dt)) then
       HgIIw_diffusion = HgIIs * hp(kwq, lwq) / dt
     end if
   end if
@@ -1086,11 +1103,11 @@ SUBROUTINE Hg0_diffusion(Hg0w_diffusion, Hg0w, Hg0s, kwq, lwq)
 
   ! Mass conservation of the dissolved phase flux
   if (Hg0w .gt. Hg0s) then
-    if (Hg0w_diffusion .gt. (Hg0w * hp(kwq, lwq) / dt)) then
+    if (abs(Hg0w_diffusion) .gt. (Hg0w * hp(kwq, lwq) / dt)) then
       Hg0w_diffusion = - Hg0w * hp(kwq, lwq) / dt
     end if
   else
-    if (Hg0w_diffusion .gt. (Hg0s * hp(kwq, lwq) / dt)) then
+    if (abs(Hg0w_diffusion) .gt. (Hg0s * hp(kwq, lwq) / dt)) then
       Hg0w_diffusion = Hg0s * hp(kwq, lwq) / dt
     end if
   end if
@@ -1170,13 +1187,31 @@ SUBROUTINE HgII_deposition(HgIIw_deposition, HgII_wpa, HgII_wpom, HgII_wpn, kwq,
   integer                                :: i
   real :: HgII_cb
 
+  real, dimension(sedNumber) :: Rep               !< Explicity Particle Reynolds Number
+  real, dimension(sedNumber) :: tauCrt            !< Critical Shear Stress
+  real                       :: w_dens            !< (kg/m3) Water density
+  real :: f_sed
+
+  w_dens = (rhop(kwq, lwq) + 1000)
+
   if (inst_eq .eq. 1) then
     do i = 1, sedNumber
+      if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
+        f_sed = 1.0
+      elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
+        f_sed = 1.0
+      elseif (((l2i(lwq) > 139) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then
+        f_sed = 1.0
+      else
+        f_sed = 1.0
+      end if
+      call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i) * f_sed, w_dens)
       settling_pn(i) = settling_vel(i) * HgII_wpn(i)
     end do
   end if
 
-  HgIIw_deposition = vspa * HgII_wpa + vspoc * HgII_wpom + sum(settling_pn)
+  ! HgIIw_deposition = vspa * HgII_wpa + vspoc * HgII_wpom + sum(settling_pn)
+  HgIIw_deposition = sum(settling_pn)
 
   HgII_cb = HgII_wpa + HgII_wpom + sum(HgII_wpn)
   if (HgIIw_deposition .gt. (HgII_cb * hp(kwq, lwq) / dt)) then
@@ -1203,14 +1238,31 @@ SUBROUTINE MeHg_deposition(MeHgw_deposition, MeHg_wpa, MeHg_wpom, MeHg_wpn, kwq,
   real(kind=8),             dimension(sedNumber) :: settling_pn
   integer                                :: i
   real :: MeHg_cb
+  real, dimension(sedNumber) :: Rep               !< Explicity Particle Reynolds Number
+  real, dimension(sedNumber) :: tauCrt            !< Critical Shear Stress
+  real                       :: w_dens            !< (kg/m3) Water density
+  real :: f_sed
+
+  w_dens = (rhop(kwq, lwq) + 1000)
 
   if (inst_eq .eq. 1) then
     do i = 1, sedNumber
+      if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
+        f_sed = 1.0
+      elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
+        f_sed = 1.0
+      elseif (((l2i(lwq) > 139) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then
+        f_sed = 1.0
+      else
+        f_sed = 1.0
+      end if
+      call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i) * f_sed, w_dens)
       settling_pn(i) = settling_vel(i) * MeHg_wpn(i)
     end do
   end if
 
-  MeHgw_deposition = vspa * MeHg_wpa + vspoc * MeHg_wpom + sum(settling_pn)
+  ! MeHgw_deposition = vspa * MeHg_wpa + vspoc * MeHg_wpom + sum(settling_pn)
+  MeHgw_deposition = sum(settling_pn)
 
   MeHg_cb = MeHg_wpa + MeHg_wpom + sum(MeHg_wpn)
   if (MeHgw_deposition .gt. (MeHg_cb * hp(kwq, lwq) / dt)) then
@@ -1246,13 +1298,23 @@ SUBROUTINE HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, kwq, lw
   real, dimension(sedNumber) :: Rep               !< Explicity Particle Reynolds Number
   real, dimension(sedNumber) :: tauCrt            !< Critical Shear Stress
   real(kind=8), dimension(sedNumber) :: resus_wqpn
+  real :: f_sed
 
   ! Estimate properties of sediment for a given water density at bottom cell
   w_dens = (rhop(kwq, lwq) + 1000)
   call tauBottom(taub, ustarb, kwq, lwq)
   
   do i = 1, sedNumber
-    call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
+    if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
+      f_sed = 1.0
+    elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
+      f_sed = 1.0
+    elseif (((l2i(lwq) > 139) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then
+      f_sed = 1.0
+    else
+      f_sed = 1.0
+    end if
+    call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i) * f_sed, w_dens)
     ! Estimate erosion flux
     ! if (taub .gt. tauCrt(i)) then
       if (sed_type(i) == 0) then
@@ -1261,18 +1323,13 @@ SUBROUTINE HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, kwq, lw
         call resuspension_cohesive(resus_wqpn(i), taub, tauCrt(i))
       end if
       flux(i) = resus_wqpn(i) * HgII_wpn(i)
-
-      ! resus_poc = R_resusp * HgII_wpom
-      ! resus_alg = R_settl * HgII_wpa
-    ! else
-      ! flux(i) = 0.0
-      ! resus_poc = 0.0
-      ! resus_alg = 0.0
-    ! end if
     
   end do
 
-  HgIIs_resus = sum(flux) !+ resus_poc + resus_alg
+  resus_poc = sum(resus_wqpn) * HgII_wpom
+  resus_alg = sum(resus_wqpn) * HgII_wpa
+
+  HgIIs_resus = sum(flux) + resus_poc + resus_alg
 
 END SUBROUTINE HgII_resuspension
 
@@ -1302,13 +1359,23 @@ SUBROUTINE MeHg_resuspension(MeHgs_resus, MeHg_wpa, MeHg_wpom, MeHg_wpn, kwq, lw
   real, dimension(sedNumber) :: Rep               !< Explicity Particle Reynolds Number
   real, dimension(sedNumber) :: tauCrt            !< Critical Shear Stress
   real(kind=8), dimension(sedNumber) :: resus_wqpn
+  real :: f_sed
 
   ! Estimate properties of sediment for a given water density at bottom cell
   w_dens = (rhop(kwq, lwq) + 1000)
   call tauBottom(taub, ustarb, kwq, lwq)
   
   do i = 1, sedNumber
-    call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
+    if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
+      f_sed = 1.0
+    elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
+      f_sed = 1.0
+    elseif (((l2i(lwq) > 139) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then
+      f_sed = 1.0
+    else
+      f_sed = 1.0
+    end if
+    call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i) * f_sed, w_dens)
     ! Estimate resuspension flux
     ! if (taub .gt. tauCrt(i)) then
       if (sed_type(i) == 0) then
@@ -1317,34 +1384,12 @@ SUBROUTINE MeHg_resuspension(MeHgs_resus, MeHg_wpa, MeHg_wpom, MeHg_wpn, kwq, lw
         call resuspension_cohesive(resus_wqpn(i), taub, tauCrt(i))
       end if
       flux(i) = resus_wqpn(i) * MeHg_wpn(i)
-      ! resus_poc = R_resusp * MeHg_wpom
-      ! resus_alg = R_settl * MeHg_wpa
-    ! else
-      ! flux(i) = 0.0
-      ! resus_poc = 0.0
-      ! resus_alg = 0.0
-    ! end if
-
-    
   end do
 
-  ! i = l2i(lwq)
-  ! j = l2j(lwq)
-  ! ... Calculate resusupension of HgII adsorbed to POC
-  ! if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
-  !   erosion_poc = R_resusp * 1.0 * MeHg_wpom
-  ! elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
-  !   erosion_poc = R_resusp * 0.0 * MeHg_wpom
-  ! elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
-  !   erosion_poc = R_resusp * 0.0 * MeHg_wpom
-  ! else
-  !   erosion_poc = R_resusp * 1.0 * MeHg_wpom
-  ! end if
+  resus_poc = sum(resus_wqpn) * MeHg_wpom
+  resus_alg = sum(resus_wqpn) * MeHg_wpa
 
-  
-
-
-  MeHgs_resus = sum(flux) !+ resus_poc + resus_alg
+  MeHgs_resus = sum(flux) + resus_poc + resus_alg
 
 END SUBROUTINE MeHg_resuspension
 

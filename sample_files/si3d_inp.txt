@@ -45,7 +45,7 @@ Parameters controlling solution algorithm
  cd          !      0.003         ! Bottom drag coefficient (adimensional)
  ifsbc       !        0           ! Surface BC; 0 = constant ; 1 = preprocess mode ; 2 = runtime mode
  dtsbc       !    3600.           ! Time (s) between records in surbc.txt (when ifsbc = 1)
- icw         !        1           ! Wind drag equation 0 = constant cw, 1 = Amorocho Devries (1980), 2 = Andreas et al (2012) only when isurfbc = 10,11
+ icw         !        0           ! Wind drag equation 0 = constant cw, 1 = Amorocho Devries (1980), 2 = Andreas et al (2012) only when isurfbc = 10,11
  cw          !      1.2E-3        ! Wind drag coefficient (only if ifsbc = 0)
  ws          !      0.001         ! Wind speed (constant in m/s) when ifsbc = 0
  phi         !    000.0           ! Wind direction (constant in degress) when ifsbc = 0
@@ -105,7 +105,7 @@ Specification for tracer (other than oxygen) simulation
  iotr        !        0           ! (10 min)
  itspftr     !        0           !
  ipwq        !        1           ! Frequency to run WQ module in time steps
- nswq        !    30240           ! Time Steps to Restore WQ field values. 
+ nswq        !        0           ! Time Steps to Restore WQ field values. 
 -------------------------------------------------------       
 Specification for oxgygenation system simulations
 -------------------------------------------------------            

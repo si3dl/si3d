@@ -2658,7 +2658,7 @@ SUBROUTINE outp(n)
     ENDDO
 
     ! ... Open output file & print data & initial conditions
-    ptrack_file = "si3d_3D"
+    ptrack_file = "3d_si3d"
     OPEN(unit = ptrack_id, file = ptrack_file, FORM = 'UNFORMATTED', IOSTAT = ios)
     IF(ios .ne. 0) THEN
       PRINT *, "Error opening hydro file = ", ios
@@ -4050,7 +4050,7 @@ PURE FUNCTION densty_s ( temperature, salinity, elevation )
             + 1.0227e-4*temperature                               &
             - 1.6546e-6*temperature**2) + 4.8314e-4*salinity**2
     ! IF (elevation < 4) THEN
-    !   densty_s = densws
+      ! densty_s = densws
     ! ELSE
       ! Fixed Method root finding for density equation with Pressure. SV
       rhoguess = densws

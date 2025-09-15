@@ -111,10 +111,10 @@ Sediment Parameters
  istwave         !         0          ! 1 = STWAVE runs, 0 = STWAVE bottom shear stress not added
  sed_thickness   !        0.1         ! [m] Sediment Layer thickness
  sed_porosity    !        0.35        ! [-] Sediment porosity
- Diameter (um)   !  040., 353.     
- Density (kg/m3) ! 1600., 1850.
- Vol_Part_Frac   !   1.0, 0.5
- Cohesive1 non=0 !     0, 0           ! 1 = Cohesive, 0 = non-cohesive
+ Diameter (um)   !  040., 353., 100     
+ Density (kg/m3) ! 1600., 1850., 1200
+ Vol_Part_Frac   !   1.0, 1.0, 1.0
+ Cohesive1 non=0 !     0, 0, 0           ! 1 = Cohesive, 0 = non-cohesive
 --------------------------------------------------------------------------------------------------------
 MeHg Parameters
 --------------------------------------------------------------------------------------------------------

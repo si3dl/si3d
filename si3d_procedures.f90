@@ -369,16 +369,25 @@ SUBROUTINE InitializeScalarFields
                   tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 0.2
                 end if
               end if
-            elseif ((nn .eq. LSS1) .or. (nn .eq. LSS2) .or. (nn .eq. LSS3)) then
-
+            elseif (nn .eq. LSS1) then
               if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
                 tracer(kms + 1, l, nn) = (1 - sed_por) * sed_frac(nn - LSS1 + 1) * sed_dens(nn - LSS1 + 1)
+              else
+                tracer(kms + 1, l, nn) = 0.0
+              end if
+            elseif (nn .eq. LSS2) then
+              if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
+                tracer(kms + 1, l, nn) = 0.0                
               elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
-                tracer(kms + 1, l, nn) = (1 - sed_por) * sed_frac(nn - LSS1 + 1) * sed_dens(nn - LSS1 + 1)
-              elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
-                tracer(kms + 1, l, nn) = (1 - sed_por) * sed_frac(nn - LSS1 + 1) * sed_dens(nn - LSS1 + 1)
+                tracer(kms + 1, l, nn) = 0.0
               else
                 tracer(kms + 1, l, nn) = (1 - sed_por) * sed_frac(nn - LSS1 + 1) * sed_dens(nn - LSS1 + 1)
+              end if
+            elseif (nn .eq. LSS3) then
+              if ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
+                tracer(kms + 1, l, nn) = (1 - sed_por) * sed_frac(nn - LSS1 + 1) * sed_dens(nn - LSS1 + 1)
+              else
+                tracer(kms + 1, l, nn) = 0.0 
               end if
 
             elseif ((nn .eq. LDOC)) then
@@ -393,11 +402,11 @@ SUBROUTINE InitializeScalarFields
               end if
             elseif ((nn .eq. LPOC)) then
               if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
-                tracer(kms + 1, l, nn) = POC_sed * 0.5
+                tracer(kms + 1, l, nn) = POC_sed * 0.65
               elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
-                tracer(kms + 1, l, nn) = POC_sed * 1.0
+                tracer(kms + 1, l, nn) = POC_sed * 1.1
               elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
-                tracer(kms + 1, l, nn) = POC_sed *1.0
+                tracer(kms + 1, l, nn) = POC_sed *1.1
               else
                 tracer(kms + 1, l, nn) = POC_sed * 1.0 
               end if
