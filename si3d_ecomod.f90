@@ -473,7 +473,7 @@ SUBROUTINE WQinput
       print*,('************************************************')
       STOP
     end if
-    ALLOCATE(sed_diameter(sedNumber), sed_dens(sedNumber), sed_frac(sedNumber), sed_type(sedNumber))
+    ALLOCATE(sed_diameter(sedNumber), sed_dens(sedNumber), sed_frac(sedNumber), sed_type(sedNumber), M_cohesive(sedNumber))
     READ (UNIT=i99,FMT='(18X,I20)',IOSTAT=ios) iSTWAVE
     IF (ios /= 0) CALL input_error ( ios, 98)
     READ (UNIT=i99,FMT='(18X,G20.2)',IOSTAT=ios) sed_h
@@ -488,6 +488,8 @@ SUBROUTINE WQinput
     IF (ios /= 0) CALL input_error ( ios, 102)
     READ (UNIT=i99,FMT='(18X,5I)', IOSTAT=ios) (sed_type(nn), nn = 1, sedNumber)
     IF (ios /= 0) CALL input_error ( ios, 103)
+    READ (UNIT=i99,FMT='(18X,5F)', IOSTAT=ios) (M_cohesive(nn), nn = 1, sedNumber)
+    IF (ios /= 0) CALL input_error ( ios, 103)
   ELSE
     READ (UNIT=i99, FMT='(18X,I20)', IOSTAT=ios)
     READ (UNIT=i99, FMT='(18X,G20.2)', IOSTAT=ios) sed_h
@@ -496,6 +498,7 @@ SUBROUTINE WQinput
     READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
     READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
     READ (UNIT=i99, FMT='(18X,5I)', IOSTAT=ios)
+    READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
     IF (ios /= 0) CALL input_error ( ios, 104)
   END IF
 
@@ -791,6 +794,7 @@ SUBROUTINE WQinput
     PRINT*,'sed_dens = ',sed_dens
     PRINT*,'sed_frac = ',sed_frac
     PRINT*, 'sed_type = ',sed_type
+    PRINT*, 'M_cohesive = ',M_cohesive
     print*, 'iSTWAVE = ', iSTWAVE
     print*, 'sed_prosity = ', sed_por
     print*, 'inst_eq =',inst_eq

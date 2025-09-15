@@ -38,14 +38,12 @@ SUBROUTINE sourceSS(kwq,lwq)
   real, dimension(sedNumber) :: deposition_flux   !<
   real, dimension(sedNumber) :: burial_flux
   real                       :: cb
-  real                      :: f_sed
 
   resus_flux(:) = 0.0
   deposition_flux(:) = 0.0
   burial_flux(:) = 0.0
 
   kms = kmz(lwq)
-
   if (kwq .eq. kms) then
     w_dens = (rhop(kwq, lwq) + 1000)
     ! Estimate bottom shear stress
@@ -55,23 +53,14 @@ SUBROUTINE sourceSS(kwq,lwq)
     do i = 1, sedNumber
       ! Estimate properties of sediment for a given water density at bottom cell
       cb = tracerpp(kwq,lwq,LSS1 + i - 1) ! kg/m3
-      if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
-        f_sed = 1.0
-      elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
-        f_sed = 1.0
-      elseif (((l2i(lwq) > 139) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then
-        f_sed = 1.0
-      else
-        f_sed = 1.0
-      end if
-      
-      call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i) * f_sed, w_dens)
+
+      call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
       ! Estimate erosion flux
       ! if (taub .gt. tauCrt(i)) then
         if (sed_type(i) == 0) then
           call resuspension_noncohesive(resus_flux(i), ustarb, Rep(i), settling_vel(i), lwq)
         else if (sed_type(i) == 1) then
-          call resuspension_cohesive(resus_flux(i), taub, tauCrt(i))
+          call resuspension_cohesive(resus_flux(i), taub, tauCrt(i), M_cohesive(i))
         end if
         resus_flux(i) = resus_flux(i) * sed_frac(i) * sed_dens(i)
       ! else
@@ -222,7 +211,7 @@ SUBROUTINE resuspension_noncohesive(resus_flux, ustarb, Rep, sett_vel, lwq)
 END SUBROUTINE resuspension_noncohesive
 
 ! ********************************************************************
-SUBROUTINE resuspension_cohesive(resus_flux, taub, tauCrt)
+SUBROUTINE resuspension_cohesive(resus_flux, taub, tauCrt, M_param)
 ! ********************************************************************
 !
 ! Purpose: To estimate the erosion caused by the flow at the bottom
@@ -232,16 +221,15 @@ SUBROUTINE resuspension_cohesive(resus_flux, taub, tauCrt)
   ! Arguments
   real, intent(in)  :: taub         !< (Pa) Shear stress at bottom
   real, intent(in)  :: tauCrt       !< Critical shear stress for sediment type
-  real              :: M_param      !< Surface erosion rate 
+  real, intent(in)  :: M_param      !< Surface erosion rate 
   real              :: Beta_ss         !< Dimensionless coefficient for method
   real(kind=8), intent(out) :: resus_flux  !< Vertical erosion flux
 
   !Beta CAN BE BETWEEN 1 AND 3.6 
-  M_param = 3.6e-4
   Beta_ss = 1
   ! Sediment entrainment flux
   if (taub .le. tauCrt) then
-    resus_flux = M_param
+    resus_flux = 0 !M_param
   else
     ! Erosion flux for cohesive sediment
     resus_flux = M_param * ((taub - tauCrt) / tauCrt) ** Beta_ss
@@ -268,7 +256,7 @@ SUBROUTINE deposition_noncohesive(deposition_flux, sett_vel, tauCrt, taub, cb)
     if (taub .le. tauCrt) then
       deposition_flux = sett_vel * cb * (1 - taub/tauCrt)
     else
-      deposition_flux = sett_vel * cb
+      deposition_flux = 0.0
     end if
 
   return
@@ -292,7 +280,7 @@ SUBROUTINE deposition_cohesive(deposition_flux, sett_vel, tauCrt, taub, cb)
     if (taub .le. tauCrt) then
       deposition_flux = sett_vel * cb * (1 - taub/tauCrt)
     else
-      deposition_flux = sett_vel * cb
+      deposition_flux = 0.0
     end if
 
   return
@@ -534,7 +522,7 @@ SUBROUTINE tauBottom(taub, ustarb,kwq,lwq)
 
     ! ... Add Wave-Induced Bottom Shear Stress & calculate friction velocity
     if (iSTWAVE == 1) then
-      taub  = sqrt((taubx)**2. + (tauby)**2.) + tau_stwave(l2i(lwq),l2j(lwq))
+      taub  = sqrt( (sqrt((taubx)**2. + (tauby)**2.)) ** 2 + tau_stwave(l2i(lwq),l2j(lwq)) ** 2)
     else
       taub  = sqrt((taubx)**2. + (tauby)**2.)
     end if

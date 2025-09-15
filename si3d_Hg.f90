@@ -44,8 +44,8 @@ SUBROUTINE sourceHg(kwq, lwq)
   real                       :: HgII_spom
   real(kind=8), dimension(sedNumber) :: fwpn2
   real(kind=8), dimension(sedNumber) :: fspn2
-  real(kind=8), dimension(sedNumber) :: HgII_wpn
-  real(kind=8), dimension(sedNumber) :: HgII_spn
+  real, dimension(sedNumber) :: HgII_wpn
+  real, dimension(sedNumber) :: HgII_spn
   real                       :: HgII_sdpw
 
   real                       :: fwd3
@@ -64,8 +64,8 @@ SUBROUTINE sourceHg(kwq, lwq)
   real                       :: MeHg_spom
   real(kind=8), dimension(sedNumber) :: fwpn3
   real(kind=8), dimension(sedNumber) :: fspn3
-  real(kind=8), dimension(sedNumber) :: MeHg_wpn
-  real(kind=8), dimension(sedNumber) :: MeHg_spn
+  real, dimension(sedNumber) :: MeHg_wpn
+  real, dimension(sedNumber) :: MeHg_spn
   real                       :: MeHg_sdpw
 
   real :: HgII_wddoc
@@ -479,12 +479,12 @@ SUBROUTINE HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, &
   real, intent(out)                       :: fsdoc2
   real, intent(out)                       :: fspom2
   real(kind=8), intent(out), dimension(sedNumber) :: fspn2
-  real(kind=8), intent(out), dimension(sedNumber) :: HgII_wpn 
+  real, intent(out), dimension(sedNumber) :: HgII_wpn 
   real, intent(out)                       :: HgII_wd
   real, intent(out)                       :: HgII_wdoc
   real, intent(out)                       :: HgII_wpa
   real, intent(out)                       :: HgII_wpom
-  real(kind=8), intent(out), dimension(sedNumber) :: HgII_spn
+  real, intent(out), dimension(sedNumber) :: HgII_spn
   real, intent(out)                       :: HgII_sd
   real, intent(out)                       :: HgII_sdoc
   real, intent(out)                       :: HgII_spom
@@ -621,8 +621,8 @@ SUBROUTINE MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, f
   real, intent(out)                       :: MeHg_spom
   real(kind=8), intent(out), dimension(sedNumber) :: fwpn3
   real(kind=8), intent(out), dimension(sedNumber) :: fspn3
-  real(kind=8), intent(out), dimension(sedNumber) :: MeHg_wpn
-  real(kind=8), intent(out), dimension(sedNumber) :: MeHg_spn
+  real, intent(out), dimension(sedNumber) :: MeHg_wpn
+  real, intent(out), dimension(sedNumber) :: MeHg_spn
   real                                    :: MeHg_sdpw
   real                                    :: sed_por_ij = 1.0
 
@@ -1181,37 +1181,34 @@ SUBROUTINE HgII_deposition(HgIIw_deposition, HgII_wpa, HgII_wpom, HgII_wpn, kwq,
   integer, intent(in)  :: kwq, lwq
   real, intent(in)                       :: HgII_wpa
   real, intent(in)                       :: HgII_wpom
-  real(kind=8), intent(in), dimension(sedNumber) :: HgII_wpn
+  real, intent(in), dimension(sedNumber) :: HgII_wpn
   real, intent(out)                      :: HgIIw_deposition
-  real(kind=8),             dimension(sedNumber) :: settling_pn
+  real,             dimension(sedNumber) :: deposition_pn
   integer                                :: i
   real :: HgII_cb
 
   real, dimension(sedNumber) :: Rep               !< Explicity Particle Reynolds Number
   real, dimension(sedNumber) :: tauCrt            !< Critical Shear Stress
   real                       :: w_dens            !< (kg/m3) Water density
-  real :: f_sed
+  real :: taub
+  real :: ustarb
 
   w_dens = (rhop(kwq, lwq) + 1000)
-
+  call tauBottom(taub, ustarb, kwq, lwq)
   if (inst_eq .eq. 1) then
     do i = 1, sedNumber
-      if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
-        f_sed = 1.0
-      elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
-        f_sed = 1.0
-      elseif (((l2i(lwq) > 139) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then
-        f_sed = 1.0
-      else
-        f_sed = 1.0
+      call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
+      if (sed_type(i) == 0) then
+        call deposition_noncohesive(deposition_pn(i), settling_vel(i), tauCrt(i), taub, HgII_wpn(i))
+      else if (sed_type(i) == 1) then
+        call deposition_cohesive(deposition_pn(i), settling_vel(i), tauCrt(i), taub, HgII_wpn(i))
       end if
-      call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i) * f_sed, w_dens)
-      settling_pn(i) = settling_vel(i) * HgII_wpn(i)
+      ! deposition_pn(i) = settling_vel(i) * HgII_wpn(i)
     end do
   end if
 
   ! HgIIw_deposition = vspa * HgII_wpa + vspoc * HgII_wpom + sum(settling_pn)
-  HgIIw_deposition = sum(settling_pn)
+  HgIIw_deposition = sum(deposition_pn)
 
   HgII_cb = HgII_wpa + HgII_wpom + sum(HgII_wpn)
   if (HgIIw_deposition .gt. (HgII_cb * hp(kwq, lwq) / dt)) then
@@ -1233,36 +1230,33 @@ SUBROUTINE MeHg_deposition(MeHgw_deposition, MeHg_wpa, MeHg_wpom, MeHg_wpn, kwq,
   integer, intent(in)  :: kwq, lwq
   real, intent(in)                       :: MeHg_wpa
   real, intent(in)                       :: MeHg_wpom
-  real(kind=8), intent(in), dimension(sedNumber) :: MeHg_wpn
+  real, intent(in), dimension(sedNumber) :: MeHg_wpn
   real, intent(out)                      :: MeHgw_deposition
-  real(kind=8),             dimension(sedNumber) :: settling_pn
+  real,             dimension(sedNumber) :: deposition_pn
   integer                                :: i
   real :: MeHg_cb
   real, dimension(sedNumber) :: Rep               !< Explicity Particle Reynolds Number
   real, dimension(sedNumber) :: tauCrt            !< Critical Shear Stress
   real                       :: w_dens            !< (kg/m3) Water density
-  real :: f_sed
+  real :: taub
+  real :: ustarb
 
   w_dens = (rhop(kwq, lwq) + 1000)
-
+  call tauBottom(taub, ustarb, kwq, lwq)
   if (inst_eq .eq. 1) then
     do i = 1, sedNumber
-      if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
-        f_sed = 1.0
-      elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
-        f_sed = 1.0
-      elseif (((l2i(lwq) > 139) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then
-        f_sed = 1.0
-      else
-        f_sed = 1.0
+      call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
+      if (sed_type(i) == 0) then
+        call deposition_noncohesive(deposition_pn(i), settling_vel(i), tauCrt(i), taub, MeHg_wpn(i))
+      else if (sed_type(i) == 1) then
+        call deposition_cohesive(deposition_pn(i), settling_vel(i), tauCrt(i), taub, MeHg_wpn(i))
       end if
-      call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i) * f_sed, w_dens)
-      settling_pn(i) = settling_vel(i) * MeHg_wpn(i)
+      ! deposition_pn(i) = settling_vel(i) * MeHg_wpn(i)
     end do
   end if
 
   ! MeHgw_deposition = vspa * MeHg_wpa + vspoc * MeHg_wpom + sum(settling_pn)
-  MeHgw_deposition = sum(settling_pn)
+  MeHgw_deposition = sum(deposition_pn)
 
   MeHg_cb = MeHg_wpa + MeHg_wpom + sum(MeHg_wpn)
   if (MeHgw_deposition .gt. (MeHg_cb * hp(kwq, lwq) / dt)) then
@@ -1281,7 +1275,7 @@ SUBROUTINE HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, kwq, lw
 !
 !------------------------------------------------------------------------
   ! Arguments
-  real(kind=8), intent(in), dimension(sedNumber) :: HgII_wpn
+  real, intent(in), dimension(sedNumber) :: HgII_wpn
   real, intent(in)                       :: HgII_wpom
   real, intent(in)                       :: HgII_wpa
   integer, intent(in)                    :: lwq
@@ -1298,31 +1292,23 @@ SUBROUTINE HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, kwq, lw
   real, dimension(sedNumber) :: Rep               !< Explicity Particle Reynolds Number
   real, dimension(sedNumber) :: tauCrt            !< Critical Shear Stress
   real(kind=8), dimension(sedNumber) :: resus_wqpn
-  real :: f_sed
 
   ! Estimate properties of sediment for a given water density at bottom cell
   w_dens = (rhop(kwq, lwq) + 1000)
   call tauBottom(taub, ustarb, kwq, lwq)
   
   do i = 1, sedNumber
-    if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
-      f_sed = 1.0
-    elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
-      f_sed = 1.0
-    elseif (((l2i(lwq) > 139) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then
-      f_sed = 1.0
-    else
-      f_sed = 1.0
-    end if
-    call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i) * f_sed, w_dens)
+    call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
     ! Estimate erosion flux
     ! if (taub .gt. tauCrt(i)) then
       if (sed_type(i) == 0) then
         call resuspension_noncohesive(resus_wqpn(i), ustarb, Rep(i), settling_vel(i), lwq)
+        flux(i) = resus_wqpn(i) * HgII_wpn(i)
       else if (sed_type(i) == 1) then
-        call resuspension_cohesive(resus_wqpn(i), taub, tauCrt(i))
+        call resuspension_cohesive(resus_wqpn(i), taub, tauCrt(i), M_cohesive(i))
+        flux(i) = resus_wqpn(i)
       end if
-      flux(i) = resus_wqpn(i) * HgII_wpn(i)
+      
     
   end do
 
@@ -1342,7 +1328,7 @@ SUBROUTINE MeHg_resuspension(MeHgs_resus, MeHg_wpa, MeHg_wpom, MeHg_wpn, kwq, lw
 !
 !------------------------------------------------------------------------
   ! Arguments
-  real(kind=8), intent(in), dimension(sedNumber) :: MeHg_wpn
+  real, intent(in), dimension(sedNumber) :: MeHg_wpn
   real, intent(in)                       :: MeHg_wpom
   real, intent(in)                       :: MeHg_wpa
   integer, intent(in)                    :: lwq
@@ -1359,29 +1345,19 @@ SUBROUTINE MeHg_resuspension(MeHgs_resus, MeHg_wpa, MeHg_wpom, MeHg_wpn, kwq, lw
   real, dimension(sedNumber) :: Rep               !< Explicity Particle Reynolds Number
   real, dimension(sedNumber) :: tauCrt            !< Critical Shear Stress
   real(kind=8), dimension(sedNumber) :: resus_wqpn
-  real :: f_sed
 
   ! Estimate properties of sediment for a given water density at bottom cell
   w_dens = (rhop(kwq, lwq) + 1000)
   call tauBottom(taub, ustarb, kwq, lwq)
   
   do i = 1, sedNumber
-    if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
-      f_sed = 1.0
-    elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
-      f_sed = 1.0
-    elseif (((l2i(lwq) > 139) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then
-      f_sed = 1.0
-    else
-      f_sed = 1.0
-    end if
-    call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i) * f_sed, w_dens)
+    call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
     ! Estimate resuspension flux
     ! if (taub .gt. tauCrt(i)) then
       if (sed_type(i) == 0) then
         call resuspension_noncohesive(resus_wqpn(i), ustarb, Rep(i), settling_vel(i), lwq)
       else if (sed_type(i) == 1) then
-        call resuspension_cohesive(resus_wqpn(i), taub, tauCrt(i))
+        call resuspension_cohesive(resus_wqpn(i), taub, tauCrt(i), M_cohesive(i))
       end if
       flux(i) = resus_wqpn(i) * MeHg_wpn(i)
   end do

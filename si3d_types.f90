@@ -424,6 +424,7 @@
    real, allocatable, dimension (:)     :: sed_frac         !< Fraction of type of sediment in total suspended sediment
    real                                 :: sed_por          !< Porosity of sediment
    integer, allocatable, dimension (:)  :: sed_type         !< Type of sediment 0 for non-cohesive and 1 for cohesive
+   real, allocatable, dimension (:)     :: M_cohesive       !< Erosion parameter for cohesive particle
    real, parameter                      :: Ased = 1.3d-7    !< Constant value for estimates of sediment fluxes. Garcia and Parker 1991,1993, Reardon 2014, etc
    real                                 :: kinematic_viscosity = 1.3081d-6   !< Kinematic viscosity of water 10C
    real, allocatable, dimension(:,:)    :: dep_stwave
