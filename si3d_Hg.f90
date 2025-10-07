@@ -249,8 +249,8 @@ SUBROUTINE sourceHg(kwq, lwq)
     call HgII_diffusion(HgIIw_diffusion, HgII_wddoc, HgII_sdpw, kwq, lwq)
     call HgII_deposition(HgIIw_deposition, HgII_wpa, HgII_wpom, HgII_wpn, kwq, lwq)
     call MeHg_deposition(MeHgw_deposition, MeHg_wpa, MeHg_wpom, MeHg_wpn, kwq, lwq)
-    call HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, kwq, lwq)
-    call MeHg_resuspension(MeHgs_resus, MeHg_wpa, MeHg_wpom, MeHg_wpn, kwq, lwq)
+    call HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, HgII_spn, kwq, lwq)
+    call MeHg_resuspension(MeHgs_resus, MeHg_wpa, MeHg_wpom, MeHg_wpn, MeHg_spn, kwq, lwq)
     call HgIIs_methylation(HgIIs_methy, kwq + 1, lwq, HgII_sddoc)
     call MeHgs_demethylation(MeHgs_demethy, kwq + 1, lwq, MeHg_sddoc)
     call Hg_grdflux(lwq, Hg_gwf)
@@ -1203,12 +1203,11 @@ SUBROUTINE HgII_deposition(HgIIw_deposition, HgII_wpa, HgII_wpom, HgII_wpn, kwq,
       else if (sed_type(i) == 1) then
         call deposition_cohesive(deposition_pn(i), settling_vel(i), tauCrt(i), taub, HgII_wpn(i))
       end if
-      ! deposition_pn(i) = settling_vel(i) * HgII_wpn(i)
     end do
   end if
 
-  ! HgIIw_deposition = vspa * HgII_wpa + vspoc * HgII_wpom + sum(settling_pn)
-  HgIIw_deposition = sum(deposition_pn)
+  HgIIw_deposition = vspa * HgII_wpa + vspoc * HgII_wpom + sum(deposition_pn)
+  ! HgIIw_deposition = sum(deposition_pn)
 
   HgII_cb = HgII_wpa + HgII_wpom + sum(HgII_wpn)
   if (HgIIw_deposition .gt. (HgII_cb * hp(kwq, lwq) / dt)) then
@@ -1251,12 +1250,11 @@ SUBROUTINE MeHg_deposition(MeHgw_deposition, MeHg_wpa, MeHg_wpom, MeHg_wpn, kwq,
       else if (sed_type(i) == 1) then
         call deposition_cohesive(deposition_pn(i), settling_vel(i), tauCrt(i), taub, MeHg_wpn(i))
       end if
-      ! deposition_pn(i) = settling_vel(i) * MeHg_wpn(i)
     end do
   end if
 
-  ! MeHgw_deposition = vspa * MeHg_wpa + vspoc * MeHg_wpom + sum(settling_pn)
-  MeHgw_deposition = sum(deposition_pn)
+  MeHgw_deposition = vspa * MeHg_wpa + vspoc * MeHg_wpom + sum(deposition_pn)
+  ! MeHgw_deposition = sum(deposition_pn)
 
   MeHg_cb = MeHg_wpa + MeHg_wpom + sum(MeHg_wpn)
   if (MeHgw_deposition .gt. (MeHg_cb * hp(kwq, lwq) / dt)) then
@@ -1267,7 +1265,7 @@ SUBROUTINE MeHg_deposition(MeHgw_deposition, MeHg_wpa, MeHg_wpom, MeHg_wpn, kwq,
 END SUBROUTINE MeHg_deposition
 
 !************************************************************************
-SUBROUTINE HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, kwq, lwq)
+SUBROUTINE HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, HgII_spn, kwq, lwq)
 !************************************************************************
 !
 !   Purpose: To estimate the resuspension of HgII adsorbed to sediments.
@@ -1275,13 +1273,13 @@ SUBROUTINE HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, kwq, lw
 !
 !------------------------------------------------------------------------
   ! Arguments
-  real, intent(in), dimension(sedNumber) :: HgII_wpn
+  real, intent(in), dimension(sedNumber) :: HgII_wpn, HgII_spn
   real, intent(in)                       :: HgII_wpom
   real, intent(in)                       :: HgII_wpa
   integer, intent(in)                    :: lwq
   integer, intent(in)                    :: kwq
   real, intent(out)                      :: HgIIs_resus
-  real, dimension(sedNumber)             :: flux
+  real(kind=8), dimension(sedNumber)             :: flux
   integer                                :: i
   integer                                :: j
   real                                   :: resus_poc
@@ -1299,17 +1297,25 @@ SUBROUTINE HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, kwq, lw
   
   do i = 1, sedNumber
     call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
+
     ! Estimate erosion flux
-    ! if (taub .gt. tauCrt(i)) then
+    if (taub .gt. tauCrt(i)) then
       if (sed_type(i) == 0) then
         call resuspension_noncohesive(resus_wqpn(i), ustarb, Rep(i), settling_vel(i), lwq)
         flux(i) = resus_wqpn(i) * HgII_wpn(i)
       else if (sed_type(i) == 1) then
         call resuspension_cohesive(resus_wqpn(i), taub, tauCrt(i), M_cohesive(i))
-        flux(i) = resus_wqpn(i)
+        if (sed_frac(i) .le. 0.0) then
+          flux(i) = 0.0
+        else
+          flux(i) = (resus_wqpn(i) / (sed_dens(i) * sed_frac(i))) * HgII_wpn(i)
+        end if 
       end if
-      
-    
+    else
+      resus_wqpn(i) = 0.0
+      flux(i) = 0.0
+    end if
+
   end do
 
   resus_poc = sum(resus_wqpn) * HgII_wpom
@@ -1320,7 +1326,7 @@ SUBROUTINE HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, kwq, lw
 END SUBROUTINE HgII_resuspension
 
 !************************************************************************
-SUBROUTINE MeHg_resuspension(MeHgs_resus, MeHg_wpa, MeHg_wpom, MeHg_wpn, kwq, lwq)
+SUBROUTINE MeHg_resuspension(MeHgs_resus, MeHg_wpa, MeHg_wpom, MeHg_wpn, MeHg_spn, kwq, lwq)
 !************************************************************************
 !
 !   Purpose: To estimate resuspension of MeHg adsorbed to sediments
@@ -1328,7 +1334,7 @@ SUBROUTINE MeHg_resuspension(MeHgs_resus, MeHg_wpa, MeHg_wpom, MeHg_wpn, kwq, lw
 !
 !------------------------------------------------------------------------
   ! Arguments
-  real, intent(in), dimension(sedNumber) :: MeHg_wpn
+  real, intent(in), dimension(sedNumber) :: MeHg_wpn, MeHg_spn
   real, intent(in)                       :: MeHg_wpom
   real, intent(in)                       :: MeHg_wpa
   integer, intent(in)                    :: lwq
@@ -1352,14 +1358,25 @@ SUBROUTINE MeHg_resuspension(MeHgs_resus, MeHg_wpa, MeHg_wpom, MeHg_wpn, kwq, lw
   
   do i = 1, sedNumber
     call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
+    
     ! Estimate resuspension flux
-    ! if (taub .gt. tauCrt(i)) then
+    if (taub .gt. tauCrt(i)) then
       if (sed_type(i) == 0) then
         call resuspension_noncohesive(resus_wqpn(i), ustarb, Rep(i), settling_vel(i), lwq)
+        flux(i) = resus_wqpn(i) * MeHg_wpn(i)
       else if (sed_type(i) == 1) then
         call resuspension_cohesive(resus_wqpn(i), taub, tauCrt(i), M_cohesive(i))
+        if (sed_frac(i) .le. 0.0) then
+          flux(i) = 0.0
+        else
+          flux(i) = (resus_wqpn(i) / (sed_dens(i) * sed_frac(i))) * MeHg_wpn(i)
+        end if
       end if
-      flux(i) = resus_wqpn(i) * MeHg_wpn(i)
+    else
+      resus_wqpn(i) = 0.0
+      flux(i) = 0.0
+    end if
+
   end do
 
   resus_poc = sum(resus_wqpn) * MeHg_wpom

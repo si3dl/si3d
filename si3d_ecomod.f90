@@ -488,7 +488,7 @@ SUBROUTINE WQinput
     IF (ios /= 0) CALL input_error ( ios, 102)
     READ (UNIT=i99,FMT='(18X,5I)', IOSTAT=ios) (sed_type(nn), nn = 1, sedNumber)
     IF (ios /= 0) CALL input_error ( ios, 103)
-    READ (UNIT=i99,FMT='(18X,5F)', IOSTAT=ios) (M_cohesive(nn), nn = 1, sedNumber)
+    READ (UNIT=i99,FMT='(18X,5G)', IOSTAT=ios) (M_cohesive(nn), nn = 1, sedNumber)
     IF (ios /= 0) CALL input_error ( ios, 103)
   ELSE
     READ (UNIT=i99, FMT='(18X,I20)', IOSTAT=ios)
@@ -498,13 +498,14 @@ SUBROUTINE WQinput
     READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
     READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
     READ (UNIT=i99, FMT='(18X,5I)', IOSTAT=ios)
-    READ (UNIT=i99, FMT='(18X,5F)', IOSTAT=ios)
+    READ (UNIT=i99, FMT='(18X,5E)', IOSTAT=ios)
     IF (ios /= 0) CALL input_error ( ios, 104)
   END IF
 
   if (iMeHg == 1) then
     allocate(kd_wpn3(sedNumber), kd_spn3(sedNumber))
     READ (UNIT=i99, FMT='(///(18X,I20))', IOSTAT=ios) inst_eq
+    PRINT*, inst_eq
     IF (ios /= 0) CALL input_error ( ios, 105)
     READ (UNIT=i99, FMT='((18X,G20.5))', IOSTAT=ios) DO_anox
     IF (ios /= 0) CALL input_error ( ios, 105)

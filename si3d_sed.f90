@@ -35,11 +35,13 @@ SUBROUTINE sourceSS(kwq,lwq)
   real, dimension(sedNumber) :: Rep               !< Explicity Particle Reynolds Number
   real, dimension(sedNumber) :: tauCrt            !< Critical Shear Stress
   real(kind=8), dimension(sedNumber) :: resus_flux      !<
+  real(kind=8), dimension(sedNumber) :: resus_sed  !<
   real, dimension(sedNumber) :: deposition_flux   !<
   real, dimension(sedNumber) :: burial_flux
   real                       :: cb
 
   resus_flux(:) = 0.0
+  resus_sed(:) = 0.0
   deposition_flux(:) = 0.0
   burial_flux(:) = 0.0
 
@@ -56,16 +58,18 @@ SUBROUTINE sourceSS(kwq,lwq)
 
       call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
       ! Estimate erosion flux
-      ! if (taub .gt. tauCrt(i)) then
+      if (taub .gt. tauCrt(i)) then
         if (sed_type(i) == 0) then
-          call resuspension_noncohesive(resus_flux(i), ustarb, Rep(i), settling_vel(i), lwq)
+          call resuspension_noncohesive(resus_sed(i), ustarb, Rep(i), settling_vel(i), lwq)
+          resus_flux(i) = resus_sed(i) * sed_frac(i) * sed_dens(i)
         else if (sed_type(i) == 1) then
-          call resuspension_cohesive(resus_flux(i), taub, tauCrt(i), M_cohesive(i))
+          call resuspension_cohesive(resus_sed(i), taub, tauCrt(i), M_cohesive(i))
+          resus_flux(i) = resus_sed(i) * sed_frac(i)
         end if
-        resus_flux(i) = resus_flux(i) * sed_frac(i) * sed_dens(i)
-      ! else
-        ! resus_flux(i) = 0.0
-      ! end if
+        
+      else
+        resus_flux(i) = 0.0
+      end if
 
       ! Estimate deposition flux
       if (cb .gt. 0.0) then
@@ -88,8 +92,9 @@ SUBROUTINE sourceSS(kwq,lwq)
 
       ! Estimate source and sink for the sediment cell.
       sourcesink(kwq + 1,lwq, LSS1 + i - 1) = deposition_flux(i) - resus_flux(i) - burial_flux(i)
+    end do
 
-      ! if ((l2i(lwq) .eq. 185) .and. (l2j(lwq) .eq. 80)) then
+    ! if ((l2i(lwq) .eq. 185) .and. (l2j(lwq) .eq. 80)) then
       !   print*, '----------------- OA04 SS Model ------------------'
       !   print*, 'vs =', settling_vel(i) * 24 * 3600, 'm/day'
       !   print*, 'taub =',taub
@@ -128,7 +133,6 @@ SUBROUTINE sourceSS(kwq,lwq)
       !   print*, 'depositionFlux = ', deposition_flux(i)
       !   print*, 'sed_conc = ', tracerpp(kwq + 1,lwq,LSS1 + i - 1)
       ! end if
-    end do
 
   else
     do i = 1, sedNumber
@@ -228,12 +232,8 @@ SUBROUTINE resuspension_cohesive(resus_flux, taub, tauCrt, M_param)
   !Beta CAN BE BETWEEN 1 AND 3.6 
   Beta_ss = 1
   ! Sediment entrainment flux
-  if (taub .le. tauCrt) then
-    resus_flux = 0 !M_param
-  else
-    ! Erosion flux for cohesive sediment
-    resus_flux = M_param * ((taub - tauCrt) / tauCrt) ** Beta_ss
-  end if
+  ! Erosion flux for cohesive sediment
+  resus_flux = M_param * max(0.0, (taub - tauCrt) / tauCrt) ** Beta_ss
 
   return
 END SUBROUTINE resuspension_cohesive

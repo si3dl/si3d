@@ -1171,6 +1171,7 @@ SUBROUTINE outt(n,thrs)
    INTEGER, SAVE :: i10, i30, i60
    LOGICAL, SAVE :: first_entry = .TRUE.
    REAL, DIMENSION(km1) :: zlevel_export
+   integer :: km_tot
 
    !.....Timing.....
    REAL, EXTERNAL :: TIMER
@@ -1258,20 +1259,9 @@ SUBROUTINE outt(n,thrs)
       scout = -99.0
       trout = -99.0
 
-      ! do k = k1, kmz(l) + 1
-      !   if (h(k, l) .le. ZERO) cycle
-      !   if (k == 2) then
-      !     write(UNIT=i60, FMT='(F8.3, I10, F10.2)', advance='no') thrs, n, zlevel_export(k)
-      !   else
-      !     write(UNIT=i60, FMT='(18X, F10.2)', advance='no') zlevel_export(k)
-      !   end if
-      !   do tr = 1, ntr
-      !     write(UNIT=i60, FMT='(1x, E14.4)', advance='no') fluxes_out(k, l, tr)
-      !   end do
-      !   write(UNIT=i60, FMT='(A)') ' '
-      ! end do
+      km_tot = kmz(l) + 1
 
-      DO k  = k1, kmz(l) + 1
+      DO k  = k1, km_tot
         IF (h(k,l)<=ZERO) CYCLE
         !uout(k)  = 0.5 * (u  (k,l) + u  (k,lWC(l)))
         !vout(k)  = 0.5 * (v  (k,l) + v  (k,lSC(l)))
@@ -1302,7 +1292,7 @@ SUBROUTINE outt(n,thrs)
      IF (ntr <= 0) THEN
        WRITE (UNIT=i60, FMT=4) thrs, n, s(l), (zlevel_export(k),     &
            & uout (k), vout(k), wout(k), Avout(k), Dvout(k),      &
-           & scout(k), k =k1,kmz(l)+1)
+           & scout(k), k =k1,km_tot)
      ELSE
 
        WRITE (UNIT=i60, FMT=5) thrs, n, s(l), (zlevel_export(k) ,     &
@@ -1333,7 +1323,7 @@ SUBROUTINE outt(n,thrs)
             & trout(k,23),                                         &
             & trout(k,24),                                         &
             & trout(k,25),                                         &
-            & k = k1,kmz(l)+1)
+            & k = k1,km_tot)
      ENDIF
 
    4 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PF10.5 / &
@@ -2554,7 +2544,7 @@ SUBROUTINE outz(n)
     DO j = 1, ntr
       n_frames = int((nts-itspftr)/MAX(iotr,1))
       tracer_id = tracer_id0 + j
-      tracer_file = "tracer_    "
+      tracer_file = "3d_tracer_    "
       IF ( j < 10 ) WRITE ( tracer_file(8:11), FMT='(I1,"   ")' ) j
       IF ((j >=10 ) .AND. (j < 100)) WRITE ( tracer_file(8:11), FMT='(I2,"  ")' ) j
       IF ( j >100 ) WRITE ( tracer_file(8:11), FMT='(I3," ")' ) j
@@ -4050,9 +4040,9 @@ PURE FUNCTION densty_s ( temperature, salinity, elevation )
             + 1.0227e-4*temperature                               &
             - 1.6546e-6*temperature**2) + 4.8314e-4*salinity**2
     ! IF (elevation < 4) THEN
-      ! densty_s = densws
+    !   densty_s = densws
     ! ELSE
-      ! Fixed Method root finding for density equation with Pressure. SV
+    ! ! Fixed Method root finding for density equation with Pressure. SV
       rhoguess = densws
       delta = 1
       iter = 0
