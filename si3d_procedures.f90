@@ -344,7 +344,7 @@ SUBROUTINE InitializeScalarFields
             i = l2i(l)
             j = l2j(l)
             if ((nn .eq. LHg0) .or. (nn .eq. LHgII) .or. (nn .eq. LMeHg)) then
-              if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
+              if (((i >= 1) .and. (i <= 134)) .and. ((j >=1) .and. (j <= 195))) then
                 if (nn .eq. LHg0) then
                   tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.1
                 elseif (nn .eq. LHgII) then
@@ -352,7 +352,7 @@ SUBROUTINE InitializeScalarFields
                 elseif (nn .eq. LMeHg) then
                   tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 1.0
                 end if
-              elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
+              elseif ((i > 134) .and. ((j >= 1) .and. (j <= 63))) then
                 if (nn .eq. LHg0) then
                   tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.1
                 elseif (nn .eq. LHgII) then
@@ -360,7 +360,7 @@ SUBROUTINE InitializeScalarFields
                 elseif (nn .eq. LMeHg) then
                   tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 0.2
                 end if
-              elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
+              elseif (((i > 134) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
                 if (nn .eq. LHg0) then
                   tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.1
                 elseif (nn .eq. LHgII) then
@@ -370,42 +370,42 @@ SUBROUTINE InitializeScalarFields
                 end if
               end if
             elseif (nn .eq. LSS1) then
-              if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
+              if (((i >= 1) .and. (i <= 134)) .and. ((j >=1) .and. (j <= 195))) then
                 tracer(kms + 1, l, nn) = (1 - sed_por) * sed_frac(nn - LSS1 + 1) * sed_dens(nn - LSS1 + 1)
               else
                 tracer(kms + 1, l, nn) = 0.0
               end if
             elseif (nn .eq. LSS2) then
-              if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
+              if (((i >= 1) .and. (i <= 134)) .and. ((j >=1) .and. (j <= 195))) then
                 tracer(kms + 1, l, nn) = 0.0                
-              elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
+              elseif ((i > 134) .and. ((j >= 1) .and. (j <= 63))) then
                 tracer(kms + 1, l, nn) = 0.0
               else
                 tracer(kms + 1, l, nn) = (1 - sed_por) * sed_frac(nn - LSS1 + 1) * sed_dens(nn - LSS1 + 1)
               end if
             elseif (nn .eq. LSS3) then
-              if ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
+              if ((i > 134) .and. ((j >= 1) .and. (j <= 63))) then
                 tracer(kms + 1, l, nn) = (1 - sed_por) * sed_frac(nn - LSS1 + 1) * sed_dens(nn - LSS1 + 1)
               else
                 tracer(kms + 1, l, nn) = 0.0 
               end if
 
             elseif ((nn .eq. LDOC)) then
-              if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
+              if (((i >= 1) .and. (i <= 134)) .and. ((j >=1) .and. (j <= 195))) then
                 tracer(kms + 1, l, nn) = DOC_sed * 0.8
-              elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
+              elseif ((i > 134) .and. ((j >= 1) .and. (j <= 63))) then
                 tracer(kms + 1, l, nn) = DOC_sed * 0.94
-              elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
+              elseif (((i > 134) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
                 tracer(kms + 1, l, nn) = DOC_sed * 0.94
               else
                 tracer(kms + 1, l, nn) = DOC_sed * 1.0 
               end if
             elseif ((nn .eq. LPOC)) then
-              if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
+              if (((i >= 1) .and. (i <= 134)) .and. ((j >=1) .and. (j <= 195))) then
                 tracer(kms + 1, l, nn) = POC_sed * 0.65
-              elseif ((i > 139) .and. ((j >= 1) .and. (j <= 63))) then
+              elseif ((i > 134) .and. ((j >= 1) .and. (j <= 63))) then
                 tracer(kms + 1, l, nn) = POC_sed * 1.1
-              elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
+              elseif (((i > 134) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
                 tracer(kms + 1, l, nn) = POC_sed *1.1
               else
                 tracer(kms + 1, l, nn) = POC_sed * 1.0 
@@ -1365,7 +1365,8 @@ SUBROUTINE matmom ( ieq, t_matmom2,Bstart, Bend, Bex,Beagx,Bearx,Bagx,Barx,Beagy
             ENDDO
 
             ! ... Define average layer density at u-pt (in kg/m**3) ...........
-            rhopx(k1x:kmx) = sum(1000 + rhop(k1x:kmx,l)) / nwlayers ! Neglect vertical density variations
+            ! rhopx(k1x:kmx) = sum(1000 + rhop(k1x:kmx,l)) / nwlayers ! Neglect vertical density variations
+            rhopx(k1x:kmx) = 1000.0
 
             ! ... Compute explicit portion of water surface slope term ........
             wsx0 = rhopx(k1x) * gdtdx * (spp(lEC(l)) - spp(l))
@@ -1558,7 +1559,8 @@ SUBROUTINE matmom ( ieq, t_matmom2,Bstart, Bend, Bex,Beagx,Bearx,Bagx,Barx,Beagy
             ENDDO
 
             ! .... Define average layer density at v-pts (in kg/m**3) .........
-            rhopy(k1y:kmy) = sum(1000 + rhop(k1y:kmy,l)) / nwlayers ! Neglect vertical density variations
+            ! rhopy(k1y:kmy) = sum(1000 + rhop(k1y:kmy,l)) / nwlayers ! Neglect vertical density variations
+            rhopy(k1y:kmy) = 1000.0 ! Neglect vertical density variations
 
             !.....Compute explicit part of water surface slope term ...........
             wsy0 = rhopy(k1y) *  gdtdy  *(spp(lNC(l)) - spp(l))

@@ -95,44 +95,38 @@ SUBROUTINE sourceSS(kwq,lwq)
     end do
 
     ! if ((l2i(lwq) .eq. 185) .and. (l2j(lwq) .eq. 80)) then
-      !   print*, '----------------- OA04 SS Model ------------------'
-      !   print*, 'vs =', settling_vel(i) * 24 * 3600, 'm/day'
-      !   print*, 'taub =',taub
-      !   print*, 'tauCr =', tauCrt(i)
-      !   print*, 'rho = ', w_dens
-      !   print*, 'Rep = ', Rep(i)
-      !   print*, 'sed_frac = ', sed_frac(i)
-      !   print*, 'resuspension_flux = ', resus_flux(i)
-      !   print*, 'Es * vs = ', resus_flux(i) / sed_frac(i) / sed_dens(i)
-      !   print*, 'depositionFlux = ', deposition_flux(i)
-      !   print*, 'sed_conc = ', tracerpp(kwq + 1,lwq,LSS1 + i - 1)
-      ! end if
-      ! if ((l2i(lwq) .eq. 83) .and. (l2j(lwq) .eq. 134)) then
-      !   print*, '----------------- UA06 SS Model ------------------'
-      !   print*, 'vs =', settling_vel(i) * 24 * 3600, 'm/day'
-      !   print*, 'taub =',taub
-      !   print*, 'tauCr =', tauCrt(i)
-      !   print*, 'rho = ', w_dens
-      !   print*, 'Rep = ', Rep(i)
-      !   print*, 'sed_frac = ', sed_frac(i)
-      !   print*, 'resuspension_flux = ', resus_flux(i)
-      !   print*, 'Es * vs = ', resus_flux(i) / sed_frac(i) / sed_dens(i)
-      !   print*, 'depositionFlux = ', deposition_flux(i)
-      !   print*, 'sed_conc = ', tracerpp(kwq + 1,lwq,LSS1 + i - 1)
-      ! end if
-      ! if ((l2i(lwq) .eq. 170) .and. (l2j(lwq) .eq. 47)) then
-      !   print*, '----------------- LA03 SS Model ------------------'
-      !   print*, 'vs =', settling_vel(i) * 24 * 3600, 'm/day'
-      !   print*, 'taub =',taub
-      !   print*, 'tauCr =', tauCrt(i)
-      !   print*, 'rho = ', w_dens
-      !   print*, 'Rep = ', Rep(i)
-      !   print*, 'sed_frac = ', sed_frac(i)
-      !   print*, 'resuspension_flux = ', resus_flux(i)
-      !   print*, 'Es * vs = ', resus_flux(i) / sed_frac(i) / sed_dens(i)
-      !   print*, 'depositionFlux = ', deposition_flux(i)
-      !   print*, 'sed_conc = ', tracerpp(kwq + 1,lwq,LSS1 + i - 1)
-      ! end if
+    !   print*, '----------------- OA04 SS Model ------------------'
+    !   print*, 'vs =', settling_vel * 24 * 3600, 'm/day'
+    !   print*, 'taub =',taub
+    !   print*, 'tauCr =', tauCrt
+    !   print*, 'rho = ', w_dens
+    !   print*, 'Rep = ', Rep
+    !   print*, 'sed_frac = ', sed_frac
+    !   print*, 'resuspension_flux = ', resus_flux
+    !   print*, 'sed_conc = ', tracerpp(kwq + 1,lwq,LSS1:LSS3)
+    ! end if
+    ! if ((l2i(lwq) .eq. 83) .and. (l2j(lwq) .eq. 134)) then
+    !   print*, '----------------- UA06 SS Model ------------------'
+    !   print*, 'vs =', settling_vel * 24 * 3600, 'm/day'
+    !   print*, 'taub =',taub
+    !   print*, 'tauCr =', tauCrt
+    !   print*, 'rho = ', w_dens
+    !   print*, 'Rep = ', Rep
+    !   print*, 'sed_frac = ', sed_frac
+    !   print*, 'resuspension_flux = ', resus_flux
+    !   print*, 'sed_conc = ', tracerpp(kwq + 1,lwq,LSS1:LSS3)
+    ! end if
+    ! if ((l2i(lwq) .eq. 170) .and. (l2j(lwq) .eq. 47)) then
+    !   print*, '----------------- LA03 SS Model ------------------'
+    !   print*, 'vs =', settling_vel * 24 * 3600, 'm/day'
+    !   print*, 'taub =',taub
+    !   print*, 'tauCr =', tauCrt
+    !   print*, 'rho = ', w_dens
+    !   print*, 'Rep = ', Rep
+    !   print*, 'sed_frac = ', sed_frac
+    !   print*, 'resuspension_flux = ', resus_flux
+    !   print*, 'sed_conc = ', tracerpp(kwq + 1,lwq,LSS1:LSS3)
+    ! end if
 
   else
     do i = 1, sedNumber
@@ -470,7 +464,7 @@ SUBROUTINE tauCritical(tauCrt, g_ss, sed_d, submerged_spec_g, w_dens, ki_visc, R
   real, intent(out) :: tauCrt              !< (Pa) Critical shear stress
 
   ! Estimate of the nondimensional critical Shields parameter
-  shields_param = 0.5 * (0.22 * Rep ** (-0.6) + 0.06 * 10 ** (-7.7 * Rep ** (-0.6)))
+  shields_param = 0.3 * (0.22 * Rep ** (-0.6) + 0.06 * 10 ** (-7.7 * Rep ** (-0.6)))
 
   ! Estimate of critical shear stress for given water and sediment properties
   tauCrt = shields_param * g_ss * submerged_spec_g * sed_d * (w_dens)

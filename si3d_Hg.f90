@@ -381,9 +381,7 @@ SUBROUTINE sourceHg(kwq, lwq)
     ! end if
 
   end if  
-! print*, 'DOC', tracerpp(kwq + 1, lwq, LDOC)
-    ! print*, 'POC', tracerpp(kwq + 1, lwq, LPOC)
-    ! print*, 'Alg', tracerpp(kwq + 1, lwq, LALG1)
+
   sourcesink(kwq, lwq, LHg0)  = HgIIw_reduction + MeHgw_photodeg + Hg0w_diffusion - Hg0w_oxidation - Hg0w_vol
   sourcesink(kwq, lwq, LHgII) = HgIIw_atmdep + HgIIw_diffusion + Hg0w_oxidation + MeHgw_demethy - HgIIw_reduction - HgIIw_methy - HgIIw_deposition + HgIIs_resus + Hg_gwf
   sourcesink(kwq, lwq, LMeHg) = MeHgw_atmdep + MeHgw_diffusion + HgIIw_methy - MeHgw_vol - MeHgw_photodeg - MeHgw_demethy - MeHgw_deposition + MeHgs_resus
@@ -500,7 +498,7 @@ SUBROUTINE HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, &
   POC = tracerpp(kwq, lwq, LPOC)
 
   ! Kd per basin
-  if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
+  if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 134)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
     kd_wpn2_ij = kd_wpn2 * 1.0 !0.4 
     kd_wdoc2_ij = kd_wdoc2 * 1.0
     kd_wpa2_ij = kd_wpa2 * 1.0
@@ -508,7 +506,7 @@ SUBROUTINE HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, &
     kd_spn2_ij = kd_spn2 * 1.0 !1.6
     kd_sdoc2_ij = kd_sdoc2 * 1.0
     kd_spom2_ij = kd_spom2 * 1.0
-  elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
+  elseif ((l2i(lwq) > 134) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
     kd_wpn2_ij = kd_wpn2 * 1.0 !0.3 
     kd_wdoc2_ij = kd_wdoc2 * 1.0
     kd_wpa2_ij = kd_wpa2 * 1.0
@@ -516,7 +514,7 @@ SUBROUTINE HgII_partitioning(kms, kwq, lwq, HgIIw, HgIIs, fwd2, fwdoc2, fwpa2, &
     kd_spn2_ij = kd_spn2 * 1.0
     kd_sdoc2_ij = kd_sdoc2 * 1.0
     kd_spom2_ij = kd_spom2 * 1.0
-  elseif (((l2i(lwq) > 139) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then
+  elseif (((l2i(lwq) > 134) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then
     kd_wpn2_ij = kd_wpn2 * 1.0 
     kd_wdoc2_ij = kd_wdoc2 * 1.0
     kd_wpa2_ij = kd_wpa2 * 1.0
@@ -636,7 +634,7 @@ SUBROUTINE MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, f
 
 
   ! Kd per basin
-  if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 139)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
+  if (((l2i(lwq) >= 1) .and. (l2i(lwq) <= 134)) .and. ((l2j(lwq) >=1) .and. (l2j(lwq) <= 195))) then
     kd_wpn3_ij = kd_wpn3 * 1.0 !0.9 
     kd_wdoc3_ij = kd_wdoc3 * 1.0
     kd_wpa3_ij = kd_wpa3 * 1.0
@@ -644,7 +642,7 @@ SUBROUTINE MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, f
     kd_spn3_ij = kd_spn3 * 1.0 !1.6
     kd_sdoc3_ij = kd_sdoc3 * 1.0
     kd_spom3_ij = kd_spom3 * 1.0
-  elseif ((l2i(lwq) > 139) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
+  elseif ((l2i(lwq) > 134) .and. ((l2j(lwq) >= 1) .and. (l2j(lwq) <= 63))) then
     kd_wpn3_ij = kd_wpn3 * 1.0 !0.85 
     kd_wdoc3_ij = kd_wdoc3 * 1.0
     kd_wpa3_ij = kd_wpa3 * 1.0
@@ -652,7 +650,7 @@ SUBROUTINE MeHg_partitioning(kms, kwq, lwq, MeHgw, MeHgs, fwd3, fwdoc3, fwpa3, f
     kd_spn3_ij = kd_spn3 * 1.0 !0.85
     kd_sdoc3_ij = kd_sdoc3 * 1.0
     kd_spom3_ij = kd_spom3 * 1.0
-  elseif (((l2i(lwq) > 139) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then
+  elseif (((l2i(lwq) > 134) .and. (l2i(lwq) <= 180)) .and. ((l2j(lwq) > 63) .and. (l2j(lwq) <= 70))) then
     kd_wpn3_ij = kd_wpn3 * 1.0 
     kd_wdoc3_ij = kd_wdoc3 * 1.0
     kd_wpa3_ij = kd_wpa3 * 1.0
@@ -1290,6 +1288,7 @@ SUBROUTINE HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, HgII_sp
   real, dimension(sedNumber) :: Rep               !< Explicity Particle Reynolds Number
   real, dimension(sedNumber) :: tauCrt            !< Critical Shear Stress
   real(kind=8), dimension(sedNumber) :: resus_wqpn
+  real :: P_r, Ct, h_r, zr, ratio
 
   ! Estimate properties of sediment for a given water density at bottom cell
   w_dens = (rhop(kwq, lwq) + 1000)
@@ -1300,15 +1299,32 @@ SUBROUTINE HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, HgII_sp
 
     ! Estimate erosion flux
     if (taub .gt. tauCrt(i)) then
+      h_r = zlevel(kwq + 1)
+      if (zlevel(kwq) == -100) then
+          zr = 0.5 * hp(kwq, lwq)
+      else
+          zr = h_r - zlevel(kwq)
+      end if
+
+      if ((l2i(lwq) > 160) .and. (l2j(lwq) .ge. 67)) then
+        P_r = max(1.0, min(2.5, settling_vel(i) / (ustarb * kappaS)))
+      else
+        P_r = max(0.02, min(0.2, settling_vel(i) / (ustarb * kappaS)))
+      end if
+      ratio = ((h_r - 0.05) / 0.05) * (zr / (h_r - zr))
+      Ct = HgII_wpn(i) * (ratio) ** P_r
+
       if (sed_type(i) == 0) then
         call resuspension_noncohesive(resus_wqpn(i), ustarb, Rep(i), settling_vel(i), lwq)
-        flux(i) = resus_wqpn(i) * HgII_wpn(i)
+        ! flux(i) = resus_wqpn(i) * HgII_wpn(i)
+        flux(i) = resus_wqpn(i) * Ct
       else if (sed_type(i) == 1) then
         call resuspension_cohesive(resus_wqpn(i), taub, tauCrt(i), M_cohesive(i))
         if (sed_frac(i) .le. 0.0) then
           flux(i) = 0.0
         else
-          flux(i) = (resus_wqpn(i) / (sed_dens(i) * sed_frac(i))) * HgII_wpn(i)
+          ! flux(i) = (resus_wqpn(i) / (sed_dens(i) * sed_frac(i))) * HgII_wpn(i)
+          flux(i) = (resus_wqpn(i) / (sed_dens(i) * sed_frac(i))) * Ct
         end if 
       end if
     else
@@ -1351,6 +1367,7 @@ SUBROUTINE MeHg_resuspension(MeHgs_resus, MeHg_wpa, MeHg_wpom, MeHg_wpn, MeHg_sp
   real, dimension(sedNumber) :: Rep               !< Explicity Particle Reynolds Number
   real, dimension(sedNumber) :: tauCrt            !< Critical Shear Stress
   real(kind=8), dimension(sedNumber) :: resus_wqpn
+  real :: P_r, Ct, h_r, zr, ratio
 
   ! Estimate properties of sediment for a given water density at bottom cell
   w_dens = (rhop(kwq, lwq) + 1000)
@@ -1361,15 +1378,32 @@ SUBROUTINE MeHg_resuspension(MeHgs_resus, MeHg_wpa, MeHg_wpom, MeHg_wpn, MeHg_sp
     
     ! Estimate resuspension flux
     if (taub .gt. tauCrt(i)) then
+      h_r = zlevel(kwq + 1)
+      if (zlevel(kwq) == -100) then
+          zr = 0.5 * hp(kwq, lwq)
+      else
+          zr = h_r - zlevel(kwq)
+      end if
+
+      if ((l2i(lwq) > 160) .and. (l2j(lwq) .ge. 67)) then
+        P_r = max(1.0, min(2.5, settling_vel(i) / (ustarb * kappaS)))
+      else
+        P_r = max(0.02, min(0.2, settling_vel(i) / (ustarb * kappaS)))
+      end if
+      ratio = ((h_r - 0.05) / 0.05) * (zr / (h_r - zr))
+      Ct = MeHg_wpn(i) * (ratio) ** P_r
+
       if (sed_type(i) == 0) then
         call resuspension_noncohesive(resus_wqpn(i), ustarb, Rep(i), settling_vel(i), lwq)
-        flux(i) = resus_wqpn(i) * MeHg_wpn(i)
+        ! flux(i) = resus_wqpn(i) * MeHg_wpn(i)
+        flux(i) = resus_wqpn(i) * Ct
       else if (sed_type(i) == 1) then
         call resuspension_cohesive(resus_wqpn(i), taub, tauCrt(i), M_cohesive(i))
         if (sed_frac(i) .le. 0.0) then
           flux(i) = 0.0
         else
-          flux(i) = (resus_wqpn(i) / (sed_dens(i) * sed_frac(i))) * MeHg_wpn(i)
+          ! flux(i) = (resus_wqpn(i) / (sed_dens(i) * sed_frac(i))) * MeHg_wpn(i)
+          flux(i) = (resus_wqpn(i) / (sed_dens(i) * sed_frac(i))) * Ct
         end if
       end if
     else

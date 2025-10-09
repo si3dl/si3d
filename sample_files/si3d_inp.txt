@@ -35,8 +35,8 @@ Parameters controlling solution algorithm
  iadv        !        1           ! 0 = mom. advection OFF; 1 = mom. advection ON
  itrmom      !        1           ! Algorithm for mom. horizontal advection 1=centered; 2=upwind
  ihd         !        2           ! 0 = horizontal diffusion (of mom. or scalar) OFF 1 = horiz. diffusion ON  2 = Smagorisnki
- ax0         !    1.E-2           ! Horizontal eddy diffusivity/viscosity in EW-direction (ms-2)
- ay0         !    1.E-2           ! Horizontal eddy diffusivity/viscosity in NS-direction(ms-2)
+ ax0         !    1.E-3           ! Horizontal eddy diffusivity/viscosity in EW-direction (ms-2)
+ ay0         !    1.E-3           ! Horizontal eddy diffusivity/viscosity in NS-direction(ms-2)
  f           !    9.1e-5          ! f Coriolis parameter (s-1)
  theta       !        1.          ! Weighting parameter for semi-implicit solution (0.5-1) - Not used
  ibc         !        1           ! 1 = Baroclinic terms in included in mom. solution (0 otherwise)

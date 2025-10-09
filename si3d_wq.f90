@@ -83,11 +83,11 @@ SUBROUTINE sourceDO(kwq,lwq)
     f_SOD = tracerpp(kwq,lwq,LDO) /(KSOD + tracerpp(kwq,lwq,LDO) ) ! DO inhibition of sediment oxygen demand
     i = l2i(lwq)
     j = l2j(lwq)
-    if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
+    if (((i >= 1) .and. (i <= 134)) .and. ((j >=1) .and. (j <= 195))) then
       R_SOD_ij = R_SOD * 0.45
     elseif ((i > 170) .and. ((j >= 1) .and. (j <= 63))) then
       R_SOD_ij = R_SOD * 0.05
-    elseif (((i > 139) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
+    elseif (((i > 134) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
       R_SOD_ij = R_SOD * 0.05
     else
       R_SOD_ij = R_SOD
@@ -752,11 +752,11 @@ SUBROUTINE sourceALG1(kwq, lwq)
 
   i = l2i(lwq)
   j = l2j(lwq)
-  if (((i >= 1) .and. (i <= 139)) .and. ((j >=1) .and. (j <= 195))) then
+  if (((i >= 1) .and. (i <= 134)) .and. ((j >=1) .and. (j <= 195))) then
     mu1 = mu1 * 1.0
   elseif ((i > 170) .and. ((j >= 1) .and. (j <= 65))) then
     mu1 = mu1 * 1.3
-  elseif (((i > 139) .and. (i <= 170)) .and. ((j > 65) .and. (j <= 70))) then
+  elseif (((i > 134) .and. (i <= 170)) .and. ((j > 65) .and. (j <= 70))) then
     mu1 = mu1 * 1.0
   else
     mu1 = mu1
