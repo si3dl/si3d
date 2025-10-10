@@ -90,6 +90,8 @@ SUBROUTINE init
           ENDIF
       ENDDO
       
+      ! Changing thickness of bottom dry cell to have the thickness of a sediment layer
+      ! Only applicable when tracers are modeled
       if (ntr > 0) then
         hp(kms + 1, l) = sed_h
       end if
