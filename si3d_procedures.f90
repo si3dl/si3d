@@ -89,7 +89,10 @@ SUBROUTINE init
             hp(k,l)=ZERO;
           ENDIF
       ENDDO
-      hp(kms + 1, l) = sed_h
+      
+      if (ntr > 0) then
+        hp(kms + 1, l) = sed_h
+      end if
 
       ! Set zeta = hhs(i,j) for columns with mask2d = TRUE (i.e.
       ! potentially wett) but intitially dry (k1z = km1).
