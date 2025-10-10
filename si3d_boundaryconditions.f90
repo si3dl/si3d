@@ -1455,8 +1455,8 @@ SUBROUTINE readbcNGB(thrs)
        ! ... Read variables for NEXT FRAME variables ...
 
        !$omp critical
-       print *,"*********************************"
-       print *,"nthrsNGB:",thrsNGB(no),"hebra:",ide_t,"thrs:",thrs
+      !  print *,"*********************************"
+      !  print *,"nthrsNGB:",thrsNGB(no),"hebra:",ide_t,"thrs:",thrs
        READ(nbiid) auxthrs, &
            ((inputvar(m1,m2),m2=4,5+ntr),m1=1,iptNBI(no))
            contNG(no)=contNG(no)+1
@@ -1468,10 +1468,10 @@ SUBROUTINE readbcNGB(thrs)
                BACKSPACE nbiid
 
            end if
-       print *,"despues:",thrsNGB(no),"input1:",sum(inputvar(:,4)),"input2:",sum(inputvar(:,5))
-       print *,"siptNBI:",siptNBI(no,ide_t),"eiptNBI:",eiptNBI(no,ide_t)
-       print *,"contNG:",contNG(no),"nopth:",nopth(no)
-       print *,"-----------------------------------------"
+      !  print *,"despues:",thrsNGB(no),"input1:",sum(inputvar(:,4)),"input2:",sum(inputvar(:,5))
+      !  print *,"siptNBI:",siptNBI(no,ide_t),"eiptNBI:",eiptNBI(no,ide_t)
+      !  print *,"contNG:",contNG(no),"nopth:",nopth(no)
+      !  print *,"-----------------------------------------"
        !$omp end critical
 
        ! ... Assign variables
@@ -1495,9 +1495,9 @@ SUBROUTINE readbcNGB(thrs)
        END SELECT
 
        DEALLOCATE (inputvar)
-     print *,"nthrsNGB:",thrsNGB(no),"hebra:",ide_t,"thrs:",thrs
-     print *,"uhNGB:",sum(uhNGB(:,:)),"trNGB:",sum(trNGB(:,:,:)),"scNGB:",sum(scNGB(:,:))
-     print *,"iside:",iside(no),"vhNGB:",sum(vhNGB(:,:))
+    !  print *,"nthrsNGB:",thrsNGB(no),"hebra:",ide_t,"thrs:",thrs
+    !  print *,"uhNGB:",sum(uhNGB(:,:)),"trNGB:",sum(trNGB(:,:,:)),"scNGB:",sum(scNGB(:,:))
+    !  print *,"iside:",iside(no),"vhNGB:",sum(vhNGB(:,:))
      ENDIF
 
    ENDDO

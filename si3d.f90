@@ -407,7 +407,7 @@
              lcon   = ij2l(i,j)
              ! ... Add water surface displacements
              dzino = dzino + s(lcon)
-             print *, "lcon", lcon, "s", s(lcon)
+            !  print *, "lcon", lcon, "s", s(lcon)
            ENDDO
          ENDDO
 
@@ -421,7 +421,7 @@
             lcon2 = ij2l(ifrontera,j)
             DO k= k1, kmz(lcon2)
                 uflow = uflow + uh(k,lcon2)
-            PRINT *, "lcon2", lcon2, "uh", uh(k,lcon2),"i",ifrontera,"j",j,"k",k
+            ! PRINT *, "lcon2", lcon2, "uh", uh(k,lcon2),"i",ifrontera,"j",j,"k",k
             END DO
          END DO
 
