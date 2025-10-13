@@ -89,7 +89,12 @@ SUBROUTINE init
             hp(k,l)=ZERO;
           ENDIF
       ENDDO
-      hp(kms + 1, l) = sed_h
+
+      ! Changing thickness of bottom dry cell to have the thickness of a sediment layer
+      ! Only applicable when tracers are modeled
+      if (ntr > 0) then
+        hp(kms + 1, l) = sed_h
+      end if
 
       ! Set zeta = hhs(i,j) for columns with mask2d = TRUE (i.e.
       ! potentially wett) but intitially dry (k1z = km1).
@@ -1365,7 +1370,8 @@ SUBROUTINE matmom ( ieq, t_matmom2,Bstart, Bend, Bex,Beagx,Bearx,Bagx,Barx,Beagy
             ENDDO
 
             ! ... Define average layer density at u-pt (in kg/m**3) ...........
-            rhopx(k1x:kmx) = sum(1000 + rhop(k1x:kmx,l)) / nwlayers ! Neglect vertical density variations
+            ! rhopx(k1x:kmx) = sum(1000.0 + rhop(k1x:kmx,l)) / nwlayers ! Neglect vertical density variations
+            rhopx(k1x:kmx) = 1000.0 ! Neglect vertical density variations
 
             ! ... Compute explicit portion of water surface slope term ........
             wsx0 = rhopx(k1x) * gdtdx * (spp(lEC(l)) - spp(l))
@@ -1558,7 +1564,8 @@ SUBROUTINE matmom ( ieq, t_matmom2,Bstart, Bend, Bex,Beagx,Bearx,Bagx,Barx,Beagy
             ENDDO
 
             ! .... Define average layer density at v-pts (in kg/m**3) .........
-            rhopy(k1y:kmy) = sum(1000 + rhop(k1y:kmy,l)) / nwlayers ! Neglect vertical density variations
+            ! rhopy(k1y:kmy) = sum(1000.0 + rhop(k1y:kmy,l)) / nwlayers ! Neglect vertical density variations
+            rhopy(k1y:kmy) = 1000.0 ! Neglect vertical density variations
 
             !.....Compute explicit part of water surface slope term ...........
             wsy0 = rhopy(k1y) *  gdtdy  *(spp(lNC(l)) - spp(l))
@@ -3284,7 +3291,7 @@ SUBROUTINE imsal(Bstart,Bend,Bex,heatSourceB)
          sal(k1 :k1s-1,l) = sal1(1         )
          ! Change temperature of sediment layer to be equal to water on top
          ! No temperature changes happen within the sediment layer
-         sal(kms+1,l) = sal(kms,l)
+         sal(kms + 1, l) = sal(kms, l)
 
       END SELECT
 

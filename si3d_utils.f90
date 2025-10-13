@@ -1704,8 +1704,8 @@ SUBROUTINE outNB(n,thrs)
        CASE (1,3)
 
          ! Get i-, j- indexes for bdry. point
-         i  = isbcNBO(nn);
-         js = jsbcNBO(nn);
+         i  = isbcNBO(nn)
+         js = jsbcNBO(nn)
          je = jebcNBO(nn)
 
          ! ... Assign variable values to cells within nested grid
