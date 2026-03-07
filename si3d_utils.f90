@@ -4183,7 +4183,7 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
              hcell   = ddz             ;       ! Pressumed constant - thickess of cells
              qwd     = 0.0E0           ;       ! Initialize qwd
              qscfm   = flpss(nn)       ;       ! Air flow rate
-             frconot = 0.21            ;       ! Fraction of O2 in air (not used?)
+             frconot = 0.90            ;       ! Fraction of O2 in air (not used?)
        lambnot = lambda(nn)      ;       ! Half-width
        diamm   = diammb(nn)      ;       ! Initial bubble diameter
              IF (ptype(nn) <= 2) THEN
@@ -4538,7 +4538,7 @@ SUBROUTINE PointSourceSinkInput
         ncdev = 0
         DO j = 1, iopss
           IF (iodev(j) == nn) THEN
-        kdetr(j) = km1
+            kdetr(j) = km1
             ncdev    = ncdev + 1
           ENDIF
         ENDDO

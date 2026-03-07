@@ -4437,23 +4437,39 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
             ds(k) = Bex(k,l) + sourcesink(k,l,nt)
          ENDDO
 
-         ! ... Modify transport eqs. to accont for sources & sinks.
-         IF ( iopssH(omp_get_thread_num ( )+1) > 0 ) THEN
-           DO innH = 1, iopssH(omp_get_thread_num ( )+1)
-             inn = ioph2iop(innH,omp_get_thread_num ( )+1)
-             IF ( j /= jpss(inn) .OR. i /=ipss(inn) ) CYCLE
-             DO k = k1s, kms
-               IF (ABS(Qpss(k,inn))<1.E-10) CYCLE
+         ! ... Modify transport eqs. to accont for sources & sinks. ONLY FOR OXYGEN TRACER iDO = 1. ACC 03/06/2026 is coupling the WQ and oxygen plume modules
+         IF(iDO == 1 .AND. nt == LDO) THEN
+         
+           ! ACC prints to confirm the coupling exists only for DO
+           !IF (i == 73 .AND. j == 183) THEN
+            !PRINT *, 'Inside sink-sources for DO diffuser'
+            !PRINT *, 'iDO = ',iDO, ', tracer = ',nt
+           !ENDIF
 
-               Qsource  = Qpss(k,inn)/(dx*dy)  ! Inflow per unit area (m/s)
-               Osource  = Rpss(k,inn,nt)       ! Concentration (kg/m3)
-               ds(k)=ds(k)+Qsource*Osource     ! kg/m2/s = conc.* thickness / time
+           IF ( iopssH(omp_get_thread_num ( )+1) > 0 ) THEN
+             DO innH = 1, iopssH(omp_get_thread_num ( )+1)
+               inn = ioph2iop(innH,omp_get_thread_num ( )+1)
+               IF ( j /= jpss(inn) .OR. i /=ipss(inn) ) CYCLE
+               DO k = k1s, kms
+                 IF (ABS(Qpss(k,inn))<1.E-10) CYCLE
+
+                 Qsource  = Qpss(k,inn)/(dx*dy)  ! Inflow per unit area (m/s)
+                 Osource  = Rpss(k,inn,nt)       ! Concentration (kg/m3)               ! ACC This is the only time when the sink-source Rpss term is used
+                 ds(k)=ds(k)+Qsource*Osource     ! kg/m2/s = conc.* thickness / time
+                  ! ACC prints to confirm the coupling exists only for DO
+                  !IF (i == 73 .AND. j == 183 .AND. k == kms-2) THEN
+                  !  PRINT *, 'Osource = ',Osource
+                  !ENDIF              
+                              
+               ENDDO
              ENDDO
-           ENDDO
-           ! ... Include SOD when modelling oxygen plumes -
-           IF (nt == ntr) ds(kms) = ds(kms) - k4sod
 
+             ! ... Include SOD when modelling oxygen plumes -
+             !IF (nt == ntr) ds(kms) = ds(kms) - k4sod  !! ACC removes this way of forcing SOD in the bottom layer for the last tracer. This is done in the sourceDO subroutine
+            
+            ENDIF
          ENDIF
+         ! ACC 03/06/2026 - END OF CHANGES FOR LINE DIFFUSER
 
          !.....Solve tridiagonal system for the
          !     vertical distribution of active scalar.....
