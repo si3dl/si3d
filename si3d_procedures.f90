@@ -92,8 +92,10 @@ SUBROUTINE init
 
       ! Changing thickness of bottom dry cell to have the thickness of a sediment layer
       ! Only applicable when tracers are modeled
-      if (ntr > 0) then
+      if ((ntr > 0) .and. (ecomod .eq. 1) .and. (iSS .eq. 1)) then
         hp(kms + 1, l) = sed_h
+      elseif (ntr > 0) then
+        hp(kms + 1, l) = hp(kms, l)
       end if
 
       ! Set zeta = hhs(i,j) for columns with mask2d = TRUE (i.e.
@@ -339,6 +341,12 @@ SUBROUTINE InitializeScalarFields
       tracer = 0.0
       IF (ecomod < 0 ) THEN
         CALL InitTracerCloud
+      ELSE IF (ecomod == 0.0) THEN
+        DO  nn = 1, ntr
+          DO k = 1, km1
+            tracer(k,:,nn) = Scalardepthile(k,nn+1)
+          END DO
+        END DO
       ELSE
         DO  nn = 1, ntr
           DO k = 1, km1
@@ -4571,7 +4579,7 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
       do k = k1-1, kms+1
         if (tracer(k, l, nt) .lt. 0.0) then
           tracer(k, l, nt) = 0.0
-        end if 
+        end if
       end do
 
    !.....End loop over scalar-pts.....
@@ -4809,31 +4817,31 @@ SUBROUTINE ConfigThreads (depth)
         if(p > 1)THEN
         lhiWCN(p)=counter+1
         do j=1,jm1
-			if(mask2d(ind-1,j) .AND. mask2d(ind,j) .AND. mask2d(ind-1,j+1))THEN
-			counter=counter+1
-			id_columnCN(counter)= ij2l(ind-1,j)
-			end if
+            if(mask2d(ind-1,j) .AND. mask2d(ind,j) .AND. mask2d(ind-1,j+1))THEN
+                counter=counter+1
+                id_columnCN(counter)= ij2l(ind-1,j)
+            end if
         end do
         lhfWCN(p)=counter
         end if
         lhiCN(p)=counter+1
    		do i=ind,lh_aux(p)+ind-1
    			do j=1,jm1
-   			    IF(mask2d(i,j) .AND. mask2d(i,j+1)) THEN
-   				counter = counter + 1
-   				id_columnCN(counter) = ij2l(i,j)
-   				END IF
+                    IF(mask2d(i,j) .AND. mask2d(i,j+1)) THEN
+                        counter = counter + 1
+                        id_columnCN(counter) = ij2l(i,j)
+                    END IF
    			end do
    		end do
-   		ind = lh_aux(p) + ind
-   		lhfCN(p)=counter
-   		if(p < num_threads)THEN
+  		ind = lh_aux(p) + ind
+  		lhfCN(p)=counter
+  		if(p < num_threads)THEN
    		lhiECN(p)=counter+1
         do j=1,jm1
-			if(mask2d(ind,j) .AND. mask2d(ind-1,j) .AND. mask2d(ind,j+1))THEN
-			counter=counter+1
-			id_columnCN(counter)= ij2l(ind,j)
-			end if
+            if(mask2d(ind,j) .AND. mask2d(ind-1,j) .AND. mask2d(ind,j+1))THEN
+                counter=counter+1
+                id_columnCN(counter)= ij2l(ind,j)
+            end if
         end do
         lhfECN(p)=counter
         end if

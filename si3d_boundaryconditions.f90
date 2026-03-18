@@ -202,7 +202,7 @@ SUBROUTINE openbc0
            uhNGBp(icl,niNGB) = inputvar(icl,4)
            scNGBp(icl,niNGB) = inputvar(icl,5)
            IF (ntr > 0) THEN
-             trNGBp(icl,1:ntr,niNGB) = inputvar(icl,6:5+ntr)
+             trNGBp(icl,niNGB,1:ntr) = inputvar(icl,6:5+ntr)
            ENDIF
          ENDDO
        CASE(2,4)
@@ -213,7 +213,7 @@ SUBROUTINE openbc0
            vhNGBp(icl,niNGB) = inputvar(icl,4)
            scNGBp(icl,niNGB) = inputvar(icl,5)
            IF (ntr > 0) THEN
-             trNGBp(icl,1:ntr,niNGB) = inputvar(icl,6:5+ntr)
+             trNGBp(icl,niNGB,1:ntr) = inputvar(icl,6:5+ntr)
            ENDIF
          ENDDO
        END SELECT
@@ -299,7 +299,7 @@ SUBROUTINE openbc0
            uhNGB(icl,niNGB) = inputvar(icl,4)
            scNGB(icl,niNGB) = inputvar(icl,5)
            IF (ntr > 0) THEN
-             trNGB(icl,1:ntr,niNGB) = inputvar(icl,6:5+ntr)
+             trNGB(icl,niNGB,1:ntr) = inputvar(icl,6:5+ntr)
            ENDIF
          ENDDO
        CASE(2,4)
@@ -307,7 +307,7 @@ SUBROUTINE openbc0
            vhNGB(icl,niNGB) = inputvar(icl,4)
            scNGB(icl,niNGB) = inputvar(icl,5)
            IF (ntr > 0) THEN
-             trNGB(icl,1:ntr,niNGB) = inputvar(icl,6:5+ntr)
+             trNGB(icl,niNGB,1:ntr) = inputvar(icl,6:5+ntr)
            ENDIF
          ENDDO
        END SELECT
@@ -1340,8 +1340,8 @@ SUBROUTINE openbcUVH(thrs)
              l = ij2l(i,j)
              DO k = k1, kmz(l)
                icl = icl + 1
-               uhWB(k,j) = uhNGB (icl,no)*    weight + &
-                           uhNGBp(icl,no)*(1.-weight)
+               uhWB(k,j) = uhNGB (icl,niNGB)*    weight + &
+                           uhNGBp(icl,niNGB)*(1.-weight)
                huWB(k,j)= h(k,l)
              ENDDO
            ENDDO
@@ -1354,8 +1354,8 @@ SUBROUTINE openbcUVH(thrs)
              l = ij2l(i,j)
              DO k = k1, kmz(l)
                icl = icl + 1
-               uhEB(k,j) = uhNGB (icl,no)*    weight + &
-                           uhNGBp(icl,no)*(1.-weight)
+               uhEB(k,j) = uhNGB (icl,niNGB)*    weight + &
+                           uhNGBp(icl,niNGB)*(1.-weight)
                huEB(k,j) = h(k,l)
              ENDDO
            ENDDO
@@ -1368,8 +1368,8 @@ SUBROUTINE openbcUVH(thrs)
              l = ij2l(i,j)
              DO k = k1, kmz(l)
                icl = icl + 1
-               vhNB(k,i) = vhNGB (icl,no)*    weight + &
-                           vhNGBp(icl,no)*(1.-weight)
+               vhNB(k,i) = vhNGB (icl,niNGB)*    weight + &
+                           vhNGBp(icl,niNGB)*(1.-weight)
                hvNB(k,i) = h(k,l)
              ENDDO
 
@@ -1384,8 +1384,8 @@ SUBROUTINE openbcUVH(thrs)
              l = ij2l(i,j)
              DO k = k1, kmz(l)
                icl = icl + 1
-               vhSB(k,i) = vhNGB (icl,no)*    weight + &
-                           vhNGBp(icl,no)*(1.-weight)
+               vhSB(k,i) = vhNGB (icl,niNGB)*    weight + &
+                           vhNGBp(icl,niNGB)*(1.-weight)
                hvSB(k,i) = h(k,l)
              ENDDO
            ENDDO
@@ -1434,11 +1434,11 @@ SUBROUTINE readbcNGB(thrs)
 
        ! ... Save variables from previous time .........
        thrsNGBp(no) = thrsNGB(no);
-       uhNGBp(siptNBIH(no,ide_t):eiptNBIH(no,ide_t),no) = uhNGB(siptNBIH(no,ide_t):eiptNBIH(no,ide_t),no);
-       vhNGBp(siptNBIH(no,ide_t):eiptNBIH(no,ide_t),no) = vhNGB(siptNBIH(no,ide_t):eiptNBIH(no,ide_t),no);
-       scNGBp(siptNBIH(no,ide_t):eiptNBIH(no,ide_t),no) = scNGB(siptNBIH(no,ide_t):eiptNBIH(no,ide_t),no);
+       uhNGBp(siptNBIH(no,ide_t):eiptNBIH(no,ide_t),niNGB) = uhNGB(siptNBIH(no,ide_t):eiptNBIH(no,ide_t),niNGB);
+       vhNGBp(siptNBIH(no,ide_t):eiptNBIH(no,ide_t),niNGB) = vhNGB(siptNBIH(no,ide_t):eiptNBIH(no,ide_t),niNGB);
+       scNGBp(siptNBIH(no,ide_t):eiptNBIH(no,ide_t),niNGB) = scNGB(siptNBIH(no,ide_t):eiptNBIH(no,ide_t),niNGB);
        IF (ntr > 0) THEN
-         trNGBp(siptNBIH(no,ide_t):eiptNBIH(no,ide_t),:,no) = trNGB(siptNBIH(no,ide_t):eiptNBIH(no,ide_t),:,no);
+         trNGBp(siptNBIH(no,ide_t):eiptNBIH(no,ide_t),niNGB,:) = trNGB(siptNBIH(no,ide_t):eiptNBIH(no,ide_t),niNGB,:);
        ENDIF
 !       uhNGBp = uhNGB;
 !       vhNGBp = vhNGB;
@@ -1478,18 +1478,18 @@ SUBROUTINE readbcNGB(thrs)
        SELECT CASE (iside(no))
        CASE(1,3)
          DO icl = siptNBI(no,ide_t), eiptNBI(no,ide_t)
-           uhNGB(icl,no) = inputvar(icl,4)
-           scNGB(icl,no) = inputvar(icl,5)
+           uhNGB(icl,niNGB) = inputvar(icl,4)
+           scNGB(icl,niNGB) = inputvar(icl,5)
            IF (ntr > 0) THEN
-             trNGB(icl,1:ntr,niNGB) = inputvar(icl,6:5+ntr)
+             trNGB(icl,niNGB,1:ntr) = inputvar(icl,6:5+ntr)
            ENDIF
          ENDDO
        CASE(2,4)
          DO icl = siptNBI(no,ide_t), eiptNBI(no,ide_t)
-           vhNGB(icl,no) = inputvar(icl,4)
-           scNGB(icl,no) = inputvar(icl,5)
+           vhNGB(icl,niNGB) = inputvar(icl,4)
+           scNGB(icl,niNGB) = inputvar(icl,5)
            IF (ntr > 0) THEN
-             trNGB(icl,1:ntr,no) = inputvar(icl,6:5+ntr)
+             trNGB(icl,niNGB,1:ntr) = inputvar(icl,6:5+ntr)
            ENDIF
          ENDDO
        END SELECT
@@ -3586,8 +3586,8 @@ SUBROUTINE MODexsal4openbc(Bstart,Bend,Bex,thrs)
              ! ... Define scalar at boundary face
              !scW = scNGB (icl,niNGB)*    weight + & ! FJR??
              !      scNGBp(icl,niNGB)*(1.-weight) ! FJR ??
-             scW = scNGB (icl,no)*    weight + &
-                   scNGBp(icl,no)*(1.-weight)
+             scW = scNGB (icl,niNGB)*    weight + &
+                   scNGBp(icl,niNGB)*(1.-weight)
              ! ... Define velocity at boundary face
              uW  = uhWB(k,j) + uhWBpp(k,j);
              ! ... Re eefine scalar at boundary face if needed
@@ -3605,8 +3605,8 @@ SUBROUTINE MODexsal4openbc(Bstart,Bend,Bex,thrs)
              ! ... Define scalar at boundary face
              !scE = scNGB (icl,niNGB)*    weight + & FJR??
              !      scNGBp(icl,niNGB)*(1.-weight) FJR??
-             scE = scNGB (icl,no)*    weight + &
-                   scNGBp(icl,no)*(1.-weight)
+             scE = scNGB (icl,niNGB)*    weight + &
+                   scNGBp(icl,niNGB)*(1.-weight)
              ! ... Define velocity at boundary face
              uE  = uhEB(k,j) + uhEBpp(k,j);
              ! ... Redefine scalar at boundary face if needed
@@ -3622,8 +3622,8 @@ SUBROUTINE MODexsal4openbc(Bstart,Bend,Bex,thrs)
              DO k = k1, kmz(l)
              icl = icl + 1
              ! ... Define scalar at boundary face
-             scN = scNGB (icl,no)*    weight + &
-                   scNGBp(icl,no)*(1.-weight)
+             scN = scNGB (icl,niNGB)*    weight + &
+                   scNGBp(icl,niNGB)*(1.-weight)
              ! ... Define velocity at boundary face
              vN  = vhNB(k,i) + vhNBpp(k,i);
              ! ... Redefine scalar at boundary face if needed
@@ -3639,8 +3639,8 @@ SUBROUTINE MODexsal4openbc(Bstart,Bend,Bex,thrs)
              DO k = k1, kmz(l)
              icl = icl + 1
              ! ... Define scalar at boundary face
-             scS = scNGB (icl,no)*    weight + &
-                   scNGBp(icl,no)*(1.-weight)
+             scS = scNGB (icl,niNGB)*    weight + &
+                   scNGBp(icl,niNGB)*(1.-weight)
              ! ... Define velocity at boundary face
              vS  = vhSB(k,i) + vhSBpp(k,i);
              ! ... Define scalar   at boundary face

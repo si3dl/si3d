@@ -100,11 +100,11 @@ Open boundary conditions for nesting procedures
  ------------------------------------------------------    
 Specification for tracer (other than oxygen) simulation 
 -------------------------------------------------------     
- ntr         !        4           ! No. of tracers sim. 
- ecomod      !        1           !
+ ntr         !        0           ! No. of tracers sim. 
+ ecomod      !        0           !
  iotr        !        0           ! (10 min)
  itspftr     !        0           !
- ipwq        !        1           ! Frequency to run WQ module in time steps
+ ipwq        !        0           ! Frequency to run WQ module in time steps
  nswq        !        0           ! Time Steps to Restore WQ field values. 
 -------------------------------------------------------       
 Specification for oxgygenation system simulations

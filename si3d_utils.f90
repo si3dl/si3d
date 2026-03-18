@@ -429,9 +429,9 @@ SUBROUTINE AllocateSpace
    ! .... Allocate arrays used in model output
    ALLOCATE(  uout (km1) , vout (km1) , wout(km1),  &
             & Avout(km1) , Dvout(km1) , sal1(ndz),  &
-            & uhout(km1) , scout(km1), trout(km1,ntr), fluxes_out(km1, lm1, 34), STAT=istat )
+            & uhout(km1) , scout(km1), trout(km1,ntrmax), fluxes_out(km1, lm1, 34), STAT=istat )
   !  if (ntr > 0) then
-  !   allocate(trout(km1,ntrmax), fluxes_out(km1, lm1, ntr), STAT=istat)
+  !   allocate(trout(km1,ntrmax), fluxes_out(km1, lm1,), STAT=istat)
   !  endif
 
    IF (istat /= 0) CALL allocate_error ( istat, 7 )
@@ -1158,179 +1158,178 @@ SUBROUTINE outt(n,thrs)
 !
 !-----------------------------------------------------------------------
 
-   INTEGER,INTENT(IN) :: n
-   REAL, INTENT(IN) :: thrs
+  INTEGER,INTENT(IN) :: n
+  REAL, INTENT(IN) :: thrs
 
-   !.....Local variables.....
-   CHARACTER :: date*8, time*10, zone*5
-   CHARACTER(LEN=9)  :: nodeno    ="         "
-   CHARACTER(LEN=15) :: filenm    ="               "
-   REAL :: qu, stidal, tdays
-   INTEGER, DIMENSION(8)     :: values
-   INTEGER :: nn, i, j, k, l, kkk, itdays, ios, nchar, it, laux
-   INTEGER, SAVE :: i10, i30, i60
-   LOGICAL, SAVE :: first_entry = .TRUE.
-   REAL, DIMENSION(km1) :: zlevel_export
-   integer :: km_tot
+  !.....Local variables.....
+  CHARACTER :: date*8, time*10, zone*5
+  CHARACTER(LEN=9)  :: nodeno    ="         "
+  CHARACTER(LEN=15) :: filenm    ="               "
+  REAL :: qu, stidal, tdays
+  INTEGER, DIMENSION(8)     :: values
+  INTEGER :: nn, i, j, k, l, kkk, itdays, ios, nchar, it, laux
+  INTEGER, SAVE :: i10, i30, i60
+  LOGICAL, SAVE :: first_entry = .TRUE.
+  REAL, DIMENSION(km1) :: zlevel_export
+  integer :: km_tot, km_exp
 
-   !.....Timing.....
-   REAL, EXTERNAL :: TIMER
-   REAL :: btime, etime
-   btime = TIMER(0.0)
+  !.....Timing.....
+  REAL, EXTERNAL :: TIMER
+  REAL :: btime, etime
+  btime = TIMER(0.0)
 
-   !.....Open timefiles on first entry into the subroutine.....
-   IF( first_entry ) THEN
-      first_entry = .FALSE.
-      DO nn = 1, nnodes
+  !.....Open timefiles on first entry into the subroutine.....
+  IF( first_entry ) THEN
+    first_entry = .FALSE.
+    DO nn = 1, nnodes
+      i = inode(nn)
+      j = jnode(nn)
+      zlevel_export(:) = -99.0
 
-         i = inode(nn)
-         j = jnode(nn)
+      ! Convert node numbers to a character variable
+      CALL nodech ( i, j, nodeno, nchar )
 
-         ! Convert node numbers to a character variable
-         CALL nodech ( i, j, nodeno, nchar )
+      ! Name the standard si3d timefile
+      filenm = 'tf'//nodeno(1:nchar)//'.txt'
 
-         ! Name the standard si3d timefile
-         filenm = 'tf'//nodeno(1:nchar)//'.txt'
+      ! Open the timefile
+      i60 = i6 + nn    ! Use file numbers 61-80
+      OPEN ( UNIT=i60, FILE=filenm, IOSTAT=ios )
+      IF(ios /= 0) CALL open_error ( "Error opening "//filenm, ios )
 
-         ! Open the timefile
-         i60 = i6 + nn    ! Use file numbers 61-80
-         OPEN ( UNIT=i60, FILE=filenm, IOSTAT=ios )
-         IF(ios /= 0) CALL open_error ( "Error opening "//filenm, ios )
+      !.....Get date and time of run.....
+      CALL date_and_time ( date, time, zone, values )
 
-         !.....Get date and time of run.....
-         CALL date_and_time ( date, time, zone, values )
+      !.....Output run title and column headings for standard si3d format.....
+      WRITE (UNIT=i60, FMT='(A)') title
+      WRITE (UNIT=i60, FMT='("Run number = ", A8, A4,                      &
+              & ",  Start date of run:  ",I2,                              &
+              & "/",I2,"/",I4," at ",I4.4," hours")') date,time(1:4),      &
+              & imon,iday,iyr,ihr
+      IF (idt .GE. 0.01 .AND. ddz .GE. 0.01) THEN ! idt real
+        WRITE (UNIT=i60, FMT=1) i,j,(kmz(ij2l(i,j))-k1+1),idt,hhs(ij2l(i,j)),ddz,         &
+                                & iexplt,itrap,cd,ismooth,beta,niter,iextrp, &
+                                & f,tramp,iupwind
+      ELSE ! idt real
+        WRITE (UNIT=i60, FMT=8) i,j,(kmz(ij2l(i,j))-k1+1),idt,hhs(ij2l(i,j)),ddz,         &
+                                & iexplt,itrap,cd,ismooth,beta,niter,iextrp, &
+                                & f,tramp,iupwind
+      ENDIF ! idt real
+    1 FORMAT( "i =",I4,"  j =",I4, "  km =", I4,"   dt =",F5.2," sec",     & ! idt real
+              & "  hhs =", F6.3," m","   dz =", F5.2," m"/                & ! idt real
+              & "iexplt =",I2, "  itrap =", I2, "  cd = ", F7.4, 2X,      &
+              & "ismooth =", I2, "  beta =", F6.3," niter =", I2/         &
+              & "iextrp =",  I2, "  f =", F7.4, "  tramp=", F9.1, 2X,     &
+              & "iupwind =", I2 )
+    8 FORMAT( "i =",I4,"  j =",I4, "  km =", I4,"   dt =",F5.4," sec",     & ! idt real
+              & "  hhs =", F6.3," m","   dz =", F5.4," m"/                & ! idt real
+              & "iexplt =",I2, "  itrap =", I2, "  cd = ", F7.4, 2X,      &
+              & "ismooth =", I2, "  beta =", F6.3," niter =", I2/         &
+              & "iextrp =",  I2, "  f =", F7.4, "  tramp=", F9.1, 2X,     &
+              & "iupwind =", I2 )
+      WRITE (UNIT=i60, FMT=2)
+    2 FORMAT( 1X,"   time     ","  step     ","  zeta ","   depth   " &
+                "    u       ","  v      "," w       ",              &
+                "   Av       ","        Dv      ","  scalar","              Tracers -> " )
+      WRITE (UNIT=i60, FMT=3)
+    3 FORMAT( 1X,"    hrs     ","   no      ","   cm       "," m    " &
+                "   cm/s   "  ,"   cm/s   " ,"  cm/s      " ,      &
+                " cm2/s      ","     cm2/s","          oC","                  M/V ->" )
 
-         !.....Output run title and column headings for standard si3d format.....
-         WRITE (UNIT=i60, FMT='(A)') title
-         WRITE (UNIT=i60, FMT='("Run number = ", A8, A4,                      &
-                 & ",  Start date of run:  ",I2,                              &
-                 & "/",I2,"/",I4," at ",I4.4," hours")') date,time(1:4),      &
-                 & imon,iday,iyr,ihr
-         IF (idt .GE. 0.01 .AND. ddz .GE. 0.01) THEN ! idt real
-           WRITE (UNIT=i60, FMT=1) i,j,(kmz(ij2l(i,j))-k1+1),idt,hhs(ij2l(i,j)),ddz,         &
-                                    & iexplt,itrap,cd,ismooth,beta,niter,iextrp, &
-                                    & f,tramp,iupwind
-         ELSE ! idt real
-           WRITE (UNIT=i60, FMT=8) i,j,(kmz(ij2l(i,j))-k1+1),idt,hhs(ij2l(i,j)),ddz,         &
-                                    & iexplt,itrap,cd,ismooth,beta,niter,iextrp, &
-                                    & f,tramp,iupwind
-         ENDIF ! idt real
-       1 FORMAT( "i =",I4,"  j =",I4, "  km =", I4,"   dt =",F5.2," sec",     & ! idt real
-                  & "  hhs =", F6.3," m","   dz =", F5.2," m"/                & ! idt real
-                  & "iexplt =",I2, "  itrap =", I2, "  cd = ", F7.4, 2X,      &
-                  & "ismooth =", I2, "  beta =", F6.3," niter =", I2/         &
-                  & "iextrp =",  I2, "  f =", F7.4, "  tramp=", F9.1, 2X,     &
-                  & "iupwind =", I2 )
-       8 FORMAT( "i =",I4,"  j =",I4, "  km =", I4,"   dt =",F5.4," sec",     & ! idt real
-                  & "  hhs =", F6.3," m","   dz =", F5.4," m"/                & ! idt real
-                  & "iexplt =",I2, "  itrap =", I2, "  cd = ", F7.4, 2X,      &
-                  & "ismooth =", I2, "  beta =", F6.3," niter =", I2/         &
-                  & "iextrp =",  I2, "  f =", F7.4, "  tramp=", F9.1, 2X,     &
-                  & "iupwind =", I2 )
-         WRITE (UNIT=i60, FMT=2)
-       2 FORMAT( 1X,"   time     ","  step     ","  zeta ","   depth   " &
-                    "    u       ","  v      "," w       ",              &
-                    "   Av       ","        Dv      ","  scalar","              Tracers -> " )
-         WRITE (UNIT=i60, FMT=3)
-       3 FORMAT( 1X,"    hrs     ","   no      ","   cm       "," m    " &
-                    "   cm/s   "  ,"   cm/s   " ,"  cm/s      " ,      &
-                    " cm2/s      ","     cm2/s","          oC","                  M/V ->" )
+    END DO
+  END IF
 
-      END DO
-   END IF
+  !.....Output values at time step  n  to timefile(s).....
+  DO nn = 1, nnodes
 
-   !.....Output values at time step  n  to timefile(s).....
-   DO nn = 1, nnodes
+    i = inode(nn);
+    j = jnode(nn);
+    i60 = i6 + nn;
 
-      i = inode(nn);
-      j = jnode(nn);
-      i60 = i6 + nn;
+    ! ... Map (i,j)- into l-index
+    l = ij2l(i,j)
 
-      ! ... Map (i,j)- into l-index
-      l = ij2l(i,j)
+    ! ... Initialize output variables to -99.
+    uout  = -99.0E-2 ! 10-2 since the output is cm /s
+    vout  = -99.0E-2
+    wout  = -99.0E-2
+    Avout = -99.0E-4 ! 10-4 since the output is cm2/s
+    Dvout = -99.0E-4
+    uhout = -99.0
+    scout = -99.0
+    trout = -99.0
 
-      ! ... Initialize output variables to -99.
-      uout  = -99.0E-2 ! 10-2 since the output is cm /s
-      vout  = -99.0E-2
-      wout  = -99.0E-2
-      Avout = -99.0E-4 ! 10-4 since the output is cm2/s
-      Dvout = -99.0E-4
-      uhout = -99.0
-      scout = -99.0
-      trout = -99.0
+    if (ecomod .eq. 1) then
+      km_exp = kmz(l) + 1
+    else
+      km_exp = kmz(l)
+    end if
 
-      km_tot = kmz(l) + 1
+    km_tot = kmz(l) + 1
 
-      DO k  = k1, km_tot
-        IF (h(k,l)<=ZERO) CYCLE
-        !uout(k)  = 0.5 * (u  (k,l) + u  (k,lWC(l)))
-        !vout(k)  = 0.5 * (v  (k,l) + v  (k,lSC(l)))
-        !wout(k)  = 0.5 * (wp (k,l) + wp (k+1,l   ))
-        uout(k)  = u (k, l)
-        vout(k)  = v (k, l)
-        wout(k)  = wp(k, l)
-        Avout(k) = 0.5 * (Av (k,l) + Av (k+1,l   ))
-        Dvout(k) = 0.5 * (Dv (k,l) + Dv (k+1,l   ))
-        uhout(k) = 0.5 * (uh (k,l) + uh (k,lWC(l)))
-        scout(k) = sal(k,l)
-        IF (ntr>0) THEN
-          DO it = 1, ntr
-            IF ((it .ge. LSS1) .and. (it .le. LSS1 + sedNumber)) then
-              trout(k,it) = tracer(k,l,it)
-            ELSE
-              trout(k,it) = tracer(k,l,it)
-            END IF
-          ENDDO
-        ENDIF
-        zlevel_export(k) = zlevel(k+1)
-        if (k == kmz(l) + 1) then
-          zlevel_export(k) = zlevel(k) + sed_h
-        end if
-      END DO
+    DO k = k1, km_exp
+      IF (h(k,l)<=ZERO) CYCLE
+      !uout(k)  = 0.5 * (u  (k,l) + u  (k,lWC(l)))
+      !vout(k)  = 0.5 * (v  (k,l) + v  (k,lSC(l)))
+      !wout(k)  = 0.5 * (wp (k,l) + wp (k+1,l   ))
+      uout(k)  = u (k, l)
+      vout(k)  = v (k, l)
+      wout(k)  = wp(k, l)
+      Avout(k) = 0.5 * (Av (k,l) + Av (k+1,l   ))
+      Dvout(k) = 0.5 * (Dv (k,l) + Dv (k+1,l   ))
+      uhout(k) = 0.5 * (uh (k,l) + uh (k,lWC(l)))
+      scout(k) = sal(k,l)
+      zlevel_export(k) = zlevel(k+1)
+      IF (ntr>0) THEN
+        DO it = 1, ntr
+          trout(k,it) = tracer(k,l,it)
+        ENDDO
+      ENDIF
+      
+    END DO
 
-     ! ... Write variables to output file
-     IF (ntr <= 0) THEN
-       WRITE (UNIT=i60, FMT=4) thrs, n, s(l), (zlevel_export(k),     &
-           & uout (k), vout(k), wout(k), Avout(k), Dvout(k),      &
-           & scout(k), k =k1,km_tot)
-     ELSE
-
-       WRITE (UNIT=i60, FMT=5) thrs, n, s(l), (zlevel_export(k) ,     &
-            & uout (k), vout(k) , wout(k), Avout(k), Dvout(k),     &
-            & scout(k  ),                                          &
-            & trout(k,1),                                          &
-            & trout(k,2),                                          &
-            & trout(k,3),                                          &
-            & trout(k,4),                                          &
-            & trout(k,5),                                          &
-            & trout(k,6),                                          &
-            & trout(k,7),                                          &
-            & trout(k,8),                                          &
-            & trout(k,9),                                          &
-            & trout(k,10),                                         &
-            & trout(k,11),                                         &
-            & trout(k,12),                                         &
-            & trout(k,13),                                         &
-            & trout(k,14),                                         &
-            & trout(k,15),                                         &
-            & trout(k,16),                                         &
-            & trout(k,17),                                         &
-            & trout(k,18),                                         &
-            & trout(k,19),                                         &
-            & trout(k,20),                                         &
-            & trout(k,21),                                         &
-            & trout(k,22),                                         &
-            & trout(k,23),                                         &
-            & trout(k,24),                                         &
-            & trout(k,25),                                         &
-            & k = k1,km_tot)
+    ! ... Write variables to output file
+    IF (ntr <= 0) THEN
+      WRITE (UNIT=i60, FMT=4) thrs, n, s(l), (zlevel_export(k),     &
+          & uout (k), vout(k), wout(k), Avout(k), Dvout(k),      &
+          & scout(k), k =k1, km_tot)
+    ELSE
+      WRITE (UNIT=i60, FMT=5) thrs, n, s(l), (zlevel_export(k) ,     &
+          & uout (k), vout(k) , wout(k), Avout(k), Dvout(k),     &
+          & scout(k  ),                                          &
+          & trout(k,1),                                          &
+          & trout(k,2),                                          &
+          & trout(k,3),                                          &
+          & trout(k,4),                                          &
+          & trout(k,5),                                          &
+          & trout(k,6),                                          &
+          & trout(k,7),                                          &
+          & trout(k,8),                                          &
+          & trout(k,9),                                          &
+          & trout(k,10),                                         &
+          & trout(k,11),                                         &
+          & trout(k,12),                                         &
+          & trout(k,13),                                         &
+          & trout(k,14),                                         &
+          & trout(k,15),                                         &
+          & trout(k,16),                                         &
+          & trout(k,17),                                         &
+          & trout(k,18),                                         &
+          & trout(k,19),                                         &
+          & trout(k,20),                                         &
+          & trout(k,21),                                         &
+          & trout(k,22),                                         &
+          & trout(k,23),                                         &
+          & trout(k,24),                                         &
+          & trout(k,25),                                         &
+          & k = k1, km_tot)
      ENDIF
 
    4 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PF10.5 / &
                   & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PF10.5 ))
    5 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7), 0PF10.4, 25(0PE21.5)/ &
                   & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),0PF10.4, 25(0PE21.5)))
-   END DO
+  END DO
 
    !.....Compute CPU time spent in subroutine.....
    etime = TIMER(0.0)
