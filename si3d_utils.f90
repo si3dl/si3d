@@ -429,10 +429,7 @@ SUBROUTINE AllocateSpace
    ! .... Allocate arrays used in model output
    ALLOCATE(  uout (km1) , vout (km1) , wout(km1),  &
             & Avout(km1) , Dvout(km1) , sal1(ndz),  &
-            & uhout(km1) , scout(km1), trout(km1,ntrmax), fluxes_out(km1, lm1, 34), STAT=istat )
-  !  if (ntr > 0) then
-  !   allocate(trout(km1,ntrmax), fluxes_out(km1, lm1,), STAT=istat)
-  !  endif
+            & uhout(km1) , scout(km1), trout(km1,max(1,ntr)), fluxes_out(km1, lm1, 34), STAT=istat )
 
    IF (istat /= 0) CALL allocate_error ( istat, 7 )
 
@@ -1167,7 +1164,7 @@ SUBROUTINE outt(n,thrs)
   CHARACTER(LEN=15) :: filenm    ="               "
   REAL :: qu, stidal, tdays
   INTEGER, DIMENSION(8)     :: values
-  INTEGER :: nn, i, j, k, l, kkk, itdays, ios, nchar, it, laux
+  INTEGER :: nn, i, j, k, l, ios, nchar, it
   INTEGER, SAVE :: i10, i30, i60
   LOGICAL, SAVE :: first_entry = .TRUE.
   REAL, DIMENSION(km1) :: zlevel_export
@@ -1294,41 +1291,25 @@ SUBROUTINE outt(n,thrs)
           & uout (k), vout(k), wout(k), Avout(k), Dvout(k),      &
           & scout(k), k =k1, km_tot)
     ELSE
-      WRITE (UNIT=i60, FMT=5) thrs, n, s(l), (zlevel_export(k) ,     &
-          & uout (k), vout(k) , wout(k), Avout(k), Dvout(k),     &
-          & scout(k  ),                                          &
-          & trout(k,1),                                          &
-          & trout(k,2),                                          &
-          & trout(k,3),                                          &
-          & trout(k,4),                                          &
-          & trout(k,5),                                          &
-          & trout(k,6),                                          &
-          & trout(k,7),                                          &
-          & trout(k,8),                                          &
-          & trout(k,9),                                          &
-          & trout(k,10),                                         &
-          & trout(k,11),                                         &
-          & trout(k,12),                                         &
-          & trout(k,13),                                         &
-          & trout(k,14),                                         &
-          & trout(k,15),                                         &
-          & trout(k,16),                                         &
-          & trout(k,17),                                         &
-          & trout(k,18),                                         &
-          & trout(k,19),                                         &
-          & trout(k,20),                                         &
-          & trout(k,21),                                         &
-          & trout(k,22),                                         &
-          & trout(k,23),                                         &
-          & trout(k,24),                                         &
-          & trout(k,25),                                         &
-          & k = k1, km_tot)
-     ENDIF
+      DO k = k1, km_tot
+        IF (k == k1) THEN
+          WRITE (UNIT=i60, FMT='(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),0PF10.4)', ADVANCE='NO') &
+                thrs, n, s(l), zlevel_export(k), uout(k), vout(k), wout(k), Avout(k), Dvout(k), scout(k)
+        ELSE
+          WRITE (UNIT=i60, FMT='(30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),0PF10.4)', ADVANCE='NO') &
+                zlevel_export(k), uout(k), vout(k), wout(k), Avout(k), Dvout(k), scout(k)
+        END IF
+        DO it = 1, ntr
+          WRITE (UNIT=i60, FMT='(E21.5)', ADVANCE='NO') trout(k,it)
+        END DO
+        WRITE (UNIT=i60, FMT='(A)') ' '
+      END DO
+    END IF
 
    4 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PF10.5 / &
                   & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),   0PF10.5 ))
-   5 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7), 0PF10.4, 25(0PE21.5)/ &
-                  & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),0PF10.4, 25(0PE21.5)))
+  !  5 FORMAT(1X,F10.4,I10,2PF9.2,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7), 0PF10.4, 25(0PE21.5)/ &
+  !                 & ( 30X,0PF9.2,2(2PF10.2),2PF9.4,2(4PF15.7),0PF10.4, 25(0PE21.5)))
   END DO
 
    !.....Compute CPU time spent in subroutine.....
