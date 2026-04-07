@@ -105,7 +105,7 @@ Specification for tracer (other than oxygen) simulation
  iotr        !        0           ! (10 min)
  itspftr     !        0           !
  ipwq        !        1           ! Frequency to run WQ module in time steps
- nswq        !        0           ! Time Steps to Restore WQ field values. 
+ nswq        !    30240           ! Time Steps to Restore WQ field values. 
 -------------------------------------------------------       
 Specification for oxgygenation system simulations
 -------------------------------------------------------            

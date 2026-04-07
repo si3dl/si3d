@@ -62,7 +62,7 @@ SUBROUTINE sourceDO(kwq,lwq)
   ! ...Calculate reaeration only at the lake surface
   ! for now using constant reaeration defined in wq_inp, but in future, can have
   ! alternatives for reaeration rates.
-  IF (kwq .le. k1z(lwq) + 1) THEN
+  IF (kwq .le. k1z(lwq)) THEN
     ws = SQRT(uair(lwq)**2. + vair(lwq)**2.)
     ! if (ws .le. 0.6) then
     !   ws = 0.6
@@ -84,11 +84,11 @@ SUBROUTINE sourceDO(kwq,lwq)
     i = l2i(lwq)
     j = l2j(lwq)
     if (((i >= 1) .and. (i <= 134)) .and. ((j >=1) .and. (j <= 195))) then
-      R_SOD_ij = R_SOD * 0.45
+      R_SOD_ij = R_SOD * 0.2 !0.45
     elseif ((i > 170) .and. ((j >= 1) .and. (j <= 63))) then
-      R_SOD_ij = R_SOD * 0.05
+      R_SOD_ij = R_SOD * 0.05 !0.05
     elseif (((i > 134) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
-      R_SOD_ij = R_SOD * 0.05
+      R_SOD_ij = R_SOD * 0.05 !0.05
     else
       R_SOD_ij = R_SOD
     end if
@@ -549,6 +549,7 @@ SUBROUTINE sourcePOC (kwq, lwq)
   real :: R_resusp_ij
   real :: decomp_poc_sed
   integer :: i, j
+  real :: taub, ustar, taucr_poc
 
   depositionPOC = 0.0
   resuspensionPOC = 0.0
@@ -569,16 +570,19 @@ SUBROUTINE sourcePOC (kwq, lwq)
 
   ! ... Calculate deposition of POC only in the bottom layer
   IF (kwq .eq. kmz(lwq)) THEN
-    depositionPOC = vspoc * tracerpp(kwq,lwq,LPOC)
-    ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3] 
+    call tauBottom(taub, ustar, kwq, lwq)
+    taucr_poc = 0.01
+    depositionPOC = vspoc * tracerpp(kwq,lwq,LPOC) * max(0.0, (1 - taub / taucr_poc))
+    ! depositionPOC = 0.0 ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3] 
     ! ... Calculate resusupension of POC only in the bottom layer
-    resuspensionPOC = R_resusp * tracerpp(kwq,lwq,LPOC)
+    resuspensionPOC = R_resusp * tracerpp(kwq, lwq, LPOC) * max(0.0, (taub / taucr_poc - 1))
+    ! resuspensionPOC = 0.0
     ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
     if (depositionPOC .gt. (tracerpp(kwq, lwq, LPOC) * hp(kwq, lwq) / dt)) then
       depositionPOC = tracerpp(kwq, lwq, LPOC) * hp(kwq, lwq) / dt
     end if
 
-    decomp_poc_sed = (1 / 1000) * R_decom_poc * (Theta_decom ** (salp(kwq + 1, lwq) - 20.0)) * tracerpp(kwq + 1, lwq, LPOC) * hpp(kwq + 1, lwq)
+    ! decomp_poc_sed = (1 / 1000) * R_decom_poc * (Theta_decom ** (salp(kwq + 1, lwq) - 20.0)) * tracerpp(kwq + 1, lwq, LPOC) * hpp(kwq + 1, lwq)
     ! sourcesink(kwq + 1, lwq, LPOC) = sourcesink(kwq + 1, lwq, LPOC) !- decomp_poc_sed + depositionPOC - resuspensionPOC
   END IF
 
@@ -695,6 +699,7 @@ SUBROUTINE sourceALG1(kwq, lwq)
   REAL::  mu1, f_L1, f_T, f_N, f_P, N_conc
   REAL::  growth1, mort1, graz1, deposi1, resus1
   REAL::  Tmax1, Tmin1
+  real :: taub, ustar, taucr_alg1
 
   deposi1 = 0.0
   resus1 = 0.0
@@ -783,14 +788,18 @@ SUBROUTINE sourceALG1(kwq, lwq)
   END IF
 
   if (kwq .eq. kmz(lwq)) then
+    call tauBottom(taub, ustar, kwq, lwq)
+    taucr_alg1 = 0.005
     !. . Calculate deposition
-    deposi1 = vspa * tracerpp(kwq,lwq,LALG1)
+    deposi1 = vspa * tracerpp(kwq,lwq,LALG1) * max(0.0, (1 - taub / taucr_alg1))
+    ! deposi1 = 0.0
     ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3] 
     if (deposi1 .gt. (tracerpp(kwq, lwq, LALG1) * hp(kwq, lwq) / dt)) then
       deposi1 = tracerpp(kwq, lwq, LALG1) * hp(kwq, lwq) / dt
     end if 
     !. . Calculate resuspension
-    resus1 = R_settl * tracerpp(kwq, lwq, LALG1)
+    resus1 = R_settl * tracerpp(kwq, lwq, LALG1) * max(0.0, (taub / taucr_alg1 - 1))
+    ! resus1 = R_settl * tracerpp(kwq, lwq, LALG1) 
     ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
   end if
 
