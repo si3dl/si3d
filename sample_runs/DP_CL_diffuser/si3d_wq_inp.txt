@@ -3,6 +3,7 @@ Clear Lake WQ
 ====================================================
 List of tracers simulated 
 ------------------------------------------------------------------------
+ iTR             !       1            ! Tracer zero,                    TR
  iDO             !       1            ! Dissolved Oxygen,               DO
  iPON            !       1            ! Particulate Organic Nitrogen,   PON
  iDON            !       1            ! Dissolved Organic Nitrogen,     DON 
@@ -27,12 +28,12 @@ Model Constants
 ------------------------------------------------------------------
  rnc             !      0.151         ! Ratio N:C (16:106)
  rpc             !      0.010         ! Ratio P:C  (1:106)
- roc             !      1.000         ! Ratio of O:C in photosynthesis and respiration (32/12)
- ron             !      1.000         ! Ratio of O:N in nitrification (32/14). 
- KSOD            !      1.000         ! Half-saturation const. for sediment oxygen demand (mg/m3)
- KDECMIN         !      1.000         ! Half-saturation const. for decomposition adn mineralization (mg/m3)
- KSED            !      1.000         ! Half-saturation const. for nutrient sediment flux (mg/m3)
- KNIT            !      1.000         ! Half-saturation const. for nitrification (mg/m3)
+ roc             !      0.010         ! Ratio of O:C in photosynthesis and respiration (32/12)
+ ron             !      0.010         ! Ratio of O:N in nitrification (32/14). 
+ KSOD            !      0.010         ! Half-saturation const. for sediment oxygen demand (mg/m3)
+ KDECMIN         !      0.010         ! Half-saturation const. for decomposition adn mineralization (mg/m3)
+ KSED            !      0.010         ! Half-saturation const. for nutrient sediment flux (mg/m3)
+ KNIT            !      0.010         ! Half-saturation const. for nitrification (mg/m3)
  KSN             !     70.000         ! Half-saturation const. for N uptake by algae (mg/m3)
  KSP             !     20.000         ! Half-saturation const. for P uptake by algae mg/m3)
  FNH4            !      0.250         ! Algae preference factor for NH4

@@ -2,7 +2,8 @@ all:
 	mpif90 -qopenmp -module $(MODDIR) -I/$(INCDIR) nspcg.f PlumeModels.f si3d_types.f90 si3d_ecomod.f90 si3d_utils.f90 si3d_boundaryconditions.f90 si3d_mixing.f90 si3d_procedures.f90 si3d.f90 -c -static-intel
 	mpif90 -qopenmp -o psi3d *.o -module $(MODDIR) -I/$(INCDIR) -L/$(LIBDIR) -lturbulence_prod -lutil_prod -static-intel
 omp:
-	ifort -qopenmp -qopenmp-link=static -module $(MODDIR) -I$(INCDIR) nspcg.f PlumeModels.f si3d_types.f90 si3d_stwave.f90 si3d_sed.f90 si3d_Hg.f90 si3d_wq.f90 si3d_ecomod.f90 si3d_utils.f90 si3d_boundaryconditions.f90 si3d_mixing.f90 si3d_procedures.f90 si3d.f90 -c -static-intel
+	ifort -qopenmp -qopenmp-link=static -extend-source 132 -heap-arrays 1000 -module $(MODDIR) -I$(INCDIR) nspcg.f PlumeModels.f -c -static-intel
+	ifort -qopenmp -qopenmp-link=static -heap-arrays 1000 -module $(MODDIR) -I$(INCDIR) si3d_types.f90 si3d_stwave.f90 si3d_sed.f90 si3d_Hg.f90 si3d_wq.f90 si3d_ecomod.f90 si3d_utils.f90 si3d_boundaryconditions.f90 si3d_mixing.f90 si3d_procedures.f90 si3d.f90 -c -static-intel
 	ifort -qopenmp -qopenmp-link=static -o psi3d *.o -module $(MODDIR) -I$(INCDIR) -L$(LIBDIR) -lturbulence_prod -lutil_prod -static-intel
 sec:
 	ifort -qopenmp -module $(MODDIR) -I/$(INCDIR) nspcg.f PlumeModels.f si3d_types.f90 si3d_ecomod.f90 si3d_boundaryconditions.f90 si3d_mixing.f90 si3d_procedures.f90 si3d.f90 -c -O2 -static-intel

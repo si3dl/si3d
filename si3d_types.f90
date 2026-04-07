@@ -303,10 +303,21 @@
    REAL    :: k4sod      ! 5.7870E-6 ! g/m2/s
    REAL(8) :: salamb     ! Vars. for generalized version of plume model
    REAL(8) :: patm       ! Vars. for generalized version of plume model
-   REAL   , ALLOCATABLE, DIMENSION(:    )  :: lambda ! Plume width
-   REAL   , ALLOCATABLE, DIMENSION(:    )  :: diammb ! Initial diammeter of bubbles
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: lambdanot ! Plume width
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: diammb ! Initial diammeter of bubbles
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: lnot ! Plume length
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: alphai    ! Entrainment coefficient inner plume (-)
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: alphao    ! Entrainment coefficient outer plume (-)
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: alphaa    ! Entrainment coefficient from ambient (-)
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: lambda    ! Fraction of plume occupied by bubble (-)
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: froudei   ! Froude number inner plume
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: froudeo   ! Froude number outer plume
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: gammap
+   REAL(8), DIMENSION (35000,9) :: innerplume
+   REAL(8), DIMENSION (35000,9) :: outerplume
    INTEGER, ALLOCATABLE, DIMENSION(:    )  :: kdetr          ! k for detrainment cell
-   INTEGER, ALLOCATABLE, DIMENSION(:    )  :: idetr          ! How detrainment is modelled in diffuser devices
+   INTEGER, ALLOCATABLE, DIMENSION(:    )  :: ktopsave       ! k for top of plume (saved per PSS point)
+   REAL   , ALLOCATABLE, DIMENSION(:    )  :: idetr          ! How detrainment is modelled in diffuser devices 
    REAL   , ALLOCATABLE, DIMENSION(:    )  :: dfL            ! Diffuser length (device)
 
    ! ... Variables for boundary conditions as point sources and sinks BCasPSS
@@ -366,6 +377,7 @@
    ! **************************** ECOMOD - Si3D ******************************************
    ! ---------------------- Water Quality Module (WQM) -----------------------------------
    ! ... Integer switches to deterimine if constituent is modeled
+   INTEGER :: iTR       ! Passive tracer
    INTEGER :: iDO       !< Dissolved Oxygen
    INTEGER :: iPON      !< Particulate Organic Nitrogen
    INTEGER :: iDON      !< Dissolved Organic Nitrogen
@@ -383,7 +395,7 @@
    INTEGER :: iALG5     !< Algae-5, PhytoC5
 
    ! ... Integer to determine index of constituent within tracer matrix
-   INTEGER :: LDO , LPON, LDON, LNH4, LNO3, LPOP, LDOP, LPO4
+   INTEGER :: LTR, LDO , LPON, LDON, LNH4, LNO3, LPOP, LDOP, LPO4
    INTEGER :: LDOC, LPOC, LALG1, LALG2, LALG3, LALG4, LALG5
 
    ! ... Model Constants - read from input file and many used for calibration

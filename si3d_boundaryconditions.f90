@@ -4158,6 +4158,7 @@ SUBROUTINE surfbc0
    ! ... Surface boundary conditions set to constant values (no heat flux)
    CASE (0)
 
+     Pa = 96554.0  ! Standard atmospheric pressure (Pa) - required by DO saturation formula
      RETURN
 
    ! .... Surface boundary conditions read from files - PRE-PROCESS mode

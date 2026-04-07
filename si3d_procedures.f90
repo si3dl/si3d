@@ -1397,7 +1397,7 @@ SUBROUTINE matmom ( ieq, t_matmom2,Bstart, Bend, Bex,Beagx,Bearx,Bagx,Barx,Beagy
                     ! ... Strength of Source - here it is assumed that
                     !     only half of the flow shows up in the control volume
                     !     used in the momentum equation -> factor 2 below
-                    Usource = ABS(Qpss(k,inn))/(dx*dy*hup(k,l))*twodt1/2.
+                    !Usource = ABS(Qpss(k,inn))/(dx*dy*hup(k,l))*twodt1/2.
                     IF(ptype(iodev(inn)) == -2) Usource = 1.E2
                     ! ... Velocity of the source in N direction (positive
                     !     towards north if a source; negative or towards south if
@@ -4375,6 +4375,7 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
    !.....Local variables.....
    REAL :: twodt1, Osource, Qsource
    INTEGER :: i, j, k, l, k1s, kms, kt, nwlayers, inn, kk, noc,liter,innH
+   REAL :: mass_clipped
    REAL, DIMENSION (1:km1) :: hn
    REAL, DIMENSION (3,1:km1) :: aa
    REAL, DIMENSION (1:km) :: ds
@@ -4387,6 +4388,7 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
 
    ! ... Constants used in solution
    twodt1 = twodt*tz
+   !mass_clipped = 0
 
    !.....Loop over interior sal-pts to solve for
    !     matrix from the active scalar equation.....
@@ -4438,7 +4440,7 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
          ENDDO
 
          ! ... Modify transport eqs. to accont for sources & sinks. ONLY FOR OXYGEN TRACER iDO = 1. ACC 03/06/2026 is coupling the WQ and oxygen plume modules
-         IF(iDO == 1 .AND. nt == LDO) THEN
+         IF(ecomod == 0 .OR. (iDO == 1 .AND. nt == LDO) .OR. (iTR == 1 .AND. nt == LTR)) THEN
          
            ! ACC prints to confirm the coupling exists only for DO
            !IF (i == 73 .AND. j == 183) THEN
@@ -4453,9 +4455,9 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
                DO k = k1s, kms
                  IF (ABS(Qpss(k,inn))<1.E-10) CYCLE
 
-                 Qsource  = Qpss(k,inn)/(dx*dy)  ! Inflow per unit area (m/s)
-                 Osource  = Rpss(k,inn,nt)       ! Concentration (kg/m3)               ! ACC This is the only time when the sink-source Rpss term is used
-                 ds(k)=ds(k)+Qsource*Osource     ! kg/m2/s = conc.* thickness / time
+                 Qsource  = Qpss(k,inn)/(dx*dy)  ! Inflow per unit area [m/s] = [m3/s] / [m2]
+                 Osource  = Rpss(k,inn,nt)       ! Concentration (g/m3)               ! ACC This is the only time when the sink-source Rpss term is used
+                 ds(k)=ds(k)+Qsource*Osource     ! g/m2/s = conc.* thickness / time
                   ! ACC prints to confirm the coupling exists only for DO
                   !IF (i == 73 .AND. j == 183 .AND. k == kms-2) THEN
                   !  PRINT *, 'Osource = ',Osource
@@ -4489,13 +4491,19 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
 
       do k = k1-1, kms+1
         if (tracer(k, l, nt) .lt. 0.0) then
+           ! Acumular masa truncada (diagnóstico)
+           mass_clipped = mass_clipped - tracer(k, l, nt) * hpp(k,l) * dx * dy
           tracer(k, l, nt) = 0.0
         end if 
       end do
 
+   
    !.....End loop over scalar-pts.....
    END DO
 
+   ! --- Diagnóstico de masa truncada --- ACC mass balance
+   !PRINT *, 'mass_clipped = ',mass_clipped
+     
    !.....Compute CPU time spent in subroutine.....
    etime = TIMER(0.0)
    t_salin = t_salin + (etime - btime)

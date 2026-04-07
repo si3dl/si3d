@@ -67,13 +67,13 @@
    IF (idbg == 1) PRINT *, " Before entry to SUB surfbc0"
    CALL surfbc0
 
-   nn=1                               !MAC BEZNAR
-   Ifile = "nbofilei0    "
+   !nn=1                               !MAC BEZNAR
+   !Ifile = "nbofilei0    "
 
-   IF ( nn < 10 ) WRITE ( Ifile(10:12), FMT='(I1,"  ")' ) nn
-   IF ( nn>= 10 ) WRITE ( Ifile( 9:12), FMT='(I2,"  ")' ) nn
+   !IF ( nn < 10 ) WRITE ( Ifile(10:12), FMT='(I1,"  ")' ) nn
+   !IF ( nn>= 10 ) WRITE ( Ifile( 9:12), FMT='(I2,"  ")' ) nn
 
-   OPEN(unit=iboid,file=Ifile,FORM='FORMATTED',IOSTAT=ios)
+   !OPEN(unit=iboid,file=Ifile,FORM='FORMATTED',IOSTAT=ios)
 
    !i = 0
    !   DO l=1,cm1
@@ -395,36 +395,36 @@
       !$omp barrier
       IF(omp_get_thread_num ( )==0)THEN
 
-      IF(itype(1) .EQ. 4) THEN
-      ! ... Water Surface Elevation --> mass                                !ACC BEZNAR
-         dzino = 0.0E0
-         DO j = j1,jm;
-           DO i = i1, im
-             IF (.NOT. mask2d(i,j)) CYCLE
-             ! ... Get l- from (i,j)
-             lcon   = ij2l(i,j)
-             ! ... Add water surface displacements
-             dzino = dzino + s(lcon)
-             print *, "lcon", lcon, "s", s(lcon)
-           ENDDO
-         ENDDO
-
-         uflow = 0.0E0
-
-         ifrontera  = isbc(1)-5;
-         js = jsbc(1)  ;
-         je = jebc(1)  ;
-         DO j = js, je
-            IF (.NOT. mask2d(ifrontera,j)) CYCLE
-            lcon2 = ij2l(ifrontera,j)
-            DO k= k1, kmz(lcon2)
-                uflow = uflow + uh(k,lcon2)
-            PRINT *, "lcon2", lcon2, "uh", uh(k,lcon2),"i",ifrontera,"j",j,"k",k
-            END DO
-         END DO
-
-       WRITE (UNIT=iboid, FMT='(5E20.11)') thrs, uflow, dzino*dx*dy         !ACC BEZNAR
-      END IF
+      !IF(itype(1) .EQ. 4) THEN
+      !! ... Water Surface Elevation --> mass                                !ACC BEZNAR
+      !   dzino = 0.0E0
+      !   DO j = j1,jm;
+      !     DO i = i1, im
+      !       IF (.NOT. mask2d(i,j)) CYCLE
+      !       ! ... Get l- from (i,j)
+      !       lcon   = ij2l(i,j)
+      !       ! ... Add water surface displacements
+      !       dzino = dzino + s(lcon)
+      !       print *, "lcon", lcon, "s", s(lcon)
+      !     ENDDO
+      !   ENDDO
+      !
+      !   uflow = 0.0E0
+      !
+      !   ifrontera  = isbc(1)-5;
+      !   js = jsbc(1)  ;
+      !   je = jebc(1)  ;
+      !   DO j = js, je
+      !      IF (.NOT. mask2d(ifrontera,j)) CYCLE
+      !      lcon2 = ij2l(ifrontera,j)
+      !      DO k= k1, kmz(lcon2)
+      !          uflow = uflow + uh(k,lcon2)
+      !      PRINT *, "lcon2", lcon2, "uh", uh(k,lcon2),"i",ifrontera,"j",j,"k",k
+      !      END DO
+      !   END DO
+      !
+      ! WRITE (UNIT=iboid, FMT='(5E20.11)') thrs, uflow, dzino*dx*dy         !ACC BEZNAR
+      !END IF
 
       !.....Output results.....
     3 IF((nnodes > 0) .AND. (MOD(n,MAX(ipt,  1)) == 0)) CALL outt(n,thrs)

@@ -426,7 +426,7 @@ SUBROUTINE WQinput
 
   !. . Read list of tracerpps modeled: Dissolved oxygen, N forms, P forms, C forms 
 
-  READ (UNIT=i99,FMT='(///(18X,I20))',IOSTAT=ios) iDO,  &
+  READ (UNIT=i99,FMT='(///(18X,I20))',IOSTAT=ios) iTR,iDO,  &
       iPON, iDON, iNH4, iNO3, iPOP, iDOP, iPO4, iPOC,   &
       iDOC, iALG1, iALG2, iALG3, iALG4, iALG5, iMeHg, iHgII,    &
       iHg0, iSS 
@@ -878,7 +878,7 @@ SUBROUTINE WQinit
   tracerpplocal = 0
 
   !. . Initialize constituent locations
-  LDO =0; LPON=0; LDON=0; LNH4=0; LNO3=0; LPOP=0; LDOP=0; LPO4=0
+  LTR = 0; LDO =0; LPON=0; LDON=0; LNH4=0; LNO3=0; LPOP=0; LDOP=0; LPO4=0
   LALG1=0; LALG2=0; LALG3=0; LALG4=0; LALG5=0; LDOC=0; LPOC=0;
   LSS1 = 0; LSS2 = 0; LSS3 = 0; LHg0 = 0; LMeHg = 0; LHgII = 0
 
@@ -913,7 +913,7 @@ SUBROUTINE WQinit
   print*, 'Constituents to model:'
   print*, tracer_list(:)
 
-  ver = iDO + iPON + iDON + iNH4 + iNO3 + iPOP + iDOP + iPO4 + iPOC + iDOC + iALG1 + iALG2 + iALG3 + iALG4 + iALG5 + (sedNumber * iSS) + iMeHg + iHg0 + iHgII
+  ver = iTR + iDO + iPON + iDON + iNH4 + iNO3 + iPOP + iDOP + iPO4 + iPOC + iDOC + iALG1 + iALG2 + iALG3 + iALG4 + iALG5 + (sedNumber * iSS) + iMeHg + iHg0 + iHgII
   if (ver .ne. ntr) then
     print*, 'ERROR - Number of tracers to model does '
     print*, ' not match list of tracer simulated in  '
@@ -922,7 +922,9 @@ SUBROUTINE WQinit
   end if
 
   do i = 1, ntr
-    if ((tracer_list(i) == 'DO') .and. (iDO == 1)) then
+    if ((tracer_list(i) == 'TR') .and. (iTR == 1)) then
+      LTR = i
+    else if ((tracer_list(i) == 'DO') .and. (iDO == 1)) then
       LDO = i
     else if ((tracer_list(i) == 'PON') .and.(iPON == 1)) then
       LPON = i
@@ -973,6 +975,7 @@ SUBROUTINE WQinit
   end do
 
   IF (idbg == 1) THEN
+    PRINT*,'LTR  = ', LTR
     PRINT*,'LDO  = ', LDO
     PRINT*,'LPON = ', LPON
     PRINT*,'LDON = ', LDON
