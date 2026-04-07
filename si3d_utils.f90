@@ -1168,7 +1168,7 @@ SUBROUTINE outt(n,thrs)
    INTEGER, SAVE :: i10, i30, i60
    LOGICAL, SAVE :: first_entry = .TRUE.
    REAL, DIMENSION(km1) :: zlevel_export
-   integer :: km_tot
+   integer :: km_tot, km_exp
 
    !.....Timing.....
    REAL, EXTERNAL :: TIMER
