@@ -1155,86 +1155,86 @@ SUBROUTINE outt(n,thrs)
 !
 !-----------------------------------------------------------------------
 
-   INTEGER,INTENT(IN) :: n
-   REAL, INTENT(IN) :: thrs
+  INTEGER,INTENT(IN) :: n
+  REAL, INTENT(IN) :: thrs
 
-   !.....Local variables.....
-   CHARACTER :: date*8, time*10, zone*5
-   CHARACTER(LEN=9)  :: nodeno    ="         "
-   CHARACTER(LEN=15) :: filenm    ="               "
-   REAL :: qu, stidal, tdays
-   INTEGER, DIMENSION(8)     :: values
-   INTEGER :: nn, i, j, k, l, kkk, itdays, ios, nchar, it, laux
-   INTEGER, SAVE :: i10, i30, i60
-   LOGICAL, SAVE :: first_entry = .TRUE.
-   REAL, DIMENSION(km1) :: zlevel_export
-   integer :: km_tot, km_exp
+  !.....Local variables.....
+  CHARACTER :: date*8, time*10, zone*5
+  CHARACTER(LEN=9)  :: nodeno    ="         "
+  CHARACTER(LEN=15) :: filenm    ="               "
+  REAL :: qu, stidal, tdays
+  INTEGER, DIMENSION(8)     :: values
+  INTEGER :: nn, i, j, k, l, kkk, itdays, ios, nchar, it, laux
+  INTEGER, SAVE :: i10, i30, i60
+  LOGICAL, SAVE :: first_entry = .TRUE.
+  REAL, DIMENSION(km1) :: zlevel_export
+  integer :: km_tot, km_exp
 
-   !.....Timing.....
-   REAL, EXTERNAL :: TIMER
-   REAL :: btime, etime
-   btime = TIMER(0.0)
+  !.....Timing.....
+  REAL, EXTERNAL :: TIMER
+  REAL :: btime, etime
+  btime = TIMER(0.0)
 
-   !.....Open timefiles on first entry into the subroutine.....
-   IF( first_entry ) THEN
-      first_entry = .FALSE.
-      DO nn = 1, nnodes
+  !.....Open timefiles on first entry into the subroutine.....
+  IF( first_entry ) THEN
+    first_entry = .FALSE.
+    DO nn = 1, nnodes
 
-         i = inode(nn)
-         j = jnode(nn)
+      i = inode(nn)
+      j = jnode(nn)
 
-         ! Convert node numbers to a character variable
-         CALL nodech ( i, j, nodeno, nchar )
+      ! Convert node numbers to a character variable
+      CALL nodech ( i, j, nodeno, nchar )
 
-         ! Name the standard si3d timefile
-         filenm = 'tf'//nodeno(1:nchar)//'.txt'
+      ! Name the standard si3d timefile
+      filenm = 'tf'//nodeno(1:nchar)//'.txt'
 
-         ! Open the timefile
-         i60 = i6 + nn    ! Use file numbers 61-80
-         OPEN ( UNIT=i60, FILE=filenm, IOSTAT=ios )
-         IF(ios /= 0) CALL open_error ( "Error opening "//filenm, ios )
+      ! Open the timefile
+      i60 = i6 + nn    ! Use file numbers 61-80
+      OPEN ( UNIT=i60, FILE=filenm, IOSTAT=ios )
+      IF(ios /= 0) CALL open_error ( "Error opening "//filenm, ios )
 
-         !.....Get date and time of run.....
-         CALL date_and_time ( date, time, zone, values )
+      !.....Get date and time of run.....
+      CALL date_and_time ( date, time, zone, values )
 
-         !.....Output run title and column headings for standard si3d format.....
-         WRITE (UNIT=i60, FMT='(A)') title
-         WRITE (UNIT=i60, FMT='("Run number = ", A8, A4,                      &
-                 & ",  Start date of run:  ",I2,                              &
-                 & "/",I2,"/",I4," at ",I4.4," hours")') date,time(1:4),      &
-                 & imon,iday,iyr,ihr
-         IF (idt .GE. 0.01 .AND. ddz .GE. 0.01) THEN ! idt real
-           WRITE (UNIT=i60, FMT=1) i,j,(kmz(ij2l(i,j))-k1+1),idt,hhs(ij2l(i,j)),ddz,         &
-                                    & iexplt,itrap,cd,ismooth,beta,niter,iextrp, &
-                                    & f,tramp,iupwind
-         ELSE ! idt real
-           WRITE (UNIT=i60, FMT=8) i,j,(kmz(ij2l(i,j))-k1+1),idt,hhs(ij2l(i,j)),ddz,         &
-                                    & iexplt,itrap,cd,ismooth,beta,niter,iextrp, &
-                                    & f,tramp,iupwind
-         ENDIF ! idt real
-       1 FORMAT( "i =",I4,"  j =",I4, "  km =", I4,"   dt =",F5.2," sec",     & ! idt real
-                  & "  hhs =", F6.3," m","   dz =", F5.2," m"/                & ! idt real
-                  & "iexplt =",I2, "  itrap =", I2, "  cd = ", F7.4, 2X,      &
-                  & "ismooth =", I2, "  beta =", F6.3," niter =", I2/         &
-                  & "iextrp =",  I2, "  f =", F7.4, "  tramp=", F9.1, 2X,     &
-                  & "iupwind =", I2 )
-       8 FORMAT( "i =",I4,"  j =",I4, "  km =", I4,"   dt =",F5.4," sec",     & ! idt real
-                  & "  hhs =", F6.3," m","   dz =", F5.4," m"/                & ! idt real
-                  & "iexplt =",I2, "  itrap =", I2, "  cd = ", F7.4, 2X,      &
-                  & "ismooth =", I2, "  beta =", F6.3," niter =", I2/         &
-                  & "iextrp =",  I2, "  f =", F7.4, "  tramp=", F9.1, 2X,     &
-                  & "iupwind =", I2 )
-         WRITE (UNIT=i60, FMT=2)
-       2 FORMAT( 1X,"   time     ","  step     ","  zeta ","   depth   " &
-                    "    u       ","  v      "," w       ",              &
-                    "   Av       ","        Dv      ","  scalar","              Tracers -> " )
-         WRITE (UNIT=i60, FMT=3)
-       3 FORMAT( 1X,"    hrs     ","   no      ","   cm       "," m    " &
-                    "   cm/s   "  ,"   cm/s   " ,"  cm/s      " ,      &
-                    " cm2/s      ","     cm2/s","          oC","                  M/V ->" )
+      !.....Output run title and column headings for standard si3d format.....
+      WRITE (UNIT=i60, FMT='(A)') title
+      WRITE (UNIT=i60, FMT='("Run number = ", A8, A4,                      &
+              & ",  Start date of run:  ",I2,                              &
+              & "/",I2,"/",I4," at ",I4.4," hours")') date,time(1:4),      &
+              & imon,iday,iyr,ihr
+      IF (idt .GE. 0.01 .AND. ddz .GE. 0.01) THEN ! idt real
+        WRITE (UNIT=i60, FMT=1) i,j,(kmz(ij2l(i,j))-k1+1),idt,hhs(ij2l(i,j)),ddz,         &
+                                & iexplt,itrap,cd,ismooth,beta,niter,iextrp, &
+                                & f,tramp,iupwind
+      ELSE ! idt real
+        WRITE (UNIT=i60, FMT=8) i,j,(kmz(ij2l(i,j))-k1+1),idt,hhs(ij2l(i,j)),ddz,         &
+                                & iexplt,itrap,cd,ismooth,beta,niter,iextrp, &
+                                & f,tramp,iupwind
+      ENDIF ! idt real
+    1 FORMAT( "i =",I4,"  j =",I4, "  km =", I4,"   dt =",F5.2," sec",     & ! idt real
+              & "  hhs =", F6.3," m","   dz =", F5.2," m"/                & ! idt real
+              & "iexplt =",I2, "  itrap =", I2, "  cd = ", F7.4, 2X,      &
+              & "ismooth =", I2, "  beta =", F6.3," niter =", I2/         &
+              & "iextrp =",  I2, "  f =", F7.4, "  tramp=", F9.1, 2X,     &
+              & "iupwind =", I2 )
+    8 FORMAT( "i =",I4,"  j =",I4, "  km =", I4,"   dt =",F5.4," sec",     & ! idt real
+              & "  hhs =", F6.3," m","   dz =", F5.4," m"/                & ! idt real
+              & "iexplt =",I2, "  itrap =", I2, "  cd = ", F7.4, 2X,      &
+              & "ismooth =", I2, "  beta =", F6.3," niter =", I2/         &
+              & "iextrp =",  I2, "  f =", F7.4, "  tramp=", F9.1, 2X,     &
+              & "iupwind =", I2 )
+      WRITE (UNIT=i60, FMT=2)
+    2 FORMAT( 1X,"   time     ","  step     ","  zeta ","   depth   " &
+                "    u       ","  v      "," w       ",              &
+                "   Av       ","        Dv      ","  scalar","              Tracers -> " )
+      WRITE (UNIT=i60, FMT=3)
+    3 FORMAT( 1X,"    hrs     ","   no      ","   cm       "," m    " &
+                "   cm/s   "  ,"   cm/s   " ,"  cm/s      " ,      &
+                " cm2/s      ","     cm2/s","          oC","                  M/V ->" )
 
-      END DO
-   END IF
+    END DO
+  END IF
 
   !.....Output values at time step  n  to timefile(s).....
   DO nn = 1, nnodes
