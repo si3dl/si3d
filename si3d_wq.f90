@@ -42,6 +42,8 @@ SUBROUTINE sourceDO(kwq,lwq)
   OS = EXP(lnos)
   
 
+  !PRINT *, 'tracerpp(kwq,lwq,LDO) inside sourceDO = ',tracerpp(kwq,lwq,LDO)
+
   ! Correct for Patmospheric (Pa - declared in si3d_types and defined in surfbc0)
 
   Patm   = Pa * 0.00000986923; ! Transform atmospheric pressure from Pa to atm
@@ -51,14 +53,14 @@ SUBROUTINE sourceDO(kwq,lwq)
   &                    6.436*1E-8 * salp(kwq,lwq)**2.
   OS = OS*Patm*((1-Pwv/Patm) *(1-theta2*Patm))&
   &           /((1-Pwv)*(1-theta2) )
-  OS = OS*1000 ! Units: [mg/m3]
+  OS = OS ! Units: [mg/m3]
 
 
   ! ...Calculate reaeration only at the lake surface
   ! for now using constant reaeration defined in wq_inp, but in future, can have
   ! alternatives for reaeration rates. 
   IF (kwq .eq. k1z(lwq)) THEN
-     reaeration  = R_reaer*(OS - (tracerpp(kwq,lwq,LDO)* 1000)) 
+     reaeration  = R_reaer*(OS - (tracerpp(kwq,lwq,LDO))) 
      ! Units: [mg/m^2/s] = [m/s] * [mg/m^3]
   ELSE
      reaeration  = 0.0
@@ -66,10 +68,10 @@ SUBROUTINE sourceDO(kwq,lwq)
 
   ! ...Calculate the sediment oxygen demand from the sediments (only bottom cell)
   IF (kwq .eq. kmz(lwq)) THEN
-     !f_SOD = (tracerpp(kwq,lwq,LDO)*1000) /(KSOD + (tracerpp(kwq,lwq,LDO)*1000) ) ! DO inhibition of sediment oxygen demand. 
+     f_SOD = (tracerpp(kwq,lwq,LDO)) /(KSOD + (tracerpp(kwq,lwq,LDO)) ) ! DO inhibition of sediment oxygen demand. 
      ! Units of KSDO need to be mg/m3
-     !sedoxydemand = R_SOD * f_SOD* (Theta_SOD**(salp(kwq,lwq) - 20)) 
-     sedoxydemand = R_SOD * (Theta_SOD**(salp(kwq,lwq) - 20)) 
+     sedoxydemand = R_SOD * f_SOD* (Theta_SOD**(salp(kwq,lwq) - 20)) 
+     !sedoxydemand = R_SOD * (Theta_SOD**(salp(kwq,lwq) - 20)) 
      ! Units: [mg/m^2/s] = [mg/m^2/s] * [-] * [-] 
   ELSE
      sedoxydemand = 0.0
@@ -104,12 +106,12 @@ SUBROUTINE sourcePON(kwq,lwq)
 
   !... Calculate decompositionN
     ! Calculate DO inhibition of decomposition
-    !IF (IDO == 1) THEN
-      !f_decom = (tracerpp(kwq,lwq,LDO)*1000) /(KDECMIN + (tracerpp(kwq,lwq,LDO)*1000) )  ! We assume that decomposition and mineralzation 
+    IF (IDO == 1) THEN
+      f_decom = (tracerpp(kwq,lwq,LDO)) /(KDECMIN + (tracerpp(kwq,lwq,LDO)) )  ! We assume that decomposition and mineralzation 
                                                                            ! half-saturation values are very similar
-    !ELSE
+    ELSE
       f_decom = 1.0
-    !END IF
+    END IF
   decompositionPON = R_decom_pon * f_decom * (Theta_decom**(salp(kwq,lwq) - 20.0)) *tracerpp(kwq,lwq,LPON) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] = [1/s] * [-] * [-] * [mg/m^3] * [m]
 
@@ -163,11 +165,11 @@ SUBROUTINE sourceDON(kwq,lwq)
 
   !. . Mineralization by bacteria
     ! Calculate DO inhibition of mineralization
-    !IF (IDO == 1) THEN
-    !  f_miner = (tracerpp(kwq,lwq,LDO)*1000) /(KDECMIN + (tracerpp(kwq,lwq,LDO)*1000) )
-    !ELSE
+    IF (IDO == 1) THEN
+     f_miner = (tracerpp(kwq,lwq,LDO)) /(KDECMIN + (tracerpp(kwq,lwq,LDO)) )
+    ELSE
       f_miner = 1.0
-    !END IF
+    END IF
   mineralizationDON = R_miner_don * f_miner * (Theta_miner**(salp(kwq,lwq) - 20.0)) *tracerpp(kwq,lwq,LDON) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] = [1/s] * [-] * [-] * [mg/m^3] * [m]
 
@@ -181,12 +183,12 @@ SUBROUTINE sourceDON(kwq,lwq)
 
   !. . .Add contribution from sediment flux to the bottom layer
   IF (kwq .eq. kmz(lwq)) THEN
-      !IF (IDO == 1) THEN
+      IF (IDO == 1) THEN
          ! Calculate DO inhibition of sediment flux
-         !f_sedflux = (tracerpp(kwq,lwq,LDO)*1000) /(KSED + (tracerpp(kwq,lwq,LDO)*1000) )
-      !ELSE
+         f_sedflux = (tracerpp(kwq,lwq,LDO)) /(KSED + (tracerpp(kwq,lwq,LDO)) )
+      ELSE
          f_sedflux = 1.0
-      !END IF
+      END IF
       sedfluxDON = SED_DON * f_sedflux* (Theta_sedflux**(salp(kwq,lwq) - 20))  
       ! Units: [mg/m^2/s] = [mg/m^2/s] * [-] * [-] 
   ELSE
@@ -229,11 +231,11 @@ SUBROUTINE sourceNH4(kwq,lwq)
 
   !. . . Calculate nitrification
     ! Calculate DO inhibition of nitrification
-    !IF (IDO == 1) THEN
-    !  f_nitrif = (tracerpp(kwq,lwq,LDO)*1000) /(KNIT + (tracerpp(kwq,lwq,LDO)*1000) )
-    !ELSE
+    IF (IDO == 1) THEN
+      f_nitrif = (tracerpp(kwq,lwq,LDO)) /(KNIT + (tracerpp(kwq,lwq,LDO)) )
+    ELSE
       f_nitrif = 1.0
-    !END IF
+    END IF
   nitrification = R_nitrif * f_nitrif * (Theta_nitrif**(salp(kwq,lwq) - 20.0)) * tracerpp(kwq,lwq,LNH4) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] = [1/s] * [-] * [-] * [mg/m^3] * [m]
 
@@ -247,12 +249,12 @@ SUBROUTINE sourceNH4(kwq,lwq)
 
   !. . . Add contribution from sediment flux to the bottom layer
   IF (kwq .eq. kmz(lwq)) THEN
-      !IF (IDO == 1) THEN
+      IF (IDO == 1) THEN
          ! Calculate DO inhibition of sediment flux
-      !   f_sedflux = (tracerpp(kwq,lwq,LDO)*1000) /(KSED + (tracerpp(kwq,lwq,LDO)*1000) )
-      !ELSE
+         f_sedflux = (tracerpp(kwq,lwq,LDO)) /(KSED + (tracerpp(kwq,lwq,LDO)) )
+      ELSE
          f_sedflux = 1.0
-      !END IF
+      END IF
       sedfluxNH4 = SED_NH4 * f_sedflux* (Theta_sedflux**(salp(kwq,lwq) - 20))  
       ! Units: [mg/m^2/s] = [mg/m^2/s] * [-] * [-]
   ELSE
@@ -314,12 +316,12 @@ SUBROUTINE sourceNO3(kwq,lwq)
 
   !. . . Add contribution from sediment flux to the bottom layer
   IF (kwq .eq. kmz(lwq)) THEN
-      !IF (IDO == 1) THEN
+      IF (IDO == 1) THEN
          ! Calculate DO inhibition of sediment flux
-      !   f_sedflux = (tracerpp(kwq,lwq,LDO)*1000) /(KSED + (tracerpp(kwq,lwq,LDO)*1000) )
-      !ELSE
+         f_sedflux = (tracerpp(kwq,lwq,LDO)) /(KSED + (tracerpp(kwq,lwq,LDO)) )
+      ELSE
          f_sedflux = 1.0
-      !END IF
+      END IF
       sedfluxNO3 = SED_NO3 * f_sedflux* (Theta_sedflux**(salp(kwq,lwq) - 20)) 
       ! Units: [mg/m^2/s] = [mg/m^2/s] * [-] * [-]
   ELSE
@@ -354,12 +356,12 @@ SUBROUTINE sourcePOP(kwq,lwq)
 
   !... Calculate decompositionPOP
     ! Calculate DO inhibition of decomposition
-    !IF (IDO == 1) THEN
-    !  f_decom = (tracerpp(kwq,lwq,LDO)*1000) /(KDECMIN + (tracerpp(kwq,lwq,LDO)*1000) )  ! We assume that decomposition and mineralzation 
-    !                                                                        ! half-saturation values are very similar
-    !ELSE
+    IF (IDO == 1) THEN
+      f_decom = (tracerpp(kwq,lwq,LDO)) /(KDECMIN + (tracerpp(kwq,lwq,LDO)) )  ! We assume that decomposition and mineralzation 
+                                                                            ! half-saturation values are very similar
+    ELSE
       f_decom = 1.0
-    !END IF
+    END IF
   decompositionPOP = R_decom_pop * f_decom * (Theta_decom**(salp(kwq,lwq) - 20.0)) *tracerpp(kwq,lwq,LPOP) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] = [1/s] * [-] * [-] * [mg/m^3] * [m]
 
@@ -412,11 +414,11 @@ SUBROUTINE sourceDOP(kwq, lwq)
 
   !. . Mineralization by bacteria
     ! Calculate DO inhibition of mineralization
-    !IF (IDO == 1) THEN
-    !  f_miner = (tracerpp(kwq,lwq,LDO)*1000) /(KDECMIN + (tracerpp(kwq,lwq,LDO)*1000) )
-    !ELSE
+    IF (IDO == 1) THEN
+      f_miner = (tracerpp(kwq,lwq,LDO)) /(KDECMIN + (tracerpp(kwq,lwq,LDO)) )
+    ELSE
       f_miner = 1.0
-    !END IF
+    END IF
   mineralizationDOP = R_miner_dop * f_miner * (Theta_miner**(salp(kwq,lwq) - 20.0)) *tracerpp(kwq,lwq,LDOP) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] = [1/s] * [-] * [-] * [mg/m^3] * [m]
 
@@ -430,12 +432,12 @@ SUBROUTINE sourceDOP(kwq, lwq)
 
   !. . .Add contribution from sediment flux to the bottom layer
   IF (kwq .eq. kmz(lwq)) THEN
-      !IF (IDO == 1) THEN
+      IF (IDO == 1) THEN
          ! Calculate DO inhibition of sediment flux
-      !   f_sedflux = (tracerpp(kwq,lwq,LDO)*1000) /(KSED + (tracerpp(kwq,lwq,LDO)*1000) )
-      !ELSE
+         f_sedflux = (tracerpp(kwq,lwq,LDO)) /(KSED + (tracerpp(kwq,lwq,LDO)) )
+      ELSE
          f_sedflux = 1.0
-      !END IF
+      END IF
       sedfluxDOP = SED_DOP * f_sedflux* (Theta_sedflux**(salp(kwq,lwq) - 20))  
       ! Units: [mg/m^2/s] =  [mg/m^2/s] * [-] * [-]
   ELSE
@@ -481,12 +483,12 @@ SUBROUTINE sourcePO4(kwq, lwq)
 
   !. . . Add contribution from sediment flux to the bottom layer
    IF (kwq .eq. kmz(lwq)) THEN
-      !IF (IDO == 1) THEN
+      IF (IDO == 1) THEN
          ! Calculate DO inhibition of sediment flux
-      !   f_sedflux = (tracerpp(kwq,lwq,LDO)*1000) /(KSED + (tracerpp(kwq,lwq,LDO)*1000) )
-      !ELSE
+         f_sedflux = (tracerpp(kwq,lwq,LDO)) /(KSED + (tracerpp(kwq,lwq,LDO)) )
+      ELSE
          f_sedflux = 1.0
-      !END IF
+      END IF
       sedfluxPO4 = SED_PO4 * f_sedflux* (Theta_sedflux**(salp(kwq,lwq) - 20))  
       ! Units: [mg/m^2/s] =  [mg/m^2/s] * [-] * [-]
   ELSE
@@ -519,12 +521,12 @@ SUBROUTINE sourcePOC (kwq, lwq)
 
   !... Calculate decompositionPOC
     ! Calculate DO inhibition of decomposition
-    !IF (IDO == 1) THEN
-    !  f_decom = (tracerpp(kwq,lwq,LDO)*1000) /(KDECMIN + (tracerpp(kwq,lwq,LDO)*1000) )  ! We assume that decomposition and mineralzation 
+    IF (IDO == 1) THEN
+      f_decom = (tracerpp(kwq,lwq,LDO)) /(KDECMIN + (tracerpp(kwq,lwq,LDO)) )  ! We assume that decomposition and mineralzation 
                                                                             ! half-saturation values are very similar
-    !ELSE
+    ELSE
       f_decom = 1.0
-    !END IF
+    END IF
   decompositionPOC = R_decom_poc * f_decom * (Theta_decom**(salp(kwq,lwq) - 20.0)) * tracerpp(kwq,lwq,LPOC) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [-] * [mg/m^3] * [m]
 
@@ -577,11 +579,11 @@ SUBROUTINE sourceDOC(kwq, lwq)
 
   !. . Mineralization of DO by bacteria into inorganic nutrients (there is biological oxygen demand)
     ! Calculate DO inhibition of mineralization
-    !IF (IDO == 1) THEN
-    !  f_miner = (tracerpp(kwq,lwq,LDO)*1000) /(KDECMIN + (tracerpp(kwq,lwq,LDO)*1000) )
-    !ELSE
+    IF (IDO == 1) THEN
+      f_miner = (tracerpp(kwq,lwq,LDO)) /(KDECMIN + (tracerpp(kwq,lwq,LDO)) )
+    ELSE
       f_miner = 1.0
-    !END IF
+    END IF
   mineralizationDOC = R_miner_doc * f_miner * (Theta_miner**(salp(kwq,lwq) - 20.0)) *tracerpp(kwq,lwq,LDOC) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [-] * [mg/m^3] * [m]
 
@@ -595,12 +597,12 @@ SUBROUTINE sourceDOC(kwq, lwq)
 
   !. . .Add contribution from sediment flux to the bottom layer
   IF (kwq .eq. kmz(lwq)) THEN
-      !IF (IDO == 1) THEN
+      IF (IDO == 1) THEN
          ! Calculate DO inhibition of sediment flux
-      !   f_sedflux = (tracerpp(kwq,lwq,LDO)*1000) /(KSED + (tracerpp(kwq,lwq,LDO)*1000) )
-      !ELSE
+         f_sedflux = (tracerpp(kwq,lwq,LDO)) /(KSED + (tracerpp(kwq,lwq,LDO)) )
+      ELSE
          f_sedflux = 1.0
-      !END IF
+      END IF
       sedfluxDOC = SED_DOC * f_sedflux* (Theta_sedflux**(salp(kwq,lwq) - 20))
       ! Units: [mg/m^2/s] =  [mg/m^2/s] * [-] * [-] 
   ELSE

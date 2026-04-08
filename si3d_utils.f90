@@ -4690,7 +4690,7 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
              
                !IF (ptype(nn)==6) THEN
                !  PRINT*, 'ptype6 Rpss diag: kdetr=',kdetr(inn),' Qpss(kdetr)=',Qpss(k,inn), &
-               !         ' trpss=',trpss(nn,itr),' Rsource=',Rsource                                  !ACC diag ptype6 (03/20/2026)
+               !         ' trpss=',trpss(nn,itr),' Rsource=',Rsource,', ITR =',itr,' tracerpp=',tracerpp(k,l,itr)                  !ACC diag ptype6 (03/20/2026)
                !ENDIF
                         
              Rpss(k,inn,itr) = Rsource ! Rpss conection plume <-> 3D
@@ -5045,6 +5045,18 @@ SUBROUTINE PointSourceSinkInput
      CLOSE (i52)
 
    ENDDO
+
+   ! ... ACC: Unit conversion FOR DO: tracer loads in pss files are in g/s, but the WQ module
+   !     (ecomod > 0) uses mg/m3 for all tracer concentrations. To maintain unit
+   !     consistency (sourcesink and Bex are both in mg/m2/s in the transport
+   !     equation), convert all tracer load columns in varspss from g/s to mg/s
+   !     (factor 1000). This propagates correctly through PointSourceSinkForcing
+   !     (time interpolation) and through PointSourceSinkSolve (Rpss calculation).
+   !     When ecomod == 0, tracers are in g/m3 and no conversion is needed.
+   IF (ecomod > 0 .AND. ntr > 0) THEN
+     varspss(:, 3:ntr+2, :) = varspss(:, 3:ntr+2, :) * 1000.0  ! g/s -> mg/s
+     trpss(:, :)             = trpss(:, :)             * 1000.0  ! g/s -> mg/s (initial values)
+   END IF
 
 END SUBROUTINE PointSourceSinkInput
 

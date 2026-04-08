@@ -4456,8 +4456,8 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
                  IF (ABS(Qpss(k,inn))<1.E-10) CYCLE
 
                  Qsource  = Qpss(k,inn)/(dx*dy)  ! Inflow per unit area [m/s] = [m3/s] / [m2]
-                 Osource  = Rpss(k,inn,nt)       ! Concentration (g/m3)               ! ACC This is the only time when the sink-source Rpss term is used
-                 ds(k)=ds(k)+Qsource*Osource     ! g/m2/s = conc.* thickness / time
+                 Osource  = Rpss(k,inn,nt)       ! Concentration: g/m3 (ecomod==0) or mg/m3 (ecomod>0, converted in PointSourceSinkInput)
+                 ds(k)=ds(k)+Qsource*Osource     ! [m/s * conc] = conc*m/s, consistent with Bex and sourcesink units
                   ! ACC prints to confirm the coupling exists only for DO
                   !IF (i == 73 .AND. j == 183 .AND. k == kms-2) THEN
                   !  PRINT *, 'Osource = ',Osource

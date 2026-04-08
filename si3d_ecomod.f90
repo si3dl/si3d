@@ -1025,7 +1025,7 @@ SUBROUTINE srcsnkWQ(n)
 
   !... Local variables
   INTEGER:: i, k, l, liter, k1s, kms, iteration
-  integer, intent(in) :: n 
+  integer, intent(in) :: n
 
   ! reset soursesink = 0
   sourcesink = 0.0
