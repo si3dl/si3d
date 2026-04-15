@@ -1255,6 +1255,7 @@ SUBROUTINE outt(n,thrs)
     uhout = -99.0
     scout = -99.0
     trout = -99.0
+    zlevel_export = -99.0
 
     if (ecomod .eq. 1) then
       km_exp = kmz(l) + 1
