@@ -1397,7 +1397,7 @@ SUBROUTINE matmom ( ieq, t_matmom2,Bstart, Bend, Bex,Beagx,Bearx,Bagx,Barx,Beagy
                     ! ... Strength of Source - here it is assumed that
                     !     only half of the flow shows up in the control volume
                     !     used in the momentum equation -> factor 2 below
-                    !Usource = ABS(Qpss(k,inn))/(dx*dy*hup(k,l))*twodt1/2.
+                    Usource = ABS(Qpss(k,inn))/(dx*dy*hup(k,l))*twodt1/2.
                     IF(ptype(iodev(inn)) == -2) Usource = 1.E2
                     ! ... Velocity of the source in N direction (positive
                     !     towards north if a source; negative or towards south if

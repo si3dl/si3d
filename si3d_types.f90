@@ -313,6 +313,7 @@
    REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: froudei   ! Froude number inner plume
    REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: froudeo   ! Froude number outer plume
    REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: gammap
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: frconot_dev  ! ACC 2026: fracción molar de O2 en gas del difusor (1.0=O2 puro, 0.21=aire)
    REAL(8), DIMENSION (35000,9) :: innerplume
    REAL(8), DIMENSION (35000,9) :: outerplume
    INTEGER, ALLOCATABLE, DIMENSION(:    )  :: kdetr          ! k for detrainment cell

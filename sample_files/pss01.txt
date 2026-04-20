@@ -25,6 +25,7 @@ lambda   !     0.52  ! Fraction of plume occupied by bubble (-)
 froudei  !     1.47  ! Froude number inner plume
 froudeo  !     0.14  ! Froude number outer plume
 gammap   !    1.298  !
+frconot  !     1.00  ! Mole fraction of O2 in diffuser gas (1.0=pure O2, 0.21=air)  ! ACC 2026
 salamb   !    330.0  ! Ambient salinity (uS/cm)
 patm     !  96554.0  ! Atmospheric pressure (pascals) (mm)
 k4sod    !     0.00  ! Sediment oxygen demand constant

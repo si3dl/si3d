@@ -1,0 +1,3164 @@
+DOUBLE PLUME SIMULATION ----------------------------                            
+Run number = 202604161250,  Start date of run:   7/ 9/2022 at 0300 hours
+
+ xl=     23900.0
+ yl=     19300.0
+ zl=      17.500
+ idx=    100.000
+ idy=    100.000
+ idz=      0.500
+ tl=    0.65E+06
+ idt=    20.    
+ dzmin=     0.50
+ zeta0=     0.00
+
+
+ itrap=         1
+ niter=         2
+ smooth=        0
+ beta=     0.0500
+ iturb=         1
+ Av0=      0.0010
+ Dv0=      0.0010
+ iadv=          1
+ trmom=         1
+ ihd=           1
+ Ax0=      0.0100
+ Ay0=      0.0100
+ f=        0.0001
+ theta=    0.6000
+ ibc=           1
+ isal=          1
+ trsal=         4
+ nopen=         0
+ cd=       0.0020
+ isbc=          0
+ tsbc=    3600.00
+ cw=         0.00
+ wa=         0.10
+ phi=      270.00
+ idbg=          0
+
+**Enter nspcg   n =      1
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =      1
+**Enter nspcg   n =      1
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =      1
+**Enter nspcg   n =      2
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =      2
+**Enter nspcg   n =      2
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =      2
+**Enter nspcg   n =      2
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =      2
+**Enter nspcg   n =      3
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =      3
+**Enter nspcg   n =      3
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =      3
+**Enter nspcg   n =      3
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =      3
+**Enter nspcg   n =      4
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =      4
+**Enter nspcg   n =      4
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =      4
+**Enter nspcg   n =      4
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =      4
+**Enter nspcg   n =      5
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =      5
+**Enter nspcg   n =      5
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =      5
+**Enter nspcg   n =      5
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =      5
+**Enter nspcg   n =      6
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =      6
+**Enter nspcg   n =      6
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =      6
+**Enter nspcg   n =      6
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =      6
+**Enter nspcg   n =      7
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =      7
+**Enter nspcg   n =      7
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =      7
+**Enter nspcg   n =      7
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =      7
+**Enter nspcg   n =      8
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =      8
+**Enter nspcg   n =      8
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =      8
+**Enter nspcg   n =      8
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =      8
+**Enter nspcg   n =      9
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =      9
+**Enter nspcg   n =      9
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =      9
+**Enter nspcg   n =      9
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =      9
+**Enter nspcg   n =     10
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     10
+**Enter nspcg   n =     10
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     10
+**Enter nspcg   n =     10
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     10
+**Enter nspcg   n =     11
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     11
+**Enter nspcg   n =     11
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     11
+**Enter nspcg   n =     11
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     11
+**Enter nspcg   n =     12
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     12
+**Enter nspcg   n =     12
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     12
+**Enter nspcg   n =     12
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     12
+**Enter nspcg   n =     13
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     13
+**Enter nspcg   n =     13
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     13
+**Enter nspcg   n =     13
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     13
+**Enter nspcg   n =     14
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     14
+**Enter nspcg   n =     14
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     14
+**Enter nspcg   n =     14
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     14
+**Enter nspcg   n =     15
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     15
+**Enter nspcg   n =     15
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     15
+**Enter nspcg   n =     15
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     15
+**Enter nspcg   n =     16
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     16
+**Enter nspcg   n =     16
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     16
+**Enter nspcg   n =     16
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     16
+**Enter nspcg   n =     17
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     17
+**Enter nspcg   n =     17
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     17
+**Enter nspcg   n =     17
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     17
+**Enter nspcg   n =     18
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     18
+**Enter nspcg   n =     18
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     18
+**Enter nspcg   n =     18
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     18
+**Enter nspcg   n =     19
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     19
+**Enter nspcg   n =     19
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     19
+**Enter nspcg   n =     19
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     19
+**Enter nspcg   n =     20
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     20
+**Enter nspcg   n =     20
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     20
+**Enter nspcg   n =     20
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     20
+**Enter nspcg   n =     21
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     21
+**Enter nspcg   n =     21
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     21
+**Enter nspcg   n =     21
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     21
+**Enter nspcg   n =     22
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     22
+**Enter nspcg   n =     22
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     22
+**Enter nspcg   n =     22
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     22
+**Enter nspcg   n =     23
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     23
+**Enter nspcg   n =     23
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     23
+**Enter nspcg   n =     23
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     23
+**Enter nspcg   n =     24
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     24
+**Enter nspcg   n =     24
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     24
+**Enter nspcg   n =     24
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     24
+**Enter nspcg   n =     25
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     25
+**Enter nspcg   n =     25
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     25
+**Enter nspcg   n =     25
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     25
+**Enter nspcg   n =     26
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     26
+**Enter nspcg   n =     26
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     26
+**Enter nspcg   n =     26
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     26
+**Enter nspcg   n =     27
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     27
+**Enter nspcg   n =     27
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     27
+**Enter nspcg   n =     27
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     27
+**Enter nspcg   n =     28
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     28
+**Enter nspcg   n =     28
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     28
+**Enter nspcg   n =     28
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     28
+**Enter nspcg   n =     29
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     29
+**Enter nspcg   n =     29
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     29
+**Enter nspcg   n =     29
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     29
+**Enter nspcg   n =     30
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     30
+**Enter nspcg   n =     30
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     30
+**Enter nspcg   n =     30
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     30
+**Enter nspcg   n =     31
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     31
+**Enter nspcg   n =     31
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     31
+**Enter nspcg   n =     31
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     31
+**Enter nspcg   n =     32
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     32
+**Enter nspcg   n =     32
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     32
+**Enter nspcg   n =     32
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     32
+**Enter nspcg   n =     33
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     33
+**Enter nspcg   n =     33
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     33
+**Enter nspcg   n =     33
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     33
+**Enter nspcg   n =     34
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     34
+**Enter nspcg   n =     34
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     34
+**Enter nspcg   n =     34
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     34
+**Enter nspcg   n =     35
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     35
+**Enter nspcg   n =     35
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     35
+**Enter nspcg   n =     35
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     35
+**Enter nspcg   n =     36
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     36
+**Enter nspcg   n =     36
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     36
+**Enter nspcg   n =     36
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     36
+**Enter nspcg   n =     37
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     37
+**Enter nspcg   n =     37
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     37
+**Enter nspcg   n =     37
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     37
+**Enter nspcg   n =     38
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     38
+**Enter nspcg   n =     38
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     38
+**Enter nspcg   n =     38
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     38
+**Enter nspcg   n =     39
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     39
+**Enter nspcg   n =     39
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     39
+**Enter nspcg   n =     39
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     39
+**Enter nspcg   n =     40
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     40
+**Enter nspcg   n =     40
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     40
+**Enter nspcg   n =     40
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     40
+**Enter nspcg   n =     41
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     41
+**Enter nspcg   n =     41
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     41
+**Enter nspcg   n =     41
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     41
+**Enter nspcg   n =     42
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     42
+**Enter nspcg   n =     42
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     42
+**Enter nspcg   n =     42
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     42
+**Enter nspcg   n =     43
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     43
+**Enter nspcg   n =     43
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     43
+**Enter nspcg   n =     43
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     43
+**Enter nspcg   n =     44
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     44
+**Enter nspcg   n =     44
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     44
+**Enter nspcg   n =     44
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     44
+**Enter nspcg   n =     45
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     45
+**Enter nspcg   n =     45
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     45
+**Enter nspcg   n =     45
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     45
+**Enter nspcg   n =     46
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     46
+**Enter nspcg   n =     46
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     46
+**Enter nspcg   n =     46
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     46
+**Enter nspcg   n =     47
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     47
+**Enter nspcg   n =     47
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     47
+**Enter nspcg   n =     47
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     47
+**Enter nspcg   n =     48
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     48
+**Enter nspcg   n =     48
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     48
+**Enter nspcg   n =     48
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     48
+**Enter nspcg   n =     49
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     49
+**Enter nspcg   n =     49
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     49
+**Enter nspcg   n =     49
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     49
+**Enter nspcg   n =     50
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     50
+**Enter nspcg   n =     50
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     50
+**Enter nspcg   n =     50
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     50
+**Enter nspcg   n =     51
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     51
+**Enter nspcg   n =     51
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     51
+**Enter nspcg   n =     51
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     51
+**Enter nspcg   n =     52
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     52
+**Enter nspcg   n =     52
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     52
+**Enter nspcg   n =     52
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     52
+**Enter nspcg   n =     53
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     53
+**Enter nspcg   n =     53
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     53
+**Enter nspcg   n =     53
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     53
+**Enter nspcg   n =     54
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     54
+**Enter nspcg   n =     54
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     54
+**Enter nspcg   n =     54
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     54
+**Enter nspcg   n =     55
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     55
+**Enter nspcg   n =     55
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     55
+**Enter nspcg   n =     55
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     55
+**Enter nspcg   n =     56
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     56
+**Enter nspcg   n =     56
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     56
+**Enter nspcg   n =     56
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     56
+**Enter nspcg   n =     57
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     57
+**Enter nspcg   n =     57
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     57
+**Enter nspcg   n =     57
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     57
+**Enter nspcg   n =     58
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     58
+**Enter nspcg   n =     58
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     58
+**Enter nspcg   n =     58
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     58
+**Enter nspcg   n =     59
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     59
+**Enter nspcg   n =     59
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     59
+**Enter nspcg   n =     59
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     59
+**Enter nspcg   n =     60
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     60
+**Enter nspcg   n =     60
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     60
+**Enter nspcg   n =     60
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     60
+**Enter nspcg   n =     61
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     61
+**Enter nspcg   n =     61
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     61
+**Enter nspcg   n =     61
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     61
+**Enter nspcg   n =     62
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     62
+**Enter nspcg   n =     62
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     62
+**Enter nspcg   n =     62
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     62
+**Enter nspcg   n =     63
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     63
+**Enter nspcg   n =     63
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     63
+**Enter nspcg   n =     63
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     63
+**Enter nspcg   n =     64
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     64
+**Enter nspcg   n =     64
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     64
+**Enter nspcg   n =     64
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     64
+**Enter nspcg   n =     65
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     65
+**Enter nspcg   n =     65
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     65
+**Enter nspcg   n =     65
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     65
+**Enter nspcg   n =     66
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     66
+**Enter nspcg   n =     66
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     66
+**Enter nspcg   n =     66
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     66
+**Enter nspcg   n =     67
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     67
+**Enter nspcg   n =     67
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     67
+**Enter nspcg   n =     67
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     67
+**Enter nspcg   n =     68
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     68
+**Enter nspcg   n =     68
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     68
+**Enter nspcg   n =     68
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     68
+**Enter nspcg   n =     69
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     69
+**Enter nspcg   n =     69
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     69
+**Enter nspcg   n =     69
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     69
+**Enter nspcg   n =     70
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     70
+**Enter nspcg   n =     70
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     70
+**Enter nspcg   n =     70
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     70
+**Enter nspcg   n =     71
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     71
+**Enter nspcg   n =     71
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     71
+**Enter nspcg   n =     71
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     71
+**Enter nspcg   n =     72
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     72
+**Enter nspcg   n =     72
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     72
+**Enter nspcg   n =     72
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     72
+**Enter nspcg   n =     73
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     73
+**Enter nspcg   n =     73
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     73
+**Enter nspcg   n =     73
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     73
+**Enter nspcg   n =     74
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     74
+**Enter nspcg   n =     74
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     74
+**Enter nspcg   n =     74
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     74
+**Enter nspcg   n =     75
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     75
+**Enter nspcg   n =     75
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     75
+**Enter nspcg   n =     75
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     75
+**Enter nspcg   n =     76
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     76
+**Enter nspcg   n =     76
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     76
+**Enter nspcg   n =     76
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     76
+**Enter nspcg   n =     77
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     77
+**Enter nspcg   n =     77
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     77
+**Enter nspcg   n =     77
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     77
+**Enter nspcg   n =     78
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     78
+**Enter nspcg   n =     78
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     78
+**Enter nspcg   n =     78
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     78
+**Enter nspcg   n =     79
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     79
+**Enter nspcg   n =     79
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     79
+**Enter nspcg   n =     79
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     79
+**Enter nspcg   n =     80
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     80
+**Enter nspcg   n =     80
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     80
+**Enter nspcg   n =     80
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     80
+**Enter nspcg   n =     81
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     81
+**Enter nspcg   n =     81
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     81
+**Enter nspcg   n =     81
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     81
+**Enter nspcg   n =     82
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     82
+**Enter nspcg   n =     82
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     82
+**Enter nspcg   n =     82
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     82
+**Enter nspcg   n =     83
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     83
+**Enter nspcg   n =     83
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     83
+**Enter nspcg   n =     83
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     83
+**Enter nspcg   n =     84
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     84
+**Enter nspcg   n =     84
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     84
+**Enter nspcg   n =     84
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     84
+**Enter nspcg   n =     85
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     85
+**Enter nspcg   n =     85
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     85
+**Enter nspcg   n =     85
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     85
+**Enter nspcg   n =     86
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     86
+**Enter nspcg   n =     86
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     86
+**Enter nspcg   n =     86
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     86
+**Enter nspcg   n =     87
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     87
+**Enter nspcg   n =     87
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     87
+**Enter nspcg   n =     87
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     87
+**Enter nspcg   n =     88
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     88
+**Enter nspcg   n =     88
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     88
+**Enter nspcg   n =     88
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     88
+**Enter nspcg   n =     89
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     89
+**Enter nspcg   n =     89
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     89
+**Enter nspcg   n =     89
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     89
+**Enter nspcg   n =     90
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =     90
+**Enter nspcg   n =     90
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     90
+**Enter nspcg   n =     90
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     90
+**Enter nspcg   n =     91
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     91
+**Enter nspcg   n =     91
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     91
+**Enter nspcg   n =     91
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     91
+**Enter nspcg   n =     92
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     92
+**Enter nspcg   n =     92
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     92
+**Enter nspcg   n =     92
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     92
+**Enter nspcg   n =     93
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     93
+**Enter nspcg   n =     93
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     93
+**Enter nspcg   n =     93
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     93
+**Enter nspcg   n =     94
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     94
+**Enter nspcg   n =     94
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     94
+**Enter nspcg   n =     94
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     94
+**Enter nspcg   n =     95
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     95
+**Enter nspcg   n =     95
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     95
+**Enter nspcg   n =     95
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     95
+**Enter nspcg   n =     96
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     96
+**Enter nspcg   n =     96
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     96
+**Enter nspcg   n =     96
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     96
+**Enter nspcg   n =     97
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     97
+**Enter nspcg   n =     97
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     97
+**Enter nspcg   n =     97
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     97
+**Enter nspcg   n =     98
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     98
+**Enter nspcg   n =     98
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     98
+**Enter nspcg   n =     98
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     98
+**Enter nspcg   n =     99
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =     99
+**Enter nspcg   n =     99
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     99
+**Enter nspcg   n =     99
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =     99
+**Enter nspcg   n =    100
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    100
+**Enter nspcg   n =    100
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    100
+**Enter nspcg   n =    100
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    100
+**Enter nspcg   n =    101
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =    101
+**Enter nspcg   n =    101
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    101
+**Enter nspcg   n =    101
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    101
+**Enter nspcg   n =    102
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    102
+**Enter nspcg   n =    102
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    102
+**Enter nspcg   n =    102
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    102
+**Enter nspcg   n =    103
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    103
+**Enter nspcg   n =    103
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    103
+**Enter nspcg   n =    103
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    103
+**Enter nspcg   n =    104
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    104
+**Enter nspcg   n =    104
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    104
+**Enter nspcg   n =    104
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    104
+**Enter nspcg   n =    105
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    105
+**Enter nspcg   n =    105
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    105
+**Enter nspcg   n =    105
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    105
+**Enter nspcg   n =    106
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    106
+**Enter nspcg   n =    106
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    106
+**Enter nspcg   n =    106
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    106
+**Enter nspcg   n =    107
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    107
+**Enter nspcg   n =    107
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    107
+**Enter nspcg   n =    107
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    107
+**Enter nspcg   n =    108
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    108
+**Enter nspcg   n =    108
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    108
+**Enter nspcg   n =    108
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    108
+**Enter nspcg   n =    109
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    109
+**Enter nspcg   n =    109
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    109
+**Enter nspcg   n =    109
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    109
+**Enter nspcg   n =    110
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    110
+**Enter nspcg   n =    110
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    110
+**Enter nspcg   n =    110
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    110
+**Enter nspcg   n =    111
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    111
+**Enter nspcg   n =    111
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    111
+**Enter nspcg   n =    111
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    111
+**Enter nspcg   n =    112
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    112
+**Enter nspcg   n =    112
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    112
+**Enter nspcg   n =    112
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    112
+**Enter nspcg   n =    113
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =    113
+**Enter nspcg   n =    113
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    113
+**Enter nspcg   n =    113
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    113
+**Enter nspcg   n =    114
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    114
+**Enter nspcg   n =    114
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    114
+**Enter nspcg   n =    114
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    114
+**Enter nspcg   n =    115
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    115
+**Enter nspcg   n =    115
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    115
+**Enter nspcg   n =    115
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    115
+**Enter nspcg   n =    116
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    116
+**Enter nspcg   n =    116
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    116
+**Enter nspcg   n =    116
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    116
+**Enter nspcg   n =    117
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    117
+**Enter nspcg   n =    117
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    117
+**Enter nspcg   n =    117
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    117
+**Enter nspcg   n =    118
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    118
+**Enter nspcg   n =    118
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    118
+**Enter nspcg   n =    118
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    118
+**Enter nspcg   n =    119
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    119
+**Enter nspcg   n =    119
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    119
+**Enter nspcg   n =    119
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    119
+**Enter nspcg   n =    120
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    120
+**Enter nspcg   n =    120
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    120
+**Enter nspcg   n =    120
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    120
+**Enter nspcg   n =    121
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    121
+**Enter nspcg   n =    121
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    121
+**Enter nspcg   n =    121
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    121
+**Enter nspcg   n =    122
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    122
+**Enter nspcg   n =    122
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    122
+**Enter nspcg   n =    122
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    122
+**Enter nspcg   n =    123
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =    123
+**Enter nspcg   n =    123
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    123
+**Enter nspcg   n =    123
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    123
+**Enter nspcg   n =    124
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    124
+**Enter nspcg   n =    124
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    124
+**Enter nspcg   n =    124
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    124
+**Enter nspcg   n =    125
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    125
+**Enter nspcg   n =    125
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    125
+**Enter nspcg   n =    125
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    125
+**Enter nspcg   n =    126
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    126
+**Enter nspcg   n =    126
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    126
+**Enter nspcg   n =    126
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    126
+**Enter nspcg   n =    127
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =    127
+**Enter nspcg   n =    127
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    127
+**Enter nspcg   n =    127
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    127
+**Enter nspcg   n =    128
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    128
+**Enter nspcg   n =    128
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    128
+**Enter nspcg   n =    128
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    128
+**Enter nspcg   n =    129
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =    129
+**Enter nspcg   n =    129
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    129
+**Enter nspcg   n =    129
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    129
+**Enter nspcg   n =    130
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    130
+**Enter nspcg   n =    130
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    130
+**Enter nspcg   n =    130
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    130
+**Enter nspcg   n =    131
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    131
+**Enter nspcg   n =    131
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    131
+**Enter nspcg   n =    131
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    131
+**Enter nspcg   n =    132
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    132
+**Enter nspcg   n =    132
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    132
+**Enter nspcg   n =    132
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    132
+**Enter nspcg   n =    133
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    133
+**Enter nspcg   n =    133
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    133
+**Enter nspcg   n =    133
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    133
+**Enter nspcg   n =    134
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    134
+**Enter nspcg   n =    134
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    134
+**Enter nspcg   n =    134
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    134
+**Enter nspcg   n =    135
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    135
+**Enter nspcg   n =    135
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    135
+**Enter nspcg   n =    135
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    135
+**Enter nspcg   n =    136
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    136
+**Enter nspcg   n =    136
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    136
+**Enter nspcg   n =    136
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    136
+**Enter nspcg   n =    137
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    137
+**Enter nspcg   n =    137
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    137
+**Enter nspcg   n =    137
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    137
+**Enter nspcg   n =    138
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    138
+**Enter nspcg   n =    138
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    138
+**Enter nspcg   n =    138
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    138
+**Enter nspcg   n =    139
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    139
+**Enter nspcg   n =    139
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    139
+**Enter nspcg   n =    139
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    139
+**Enter nspcg   n =    140
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    140
+**Enter nspcg   n =    140
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    140
+**Enter nspcg   n =    140
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    140
+**Enter nspcg   n =    141
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    141
+**Enter nspcg   n =    141
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    141
+**Enter nspcg   n =    141
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    141
+**Enter nspcg   n =    142
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    142
+**Enter nspcg   n =    142
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    142
+**Enter nspcg   n =    142
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    142
+**Enter nspcg   n =    143
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    143
+**Enter nspcg   n =    143
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    143
+**Enter nspcg   n =    143
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    143
+**Enter nspcg   n =    144
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    144
+**Enter nspcg   n =    144
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    144
+**Enter nspcg   n =    144
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    144
+**Enter nspcg   n =    145
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    145
+**Enter nspcg   n =    145
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    145
+**Enter nspcg   n =    145
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    145
+**Enter nspcg   n =    146
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    146
+**Enter nspcg   n =    146
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    146
+**Enter nspcg   n =    146
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    146
+**Enter nspcg   n =    147
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    147
+**Enter nspcg   n =    147
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    147
+**Enter nspcg   n =    147
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    147
+**Enter nspcg   n =    148
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    148
+**Enter nspcg   n =    148
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    148
+**Enter nspcg   n =    148
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    148
+**Enter nspcg   n =    149
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    149
+**Enter nspcg   n =    149
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    149
+**Enter nspcg   n =    149
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    149
+**Enter nspcg   n =    150
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    150
+**Enter nspcg   n =    150
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    150
+**Enter nspcg   n =    150
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    150
+**Enter nspcg   n =    151
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    151
+**Enter nspcg   n =    151
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    151
+**Enter nspcg   n =    151
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    151
+**Enter nspcg   n =    152
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    152
+**Enter nspcg   n =    152
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    152
+**Enter nspcg   n =    152
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    152
+**Enter nspcg   n =    153
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    153
+**Enter nspcg   n =    153
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    153
+**Enter nspcg   n =    153
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    153
+**Enter nspcg   n =    154
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    154
+**Enter nspcg   n =    154
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    154
+**Enter nspcg   n =    154
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    154
+**Enter nspcg   n =    155
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    155
+**Enter nspcg   n =    155
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    155
+**Enter nspcg   n =    155
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    155
+**Enter nspcg   n =    156
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    156
+**Enter nspcg   n =    156
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    156
+**Enter nspcg   n =    156
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    156
+**Enter nspcg   n =    157
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    157
+**Enter nspcg   n =    157
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    157
+**Enter nspcg   n =    157
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    157
+**Enter nspcg   n =    158
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    158
+**Enter nspcg   n =    158
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    158
+**Enter nspcg   n =    158
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    158
+**Enter nspcg   n =    159
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    159
+**Enter nspcg   n =    159
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    159
+**Enter nspcg   n =    159
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    159
+**Enter nspcg   n =    160
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    160
+**Enter nspcg   n =    160
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    160
+**Enter nspcg   n =    160
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    160
+**Enter nspcg   n =    161
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    161
+**Enter nspcg   n =    161
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    161
+**Enter nspcg   n =    161
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    161
+**Enter nspcg   n =    162
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    162
+**Enter nspcg   n =    162
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    162
+**Enter nspcg   n =    162
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    162
+**Enter nspcg   n =    163
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    163
+**Enter nspcg   n =    163
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    163
+**Enter nspcg   n =    163
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    163
+**Enter nspcg   n =    164
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    164
+**Enter nspcg   n =    164
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    164
+**Enter nspcg   n =    164
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    164
+**Enter nspcg   n =    165
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    165
+**Enter nspcg   n =    165
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    165
+**Enter nspcg   n =    165
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    165
+**Enter nspcg   n =    166
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    166
+**Enter nspcg   n =    166
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    166
+**Enter nspcg   n =    166
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    166
+**Enter nspcg   n =    167
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    167
+**Enter nspcg   n =    167
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    167
+**Enter nspcg   n =    167
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    167
+**Enter nspcg   n =    168
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    168
+**Enter nspcg   n =    168
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    168
+**Enter nspcg   n =    168
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    168
+**Enter nspcg   n =    169
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    169
+**Enter nspcg   n =    169
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    169
+**Enter nspcg   n =    169
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    169
+**Enter nspcg   n =    170
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    170
+**Enter nspcg   n =    170
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    170
+**Enter nspcg   n =    170
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    170
+**Enter nspcg   n =    171
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    171
+**Enter nspcg   n =    171
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    171
+**Enter nspcg   n =    171
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    171
+**Enter nspcg   n =    172
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    172
+**Enter nspcg   n =    172
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    172
+**Enter nspcg   n =    172
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    172
+**Enter nspcg   n =    173
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    173
+**Enter nspcg   n =    173
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    173
+**Enter nspcg   n =    173
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    173
+**Enter nspcg   n =    174
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    174
+**Enter nspcg   n =    174
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    174
+**Enter nspcg   n =    174
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    174
+**Enter nspcg   n =    175
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    175
+**Enter nspcg   n =    175
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    175
+**Enter nspcg   n =    175
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    175
+**Enter nspcg   n =    176
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    176
+**Enter nspcg   n =    176
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    176
+**Enter nspcg   n =    176
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    176
+**Enter nspcg   n =    177
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    177
+**Enter nspcg   n =    177
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    177
+**Enter nspcg   n =    177
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    177
+**Enter nspcg   n =    178
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    178
+**Enter nspcg   n =    178
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    178
+**Enter nspcg   n =    178
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    178
+**Enter nspcg   n =    179
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    179
+**Enter nspcg   n =    179
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    179
+**Enter nspcg   n =    179
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    179
+**Enter nspcg   n =    180
+
+ cg  has converged in    10 iterations
+**Exit nspcg    n =    180
+**Enter nspcg   n =    180
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    180
+**Enter nspcg   n =    180
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    180
+**Enter nspcg   n =    181
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    181
+**Enter nspcg   n =    181
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    181
+**Enter nspcg   n =    181
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    181
+**Enter nspcg   n =    182
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    182
+**Enter nspcg   n =    182
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    182
+**Enter nspcg   n =    182
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    182
+**Enter nspcg   n =    183
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    183
+**Enter nspcg   n =    183
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    183
+**Enter nspcg   n =    183
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    183
+**Enter nspcg   n =    184
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    184
+**Enter nspcg   n =    184
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    184
+**Enter nspcg   n =    184
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    184
+**Enter nspcg   n =    185
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    185
+**Enter nspcg   n =    185
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    185
+**Enter nspcg   n =    185
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    185
+**Enter nspcg   n =    186
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    186
+**Enter nspcg   n =    186
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    186
+**Enter nspcg   n =    186
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    186
+**Enter nspcg   n =    187
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    187
+**Enter nspcg   n =    187
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    187
+**Enter nspcg   n =    187
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    187
+**Enter nspcg   n =    188
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    188
+**Enter nspcg   n =    188
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    188
+**Enter nspcg   n =    188
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    188
+**Enter nspcg   n =    189
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    189
+**Enter nspcg   n =    189
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    189
+**Enter nspcg   n =    189
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    189
+**Enter nspcg   n =    190
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    190
+**Enter nspcg   n =    190
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    190
+**Enter nspcg   n =    190
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    190
+**Enter nspcg   n =    191
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    191
+**Enter nspcg   n =    191
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    191
+**Enter nspcg   n =    191
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    191
+**Enter nspcg   n =    192
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    192
+**Enter nspcg   n =    192
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    192
+**Enter nspcg   n =    192
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    192
+**Enter nspcg   n =    193
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    193
+**Enter nspcg   n =    193
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    193
+**Enter nspcg   n =    193
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    193
+**Enter nspcg   n =    194
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    194
+**Enter nspcg   n =    194
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    194
+**Enter nspcg   n =    194
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    194
+**Enter nspcg   n =    195
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    195
+**Enter nspcg   n =    195
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    195
+**Enter nspcg   n =    195
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    195
+**Enter nspcg   n =    196
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    196
+**Enter nspcg   n =    196
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    196
+**Enter nspcg   n =    196
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    196
+**Enter nspcg   n =    197
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =    197
+**Enter nspcg   n =    197
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    197
+**Enter nspcg   n =    197
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    197
+**Enter nspcg   n =    198
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    198
+**Enter nspcg   n =    198
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    198
+**Enter nspcg   n =    198
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    198
+**Enter nspcg   n =    199
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    199
+**Enter nspcg   n =    199
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    199
+**Enter nspcg   n =    199
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    199
+**Enter nspcg   n =    200
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    200
+**Enter nspcg   n =    200
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    200
+**Enter nspcg   n =    200
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    200
+**Enter nspcg   n =    201
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    201
+**Enter nspcg   n =    201
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    201
+**Enter nspcg   n =    201
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    201
+**Enter nspcg   n =    202
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    202
+**Enter nspcg   n =    202
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    202
+**Enter nspcg   n =    202
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    202
+**Enter nspcg   n =    203
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    203
+**Enter nspcg   n =    203
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    203
+**Enter nspcg   n =    203
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    203
+**Enter nspcg   n =    204
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    204
+**Enter nspcg   n =    204
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    204
+**Enter nspcg   n =    204
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    204
+**Enter nspcg   n =    205
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    205
+**Enter nspcg   n =    205
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    205
+**Enter nspcg   n =    205
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    205
+**Enter nspcg   n =    206
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    206
+**Enter nspcg   n =    206
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    206
+**Enter nspcg   n =    206
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    206
+**Enter nspcg   n =    207
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    207
+**Enter nspcg   n =    207
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    207
+**Enter nspcg   n =    207
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    207
+**Enter nspcg   n =    208
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    208
+**Enter nspcg   n =    208
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    208
+**Enter nspcg   n =    208
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    208
+**Enter nspcg   n =    209
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    209
+**Enter nspcg   n =    209
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    209
+**Enter nspcg   n =    209
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    209
+**Enter nspcg   n =    210
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    210
+**Enter nspcg   n =    210
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    210
+**Enter nspcg   n =    210
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    210
+**Enter nspcg   n =    211
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    211
+**Enter nspcg   n =    211
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    211
+**Enter nspcg   n =    211
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    211
+**Enter nspcg   n =    212
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    212
+**Enter nspcg   n =    212
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    212
+**Enter nspcg   n =    212
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    212
+**Enter nspcg   n =    213
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    213
+**Enter nspcg   n =    213
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    213
+**Enter nspcg   n =    213
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    213
+**Enter nspcg   n =    214
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    214
+**Enter nspcg   n =    214
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    214
+**Enter nspcg   n =    214
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    214
+**Enter nspcg   n =    215
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    215
+**Enter nspcg   n =    215
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    215
+**Enter nspcg   n =    215
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    215
+**Enter nspcg   n =    216
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    216
+**Enter nspcg   n =    216
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    216
+**Enter nspcg   n =    216
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    216
+**Enter nspcg   n =    217
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    217
+**Enter nspcg   n =    217
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    217
+**Enter nspcg   n =    217
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    217
+**Enter nspcg   n =    218
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    218
+**Enter nspcg   n =    218
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    218
+**Enter nspcg   n =    218
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    218
+**Enter nspcg   n =    219
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    219
+**Enter nspcg   n =    219
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    219
+**Enter nspcg   n =    219
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    219
+**Enter nspcg   n =    220
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    220
+**Enter nspcg   n =    220
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    220
+**Enter nspcg   n =    220
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    220
+**Enter nspcg   n =    221
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    221
+**Enter nspcg   n =    221
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    221
+**Enter nspcg   n =    221
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    221
+**Enter nspcg   n =    222
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    222
+**Enter nspcg   n =    222
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    222
+**Enter nspcg   n =    222
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    222
+**Enter nspcg   n =    223
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    223
+**Enter nspcg   n =    223
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    223
+**Enter nspcg   n =    223
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    223
+**Enter nspcg   n =    224
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    224
+**Enter nspcg   n =    224
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    224
+**Enter nspcg   n =    224
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    224
+**Enter nspcg   n =    225
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    225
+**Enter nspcg   n =    225
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    225
+**Enter nspcg   n =    225
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    225
+**Enter nspcg   n =    226
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    226
+**Enter nspcg   n =    226
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    226
+**Enter nspcg   n =    226
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    226
+**Enter nspcg   n =    227
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    227
+**Enter nspcg   n =    227
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    227
+**Enter nspcg   n =    227
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    227
+**Enter nspcg   n =    228
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    228
+**Enter nspcg   n =    228
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    228
+**Enter nspcg   n =    228
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    228
+**Enter nspcg   n =    229
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    229
+**Enter nspcg   n =    229
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    229
+**Enter nspcg   n =    229
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    229
+**Enter nspcg   n =    230
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    230
+**Enter nspcg   n =    230
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    230
+**Enter nspcg   n =    230
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    230
+**Enter nspcg   n =    231
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    231
+**Enter nspcg   n =    231
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    231
+**Enter nspcg   n =    231
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    231
+**Enter nspcg   n =    232
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    232
+**Enter nspcg   n =    232
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    232
+**Enter nspcg   n =    232
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    232
+**Enter nspcg   n =    233
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    233
+**Enter nspcg   n =    233
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    233
+**Enter nspcg   n =    233
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    233
+**Enter nspcg   n =    234
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    234
+**Enter nspcg   n =    234
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    234
+**Enter nspcg   n =    234
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    234
+**Enter nspcg   n =    235
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    235
+**Enter nspcg   n =    235
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    235
+**Enter nspcg   n =    235
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    235
+**Enter nspcg   n =    236
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    236
+**Enter nspcg   n =    236
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    236
+**Enter nspcg   n =    236
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    236
+**Enter nspcg   n =    237
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    237
+**Enter nspcg   n =    237
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    237
+**Enter nspcg   n =    237
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    237
+**Enter nspcg   n =    238
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    238
+**Enter nspcg   n =    238
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    238
+**Enter nspcg   n =    238
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    238
+**Enter nspcg   n =    239
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    239
+**Enter nspcg   n =    239
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    239
+**Enter nspcg   n =    239
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    239
+**Enter nspcg   n =    240
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    240
+**Enter nspcg   n =    240
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    240
+**Enter nspcg   n =    240
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    240
+**Enter nspcg   n =    241
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    241
+**Enter nspcg   n =    241
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    241
+**Enter nspcg   n =    241
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    241
+**Enter nspcg   n =    242
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    242
+**Enter nspcg   n =    242
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    242
+**Enter nspcg   n =    242
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    242
+**Enter nspcg   n =    243
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    243
+**Enter nspcg   n =    243
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    243
+**Enter nspcg   n =    243
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    243
+**Enter nspcg   n =    244
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    244
+**Enter nspcg   n =    244
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    244
+**Enter nspcg   n =    244
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    244
+**Enter nspcg   n =    245
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    245
+**Enter nspcg   n =    245
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    245
+**Enter nspcg   n =    245
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    245
+**Enter nspcg   n =    246
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    246
+**Enter nspcg   n =    246
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    246
+**Enter nspcg   n =    246
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    246
+**Enter nspcg   n =    247
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    247
+**Enter nspcg   n =    247
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    247
+**Enter nspcg   n =    247
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    247
+**Enter nspcg   n =    248
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    248
+**Enter nspcg   n =    248
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    248
+**Enter nspcg   n =    248
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    248
+**Enter nspcg   n =    249
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    249
+**Enter nspcg   n =    249
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    249
+**Enter nspcg   n =    249
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    249
+**Enter nspcg   n =    250
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    250
+**Enter nspcg   n =    250
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    250
+**Enter nspcg   n =    250
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    250
+**Enter nspcg   n =    251
+
+ cg  has converged in     8 iterations
+**Exit nspcg    n =    251
+**Enter nspcg   n =    251
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    251
+**Enter nspcg   n =    251
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    251
+**Enter nspcg   n =    252
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    252
+**Enter nspcg   n =    252
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    252
+**Enter nspcg   n =    252
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    252
+**Enter nspcg   n =    253
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    253
+**Enter nspcg   n =    253
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    253
+**Enter nspcg   n =    253
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    253
+**Enter nspcg   n =    254
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    254
+**Enter nspcg   n =    254
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    254
+**Enter nspcg   n =    254
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    254
+**Enter nspcg   n =    255
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    255
+**Enter nspcg   n =    255
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    255
+**Enter nspcg   n =    255
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    255
+**Enter nspcg   n =    256
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    256
+**Enter nspcg   n =    256
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    256
+**Enter nspcg   n =    256
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    256
+**Enter nspcg   n =    257
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    257
+**Enter nspcg   n =    257
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    257
+**Enter nspcg   n =    257
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    257
+**Enter nspcg   n =    258
+
+ cg  has converged in     9 iterations
+**Exit nspcg    n =    258
+**Enter nspcg   n =    258
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    258
+**Enter nspcg   n =    258
+
+ cg  has converged in     6 iterations
+**Exit nspcg    n =    258
+**Enter nspcg   n =    259
+
+ cg  has converged in    10 iterations
+**Exit nspcg    n =    259
+**Enter nspcg   n =    259
+
+
+ ************************************************************
+ **************** w a r n i n g    e r r o r ****************
+ ************************************************************
+
+ routine pfact1  mi
+ negative pivot encountered in factorization                                     
+
+ ************************************************************
+
+
+
+ ************************************************************
+ ****************** f a t a l    e r r o r ******************
+ ************************************************************
+
+ routine itcg    zb
+ a is not positive definite                                                      
+
+ ************************************************************
+
+**Exit nspcg    n =    259
+**ERROR   -6 from nspcg
+ ****STOPPING si3d due to fatal matrix error
+ Time =     1.4389 hours

@@ -2555,15 +2555,15 @@ C        Previous equation corrected to consistently express salinity in uS/cm
          
 
 !
-!        Temperatura and salinity in the plume    
+!        Temperatura and salinity in the plume
          TPLUME=FTEMP/QW
          !SALPLU=FSAL/(QW*DENSEW)/(GAMMA/DENSE20) JCT2020_Sal
          SALPLU=FSAL/QW  !JCT2020_Sal
-         
-!        Imponemos el valor de SALPLU porque no se porque se incrementa en la ecuacion
-!        revisar las ecuaciones JCT !!!!!         
-         SALPLU=SALAMB
-!         !!!!! ******* !!!!! ******* !!!!! ******* !!!!!*******  !!!!!         
+!        ACC 2026: Override SALPLU=SALAMB eliminado. Era un parche para enmascarar el error en
+!        DERIVS_4 donde el termino de detrainment de salinidad usaba SALARO en lugar de SALPLU.
+!        Corregido DERIVS_4: DYDX(4)=EI*SALARO-EO*SALPLU. Linea erronea comentada: ACC 2026
+!         SALPLU=SALAMB
+!         !!!!! ******* !!!!! ******* !!!!! ******* !!!!!*******  !!!!!
 
          !PRINT*, XLOC, TPLUME
 C        Previous equation corrected to consistently express salinity in uS/cm
@@ -3979,9 +3979,18 @@ C     CALCULATION OF INITIAL WATER VELOCITY USING FROUDE NUMBER
       PRINT*,'VIinicial',FRNI,LAMBDA,BI,LI,G,DENSEA,QGAS,VB,PI,DENSEW,VGUESS,LAMBDA,DENSEP
       DO WHILE (VDIFF.GT.1.0E-6)
          !VG=QGAS/((VGUESS+VB)*(PI*(LAMBDA*BI)**2))
-         VG=QGAS/((VGUESS+VB)*((2.*LAMBDA*BI)*(LI-2.0*BI*(1.0-LAMBDA)))) !JCT_RECT		 
+!        ACC 2026: ERROR - area burbujas usaba formula inconsistente (2*LAMBDA*BI)*(LI-2*BI*(1-LAMBDA)).
+!        Para pluma rectangular 2D (linea fuente), solo la semiancho escala con LAMBDA; la longitud LI
+!        es fija (longitud difusor). Area burbujas = 2*(LAMBDA*BI)*LI = LAMBDA*2*BI*LI
+!        Referencia: Dissanayake et al. (2021). Linea erronea comentada:
+!         VG=QGAS/((VGUESS+VB)*((2.*LAMBDA*BI)*(LI-2.0*BI*(1.0-LAMBDA))))
+         VG=QGAS/((VGUESS+VB)*(2.*LAMBDA*BI*LI))  ! ACC 2026
          DENSEP=(1.0-VG)*DENSEW
-         VI=FRNI*(2.0*LAMBDA*BI*G*(DENSEA-DENSEP)/DENSEP)**0.5
+!        ACC 2026: ERROR - escala de longitud Froude usaba 2*LAMBDA*BI en lugar de 2*BI.
+!        Fr = u / sqrt(g'*b) con b = semiancho de la pluma de agua = BI (no lambda*BI)
+!        Referencia: Wuest (1992), Dissanayake (2021). Linea erronea comentada:
+!         VI=FRNI*(2.0*LAMBDA*BI*G*(DENSEA-DENSEP)/DENSEP)**0.5
+         VI=FRNI*(2.0*BI*G*(DENSEA-DENSEP)/DENSEP)**0.5  ! ACC 2026
          VDIFF=ABS(VI-VGUESS)
          VGUESS=VI
       END DO
@@ -3991,8 +4000,13 @@ C     VARIABLE TRANSFORMATION
 C     ------------------------------------------------------------------
 
       VO=0
-      !EI=2.*PI*BI*ALPHAI*(VI+C1*VO) 
-      EI=2.*(LI+2.*BI)*ALPHAI*(VI+C1*VO) !JCT_RECT		 
+      !EI=2.*PI*BI*ALPHAI*(VI+C1*VO)
+!     ACC 2026: ERROR perimetro - formulacion rectangular 2D (Dissanayake 2021) solo incluye
+!     los lados largos (2*LI); los extremos cortos no contribuyen al entrainment en linea fuente.
+!     El perimetro completo 2*(LI+2*BI) sobreestima el entrainment cuando BI no es << LI.
+!     Linea erronea comentada:
+!      EI=2.*(LI+2.*BI)*ALPHAI*(VI+C1*VO) !JCT_RECT
+      EI=2.*LI*ALPHAI*(VI+C1*VO)          ! ACC 2026: solo lados largos (2D linea fuente)
 	  EO=0
       !QW=VI*PI*BI**2
       QW=VI*(2.*LI*BI) !JCT_RECT
@@ -4010,8 +4024,12 @@ C     Previous equation corrected to account for salinity units conversion.
 C     Revised gaseous flux equations.
       !YO2=FGO/((PI*(LAMBDA*BI)**2)*(VI+VB))
       !YN2=FGN/((PI*(LAMBDA*BI)**2)*(VI+VB))
-	  YO2=FGO/((LAMBDA*2.*BI*(LI-2.*BI*(1.-LAMBDA)))*(VI+VB)) ! JCT_RECT
-      YN2=FGN/((LAMBDA*2.*BI*(LI-2.*BI*(1.-LAMBDA)))*(VI+VB)) ! JCT_RECT           
+!     ACC 2026: ERROR - area burbujas inconsistente con correccion en VG. Usar LAMBDA*2*BI*LI.
+!     Referencia: Dissanayake (2021). Lineas erroneas comentadas:
+!      YO2=FGO/((LAMBDA*2.*BI*(LI-2.*BI*(1.-LAMBDA)))*(VI+VB))
+!      YN2=FGN/((LAMBDA*2.*BI*(LI-2.*BI*(1.-LAMBDA)))*(VI+VB))
+      YO2=FGO/((2.*LAMBDA*BI*LI)*(VI+VB))  ! ACC 2026
+      YN2=FGN/((2.*LAMBDA*BI*LI)*(VI+VB))  ! ACC 2026
       PZ=PATM+(DENSEA*G*Z)
       PO=PZ*FRACO
       PN=PZ*FRACN
@@ -4021,7 +4039,9 @@ C     Revised gaseous flux equations.
       JJ=0
       QWDI(LAYDIFF)= QW 
       !PWDI(LAYDIFF)= (2*PI*BI)
-      PWDI(LAYDIFF)= 2.*(LI+2.*BI)   ! JCT_RECT
+!     ACC 2026: perimetro = solo lados largos (Dissanayake 2021). Linea erronea comentada:
+!      PWDI(LAYDIFF)= 2.*(LI+2.*BI)   ! JCT_RECT
+      PWDI(LAYDIFF)= 2.*LI            ! ACC 2026: solo lados largos
       !AWDI(LAYDIFF)= (PI*BI**2)    
       AWDI(LAYDIFF)= LI*BI   ! JCT_RECT
       !BWDI(LAYDIFF)= BI 
@@ -4191,34 +4211,47 @@ C        Previous equation corrected to consistently express salinity in uS/cm
          !EO=-2.*PI*BI*ALPHAO*VO  ! JCT
 		 
 		 ! JCT_RECT  ....
-         !SOLVE FOR DIMENSIONS USING L^2+(2Bo-Lo)L-AREA=0 USING QUADRATIC EQN.
-          AA=1.0
-          BB=2.*BNOT-LNOT
-          CC=-1.0*AREA
-          LI=(-1.0*BB+(BB**2-4.0*AA*CC)**(0.5))/(2.0*AA)
-          IF(LI.LT.0.0)THEN
-             LI=(-1.0*BB-(BB**2-4.0*AA*CC)**(0.5))/(2.0*AA)
-          ENDIF
-          BI=AREA/(2.0*LI)
 
-          !PRINT*,'AA, BB, CC ', AA, BB, CC
+!        Correct entrainment: Dissanayake (2021) 2D line-source perimeter = 2*LI only
+!        (long sides only; see also initialization correction above). ACC 2026.
+!        (semiancho) crecieran simultaneamente. Para una pluma rectangular de linea fuente 2D
+!        (Dissanayake 2021), la longitud LI es fija e igual a la longitud del difusor (LNOT).
+!        Solo el semiancho BI crece con la altura. El solver cuadratico se sustituye por:
+!        LI = LNOT (constante); BI = AREA/(2*LI) (solo crece el semiancho). ACC 2026
+!        Codigo erroneo comentado:
+!         AA=1.0
+!         BB=2.*BNOT-LNOT
+!         CC=-1.0*AREA
+!         LI=(-1.0*BB+(BB**2-4.0*AA*CC)**(0.5))/(2.0*AA)
+!         IF(LI.LT.0.0)THEN
+!            LI=(-1.0*BB-(BB**2-4.0*AA*CC)**(0.5))/(2.0*AA)
+!         ENDIF
+!         BI=AREA/(2.0*LI)
+         LI=LNOT          ! ACC 2026: longitud fija = longitud del difusor
+         BI=AREA/(2.0*LI) ! ACC 2026: solo crece el semiancho
+
           !PRINT*,'BNOT, LNOT, AREA', BNOT, LNOT, AREA
 
           !PRINT*,'BI LI', BI, LI
 
-	      EI= (2.*(LI+2.*BI))*ALPHAI*(VI+C1*VO)
-          EO=-(2.*(LI+2.*BI))*ALPHAO*VO  ! JCT
+!        ACC 2026: ERROR perimetro - usar solo lados largos 2*LI (Dissanayake 2021, 2D linea fuente).
+!        Lineas erroneas comentadas:
+!         EI= (2.*(LI+2.*BI))*ALPHAI*(VI+C1*VO)
+!         EO=-(2.*(LI+2.*BI))*ALPHAO*VO  ! JCT
+         EI= 2.*LI*ALPHAI*(VI+C1*VO)     ! ACC 2026: solo lados largos
+         EO=-2.*LI*ALPHAO*VO             ! ACC 2026: solo lados largos
 		  ! JCT_RECT ....
 
-!        Temperatura and salinity in the plume    
+!        Temperatura and salinity in the plume
          TPLUME=FTEMP/QW
          !SALPLU=FSAL/(QW*DENSEW)/(GAMMA/DENSE20) JCT2020_Sal
          SALPLU=FSAL/QW  !JCT2020_Sal
-         
-!        Imponemos el valor de SALPLU porque no se porque se incrementa en la ecuacion
-!        revisar las ecuaciones JCT !!!!!         
-         SALPLU=SALAMB
-!         !!!!! ******* !!!!! ******* !!!!! ******* !!!!!*******  !!!!!         
+!        ACC 2026 (INNER_PLUME_RECT): Override SALPLU=SALAMB eliminado. Era un parche para
+!        enmascarar el error en DERIVS_6 donde el detrainment de salinidad usaba SALARO
+!        en lugar de SALPLU. Corregido DERIVS_6: DYDX(4)=EI*SALARO-EO*SALPLU. ACC 2026
+!        Linea erronea comentada:
+!         SALPLU=SALAMB
+!         !!!!! ******* !!!!! ******* !!!!! ******* !!!!!*******  !!!!!
 
          !PRINT*, XLOC, TPLUME
 C        Previous equation corrected to consistently express salinity in uS/cm
@@ -4242,12 +4275,16 @@ C        Previous equation corrected to consistently express salinity in uS/cm
 !        Add incremental entrainment to total cell entrainment/withdrawal   
          QWDI(LAYDIFF-JJ)=QWDI(LAYDIFF-JJ)+(EI-EO)*DZ
          !PWDI(LAYDIFF-JJ)=PWDI(LAYDIFF-JJ)+2.*PI*BI
-         PWDI(LAYDIFF-JJ)=PWDI(LAYDIFF-JJ)+(2.*(LI+2.*BI)) ! JCT_RECT
+!        ACC 2026: perimetro diagnostico consistente con correccion EI (solo lados largos 2*LI):
+!         PWDI(LAYDIFF-JJ)=PWDI(LAYDIFF-JJ)+(2.*(LI+2.*BI)) ! JCT_RECT (erroneo, comentado)
+         PWDI(LAYDIFF-JJ)=PWDI(LAYDIFF-JJ)+(2.*LI)          ! ACC 2026
          !AWDI(LAYDIFF-JJ)=AWDI(LAYDIFF-JJ)+PI*BI**2
          AWDI(LAYDIFF-JJ)=AWDI(LAYDIFF-JJ)+(LI*BI*2) ! JCT_RECT
          !BWDI(LAYDIFF-JJ)=BWDI(LAYDIFF-JJ)+SQRT((PI*BI**2)/PI)
          BWDI(LAYDIFF-JJ)=BWDI(LAYDIFF-JJ)+BI ! JCT_RECT_2022
-		 LWDI(LAYDIFF-JJ)=BWDI(LAYDIFF-JJ)+LI! JCT_RECT_2022
+!        ACC 2026: ERROR typo - acumulaba BWDI+LI en lugar de LWDI+LI. Linea erronea comentada:
+!         LWDI(LAYDIFF-JJ)=BWDI(LAYDIFF-JJ)+LI
+         LWDI(LAYDIFF-JJ)=LWDI(LAYDIFF-JJ)+LI  ! ACC 2026
          HWITH=HWITH+DZ   
          IF(HWITH.GT.HCELL)THEN
             PWDI(LAYDIFF-JJ) = PWDI(LAYDIFF-JJ)/NELS
@@ -4266,9 +4303,13 @@ C        Previous equation corrected to consistently express salinity in uS/cm
 !
 C        Revised gaseous flux equations.
          !YO2=FGO/((PI*(LAMBDA*BI)**2)*(VI+VB))
-		 YO2=FGO/((LAMBDA*2.*BI*(LI-2.*BI*(1.-LAMBDA)))*(VI+VB))! JCT_RECT
+!        ACC 2026: ERROR - area burbujas inconsistente. Usar LAMBDA*2*BI*LI (linea fuente 2D).
+!        Referencia: Dissanayake (2021). Lineas erroneas comentadas:
+!         YO2=FGO/((LAMBDA*2.*BI*(LI-2.*BI*(1.-LAMBDA)))*(VI+VB))
+!         YN2=FGN/((LAMBDA*2.*BI*(LI-2.*BI*(1.-LAMBDA)))*(VI+VB))
+         YO2=FGO/((2.*LAMBDA*BI*LI)*(VI+VB))  ! ACC 2026
          !YN2=FGN/((PI*(LAMBDA*BI)**2)*(VI+VB))
-         YN2=FGN/((LAMBDA*2.*BI*(LI-2.*BI*(1.-LAMBDA)))*(VI+VB))! JCT_RECT
+         YN2=FGN/((2.*LAMBDA*BI*LI)*(VI+VB))  ! ACC 2026
 C  
 !        
          PZ=PATM+(DENSEA*G*Z)
@@ -4277,8 +4318,11 @@ C
 C
 !        GAS VOLUME PER TOTAL VOLUME OF THE BUBBLE-WATER MIXTURE IN THE INNER CORE OF THE PLUME
          !VG=VBUB*N/((VI+VB)*(PI*(LAMBDA*BI)**2))
-		 VG=VBUB*N/((VI+VB)*(LAMBDA*2.*BI*(LI-2.*BI*(1.-LAMBDA)))) ! JCT_RECT
-C        Previous equation revised to account for correct plume cross-sectional area occupied by bubbles. 
+!        ACC 2026: ERROR - area burbujas inconsistente con correccion YO2/YN2 (l.4295-4297).
+!        Usar 2*LAMBDA*BI*LI (linea fuente 2D, misma formula que YO2). Linea erronea comentada:
+!         VG=VBUB*N/((VI+VB)*(LAMBDA*2.*BI*(LI-2.*BI*(1.-LAMBDA)))) ! JCT_RECT
+         VG=VBUB*N/((VI+VB)*(2.*LAMBDA*BI*LI))  ! ACC 2026: area burbujas = LAMBDA*2*BI*LI
+C        Previous equation revised to account for correct plume cross-sectional area occupied by bubbles.
 !        Bubbles radius     
          RB=(3.*QGAS/(4.*PI*N))**(1./3.)
          IF(RB.LT.0.0)THEN
@@ -4735,7 +4779,12 @@ C     CALCULATION OF INITIAL WATER VELOCITY USING FROUDE NUMBER
 		  BO=AREA/(2.0*LO)
 		  ! VO=-FRNO*(ABS((BO-BITOP)*G*(DENSEA-DENSEP)/DENSEP))**0.5
 		  ! VO=-FRNO*(QINTOP/VO/(LITOP + LO)*G*(ABS((DENSEA-DENSEP)/DENSEP)))**0.5 ! JCT_rect_2022
-		  VO=-FRNO*(ABS((BO-BITOP)*G*(DENSEA-DENSEP)/DENSEP))**0.5 ! JCT_rect_2022
+!         ACC 2026: ERROR - escala de longitud Froude usaba (BO-BITOP) en lugar de (BO-BI),
+!         semiancho del anillo exterior. Ademas DENSEP es densidad de la pluma interna, no
+!         de la exterior. La pluma externa es mas densa que el ambiente (DENSEP>DENSEA).
+!         Referencia: Socolofsky et al. (2008) Eq.12. Linea erronea comentada:
+!          VO=-FRNO*(ABS((BO-BITOP)*G*(DENSEA-DENSEP)/DENSEP))**0.5
+          VO=-FRNO*(ABS((BO-BITOP)*G*(DENSEP-DENSEA)/DENSEA))**0.5  ! ACC 2026
 		  VDIFF=ABS(VO-VGUESS)
 		  VGUESS=VO
       END DO
@@ -5337,11 +5386,11 @@ C
      +INMOMENT(35000),INTEMP(35000),INO2(35000),INSAL(35000),
      +INBI(35000),BITOP,VI,VO,TPLUMED,QINTOP,TARO,DEPTHDMPR,
      +SALPLUMED,COMGPD,DENSEINNER,GAMMA1,TIN,COMGIN,SALIN,EP,
-     +INLI(35000),LITOP,LWDO(500),LI,LO	 
+     +INLI(35000),LITOP,LWDO(500),LI,LO
       INTEGER II,IJ,IK,JJ,LL,NEQN,NN,MI,JK,JL,LAYTOP,
-     +LAYERS,KM,KN,KO,KP,ROWS,KQ,KR,KU,KV,KW,KX,KY,KZ,KS,LAYDIFF,YEAR 
-      INTEGER NELS,ierror,M,CONT,LAYINTR,NLI,NLO,NITERPLUME
-C 
+     +LAYERS,KM,KN,KO,KP,ROWS,KQ,KR,KU,KV,KW,KX,KY,KZ,KS,LAYDIFF,YEAR
+      INTEGER NELS,ierror,M,CONT,LAYINTR,NLI,NLO,NITERPLUME,NLIMAX ! ACC 2026
+C
 C     --------------------------------------------------------------------------
 C     CONSTANTS
 C     --------------------------------------------------------------------------
@@ -5379,10 +5428,16 @@ C
       INSAL    =INPLUME(:,7)
 	  
 
-!     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
+!     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !     Dejamos como zona de transicion los 0.1 metros superiores de la pluma. JCT
 !     BITOP y QINTOP dejan de ser input, los sacamos de INPLUME --> ELIMINAR  JCT
-      NLI = NLI -10
+!     ACC 2026 C5: offset fijo -10 reemplazado por búsqueda basada en profundidad (zona de transición ~0.1 m)
+!      NLI = NLI -10                                                ! ACC 2026
+      NLIMAX = NLI                                                  ! ACC 2026
+      DO WHILE (NLI > 1)                                            ! ACC 2026
+        IF ((INXLOC(NLIMAX)-INXLOC(NLI)) >= 0.1D0) EXIT           ! ACC 2026
+        NLI = NLI - 1                                               ! ACC 2026
+      END DO                                                         ! ACC 2026
       BITOP  = INPLUME(NLI,2)
       QINTOP = -INPLUME(NLI,3) !JCT2022
 	  LITOP  = INPLUME(NLI,9) ! JCT_RECT	  
@@ -5455,7 +5510,9 @@ C     CALCULATION OF INITIAL WATER VELOCITY USING FROUDE NUMBER
             LO=(-1.0*BB-(BB**2-4.0*AA*CC)**(0.5))/(2.0*AA)
          ENDIF		 
 		 BO=AREA/(2.0*LO)
-         VO=-FRNO*(ABS((BO-BITOP)*G*(DENSEA-DENSEP)/DENSEP))**0.5
+!        ACC 2026: denominador DENSEA fisicamente correcto (pluma externa mas densa que ambiente)
+!        Linea erronea comentada: VO=-FRNO*(ABS((BO-BITOP)*G*(DENSEA-DENSEP)/DENSEP))**0.5
+         VO=-FRNO*(ABS((BO-BITOP)*G*(DENSEP-DENSEA)/DENSEA))**0.5  ! ACC 2026
          VDIFF=ABS(VO-VGUESS)
          VGUESS=VO
       END DO
@@ -5476,9 +5533,14 @@ C     ------------------------------------------------------------------
       ! EI=+2.*PI*BI*ALPHAI*(VI+C1*VO)
       ! EO=-2.*PI*BI*ALPHAO*VO !JCT_2022 cambio signo
       ! EA=-2.*PI*BO*ALPHAA*VO !JCT_2022 cambio signo
-	  EI=+(2.*(LI+2.*BI))*ALPHAI*(VI+C1*VO) ! JCT_RECT
-      EO=-(2.*(LI+2.*BI))*ALPHAO*VO ! JCT_RECT JCT_2022
-      EA=-(2.*(LO+2.*BO))*ALPHAA*VO ! JCT_RECT JCT_2022
+!     ACC 2026: perimetro de entrainment = solo lados largos (2*L), Dissanayake 2021 linea fuente 2D.
+!     Lineas erroneas comentadas (perimetro rectangulo completo):
+!      EI=+(2.*(LI+2.*BI))*ALPHAI*(VI+C1*VO) ! JCT_RECT
+!      EO=-(2.*(LI+2.*BI))*ALPHAO*VO ! JCT_RECT JCT_2022
+!      EA=-(2.*(LO+2.*BO))*ALPHAA*VO ! JCT_RECT JCT_2022
+	  EI=+2.*LI*ALPHAI*(VI+C1*VO)  ! ACC 2026: solo lados largos (2D linea fuente)
+      EO=-2.*LI*ALPHAO*VO           ! ACC 2026: solo lados largos
+      EA=-2.*LO*ALPHAA*VO           ! ACC 2026: solo lados largos
       EP=QINTOP
 
       PRINT*,"EA,EO,EI,EP,VO",EA,EO,EI,EP, VO
@@ -5494,11 +5556,11 @@ C     Previous equation corrected to account for salinity units conversion.
 !!    FDN=QW*CN2
 !     Initialize lateral withdrawal flowrate for first/lowest cell in column/segment
       JJ=0
-      QWDO(LAYTOP)= QW 
-	  PWDO(LAYTOP)= (2.*(LO+2.*BO)) ! JCT_RECT_2022
-      AWDO(LAYTOP)= (LO*BO*2)-(LI*BI*2)   ! JCT_RECT_2022 
-      BWDO(LAYTOP)= BO 
-      LWDO(LAYTOP)= LO 
+      QWDO(LAYTOP)= QW
+	  PWDO(LAYTOP)= (2.*LO)  ! ACC 2026: solo lados largos (consistente con EA, Dissanayake 2021)
+      AWDO(LAYTOP)= (LO*BO*2)-(LI*BI*2)   ! JCT_RECT_2022
+      BWDO(LAYTOP)= BO
+      LWDO(LAYTOP)= LO
 !
 !     -------------------------------------------------------------------------- 
 C	SOLUTION PROCEEDURE
@@ -5644,12 +5706,17 @@ C           Previous equation corrected to consistently express salinity in uS/c
 !         
 
 
-         EI=+(2.*(LI+2.*BI))*ALPHAI*(VI+C1*VO)
-         EO=-(2.*(LI+2.*BI))*ALPHAO*VO ! JCT_2020 VO es negativa
-         EA=-(2.*(LO+2.*BO))*ALPHAA*VO ! JCT_2020
+!        ACC 2026: perimetro = solo lados largos (2*LI, 2*LO), Dissanayake 2021 linea fuente 2D.
+!        Lineas erroneas comentadas (perimetro rectangulo completo):
+!         EI=+(2.*(LI+2.*BI))*ALPHAI*(VI+C1*VO)
+!         EO=-(2.*(LI+2.*BI))*ALPHAO*VO ! JCT_2020 VO es negativa
+!         EA=-(2.*(LO+2.*BO))*ALPHAA*VO ! JCT_2020
+         EI=+2.*LI*ALPHAI*(VI+C1*VO)  ! ACC 2026: solo lados largos
+         EO=-2.*LI*ALPHAO*VO           ! ACC 2026: solo lados largos
+         EA=-2.*LO*ALPHAA*VO           ! ACC 2026: solo lados largos
 
         !
-!        Temperature and salinity in the plume    
+!        Temperature and salinity in the plume
          TPLUME=FTEMP/QW
          SALPLU=FSAL/(QW*DENSEP)/(GAMMA/DENSE20)
          SALPLU=224  ! Eliminar JCT SAlinidad
@@ -5672,9 +5739,9 @@ C        Previous equation corrected to consistently express salinity in uS/cm
          OUTPLUME(NLO,8)=VO
          OUTPLUME(NLO,9)=LO
 		 
-!        Add incremental entrainment to total cell entrainment/withdrawal   
+!        Add incremental entrainment to total cell entrainment/withdrawal
          QWDO(LAYTOP+JJ)=QWDO(LAYTOP+JJ)-(EA+EO-EI)*DZ ! JCT_2022
-         PWDO(LAYTOP+JJ)=PWDO(LAYTOP+JJ)+(2.*(LO+2.*BO))
+         PWDO(LAYTOP+JJ)=PWDO(LAYTOP+JJ)+(2.*LO)  ! ACC 2026: solo lados largos (consistente con EA)
          AWDO(LAYTOP+JJ)=AWDO(LAYTOP+JJ)+(LO*BO*2) - (LI*BI*2)
          BWDO(LAYTOP+JJ)=BWDO(LAYTOP+JJ)+BO
 		 LWDO(LAYTOP+JJ)=LWDO(LAYTOP+JJ)+LO
@@ -5774,17 +5841,21 @@ C
      +SALIN,SALPLU,GAMMA,DENSE20,DOAMB,COMGP,GAMMA1,
      +DNAMB,CNMGP,X,Y(5),DYDX(5),VI,VO,COMGIN,MOM1,MOM2,MOM3,LO,LI
 
-      DYDX(1)=EA+EO-EI   
+      DYDX(1)=EA+EO-EI
 !	  DYDX(2)=((1/GAMMA1)*(-PI*G*(BO**2-BI**2)*
 !     +((DENSEP-DENSEA)/DENSE20))-EI*VO+EO*VI)
+!     ACC 2026 (DERIVS_8): ERROR - densidad de referencia era DENSE20 (constante 998.2 kg/m3).
+!     Debe ser DENSEA (densidad ambiente variable). Lineas erroneas comentadas:
+!      DYDX(2)=((1/GAMMA1)*(-G*(LO*2*BO-LI*2*BI)*
+!     +((DENSEP-DENSEA)/DENSE20))-EI*VO+EO*VI)
       DYDX(2)=((1/GAMMA1)*(-G*(LO*2*BO-LI*2*BI)*
-     +((DENSEP-DENSEA)/DENSE20))-EI*VO+EO*VI)	 
+     +((DENSEP-DENSEA)/DENSEA))-EI*VO+EO*VI)  ! ACC 2026
       DYDX(3)=EA*TARO+EO*TIN-EI*TPLUME
       DYDX(4)=EA*SALAMB+EO*SALIN-EI*SALPLU
       DYDX(5)=EA*DOAMB/32.+EO*COMGIN/32.-EI*COMGP/32.
  !     DYDX(6)=EA*DNAMB/28.+EO*???/28.-EI*CNMGP/28.
       RETURN
-      END 
+      END
 
 
 C     
@@ -5889,15 +5960,21 @@ C----------------------------------------------------------------------
     !  PRINT *, 'Y',Y
     !  PRINT *, 'DYDX',DYDX
 
-      DYDX(1)=EA+EO-EI    
+      DYDX(1)=EA+EO-EI
 !      DYDX(2)=PI*G*(BO**2-BI**2)*((DENSEP-DENSEA)/(DENSE20*GAMMA1))+
 !     +EI*VO-EO*VI
 
  !     DYDX(2)=(1/GAMMA1)*(PI*G*(BO**2-BI**2)*((DENSEP-DENSEA)/DENSE20)+
  !    +EI*VO-EO*VI)*(-1)
 
+!     ACC 2026 (DERIVS_7): ERROR - densidad de referencia era DENSE20 (constante 998.2 kg/m3)
+!     en lugar de DENSEA (densidad ambiente variable con profundidad). Inconsistente con
+!     DERIVS_6 que usa DENSEP. Para conservacion de momento de pluma externa usar DENSEA.
+!     Referencia: Wuest (1992), Socolofsky (2008). Lineas erroneas comentadas:
+!      DYDX(2)=((1/GAMMA1)*(-G*(LO*2*BO-LI*2*BI)*
+!     +((DENSEP-DENSEA)/DENSE20))-EI*VO+EO*VI)
       DYDX(2)=((1/GAMMA1)*(-G*(LO*2*BO-LI*2*BI)*
-     +((DENSEP-DENSEA)/DENSE20))-EI*VO+EO*VI)
+     +((DENSEP-DENSEA)/DENSEA))-EI*VO+EO*VI)  ! ACC 2026
 	 
 	    ! PRINT*," DYDX(2)_drevis",DYDX(2), GAMMA1,G,LO,BO,LI,BI
 		! PRINT*,DENSEP,DENSEA,DENSE20,EI,VO,EO,VI
@@ -6042,9 +6119,16 @@ C     +DENSEP*G*(LAMBDA*LI*2*LAMBDA*BI)
  !     DYDX(2)=(1/GAMMA1)*((PI*G*BI**2/DENSE20)*(LAMBDA**2*VG*(DENSEA-0)+
  !    +LAMBDA**2*(1-VG)*(DENSEA-DENSEW))+EI*VO-EO*VI)
 
+!     ACC 2026: ERROR - area de burbujas usaba LAMBDA^2 (formulacion circular/axisimetrica)
+!     en lugar de LAMBDA (formulacion rectangular/linea fuente). Para pluma 2D: solo el
+!     semiancho BI escala con LAMBDA; la fraccion de area con burbujas es LAMBDA*Area,
+!     no LAMBDA^2*Area. Referencia: Dissanayake (2021). Lineas erroneas comentadas:
+!      DYDX(2)=(1/GAMMA1)*(((DENSEA-DENSEW)/DENSEP)*G*(LI*2.0*BI)*
+!     +(1-LAMBDA**2)+((DENSEA-DENSEP)/DENSEP)*G*(LI*2.0*BI)*
+!     +LAMBDA**2)+EI*VO-EO*VI
       DYDX(2)=(1/GAMMA1)*(((DENSEA-DENSEW)/DENSEP)*G*(LI*2.0*BI)*
-     +(1-LAMBDA**2)+((DENSEA-DENSEP)/DENSEP)*G*(LI*2.0*BI)*
-     +LAMBDA**2)+EI*VO-EO*VI
+     +(1-LAMBDA)+((DENSEA-DENSEP)/DENSEP)*G*(LI*2.0*BI)*
+     +LAMBDA)+EI*VO-EO*VI  ! ACC 2026
 
 
 !      DYDX(2)=(1/GAMMA1)*((PI*G*BI**2/DENSE20)*(LAMBDA**2*VG*(DENSEA-0)+
@@ -6072,7 +6156,11 @@ C     +DENSEP*G*(LAMBDA*LI*2*LAMBDA*BI)
 
       DYDX(3)=EI*TARO-EO*TPLUME
       !DYDX(4)=EI*(SALARO*GAMMA/DENSE20)*DENSEA-EO*(SALPLU*GAMMA/DENSE20)*DENSEP
-      DYDX(4)=EI*SALARO-EO*SALARO
+!     ACC 2026 (DERIVS_6): ERROR - detrainment usaba SALARO (salinidad ambiente) en lugar de
+!     SALPLU (salinidad pluma). Ecuacion correcta: dF_sal/dz = EI*S_amb - EO*S_plume
+!     Referencia: Wuest (1992), Dissanayake (2021). Linea erronea comentada:
+!      DYDX(4)=EI*SALARO-EO*SALARO
+      DYDX(4)=EI*SALARO-EO*SALPLU  ! ACC 2026
       DYDX(5)=EI*DOAMB/32.-EO*COMGP/32.+4.0*PI*RB**2*N/(VI+VB)*KOLO*
      +(HO2*PO-COMGP/32.)
       DYDX(6)=EI*DNAMB/28.-EO*CNMGP/28.+4.0*PI*RB**2*N/(VI+VB)*KOLN*
@@ -6083,7 +6171,7 @@ C     +DENSEP*G*(LAMBDA*LI*2*LAMBDA*BI)
       !PRINT *, 'DYDX', DYDX(1),DYDX(2),DYDX(3),DYDX(4),DYDX(5),DYDX(6)
 
       RETURN
-      END 
+      END
 C
 C------------------------------------------------------------------------------
 C
@@ -6268,7 +6356,11 @@ C     +DENSEP*G*(PI*(LAMBDA*BI)**2)
 
       DYDX(3)=EI*TARO-EO*TPLUME
       !DYDX(4)=EI*(SALARO*GAMMA/DENSE20)*DENSEA-EO*(SALPLU*GAMMA/DENSE20)*DENSEP
-      DYDX(4)=EI*SALARO-EO*SALARO
+!     ACC 2026 (DERIVS_4): ERROR - detrainment usaba SALARO (salinidad ambiente) en lugar de
+!     SALPLU (salinidad pluma). Ecuacion correcta: dF_sal/dz = EI*S_amb - EO*S_plume
+!     Referencia: Wuest (1992). Linea erronea comentada:
+!      DYDX(4)=EI*SALARO-EO*SALARO
+      DYDX(4)=EI*SALARO-EO*SALPLU  ! ACC 2026
       DYDX(5)=EI*DOAMB/32.-EO*COMGP/32.+4.0*PI*RB**2*N/(VI+VB)*KOLO*
      +(HO2*PO-COMGP/32.)
       DYDX(6)=EI*DNAMB/28.-EO*CNMGP/28.+4.0*PI*RB**2*N/(VI+VB)*KOLN*
@@ -6276,7 +6368,7 @@ C     +DENSEP*G*(PI*(LAMBDA*BI)**2)
       DYDX(7)=-4.0*PI*RB**2*N/(VI+VB)*KOLO*(HO2*PO-COMGP/32.)
       DYDX(8)=-4.0*PI*RB**2*N/(VI+VB)*KOLN*(HN2*PN-CNMGP/28.)
       RETURN
-      END 
+      END
 C
 C------------------------------------------------------------------------------
 C

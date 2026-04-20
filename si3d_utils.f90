@@ -4162,7 +4162,7 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
        IF (ABS(flpss(nn)) < qthrs(nn)) THEN  ! Diffuser OFF
 !         DiffON = .FALSE.  
 !         DO inn = 1, iopss
-       DO innH = 1, iopssH(omp_get_thread_num ( )+1)
+         DO innH = 1, iopssH(omp_get_thread_num ( )+1)
             inn = ioph2iop(innH,omp_get_thread_num ( )+1)  
            IF (iodev(inn) .NE. nn) CYCLE 
            Qpss (:,inn) = 0.0E0              ! ACC, index inn in the second place to do correct initialization (03/20/2026)
@@ -4230,15 +4230,22 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
              dfelev  = -zamb(ksrc)     ;       ! Elevation of diffuser  
              hcell   = real(ddz,8)             ;       ! Pressumed constant - thickess of cells
              qwd     = 0.0E0           ;       ! Initialize qwd
+             qwdi    = 0.0E0           ;       ! ACC 2026: initialize before INNER_PLUME call (evita acumulación entre pasos de tiempo)
+             qwdo    = 0.0E0           ;       ! ACC 2026: initialize before OUTER_PLUME call
              bwd     = 0.0E0                   ! Initialize perimeter (FJRplume)
              bwdi    = 0.0E0           ! Initialize perimeter (JCT)
              bwdo    = 0.0E0           ! Initialize perimeter (JCT)
        lwdi    = 0.0E0           ! Initialize perimeter (JCT)
              lwdo    = 0.0E0           ! Initialize perimeter (JCT)             
              qscfm   = real(flpss(nn),8)       ;       ! Air flow rate 
-             frconot = 1.00            ;       ! Fraction of O2 in air (not used?)
+!             frconot = 1.00            ;       ! Fraction of O2 in air (not used?)  ! ACC 2026: valor fijo eliminado
+             frconot = frconot_dev(nn) ;       ! ACC 2026: fracción molar de O2 leída de pss01.txt
        lambnot = lambdanot(nn)   ;       ! Half-width 
-             linot   = lnot(nn)        ;       ! Diffuser length
+            linot   = lnot(nn)        ;       ! INCORRECTO: genera pluma de 9m con VG=0.04% en lugar de 300m con VG=0.001%
+!            !   → qwdi representa 9m de difusor → Qpss = qwdi×dy/dfLgth es 5.8× menor de lo correcto. ACC 2026
+!             linot   = dfLgth          ;       ! ACC 2026: longitud malla (ncdev×idx=300m) garantiza coherencia con Qpss=qwdi×dy/dfLgth
+!            ! Diagnostico: VG(9m)=0.04% vs VG(300m)=0.001%; VI(9m)=0.33m/s vs VI(300m)=0.056m/s;
+!            ! ambas plumas alcanzan la superficie (estancamiento a 77m y 181m resp.). Qpss(300m)=5.8×Qpss(9m)
        diamm   = diammb(nn)      ;       ! Initial bubble diameter
              alphaii  = alphai(nn)          ! Entrainment coefficient inner plume (-)
              alphaoo  = alphao(nn)          ! Entrainment coefficient outer plume (-)
@@ -4454,16 +4461,16 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
              comgpti  = comgpt
              salpluti = salplut
 
-             ! ... Define flow at cells
-             Qpss(:,inn) = 0.0
-
-             ! ... Define flow at entrainment cells
-             DO k = ktop+1,ksrc
-                Qpss(k,inn) = -(real(qwdi(k)))*dy/real(dfLgth)
-             ENDDO
-
-             ! ... Define flow at detrainment cell to force volume conservation
-             Qpss(ktop,inn) = -SUM(Qpss(ktop+1:ksrc,inn))
+             ! ... Define flow at cells  (ACC 2026: bloque muerto - Qpss se redefine más abajo para todos los tipos)
+!             Qpss(:,inn) = 0.0                                              ! ACC 2026
+!
+!             ! ... Define flow at entrainment cells
+!             DO k = ktop+1,ksrc
+!                Qpss(k,inn) = -(real(qwdi(k)))*dy/real(dfLgth)
+!             ENDDO
+!
+!             ! ... Define flow at detrainment cell to force volume conservation
+!             Qpss(ktop,inn) = -SUM(Qpss(ktop+1:ksrc,inn))                  ! ACC 2026
 
              ! CALL OUTER_PLUME_RECT(iyr,rjulday,wselev,dfelev,kms,     &
                                  ! lambnot,linot, bwdi(ktop+1),         &
@@ -4488,7 +4495,7 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
                  
                  
        CALL OUTER_PLUME_RECT2(iyr,rjulday,wselev,dfelev,kms,    &
-                                 bwdi(ktop+1),salamb,patm,            &
+                                 bwdi(ktop+1),salamb,patm,            & ! ACC 2026 C7: bwdi(ktop+1) es sobreescrito por INPLUME dentro de OUTER_PLUME_RECT2 — pasar bwdi(ksrc) si se quiere inicialización externa
                                  qwt, frconot, ksrc, hcell,           &
                                  zamb (1:kms),                        &
                                  Tamb (1:kms),                        &
@@ -4564,7 +4571,8 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
              ELSE
                ! ... Define flow at entrainment cells
                DO kk = ktop+1,ksrc
-                    Qpss(kk,inn) = -real(qwd(kk))
+!                    Qpss(kk,inn) = -real(qwd(kk))   ! ACC 2026: faltaba escala por celda
+                    Qpss(kk,inn) = -real(qwd(kk)) * dy / real(dfLgth)  ! ACC 2026
                ENDDO
                IF (ptype(nn) ==3 .OR. ptype(nn)==5) THEN ! detrainment at end of outter plume JCT_2020
                   kdetr(inn) = kint -1
@@ -4584,7 +4592,8 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
                   Tsource = Tsource/SUM(Qpss(ktop+1:kms,inn))
 
                   !kdetr(inn) = ksrc   ! fallback: detrainment en el difusor si no hay equilibrio    ! ACC para evitar kdetr = 0
-                  kdetr(inn) = MAX(ksrc,1) ! Evita kdetr = 0 si ksrc = 0
+!                  kdetr(inn) = MAX(ksrc,1) ! Evita kdetr = 0 si ksrc = 0  ! ACC 2026: kint es mejor fallback que ksrc
+                  kdetr(inn) = MAX(kint,1) ! ACC 2026: usar capa de intrusión como fallback para kdetr
                   FLAG = 0
                   DO kk=1,kms
                      IF (Tamb(kk) .LE. Tsource .AND. FLAG .EQ. 0) THEN
@@ -4666,6 +4675,8 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
            Tsource = salpp(k,l)
          ENDIF
          Tpss(k,inn) = Tsource  ! Tpss conection plume <-> 3D
+         ! ACC 2026 : para pluma rectangular doble (ptype>=5), usar temperatura real de la pluma en detrainment
+         ! IF (ptype(nn) >= 5) Tpss(k,inn) = real(tplumed)  ! ACC 2026
          !PRINT *, 'FJR junk', ktopsave(inn), Tsource
          IF (ntr > 0) THEN
            DO itr = 1, ntr
@@ -4694,6 +4705,9 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
                !ENDIF
                         
              Rpss(k,inn,itr) = Rsource ! Rpss conection plume <-> 3D
+             ! ACC 2026: para pluma rectangular doble (ptype>=5), usar conc DO real de la pluma en detrainment
+             ! IF (ptype(nn) >= 5 .AND. iDO == 1 .AND. itr == LDO) &
+             !  Rpss(k,inn,itr) = real(comgped)  ! ACC 2026
              ! *********** Amisk NO PLUME MIXING
              !DO kk  = k1,kms
              !   Qpss(kk,inn) = 0.0
@@ -4738,11 +4752,12 @@ SUBROUTINE PointSourceSinkInput
                froudei(npssdev),&
                froudeo(npssdev),&
                gammap(npssdev), &
+               frconot_dev(npssdev), &    ! ACC 2026: fracción molar de O2 en gas del difusor
                lambda(npssdev), &         ! Half-width of the plume
          lambdanot(npssdev), &            ! Half-width of the plume
          lnot(npssdev), &                 ! Length of the plume
-               idetr (npssdev), & 
-         STAT = istat)   
+               idetr (npssdev), &
+         STAT = istat)
    IF (istat /= 0) CALL allocate_error ( istat, 22 )
 
    ! ... Allocate space for input information on forcing variables pss -
@@ -4954,6 +4969,9 @@ SUBROUTINE PointSourceSinkInput
           PRINT*,'flag3.4'   
 
     ! Read half diffuser length (m) JCT_2020_RECT
+    ! ACC 2026: lnot se lee para mantener compatibilidad del formato de pss01.txt,
+    !           pero ya no se usa en INNER_PLUME_RECT — se usa dfLgth (longitud de malla) en su lugar
+    !           Este cambio hace que el codigo rompa, por lo que volvemos de nuevo a la opcion de leer lnot
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) lnot(nn)
               PRINT*,'flag3.5'   
 
@@ -4991,6 +5009,10 @@ SUBROUTINE PointSourceSinkInput
         ! Read initial bubble diameter (mm) JCT_2020
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) gammap(nn)
         IF (ios /= 0) CALL input_error ( ios, 51 )
+
+        ! Read mole fraction of O2 in diffuser gas (1.0=pure O2, 0.21=air)  ! ACC 2026
+        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) frconot_dev(nn)      ! ACC 2026
+        IF (ios /= 0) CALL input_error ( ios, 51 )                           ! ACC 2026
 
         ! Read ambient salinity (constant, uS/cm)
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) salamb
