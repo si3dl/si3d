@@ -525,7 +525,7 @@ SUBROUTINE tauCritical(tauCrt, g_ss, sed_d, submerged_spec_g, w_dens, ki_visc, R
   real, intent(out) :: tauCrt              !< (Pa) Critical shear stress
 
   ! Estimate of the nondimensional critical Shields parameter
-  shields_param = 0.4 * (0.22 * Rep ** (-0.6) + 0.06 * 10 ** (-7.7 * Rep ** (-0.6)))
+  shields_param = 0.3 * (0.22 * Rep ** (-0.6) + 0.06 * 10 ** (-7.7 * Rep ** (-0.6)))
 
   ! Estimate of critical shear stress for given water and sediment properties
   tauCrt = shields_param * g_ss * submerged_spec_g * sed_d * (w_dens)

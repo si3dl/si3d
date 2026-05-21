@@ -207,7 +207,7 @@ SUBROUTINE InitializeScalarFields
   CHARACTER(LEN=18)  :: initfmt
   INTEGER, PARAMETER :: InitProc = 4
   REAL, ALLOCATABLE, DIMENSION(:,:) :: Scalardepthile
-  real :: hg0sed, hgiised, mehgsed
+  real :: hg0sed, hgiised, mehgsed, rhgsed
   integer :: im_hgsed, jm_hgsed, l_hgsed, iter
   integer :: ihg_sed = 200
 
@@ -449,13 +449,14 @@ SUBROUTINE InitializeScalarFields
           read(ihg_sed, fmt='(A)', iostat=ios)
           if(ios /= 0) call input_error(ios, 15)
           do iter = 1, l_hgsed
-            read(unit=ihg_sed, fmt='(I8,I8,G16.6,G16.6,G16.6)', iostat=ios) im_hgsed, jm_hgsed, hg0sed, hgiised, mehgsed
+            read(unit=ihg_sed, fmt='(I8,I8,G16.6,G16.6,G16.6,G16.6)', iostat=ios) im_hgsed, jm_hgsed, hg0sed, hgiised, mehgsed, rhgsed
             if(ios /= 0) call input_error(ios, 15)
             l = ij2l(im_hgsed, jm_hgsed)
             kms = kmz(l)
             tracer(kms + 1, l, LHg0) = hg0sed
             tracer(kms + 1, l, LHgII) = hgiised
             tracer(kms + 1, l, LMeHg) = mehgsed
+            r_hg_sed(l) = rhgsed
           end do
         end if
       END IF

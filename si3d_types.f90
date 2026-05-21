@@ -493,6 +493,7 @@
    real :: POC_sed
    real :: DOC_sed
    real :: grnd_Hg
+   real, allocatable, dimension(:) :: r_hg_sed
 !                        -----Data Dictionary-----
 
 END MODULE si3d_types

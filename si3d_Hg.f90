@@ -957,7 +957,7 @@ SUBROUTINE HgIIw_methylation(HgIIw_methy, kwq, lwq, HgII)
   end if
 
   ! HgIIw_methy = h(kwq, lwq) * kw23 * Q10 * Canox * HgII * DOC_miner
-  HgIIw_methy = h(kwq, lwq) * kw23 * Canox * Q10 * HgII ! Test because DOC_miner -> 0 when DO -> 0.
+  HgIIw_methy = h(kwq, lwq) * kw23 * Canox * Q10 * HgII * r_hg_sed(lwq)! Test because DOC_miner -> 0 when DO -> 0.
 
 END SUBROUTINE HgIIw_methylation
 
@@ -996,7 +996,7 @@ SUBROUTINE MeHgw_demethylation(MeHgw_demethy, kwq, lwq, MeHg)
     DOC_miner = 0.0
   end if
 
-  MeHgw_demethy = h(kwq, lwq) * kw32 * Canox * Q10 * MeHg  ! Test because DOC_miner -> 0 when DO -> 0.
+  MeHgw_demethy = h(kwq, lwq) * kw32 * Canox * Q10 * MeHg * r_hg_sed(lwq)  ! Test because DOC_miner -> 0 when DO -> 0.
   ! MeHgw_demethy = h(kwq, lwq) * kw32 * Canox * Q10 * MeHg * DOC_miner
 
 END SUBROUTINE MeHgw_demethylation
@@ -1131,7 +1131,7 @@ SUBROUTINE HgIIs_methylation(HgIIs_methy, kwq, lwq, HgII)
   T_methyl = 15
 
   Q10 = Q10_methyl ** ((salp(kwq,lwq) - T_methyl) / 10)
-  HgIIs_methy = h(kwq, lwq) * ks23 * Q10 * (1 + miu_so4 * (SO4 / (KSO4 + SO4)) ) * HgII
+  HgIIs_methy = h(kwq, lwq) * ks23 * Q10 * (1 + miu_so4 * (SO4 / (KSO4 + SO4)) ) * HgII * r_hg_sed(lwq)
 
 END SUBROUTINE HgIIs_methylation
 
@@ -1158,7 +1158,7 @@ SUBROUTINE MeHgs_demethylation(MeHgs_demethy, kwq, lwq, MeHg)
 
   Q10 = Q10_demethyl ** ((salp(kwq,lwq) - T_demethyl) / 10)
 
-  MeHgs_demethy = h(kwq, lwq) * ks32 * Q10 * MeHg
+  MeHgs_demethy = h(kwq, lwq) * ks32 * Q10 * MeHg * r_hg_sed(lwq)
 
 END SUBROUTINE MeHgs_demethylation
 
