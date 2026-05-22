@@ -1,6 +1,6 @@
 Points Source file for Amisk Lake sensibility simulations
 Time is in hours since start of simulations
-Data - (2) Flow (scfs); (3) Temp. (not used); (4) - Tracer Loads (DO, g/s)
+Data - (2) Flow (scfm); (3) Temp. (not used); (4) - Tracer Loads (DO, g/s)
 Source - Jorge Toledo, UGR
 Type = -2 (Section I/O BC ); = 1 (linear   bubble plume );
      = -1 (cell injection ); = 2 (circular bubble plume );
@@ -8,25 +8,25 @@ Type = -2 (Section I/O BC ); = 1 (linear   bubble plume );
 Type     !     6     ! Type of point source and sink
 NumRecs  !   400     ! Number of records to read
 ***********************************************************************
-uEpss    !     0.25  ! Fraction of flow in Eastward  direction
-uWpss    !     0.25  ! Fraction of flow in Westward  direction
-vNpss    !     0.25  ! Fraction of flow in Northward direction
-vSpss    !     0.25  ! Fraction of flow in Southward direction
+uEpss    !     0.50  ! Fraction of flow in Eastward  direction
+uWpss    !     0.50  ! Fraction of flow in Westward  direction
+vNpss    !     0.00  ! Fraction of flow in Northward direction
+vSpss    !     0.00  ! Fraction of flow in Southward direction
 qthresh  !     0.00  ! Threshold flows to start point source solution
 ***********************************************************************
 idetr    !     0.50  ! Fraction that multiplies (Qdetr/dx/h) for speed at detrainment cells
-labmnot  !     3.17  ! Diffuser half width (m)
-lnot     !     3.17  ! Diffuser length (m) [not used with circular plume]
-diamm    !    1.477  ! Initial bubble diameter
-alphai   !    0.126  ! Entrainment coefficient inner plume (-)
-alphao   !     0.17  ! Entrainment coefficient outer plume (-)
-alphaa   !     0.12  ! Entrainment coefficient from ambient (-)
-lambda   !     0.52  ! Fraction of plume occupied by bubble (-)
-froudei  !     1.47  ! Froude number inner plume
+labmnot  !     0.025 ! Diffuser half width (m). Semiancho de la nube de burbujas
+lnot     !     0.00  ! Diffuser length (m) - linear plume
+diamm    !    1.000  ! Initial bubble diameter
+alphai   !    0.110  ! Entrainment coefficient inner plume (-)
+alphao   !     0.15  ! Entrainment coefficient outer plume (-)
+alphaa   !     0.18  ! Entrainment coefficient from ambient (-)
+lambda   !     0.70  ! Fraction of plume occupied by bubble (-) Bnot = labmnot/lambda = semiancho de la nube de agua
+froudei  !     1.50  ! Froude number inner plume
 froudeo  !     0.14  ! Froude number outer plume
-gammap   !    1.298  !
+gammap   !    1.100  !
 frconot  !     1.00  ! Mole fraction of O2 in diffuser gas (1.0=pure O2, 0.21=air)  ! ACC 2026
-salamb   !    330.0  ! Ambient salinity (uS/cm)
+salamb   !    235.0  ! Ambient salinity (uS/cm)
 patm     !  96554.0  ! Atmospheric pressure (pascals) (mm)
 k4sod    !     0.00  ! Sediment oxygen demand constant
 pdt      !   180     ! No. of time steps between updates

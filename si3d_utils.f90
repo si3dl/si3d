@@ -4235,18 +4235,18 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
              bwd     = 0.0E0                   ! Initialize perimeter (FJRplume)
              bwdi    = 0.0E0           ! Initialize perimeter (JCT)
              bwdo    = 0.0E0           ! Initialize perimeter (JCT)
-       lwdi    = 0.0E0           ! Initialize perimeter (JCT)
+             lwdi    = 0.0E0           ! Initialize perimeter (JCT)
              lwdo    = 0.0E0           ! Initialize perimeter (JCT)             
              qscfm   = real(flpss(nn),8)       ;       ! Air flow rate 
 !             frconot = 1.00            ;       ! Fraction of O2 in air (not used?)  ! ACC 2026: valor fijo eliminado
              frconot = frconot_dev(nn) ;       ! ACC 2026: fracción molar de O2 leída de pss01.txt
-       lambnot = lambdanot(nn)   ;       ! Half-width 
-            linot   = lnot(nn)        ;       ! INCORRECTO: genera pluma de 9m con VG=0.04% en lugar de 300m con VG=0.001%
+            lambnot = lambdanot(nn)   ;       ! Half-width 
+!            linot   = lnot(nn)        ;       ! INCORRECTO: genera pluma de 9m con VG=0.04% en lugar de 300m con VG=0.001%
 !            !   → qwdi representa 9m de difusor → Qpss = qwdi×dy/dfLgth es 5.8× menor de lo correcto. ACC 2026
-!             linot   = dfLgth          ;       ! ACC 2026: longitud malla (ncdev×idx=300m) garantiza coherencia con Qpss=qwdi×dy/dfLgth
+             linot   = dfLgth          ;       ! ACC 2026: longitud malla (ncdev×idx=300m) garantiza coherencia con Qpss=qwdi×dy/dfLgth
 !            ! Diagnostico: VG(9m)=0.04% vs VG(300m)=0.001%; VI(9m)=0.33m/s vs VI(300m)=0.056m/s;
 !            ! ambas plumas alcanzan la superficie (estancamiento a 77m y 181m resp.). Qpss(300m)=5.8×Qpss(9m)
-       diamm   = diammb(nn)      ;       ! Initial bubble diameter
+             diamm   = diammb(nn)      ;       ! Initial bubble diameter
              alphaii  = alphai(nn)          ! Entrainment coefficient inner plume (-)
              alphaoo  = alphao(nn)          ! Entrainment coefficient outer plume (-)
              alphaaa  = alphaa(nn)          ! Entrainment coefficient from ambient (-)
@@ -4416,7 +4416,7 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
              outerplume = 0
              toler = 10         ! in
 
-             DO WHILE (NITERPLUME .LT. 3)
+             DO WHILE (NITERPLUME .LT. 1)
                 NITERPLUME = NITERPLUME+1
                 PRINT*, 'NITERPLUME', NITERPLUME
 
@@ -4452,7 +4452,8 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
 
              DO k = ktop+1, ksrc
                OPEN (UNIT = 54, FILE="check_inner.txt", POSITION="APPEND")
-               WRITE(UNIT = 54, FMT = '(3F12.6)') zamb(k),qwdi(k),bwdi(k)
+               WRITE(UNIT = 54, FMT='(A,F12.6)') "zamb(k),qwdi(k),bwdi(k),lwdi(k)"
+               WRITE(UNIT = 54, FMT = '(3F12.6)') zamb(k),qwdi(k),bwdi(k),lwdi(k)
                CLOSE(UNIT = 54)
              ENDDO
 
@@ -4462,15 +4463,15 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
              salpluti = salplut
 
              ! ... Define flow at cells  (ACC 2026: bloque muerto - Qpss se redefine más abajo para todos los tipos)
-!             Qpss(:,inn) = 0.0                                              ! ACC 2026
-!
-!             ! ... Define flow at entrainment cells
-!             DO k = ktop+1,ksrc
-!                Qpss(k,inn) = -(real(qwdi(k)))*dy/real(dfLgth)
-!             ENDDO
-!
-!             ! ... Define flow at detrainment cell to force volume conservation
-!             Qpss(ktop,inn) = -SUM(Qpss(ktop+1:ksrc,inn))                  ! ACC 2026
+             Qpss(:,inn) = 0.0                                              ! ACC 2026
+
+             ! ... Define flow at entrainment cells
+             DO k = ktop+1,ksrc
+                Qpss(k,inn) = -(real(qwdi(k)))*dy/real(dfLgth)
+             ENDDO
+
+             ! ... Define flow at detrainment cell to force volume conservation
+             Qpss(ktop,inn) = -SUM(Qpss(ktop+1:ksrc,inn))                  ! ACC 2026
 
              ! CALL OUTER_PLUME_RECT(iyr,rjulday,wselev,dfelev,kms,     &
                                  ! lambnot,linot, bwdi(ktop+1),         &
@@ -4543,7 +4544,8 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
 
              DO k = ktop+1, ksrc
                OPEN (UNIT = 55, FILE="check_outter.txt", POSITION="APPEND")
-               WRITE(UNIT = 55, FMT = '(3F12.6)') zamb(k),qwdo(k),bwdo(k)
+               WRITE(UNIT = 55, FMT='(A,F12.6)') "zamb(k),qwdo(k),bwdo(k),lwdo(k)"
+               WRITE(UNIT = 55, FMT = '(3F12.6)') zamb(k),qwdo(k),bwdo(k),lwdo(k)
                CLOSE(UNIT = 55)
              ENDDO
 
@@ -4554,6 +4556,11 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
              qwd = 0.0
              qwd(ktop:kint-1)  = -qwdo(ktop:kint-1) ! JCT_2020 --- ACC 03/2026 added negative signed to qwdo, same as in the circular plume (line 4457)
              qwd(kint:ksrc)    = qwdi(kint:ksrc)
+             IF (ktop.EQ.kint) THEN                          !ACC 2026 for cases when ktop equals kint
+               qwd(ktop:kint+1)  = -qwdo(ktop:kint+1) 
+               qwd(kint+2:ksrc)    = qwdi(kint+2:ksrc)
+             END IF
+
              !$OMP END CRITICAL (plumemodel)
 
              ENDIF  ! End plume type
@@ -4591,13 +4598,11 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
                   ENDDO
                   Tsource = Tsource/SUM(Qpss(ktop+1:kms,inn))
 
-                  !kdetr(inn) = ksrc   ! fallback: detrainment en el difusor si no hay equilibrio    ! ACC para evitar kdetr = 0
-!                  kdetr(inn) = MAX(ksrc,1) ! Evita kdetr = 0 si ksrc = 0  ! ACC 2026: kint es mejor fallback que ksrc
                   kdetr(inn) = MAX(kint,1) ! ACC 2026: usar capa de intrusión como fallback para kdetr
                   FLAG = 0
                   DO kk=1,kms
-                     IF (Tamb(kk) .LE. Tsource .AND. FLAG .EQ. 0) THEN
-                        kdetr(inn) = kk ! JCT_2020
+                    IF (Tamb(kk) .LE. Tsource .AND. FLAG .EQ. 0) THEN
+                        kdetr(inn) = kk ! ACC 2026
                         FLAG = 1
                      ENDIF
                   ENDDO
@@ -4605,7 +4610,7 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
                 PRINT*, 'Tsource_fin', Tsource, kdetr(inn),Tamb(MAX(kdetr(inn)-1,1)),Tamb(kdetr(inn)),Tamb(MIN(kdetr(inn)+1,kms))
                 
                 IF (FLAG == 0) THEN                                                                                                                                                                    
-                  PRINT*, 'WARNING ptype==6: no equilibrium layer found, kdetr set to ksrc'   ! ACC added to report strategy
+                  PRINT*, 'WARNING ptype==6: no equilibrium layer found, kdetr set to kint'   ! ACC added to report strategy
                 ENDIF                
                 
                 ENDIF
@@ -4619,7 +4624,8 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
                 Qpss(kdetr(inn),inn) = -SUM(Qpss(ktop+1:ksrc,inn)) + Qpss(kdetr(inn),inn) ! JCT_2017
 
                 OPEN (UNIT=55, FILE="doubleplume.txt", POSITION="APPEND")
-                WRITE(UNIT=55, FMT = '(10F15.5)') elevt,kdetr(inn),-zamb(kdetr(inn)),Qpss(kdetr(inn),inn),Tsource,Tamb(kdetr(inn)),-zamb(kint),comgpt,oteff,trpss(nn,1)
+                WRITE(UNIT = 55, FMT='(A,F12.6)') "elevt,kdetr(inn),-zamb(kdetr(inn)),Qpss(kdetr(inn),inn),Tsource,Tamb(kdetr(inn)),-zamb(kint)"
+                WRITE(UNIT=55, FMT = '(10F15.5)') elevt,kdetr(inn),-zamb(kdetr(inn)),Qpss(kdetr(inn),inn),Tsource,Tamb(kdetr(inn)),-zamb(kint)                
                 CLOSE(UNIT=55)
 
                PRINT*, 'kk', kk, 'ktop',ktop,'ksrc',ksrc,'inn',inn,'kdetr(inn)',kdetr(inn),'Tamb(kdetr(inn))',Tamb(kdetr(inn))
@@ -4627,8 +4633,12 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
                DO kk = 1,ksrc
                 OPEN (UNIT=56, FILE="check_plumes.txt", POSITION="APPEND")
                     !WRITE (UNIT=56, FMT='(3I3,8F8.2)') kk,ktop,ksrc,-zamb(kk),Qpss(kk,inn),salpp(kk,l),-zamb(kdetr(inn)),Qpss(kdetr(inn),inn),Tsource,Tamb(kdetr(inn)),-zamb(kint)
-                    WRITE (UNIT=56, FMT='(4I3,14F10.2)') kk,ktop,ksrc,kdetr(inn),-zamb(kk),Qpss(kk,inn),qwdi(kk),qwdo(kk),salpp(kk,l),-zamb(kdetr(inn)),Qpss(kdetr(inn),inn),Tsource,Tamb(kdetr(inn)),-zamb(kint),bwdi(kk),bwdo(kk),lwdi(kk),lwdo(kk)
-                  CLOSE (UNIT=56)
+                    
+                    WRITE(UNIT=56, FMT='(A,F12.6)') "kk,ktop,ksrc,kdetr(inn),-zamb(kk),Qpss(kk,inn),qwdi(kk),qwdo(kk),salpp(kk,l),-zamb(kdetr(inn)),Qpss(kdetr(inn),inn),Tsource,Tamb(kdetr(inn)),-zamb(kint),bwdi(kk),bwdo(kk),lwdi(kk),lwdo(kk)"
+
+                    WRITE (UNIT=56, FMT='(4I3,14F10.2)') kk,ktop,ksrc,kdetr(inn),-zamb(kk),Qpss(kk,inn),qwdi(kk),qwdo(kk),salpp(kk,l),-zamb(kdetr(inn)),Qpss(kdetr(inn),inn),Tsource,Tamb(kdetr(inn)),-zamb(kint),bwdi(kk),bwdo(kk),lwdi(kk),lwdo(kk)                  
+
+                    CLOSE (UNIT=56)
                ENDDO
 
                 ENDIF

@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(pdftotext /c/Users/ccali/Github/si3d/literature/socolofsky-et-al-2008-double-plume-integral-models-for-near-field-mixing-in-multiphase-plumes.pdf -)"
-    ]
-  }
-}

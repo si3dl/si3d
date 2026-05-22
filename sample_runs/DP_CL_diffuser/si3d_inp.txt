@@ -1,5 +1,5 @@
 *******************************************************
-CLEAR LAKE 2022 SIMULATION ----------------------------
+DOUBLE PLUME SIMULATION ----------------------------
 =======================================================
 Start date and time for simulations
 -------------------------------------------------------
@@ -13,14 +13,14 @@ Space-time domains, cell size & time steps
  xl          !    23900.          ! Length of domain (m) in EW direction
  yl          !    19300.          !   "    "    "    (m) in NS       "
  zl          !       17.5         !   "    "    "    (m) in vertical
- tl          !   648000.          ! Length of time (s) simulated (1.5mo)
+ tl          !   648000.          ! Length of time (s) simulated (7.5d)
  idx         !     100.0          ! Cell size (m) in EW direction
  idy         !     100.0          ! Cell size (m) in NS direction
  idz         !       0.5          ! Cell size (m) in vertical
  dzmin       !       0.5          ! Min. cell size (m) in vertical
  datadj      !       0.0          ! Adjustment of datum by default datum = 0.0
  zeta0       !       0.0          ! Initial location of water surface 
- idt         !      10.0          ! Time step (s)
+ idt         !      20.0          ! Time step (s)
  ibathf      !        0           ! How bathy file is read 0(General) 1(SDWSC) 2(SHR)
 -------------------------------------------------------
 Parameters controlling solution algorithm  
@@ -38,30 +38,30 @@ Parameters controlling solution algorithm
  ax0         !    1.E-2           ! Horizontal eddy diffusivity/viscosity in EW-direction (ms-2)
  ay0         !    1.E-2           ! Horizontal eddy diffusivity/viscosity in NS-direction(ms-2)
  f           !    9.1e-5          ! f Coriolis parameter (s-1)
- theta       !        1.          ! Weighting parameter for semi-implicit solution (0.5-1) - Not used
+ theta       !       0.6          ! Weighting parameter for semi-implicit solution (0.5-1) - Not used
  ibc         !        1           ! 1 = Baroclinic terms in included in mom. solution (0 otherwise)
  isal        !        1           ! 1 = Solve scalar transport equation (0 otherwise)
  itrsch      !        4           ! Scalar advection 1=centered(C);2=upwind(U);3=U at k=k1z+1; (4)=Flux limiter
  cd          !    0.002           ! Bottom drag coefficient (adimensional)
- ifsbc       !       11           ! Surface BC; 0 = constant ; 1 = preprocess mode ; 2 = runtime mode
+ ifsbc       !        0           ! Surface BC; 0 = constant ; 1 = preprocess mode ; 2 = runtime mode
  dtsbc       !    3600.           ! Time step (s) between records in surbc.txt (when ifsbc = 1)
  icw         !        1           ! Wind drag equation 0 = cw (1 = Amorocho Devries (1980), 2 = Andreas et al (2012) only when isurfbc = 10,11
  cw          !     1E-3           ! Wind drag coefficient (only if ifsbc = 0)
  ws          !      0.1           ! Wind speed (constant in m/s) when ifsbc = 0
  phi         !    270.0           ! Wind direction (constant in degress) when ifsbc = 0
  idbg        !        0           ! 0 = no check messages 1 = check messages output for debug purposes
- nth         !        1
+ nth         !        8
 -------------------------------------------------------
 Output specifications for time files (individual nodes)
 -------------------------------------------------------  
- ipt         !      360           ! No. of time step between consecutive output to time file  (1h)
+ ipt         !      180           ! No. of time step between consecutive output to time file  (1h)
  nnodes      !        5           ! From the diffuser to the narrows, plus SBMM
  inodes      ! 193,183,172,162,205
  jnodes      !  74,78,80,84,72
 -------------------------------------------------------
 Output specifications for H-plane files (plot in matlab with LoadPlotSheetFile3L)
 -------------------------------------------------------
- iht         !       360          ! No. of time step between consecutive output to plane file  (8h)
+ iht         !       180          ! No. of time step between consecutive output to plane file  (1h)
  itspfh      !         0          ! No. of time steps before first output to horizontal plane file 
  nplanes     !         1          !
  planes      !   2
@@ -72,7 +72,7 @@ Output specifications for X-section files (plot in matlab with LoadPlotSectionFi
 -------------------------------------------------------
 Output specifications for 3D space files
 -------------------------------------------------------
- ipxml       !       360          ! No. of time step between consecutive output to 3D-space file (8h)
+ ipxml       !       180          ! No. of time step between consecutive output to 3D-space file (1h)
  itspf       !         0          ! No. of time steps before first output to 3D-space file
  iTurbVars   !         0          ! 0 for only velocity and temperature outputs and 1 to include turbulent parameters
 -------------------------------------------------------  
@@ -98,41 +98,41 @@ Open boundary conditions for nesting procedures
  iebc        !       64,32 
  jebc        !       92,43 
  ------------------------------------------------------    
-Specification for tracer (other than oxygen) simulation 
+Specification for tracer (including oxygen) simulation 
 -------------------------------------------------------     
- ntr         !       12           ! No. of tracers sim. 
+ ntr         !        2           ! No. of tracers sim. 
  ecomod      !        1           !
- iotr        !      360           ! (8 h)
+ iotr        !      180           ! (1 h)
  itspftr     !        0           !
- ipwq        !      360           ! Frequency to run WQ module - Currently testing 1 h (don't change)
- nswq        !        0           ! Time frames of warmup before restart scalars (2 days )
+ ipwq        !      180           ! Frequency to run WQ module - Currently testing 1 h (don't change)
+ nswq        !        0           ! Time frames of warmup before restart scalars 
 -------------------------------------------------------       
 Specification for oxgygenation system simulations
 -------------------------------------------------------            
  iopts       !       20           ! No. of columns with point sources-sinks
  Nodev       !        1           ! No. of devices acting as sources-sinks 
  iodt        !     3600.          ! Time (secs) between consecutive records in io files
- ###         ! i-, j- for device number
- PlumeLoc 193  70   1 
- PlumeLoc 193  71   1    
- PlumeLoc 193  72   1  
- PlumeLoc 193  73   1 
- PlumeLoc 193  74   1    
- PlumeLoc 193  75   1  
- PlumeLoc 193  76   1 
- PlumeLoc 193  77   1    
- PlumeLoc 193  78   1  
- PlumeLoc 193  79   1 
- PlumeLoc 196  70   1 
- PlumeLoc 196  71   1    
- PlumeLoc 196  72   1  
- PlumeLoc 197  73   1 
- PlumeLoc 197  74   1    
- PlumeLoc 197  75   1  
- PlumeLoc 198  76   1 
- PlumeLoc 198  77   1    
- PlumeLoc 198  78   1  
- PlumeLoc 198  79   1
+ ###         ! i-, j- for device number   
+ PlumeLoc 193  70   1
+ PlumeLoc 193  71   1
+ PlumeLoc 193  72   1
+ PlumeLoc 193  73   1
+ PlumeLoc 193  74   1 
+ PlumeLoc 193  75   1   
+ PlumeLoc 193  76   1  
+ PlumeLoc 193  77   1 
+ PlumeLoc 193  78   1   
+ PlumeLoc 193  79   1  
+ PlumeLoc 190  70   1
+ PlumeLoc 190  71   1
+ PlumeLoc 190  72   1
+ PlumeLoc 190  73   1
+ PlumeLoc 190  74   1 
+ PlumeLoc 190  75   1   
+ PlumeLoc 190  76   1  
+ PlumeLoc 190  77   1 
+ PlumeLoc 190  78   1   
+ PlumeLoc 190  79   1 
 -------------------------------------------------------       
 Specification for interpolation method
 ------------------------------------------------------- 

@@ -5,16 +5,16 @@ List of tracers simulated
 ------------------------------------------------------------------------
  iTR             !       1            ! Tracer zero,                    TR
  iDO             !       1            ! Dissolved Oxygen,               DO
- iPON            !       1            ! Particulate Organic Nitrogen,   PON
- iDON            !       1            ! Dissolved Organic Nitrogen,     DON 
- iNH4            !       1            ! Ammonia,                        NH4
- iNO3            !       1            ! Nitrate and Nitrite,            NO3
- iPOP            !       1            ! Particulate Organic Phosphours, POP
- iDOP            !       1            ! Dissolved Organic Phosphorus,   DOP
- iPO4            !       1            ! Orthophospate,                  PO4
- iPOC            !       1            ! Particulate Organic Carbon,     POC 
- iDOC            !       1            ! Dissolved Organic Carbon,       DOC
- iALG1           !       1            ! Algae-1, PhytoC1, 	            ALG1
+ iPON            !       0            ! Particulate Organic Nitrogen,   PON
+ iDON            !       0            ! Dissolved Organic Nitrogen,     DON 
+ iNH4            !       0            ! Ammonia,                        NH4
+ iNO3            !       0            ! Nitrate and Nitrite,            NO3
+ iPOP            !       0            ! Particulate Organic Phosphours, POP
+ iDOP            !       0            ! Dissolved Organic Phosphorus,   DOP
+ iPO4            !       0            ! Orthophospate,                  PO4
+ iPOC            !       0            ! Particulate Organic Carbon,     POC 
+ iDOC            !       0            ! Dissolved Organic Carbon,       DOC
+ iALG1           !       0            ! Algae-1, PhytoC1, 	            ALG1
  iALG2           !       0            ! Algae-2, PhytoC2, 	            ALG2
  iALG3           !       0            ! Algae-3, PhytoC3, 	            ALG3
  iALG4           !       0            ! Algae-4, PhytoC4, 	            ALG4
@@ -28,12 +28,12 @@ Model Constants
 ------------------------------------------------------------------
  rnc             !      0.151         ! Ratio N:C (16:106)
  rpc             !      0.010         ! Ratio P:C  (1:106)
- roc             !      0.010         ! Ratio of O:C in photosynthesis and respiration (32/12)
- ron             !      0.010         ! Ratio of O:N in nitrification (32/14). 
- KSOD            !      0.010         ! Half-saturation const. for sediment oxygen demand (mg/m3)
- KDECMIN         !      0.010         ! Half-saturation const. for decomposition adn mineralization (mg/m3)
- KSED            !      0.010         ! Half-saturation const. for nutrient sediment flux (mg/m3)
- KNIT            !      0.010         ! Half-saturation const. for nitrification (mg/m3)
+ roc             !      1.000         ! Ratio of O:C in photosynthesis and respiration (32/12)
+ ron             !      1.000         ! Ratio of O:N in nitrification (32/14). 
+ KSOD            !      1.000         ! Half-saturation const. for sediment oxygen demand (mg/m3)
+ KDECMIN         !      1.000         ! Half-saturation const. for decomposition adn mineralization (mg/m3)
+ KSED            !      1.000         ! Half-saturation const. for nutrient sediment flux (mg/m3)
+ KNIT            !      1.000         ! Half-saturation const. for nitrification (mg/m3)
  KSN             !     70.000         ! Half-saturation const. for N uptake by algae (mg/m3)
  KSP             !     20.000         ! Half-saturation const. for P uptake by algae mg/m3)
  FNH4            !      0.250         ! Algae preference factor for NH4
@@ -45,8 +45,8 @@ Model Constants
 -----------------------------------------------------------------------
 Model rates: Four algae groups, oxygen, SOD, and Nutrientes
 ----------------------------------------------------------------------
- mu_max1         !      0.58          ! (1/d) Maximum growth rate of algae  - 1
- R_mor1          !      0.08          ! (1/d) Mortality rate of algae       - 1
+ mu_max1         !      0.00          ! (1/d) Maximum growth rate of algae  - 1
+ R_mor1          !      0.00          ! (1/d) Mortality rate of algae       - 1
  R_gr1           !      0.00          ! (1/d) Zoop Grazing rate of algae    - 1
  mu_max2         !      0.00          ! (1/d) Maximum growth rate of algae  - 2
  R_mor2          !      0.00          ! (1/d) Mortality rate of algae       - 2    
@@ -60,15 +60,15 @@ Model rates: Four algae groups, oxygen, SOD, and Nutrientes
  mu_max5         !      0.00          ! (1/d) Maximum growth rate of algae  - 5
  R_mor5          !      0.00          ! (1/d) Mortality rate of algae       - 5
  R_gr5           !      0.00          ! (1/d) Zoop Grazing rate of algae    - 5
- R_decom_pon     !      0.08          ! (1/d) Rate of decomposition of PON 
- R_miner_don     !      0.015         ! (1/d) Rate of mineralization of DON   
- R_nitrif        !      0.015         ! (1/d) Rate of Nitrification      
+ R_decom_pon     !      0.00          ! (1/d) Rate of decomposition of PON 
+ R_miner_don     !      0.000         ! (1/d) Rate of mineralization of DON   
+ R_nitrif        !      0.000         ! (1/d) Rate of Nitrification      
  R_denit         !      0.0           ! (1/d) Rate of denitrification 
- R_decom_pop     !      0.05          ! (1/d) Rate of decomposition of POP 
- R_miner_dop     !      0.10          ! (1/d) Mineralization rate of DOP 
- R_decom_poc     !      0.05          ! (1/d) Rate of decomposition of POC
- R_miner_doc     !      0.001         ! (1/d) Rate of mineralization of DOC
- R_reaer         !      0.05          ! (m/d) Reaeration rate
+ R_decom_pop     !      0.00          ! (1/d) Rate of decomposition of POP 
+ R_miner_dop     !      0.00          ! (1/d) Mineralization rate of DOP 
+ R_decom_poc     !      0.00          ! (1/d) Rate of decomposition of POC
+ R_miner_doc     !      0.000         ! (1/d) Rate of mineralization of DOC
+ R_reaer         !      0.00          ! (m/d) Reaeration rate
  R_settl         !      0.001         ! (m/d) Rate of settling of nutrients         
  R_resusp        !      0.0000        ! (m/d) Rate of resuspension of nutrients
  vspa            !      0.0000        ! [m/d] Settling velocity of algae
@@ -92,7 +92,7 @@ Temperature Correction Factors
 -------------------------------------------------------------------------------
 Fluxes (atmospheric and sediments)
 -------------------------------------------------------------------------------
- R_SOD           !      0.9           ! (mg/m2/day) Sediment oxygen demand rate
+ R_SOD           !      0.0           ! (mg/m2/day) Sediment oxygen demand rate
  ATM_DON         !      0.0           ! (mg/m2/day) Atmospheric deposition of DON
  ATM_NH4         !      0.0           ! (mg/m2/day) Atmospheric deposition of NH4
  ATM_NO3         !      0.0           ! (mg/m2/day) Atmospheric deposition of NO3
@@ -100,10 +100,10 @@ Fluxes (atmospheric and sediments)
  ATM_PO4         !      0.0           ! (mg/m2/day) Atmospheric deposition of PO4
  ATM_DOC         !      0.0           ! (mg/m2/day) Atmospheric deposition of DOC
  SED_DON         !      0.0           ! (mg/m2/day) Sediment release of DON
- SED_NH4         !      0.010         ! (mg/m2/day) Sediment release of NH4
+ SED_NH4         !      0.000         ! (mg/m2/day) Sediment release of NH4
  SED_NO3         !      0.0           ! (mg/m2/day) Sediment release of NO3
  SED_DOP         !      0.0           ! (mg/m2/day) Sediment release of DOP
- SED_PO4         !      0.050         ! (mg/m2/day) Sediment release of PO4
+ SED_PO4         !      0.000         ! (mg/m2/day) Sediment release of PO4
  SED_DOC         !      0.0           ! (mg/m2/day) Sediment release of DOC
  --------------------------------------------------------------------------------------------------------
 Sediment Parameters

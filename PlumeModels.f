@@ -3656,7 +3656,7 @@ C     **************************************************************************
      +ELEVT,QWT,TPLUMET,COMGPT,SALPLUMET,QWDI,
      +BWDI,LAYTOP,LAYINTR,DEPTHINTR,NLI,NLO,NITERPLUME,
      +INPLUME,OUTPLUME,ALPHAI,ALPHAO,ALPHAA,LAMBDA,FRNI,
-     +FRNO,GAMMA1,LDIFF,LWDI,OTEFF)
+     +FRNO,GAMMA1,LDIFF,OTEFF,LWDI)
 C     *******************************************************************************
 
       IMPLICIT NONE
@@ -3842,17 +3842,16 @@ C     CONSTANTS
 C     --------------------------------------------------------------------------
 !
 
-      PRINT*,'INNER_PLUME'
- 
+      PRINT*,'----INNER_PLUME_RECT----'
+
       G=9.80665
       GAMMA=6.9E-4
       PI=ACOS(-1.0)
       PSTD=101325.
-      PRINT*,'LDIFF', LDIFF
       RGAS=8.314
       TSTD=293.15
       DENSE20=998.2
-      FRCNATM=0.79
+      FRCNATM=0.0
       QGFRAC=1.0
 !      C1=-1
       C1=0 !Socolofsky et al. 2008
@@ -3861,19 +3860,14 @@ C     --------------------------------------------------------------------------
 C     PARAMETERS AND INITIALIZE THE VARIABLES 
 C     --------------------------------------------------------------------------
 C      
-      PRINT*,'INNER_PLUME1_j' 
-      PRINT*,'INPLUME(1,1)', INPLUME(1,1)
-     
+      PRINT*,'......PARAMETERS AND INITIALIZE THE VARIABLES.....'
+
       INPLUME(:,:)=0.0
-      PRINT*,'INNER_PLUME1a'
-!     Geometric caracteristic 
+
+!     ...Geometric caracteristic 
       DEPTH=WSEL-DIFFEL  
-      PRINT*,'INNER_PLUME1b'
-  !    PRINT*,'DEPTHINNER_PLUME', DEPTH
       Z=DEPTH
-      PRINT*,'INNER_PLUME1c'
       ELEV=DIFFEL
-      PRINT*,'INNER_PLUME1.5'
 !        
 C     Assume that gas bubbles are composed of oxygen and nitrogen only.
       FRACO=FRCONOT 
@@ -3882,7 +3876,7 @@ C     Assume that gas bubbles are composed of oxygen and nitrogen only.
 C     Interpolate input profiles to obtain the plume initial conditions
       X=0.
       XLOC=DEPTH-X
-      PRINT*,'INNER_PLUME2'
+
       CALL LININT(LOCAT,TE,LAYERS,XLOC,TAMB)
       CALL LININT(LOCAT,CO2M,LAYERS,XLOC,COMG)
       CALL LININT(LOCAT,UA,LAYERS,XLOC,UAMB)
@@ -3894,44 +3888,39 @@ C     Interpolate input profiles to obtain the plume initial conditions
 !     At first the temperature and the salinity un the plume is the same that in the ambient water
       SALPLU=SALAMB    
       TPLUME=TAMB
-!     Guess the initial velocity 
-      VGUESS=0.07
+C     ... Guess the initial velocity 
+      VGUESS=0.12
       VI=VGUESS
 !     INITIAL DIFFUSER SIZE
-!     At first the plume radius BNOT (initial plume radius) in the TOP HAT models 
+!     At first the plume radius BNOT (initial plume HALF WIDTH) in the TOP HAT models 
       BNOT=LAMBNOT/LAMBDA
       BI=BNOT
-!     BDIFF=LAMBNOT
-      PRINT*,'INNER_PLUME3'
-      ! .... JCT_RECT ...
-!     Revised LNOT to account for additional length due to spreading of velocity/water plume beyond bubble plume (4-16-09)  
-      LNOT=LDIFF+2.0*BNOT*(1.0-LAMBDA) ! 
+      !LNOT=LDIFF+2.0*BNOT*(1.0-LAMBDA) ! 
+      LNOT=LDIFF
       LI=LNOT
-      !BEQUIV=0.5*(4.*LDIFF*2.*LAMBNOT/PI)**0.5
-      ! .... JCT_RECT ...	  
-	  
-        PRINT*,'LI4', LI
+
 C     AMBIENT AND AVERAGE WATER DENSITIES
       DENSEA=(0.059385*TAMB**3-8.56272*TAMB**2+65.4891*TAMB)*0.001
      ++999.84298 !+(GAMMA)*SALAMB !JCT_2022
       DENSEW=DENSEA
+
 C
-        PRINT*,'INNER_PLUME4a'
 !     Solubility constant (mol/m3/Pa)
       HO2=(2.125-0.05023*TPLUME+5.7714E-4*TPLUME**2)/100000.
       HN2=(1.042-0.02457*TPLUME+3.1714E-4*TPLUME**2)/100000.
+
+      PRINT*, 'DEPTHinner, Z, ELEV,XLOC, COMGP, DOARO, CO2, TAMB, UAMB, VAMB',DEPTH, Z, ELEV, XLOC, COMGP, DOARO, CO2, TAMB, UAMB, VAMB
+      PRINT*, 'SALPLU, TPLUME, VI, BI, LI, DENSEA, HO2', SALPLU, TPLUME, VI, BI, LI, DENSEA,HO2
+
 C	
-        PRINT*,'INNER_PLUME4b'
 C     Assume initial ambient dissolved nitrogen conc. equals saturated conc. at surface.
       CN2=(PATM*FRCNATM)*HN2      
       CNMG=CN2*28.0
       CNMGP=CNMG
       DNAMB=CNMG
 !
-        PRINT*,'INNER_PLUMEc'
 !     Outer plume
       OUTXLOC=OUTPLUME(:,1)
-        PRINT*,'INNER_PLUME4d'
       OUTQW=OUTPLUME(:,3)
       OUTMOMENT=OUTPLUME(:,4)
       OUTTEMP=OUTPLUME(:,5)
@@ -3942,13 +3931,9 @@ C     --------------------------------------------------------------------------
 C     BUBBLE PROPERTIES
 C     --------------------------------------------------------------------------
 !
-      PRINT*,'INNER_PLUME5'
+      PRINT*,'..........BUBBLE PROPERTIES............'
       QSCMS=QGFRAC*QSCFM/3.281**3/60.0
       QGAS=PSTD*QSCMS*(TAMB+273.15)/((PATM+DENSEA*G*Z)*TSTD)
-
-!      PRINT*,'QSCMS',QSCMS,QGFRAC,QSCFM
-!      PRINT*,'QGAS',QGAS,PSTD,QSCMS,TAMB,PATM,DENSEA,G,Z,TSTD
-
 
 C     Initial bubble size.     
       RB=DIAMM/2000.
@@ -3961,73 +3946,55 @@ C     Initial bubble size.
             VB=2.995*RB**0.489
       ENDIF
 
-      PRINT*,'RBinicial',RB,VB
-
-!     Mass transfer coefficient
+!     Mass transfer coefficient (KOLO = beta0)
       KOLO=0.6*RB
       IF(KOLO.GT.(4.0E-4))THEN
             KOLO=4.0E-4
       ENDIF
       KOLN=KOLO
-      PRINT*,'Test 2'
+      PRINT*, 'QSCMS, QGAS, RB, VB, KOLN', QSCMS, QGAS, RB, VB, KOLN
 !
+C     --------------------------------------------------------------------------
 C     CALCULATION OF INITIAL WATER VELOCITY USING FROUDE NUMBER
+C     --------------------------------------------------------------------------
+      
+      PRINT*,'.............CALCULATION OF INITIAL WATER VELOCITY USING FROUDE NUMBER........'
+
+C     ... Bubbles
       VBUB=4./3.*PI*RB**3
       N=QGAS/VBUB
       VDIFF=1
-
-      PRINT*,'VIinicial',FRNI,LAMBDA,BI,LI,G,DENSEA,QGAS,VB,PI,DENSEW,VGUESS,LAMBDA,DENSEP
       DO WHILE (VDIFF.GT.1.0E-6)
-         !VG=QGAS/((VGUESS+VB)*(PI*(LAMBDA*BI)**2))
-!        ACC 2026: ERROR - area burbujas usaba formula inconsistente (2*LAMBDA*BI)*(LI-2*BI*(1-LAMBDA)).
-!        Para pluma rectangular 2D (linea fuente), solo la semiancho escala con LAMBDA; la longitud LI
-!        es fija (longitud difusor). Area burbujas = 2*(LAMBDA*BI)*LI = LAMBDA*2*BI*LI
-!        Referencia: Dissanayake et al. (2021). Linea erronea comentada:
-!         VG=QGAS/((VGUESS+VB)*((2.*LAMBDA*BI)*(LI-2.0*BI*(1.0-LAMBDA))))
-         VG=QGAS/((VGUESS+VB)*(2.*LAMBDA*BI*LI))  ! ACC 2026
-         DENSEP=(1.0-VG)*DENSEW
-!        ACC 2026: ERROR - escala de longitud Froude usaba 2*LAMBDA*BI en lugar de 2*BI.
-!        Fr = u / sqrt(g'*b) con b = semiancho de la pluma de agua = BI (no lambda*BI)
-!        Referencia: Wuest (1992), Dissanayake (2021). Linea erronea comentada:
-!         VI=FRNI*(2.0*LAMBDA*BI*G*(DENSEA-DENSEP)/DENSEP)**0.5
-         VI=FRNI*(2.0*BI*G*(DENSEA-DENSEP)/DENSEP)**0.5  ! ACC 2026
-         VDIFF=ABS(VI-VGUESS)
-         VGUESS=VI
-      END DO
-      PRINT*,'VI',VI
+  9     VG=QGAS/((VGUESS+VB)*(2.*LAMBDA*BI*LI)) 
+        DENSEP=(1.0-VG)*DENSEW
+        VI=FRNI*(2.0*LAMBDA*BI*G*(DENSEA-DENSEP)/DENSEP)**0.5
+        VDIFF=ABS(VI-VGUESS)
+        VGUESS=VI
+      ENDDO      
+
+      PRINT*, 'VG, VI, N, DENSEP', VG, VI, N, DENSEP
+
 C     ------------------------------------------------------------------
 C     VARIABLE TRANSFORMATION      
 C     ------------------------------------------------------------------
 
-      VO=0
-      !EI=2.*PI*BI*ALPHAI*(VI+C1*VO)
-!     ACC 2026: ERROR perimetro - formulacion rectangular 2D (Dissanayake 2021) solo incluye
-!     los lados largos (2*LI); los extremos cortos no contribuyen al entrainment en linea fuente.
-!     El perimetro completo 2*(LI+2*BI) sobreestima el entrainment cuando BI no es << LI.
-!     Linea erronea comentada:
-!      EI=2.*(LI+2.*BI)*ALPHAI*(VI+C1*VO) !JCT_RECT
-      EI=2.*LI*ALPHAI*(VI+C1*VO)          ! ACC 2026: solo lados largos (2D linea fuente)
-	  EO=0
-      !QW=VI*PI*BI**2
-      QW=VI*(2.*LI*BI) !JCT_RECT
-      !MOMENT=(PI*BI**2)*VI**2 
-      MOMENT=(2.*LI*BI)*VI**2! JCT_RECT
+      PRINT*,'........VARIABLE TRANSFORMATION.......... '
+      VO = 0.00
+      EI=2.*LI*ALPHAI*(VI-C1*VO)          ! ACC 2026: solo lados largos (2D linea fuente)
+      EO=-2.*LI*ALPHAO*VO
+      
+      QW=VI*(2.*LI*BI) 
+      MOMENT=(2.*LI*BI)*VI**2 
       FTEMP=QW*TPLUME 
-      !FSAL=QW*(SALPLU*GAMMA/DENSE20)*DENSEW JCT2020_Sal
-      FSAL=QW*SALPLU !JCT2020_Sal
+      FSAL=QW*SALPLU 
 C     Previous equation corrected to account for salinity units conversion.        
       FDO=QW*CO2
       FDN=QW*CN2
       FGO=PSTD*QSCMS/(RGAS*TSTD)*FRACO
       FGONOT=FGO
       FGN=PSTD*QSCMS/(RGAS*TSTD)*FRACN
+
 C     Revised gaseous flux equations.
-      !YO2=FGO/((PI*(LAMBDA*BI)**2)*(VI+VB))
-      !YN2=FGN/((PI*(LAMBDA*BI)**2)*(VI+VB))
-!     ACC 2026: ERROR - area burbujas inconsistente con correccion en VG. Usar LAMBDA*2*BI*LI.
-!     Referencia: Dissanayake (2021). Lineas erroneas comentadas:
-!      YO2=FGO/((LAMBDA*2.*BI*(LI-2.*BI*(1.-LAMBDA)))*(VI+VB))
-!      YN2=FGN/((LAMBDA*2.*BI*(LI-2.*BI*(1.-LAMBDA)))*(VI+VB))
       YO2=FGO/((2.*LAMBDA*BI*LI)*(VI+VB))  ! ACC 2026
       YN2=FGN/((2.*LAMBDA*BI*LI)*(VI+VB))  ! ACC 2026
       PZ=PATM+(DENSEA*G*Z)
@@ -4035,27 +4002,26 @@ C     Revised gaseous flux equations.
       PN=PZ*FRACN
       BUOY=(G*(DENSEA-DENSEP)/DENSEP*QW)/LNOT
       TDS=SALPLU*0.64
+
 !     Initialize lateral withdrawal flowrate for first/lowest cell in column/segment
       JJ=0
       QWDI(LAYDIFF)= QW 
-      !PWDI(LAYDIFF)= (2*PI*BI)
-!     ACC 2026: perimetro = solo lados largos (Dissanayake 2021). Linea erronea comentada:
-!      PWDI(LAYDIFF)= 2.*(LI+2.*BI)   ! JCT_RECT
+!     ACC 2026: perimetro = solo lados largos (Dissanayake 2021). 
       PWDI(LAYDIFF)= 2.*LI            ! ACC 2026: solo lados largos
-      !AWDI(LAYDIFF)= (PI*BI**2)    
-      AWDI(LAYDIFF)= LI*BI   ! JCT_RECT
-      !BWDI(LAYDIFF)= BI 
-      BWDI(LAYDIFF)= BI ! JCT_RECT
-	  LWDI(LAYDIFF)= LI ! JCT_RECT
+      AWDI(LAYDIFF)= LI*BI   
+      BWDI(LAYDIFF)= BI 
+	  LWDI(LAYDIFF)= LI 
 !
 
-      PRINT*,'Initial BI, LI, VI, QW',BI, LI, VI, QW
+      PRINT*,'EI, QW, MOMENT, FTEMP, FDO, FGO, VO, PZ, PO', EI, QW, MOMENT, FTEMP, FDO, FGO, VO, PZ, PO
 !     -------------------------------------------------------------------------- 
-C	SOLUTION PROCEEDURE
+C	SOLUTION PROCEDURE
 !     --------------------------------------------------------------------------
 !
-      DZ=0.001
-      H=0.001
+      PRINT*,'........SOLUTION PROCEDURE.......... '
+
+      DZ=0.01
+      H=0.01
       NELS = 0
       HWITH=0.0
       NLI=0
@@ -4069,14 +4035,16 @@ C	SOLUTION PROCEEDURE
          ELEV=ELEV+DZ
          NELS = NELS + 1
          NLI = NLI+1
-C	
-C        Interpolate input profiles to obtain line plume boundary conditions
          XLOC=DEPTH-X
 
-         !PRINT*,'if',XLOC,DEPTHINTR,ELEVT
+         PRINT*,'...NLI,NELS, XLOC, ELEV, X, Z ', NLI,NELS, XLOC, ELEV, X, Z
 
+C	
+C        Interpolate input profiles to obtain line plume boundary conditions
+         
          CALL LININT(LOCAT,UA,LAYERS,XLOC,UAMB)
          CALL LININT(LOCAT,VA,LAYERS,XLOC,VAMB)
+
          IF (NITERPLUME.EQ.1)THEN
             CALL LININT(LOCAT,CO2M,LAYERS,XLOC,COMG)
             DOARO=COMG
@@ -4117,12 +4085,12 @@ C        Interpolate input profiles to obtain line plume boundary conditions
             PRINT*, "-------ERROR NITERPLUME----------"
             PRINT*, "---------------------------------"
          ENDIF
+         
+            PRINT*,'Initial QW, MOMENT, FTEMP, FDO, FGO,V0',QW, MOMENT, FTEMP, FDO, FGO, VO
+
 C                  
 C        Use subroutines for Runge Kutta method solution
          NEQN=8
-!      PRINT*,'QWbeforeEQ',QW
-!      PRINT*,'MOMENTbeforeEQ',MOMENT
-
          Y(1)=QW
          Y(2)=MOMENT
          Y(3)=FTEMP
@@ -4132,23 +4100,19 @@ C        Use subroutines for Runge Kutta method solution
          Y(7)=FGO
          Y(8)=FGN
  
-        !PRINT*, "Y_in", Y(1), Y(2), Y(3), Y(4), Y(5), Y(6), Y(7), Y(8)
-
-       !PRINT*, "NEQN", NEQN
          CALL DERIVS_6(EI,EO,DENSEA,DENSEW,DENSEP,G,BI,LI,LAMBDA,TARO,
      +            VG,SALARO,GAMMA,DENSE20,DOARO,PI,RB,N,VI,VO,VB,KOLO,
      +            HO2,PO,GAMMA1,TPLUME,SALPLU,COMGP,DNAMB,KOLN,HN2,PN,
      +            CNMGP,Z,Y,DYDX,XLOC,TAMB)
-       !PRINT*, "NEQN_b", NEQN
 
        
-      !PRINT*, "B1", EI,EO,DENSEA
-      !PRINT*, "B2", DENSEW,DENSEP,G
+      !PRINT*, "B1 EI,EO,DENSEA", EI,EO,DENSEA
+      !PRINT*, "B2 DENSEW,DENSEP", DENSEW,DENSEP
       !PRINT*, "B3", BI,LI,LAMBDA
       !PRINT*, "B4", TARO,VG,SALARO
       !PRINT*, "B5", GAMMA,DENSE20,DOARO
       !PRINT*, "B6", PI,RB,N
-      !PRINT*, "B7", VI,VO,VB
+      !PRINT*, "B7 VI,VO,VB", VI,VO,VB
       !PRINT*, "B8", KOLO,HO2,PO
       !PRINT*, "B9", GAMMA1,TPLUME,SALPLU
       !PRINT*, "B10", COMGP,DNAMB,KOLN
@@ -4163,12 +4127,6 @@ C        Use subroutines for Runge Kutta method solution
      +         DNAMB,KOLN,HN2,PN,CNMGP,Y,DYDX,NEQN,Z,H,YOUT,
      +         XLOC,TAMB)
 
-
-       !PRINT*, "NEQN", NEQN
-
-        !PRINT*, "Y_out", YOUT(1), YOUT(2), YOUT(3), YOUT(4)
-        !PRINT*, "Y_out", YOUT(5), YOUT(6), YOUT(7), YOUT(8)
-
          QW=YOUT(1)
          MOMENT=YOUT(2)
          FTEMP=YOUT(3)
@@ -4178,15 +4136,14 @@ C        Use subroutines for Runge Kutta method solution
          FGO=YOUT(7)
          FGN=YOUT(8)
 
+        PRINT*,'Solution QW, MOMENT, FTEMP, FDO, FGO',QW, MOMENT, FTEMP, FDO, FGO
 
          IF(MOMENT.LT.0.0)THEN
             TPLUME=FTEMP/QW
-            !SALPLU=FSAL/(QW*DENSEW)/(GAMMA/DENSE20) JCT2020_Sal
             SALPLU=FSAL/QW  !JCT2020_Sal
-C        Previous equation corrected to consistently express salinity in uS/cm	   
-             PRINT*,'fuera momento'
-	    CO2=FDO/QW
-	    CN2=FDN/QW
+            CO2=FDO/QW
+	        CN2=FDN/QW
+
 !           Save inner plume information
             INPLUME(NLI,1)=XLOC 
             INPLUME(NLI,2)=BI          
@@ -4197,63 +4154,20 @@ C        Previous equation corrected to consistently express salinity in uS/cm
             INPLUME(NLI,7)=EI 
             INPLUME(NLI,8)=EO
             INPLUME(NLI,9)=LI
-            PRINT*,'MOMENT',MOMENT
-	    GOTO 20
+            PRINT*,'MOMENT=0: XLOC, BI, QW, MOMENT, TPLUME, COMGP, EI, EO, LI',XLOC, BI, QW, MOMENT, TPLUME, COMGP, EI, EO, LI
+	      GOTO 20
          ENDIF
 
 
          VI=MOMENT/QW
          AREA=QW/VI
-         !PRINT*,'AREA=QW/VI, MOMENT', AREA,QW,VI,MOMENT
-       
-         !BI=SQRT(AREA/PI) 
-         !EI= 2.*PI*BI*ALPHAI*(VI+C1*VO)
-         !EO=-2.*PI*BI*ALPHAO*VO  ! JCT
-		 
-		 ! JCT_RECT  ....
-
-!        Correct entrainment: Dissanayake (2021) 2D line-source perimeter = 2*LI only
-!        (long sides only; see also initialization correction above). ACC 2026.
-!        (semiancho) crecieran simultaneamente. Para una pluma rectangular de linea fuente 2D
-!        (Dissanayake 2021), la longitud LI es fija e igual a la longitud del difusor (LNOT).
-!        Solo el semiancho BI crece con la altura. El solver cuadratico se sustituye por:
-!        LI = LNOT (constante); BI = AREA/(2*LI) (solo crece el semiancho). ACC 2026
-!        Codigo erroneo comentado:
-!         AA=1.0
-!         BB=2.*BNOT-LNOT
-!         CC=-1.0*AREA
-!         LI=(-1.0*BB+(BB**2-4.0*AA*CC)**(0.5))/(2.0*AA)
-!         IF(LI.LT.0.0)THEN
-!            LI=(-1.0*BB-(BB**2-4.0*AA*CC)**(0.5))/(2.0*AA)
-!         ENDIF
-!         BI=AREA/(2.0*LI)
          LI=LNOT          ! ACC 2026: longitud fija = longitud del difusor
          BI=AREA/(2.0*LI) ! ACC 2026: solo crece el semiancho
-
-          !PRINT*,'BNOT, LNOT, AREA', BNOT, LNOT, AREA
-
-          !PRINT*,'BI LI', BI, LI
-
-!        ACC 2026: ERROR perimetro - usar solo lados largos 2*LI (Dissanayake 2021, 2D linea fuente).
-!        Lineas erroneas comentadas:
-!         EI= (2.*(LI+2.*BI))*ALPHAI*(VI+C1*VO)
-!         EO=-(2.*(LI+2.*BI))*ALPHAO*VO  ! JCT
-         EI= 2.*LI*ALPHAI*(VI+C1*VO)     ! ACC 2026: solo lados largos
+         EI= 2.*LI*ALPHAI*(VI-C1*VO)     ! ACC 2026: solo lados largos
          EO=-2.*LI*ALPHAO*VO             ! ACC 2026: solo lados largos
-		  ! JCT_RECT ....
-
-!        Temperatura and salinity in the plume
          TPLUME=FTEMP/QW
-         !SALPLU=FSAL/(QW*DENSEW)/(GAMMA/DENSE20) JCT2020_Sal
          SALPLU=FSAL/QW  !JCT2020_Sal
-!        ACC 2026 (INNER_PLUME_RECT): Override SALPLU=SALAMB eliminado. Era un parche para
-!        enmascarar el error en DERIVS_6 donde el detrainment de salinidad usaba SALARO
-!        en lugar de SALPLU. Corregido DERIVS_6: DYDX(4)=EI*SALARO-EO*SALPLU. ACC 2026
-!        Linea erronea comentada:
-!         SALPLU=SALAMB
-!         !!!!! ******* !!!!! ******* !!!!! ******* !!!!!*******  !!!!!
 
-         !PRINT*, XLOC, TPLUME
 C        Previous equation corrected to consistently express salinity in uS/cm
 !        Dissolved oxygen and nitrogen concentration
          CO2=FDO/QW
@@ -4271,19 +4185,15 @@ C        Previous equation corrected to consistently express salinity in uS/cm
          INPLUME(NLI,8)=EO
          INPLUME(NLI,9)=LI
 
+         PRINT*,'Solution: VI, LI, BI,EI,EO',VI, LI, BI,EI,EO
+
 
 !        Add incremental entrainment to total cell entrainment/withdrawal   
          QWDI(LAYDIFF-JJ)=QWDI(LAYDIFF-JJ)+(EI-EO)*DZ
-         !PWDI(LAYDIFF-JJ)=PWDI(LAYDIFF-JJ)+2.*PI*BI
-!        ACC 2026: perimetro diagnostico consistente con correccion EI (solo lados largos 2*LI):
 !         PWDI(LAYDIFF-JJ)=PWDI(LAYDIFF-JJ)+(2.*(LI+2.*BI)) ! JCT_RECT (erroneo, comentado)
          PWDI(LAYDIFF-JJ)=PWDI(LAYDIFF-JJ)+(2.*LI)          ! ACC 2026
-         !AWDI(LAYDIFF-JJ)=AWDI(LAYDIFF-JJ)+PI*BI**2
-         AWDI(LAYDIFF-JJ)=AWDI(LAYDIFF-JJ)+(LI*BI*2) ! JCT_RECT
-         !BWDI(LAYDIFF-JJ)=BWDI(LAYDIFF-JJ)+SQRT((PI*BI**2)/PI)
-         BWDI(LAYDIFF-JJ)=BWDI(LAYDIFF-JJ)+BI ! JCT_RECT_2022
-!        ACC 2026: ERROR typo - acumulaba BWDI+LI en lugar de LWDI+LI. Linea erronea comentada:
-!         LWDI(LAYDIFF-JJ)=BWDI(LAYDIFF-JJ)+LI
+         AWDI(LAYDIFF-JJ)=AWDI(LAYDIFF-JJ)+(LI*BI*2) 
+         BWDI(LAYDIFF-JJ)=BWDI(LAYDIFF-JJ)+BI 
          LWDI(LAYDIFF-JJ)=LWDI(LAYDIFF-JJ)+LI  ! ACC 2026
          HWITH=HWITH+DZ   
          IF(HWITH.GT.HCELL)THEN
@@ -4302,13 +4212,7 @@ C        Previous equation corrected to consistently express salinity in uS/cm
          ENDIF
 !
 C        Revised gaseous flux equations.
-         !YO2=FGO/((PI*(LAMBDA*BI)**2)*(VI+VB))
-!        ACC 2026: ERROR - area burbujas inconsistente. Usar LAMBDA*2*BI*LI (linea fuente 2D).
-!        Referencia: Dissanayake (2021). Lineas erroneas comentadas:
-!         YO2=FGO/((LAMBDA*2.*BI*(LI-2.*BI*(1.-LAMBDA)))*(VI+VB))
-!         YN2=FGN/((LAMBDA*2.*BI*(LI-2.*BI*(1.-LAMBDA)))*(VI+VB))
          YO2=FGO/((2.*LAMBDA*BI*LI)*(VI+VB))  ! ACC 2026
-         !YN2=FGN/((PI*(LAMBDA*BI)**2)*(VI+VB))
          YN2=FGN/((2.*LAMBDA*BI*LI)*(VI+VB))  ! ACC 2026
 C  
 !        
@@ -4317,10 +4221,6 @@ C
          VBUB=QGAS/N
 C
 !        GAS VOLUME PER TOTAL VOLUME OF THE BUBBLE-WATER MIXTURE IN THE INNER CORE OF THE PLUME
-         !VG=VBUB*N/((VI+VB)*(PI*(LAMBDA*BI)**2))
-!        ACC 2026: ERROR - area burbujas inconsistente con correccion YO2/YN2 (l.4295-4297).
-!        Usar 2*LAMBDA*BI*LI (linea fuente 2D, misma formula que YO2). Linea erronea comentada:
-!         VG=VBUB*N/((VI+VB)*(LAMBDA*2.*BI*(LI-2.*BI*(1.-LAMBDA)))) ! JCT_RECT
          VG=VBUB*N/((VI+VB)*(2.*LAMBDA*BI*LI))  ! ACC 2026: area burbujas = LAMBDA*2*BI*LI
 C        Previous equation revised to account for correct plume cross-sectional area occupied by bubbles.
 !        Bubbles radius     
@@ -4328,7 +4228,6 @@ C        Previous equation revised to account for correct plume cross-sectional 
          IF(RB.LT.0.0)THEN
             RB=1.0E-8
          ENDIF
-         !PRINT*,'RB',RB
          FRACO=FGO/(FGO+FGN)
          FRACN=1.0-FRACO
 C	
@@ -4340,11 +4239,9 @@ C
      ++999.84298 !+(GAMMA)*SALARO !JCT_2022
       DENSEW=(0.059385*TPLUME**3-8.56272*TPLUME**2+65.4891*TPLUME)*0.001
      ++999.84298 !+(GAMMA)*SALPLU  !JCT_2022
-         !PRINT*,'JCT',SALARO,SALAMB,SALPLU
- 
-	  
-C        Previous equation re-revised to account for correct salinity units (uS/cm) in density calculations.      
          DENSEP=(1.0-VG)*DENSEW
+
+
 C
 C        BUBBLE PROPERTIES
 !
@@ -4356,6 +4253,8 @@ C        BUBBLE PROPERTIES
          ELSE
             VB=2.995*RB**0.489
          ENDIF
+
+
 C
 !        Mass transfer coeffitient
          KOLO=0.6*RB
@@ -4372,12 +4271,17 @@ C
          FR=VI/(2.*LAMBDA*BI*G*(DENSEA-DENSEP)/DENSEP)**0.5
 !
          DCO2=HO2*PO-CO2
+
+         PRINT*,'Solution: QGAS, VG, RB,VB, DENSEA,DENSEW,DENSEP,FR',QGAS, VG, RB,VB,DENSEA,DENSEW,DENSEP,FR
+
 C      
       END DO
 C
 !     --------------------------------------------------------------------
 C     CALCULATION OF AVERAGE NET OXYGEN MASS TRANSFER FOR DAY
 !     --------------------------------------------------------------------
+
+      PRINT*,'.........AVERAGE NET OXYGEN MASS TRANSFER FOR DAY..........'
    20 GROSSMT=(FGONOT-FGO)*32./1000.*86400.
       OTEFF=(FGONOT-FGO)/FGONOT*100.
       DELTAC=COMGP-COMGNOT
@@ -4387,12 +4291,12 @@ C
       TPLUMET=TPLUME
       COMGPT=COMGP
       LAYTOP=LAYDIFF-JJ
-      PRINT*,"LAYTOP_inner",LAYTOP
-      PRINT*,"LAYDIFF_inner",LAYDIFF
-      PRINT*,"JJ_inner",JJ
       BTOP=BI
       SALPLUMET=SALPLU
-      PRINT*,'fuera final'
+
+       PRINT*,'GROSSMT,OTEFF,ELEVT,QWT,TPLUMET,',GROSSMT,OTEFF,ELEVT,QWT,TPLUMET
+       PRINT*,'COMGPT,LAYTOP,BTOP,SALPLUMET', COMGPT,LAYTOP,BTOP,SALPLUMET
+       PRINT*,'Inner plume END'
       RETURN
       END
 C
@@ -4600,7 +4504,7 @@ C     CONSTANTS
 C     --------------------------------------------------------------------------
 !
 
-      PRINT*,'OUTER_PLUME_RECT'
+      PRINT*,'-----OUTER_PLUME_RECT------'
 
       PRINT*,'NITERPLUMEinOUTERPLUME', NITERPLUME
 
@@ -5396,7 +5300,7 @@ C     CONSTANTS
 C     --------------------------------------------------------------------------
 !
 
-      PRINT*,'OUTER_PLUME_RECT2'
+      PRINT*,'------OUTER_PLUME_RECT2-------'
       PRINT*,'NLI',NLI
       PRINT*,'NLO',NLO
       G=9.80665
@@ -5406,7 +5310,7 @@ C     --------------------------------------------------------------------------
       RGAS=8.314
       TSTD=293.15
       DENSE20=998.2
-      FRCNATM=0.79
+      FRCNATM=0.00
       QGFRAC=1.0
 !      C1=-1
       C1=0
@@ -5495,10 +5399,10 @@ C     --------------------------------------------------------------------------
 C     CALCULATION OF INITIAL WATER VELOCITY USING FROUDE NUMBER
 
       VDIFF=1
-	   PRINT*,"QINTOP",QINTOP
-       PRINT*,"VO",VO
-       PRINT*,"LITOP",LITOP
-       PRINT*,"BITOP",BITOP
+	   !PRINT*,"QINTOP",QINTOP
+       !PRINT*,"VO",VO
+       !PRINT*,"LITOP",LITOP
+       !PRINT*,"BITOP",BITOP
       DO WHILE (VDIFF.GT.1.0E-6)
          AREA = QINTOP/VO+(LITOP*2.*BITOP)	  
          !SOLVE FOR DIMENSIONS USING L^2+(2Bo-Lo)L-AREA=0 USING QUADRATIC EQN.
@@ -5518,10 +5422,9 @@ C     CALCULATION OF INITIAL WATER VELOCITY USING FROUDE NUMBER
       END DO
 
 !     Water velocity in the top of the inner plume
-      ! VI=-QINTOP/(PI*BITOP**2)
 	  VI=-QINTOP/(LITOP*BITOP*2) ! JCT_RECT JCT_2022
 
-       PRINT*,"VI",VI
+       PRINT*,"VI,VO,BO,LO",VI, VO,BO,LO
 	  
 C     ------------------------------------------------------------------
 C     VARIABLE TRANSFORMATION      
@@ -5530,15 +5433,8 @@ C     ------------------------------------------------------------------
       BI=BITOP
       LI=LITOP ! JCT_RECT_2022
 	  
-      ! EI=+2.*PI*BI*ALPHAI*(VI+C1*VO)
-      ! EO=-2.*PI*BI*ALPHAO*VO !JCT_2022 cambio signo
-      ! EA=-2.*PI*BO*ALPHAA*VO !JCT_2022 cambio signo
-!     ACC 2026: perimetro de entrainment = solo lados largos (2*L), Dissanayake 2021 linea fuente 2D.
-!     Lineas erroneas comentadas (perimetro rectangulo completo):
-!      EI=+(2.*(LI+2.*BI))*ALPHAI*(VI+C1*VO) ! JCT_RECT
-!      EO=-(2.*(LI+2.*BI))*ALPHAO*VO ! JCT_RECT JCT_2022
 !      EA=-(2.*(LO+2.*BO))*ALPHAA*VO ! JCT_RECT JCT_2022
-	  EI=+2.*LI*ALPHAI*(VI+C1*VO)  ! ACC 2026: solo lados largos (2D linea fuente)
+	  EI=+2.*LI*ALPHAI*(VI-C1*VO)  ! ACC 2026: solo lados largos (2D linea fuente)
       EO=-2.*LI*ALPHAO*VO           ! ACC 2026: solo lados largos
       EA=-2.*LO*ALPHAA*VO           ! ACC 2026: solo lados largos
       EP=QINTOP
@@ -5549,7 +5445,6 @@ C     ------------------------------------------------------------------
       MOMENT=QW*VO
       PRINT*,"MOMENTinicial",MOMENT,VO,QW
 	  FTEMP=QW*TPLUME 
-      !FSAL=QW*(SALPLU*GAMMA/DENSE20)*DENSEP
       FSAL=QW*SALPLU !JCT2020_Sal
 C     Previous equation corrected to account for salinity units conversion.        
       FDO=QW*CO2
@@ -5566,9 +5461,9 @@ C     Previous equation corrected to account for salinity units conversion.
 C	SOLUTION PROCEEDURE
 !     --------------------------------------------------------------------------
 !
-      DZ=0.001
+      DZ=0.01
       ! H=0.001
-      H=-0.001 ! JCT_RECT_2022 
+      H=-0.01 ! JCT_RECT_2022 
       NELS = 0
       HWITH=0.0
       NLO=NLI+1
@@ -5590,7 +5485,7 @@ C        Interpolate input profiles to obtain line plume boundary conditions
          CALL LININT(LOCAT,CO2M,LAYERS,XLOC,COMG)
          COMGIN=INO2(NLO)
          SALIN=INSAL(NLO)
-		 SALIN = 224
+		 !SALIN = 224
          CALL LININT(LOCAT,UA,LAYERS,XLOC,UAMB)
          CALL LININT(LOCAT,VA,LAYERS,XLOC,VAMB)
 C        Inner plume width
@@ -5649,7 +5544,8 @@ C           Previous equation corrected to consistently express salinity in uS/c
             VO=MOMENT/QW
 			
 			
-            AREA = QW/VO+(LI*2.*BI)	  
+            !AREA = QW/VO+(LI*2.*BI)
+            AREA = QW/VO	  
             !SOLVE FOR DIMENSIONS USING L^2+(2Bo-Lo)L-AREA=0 USING QUADRATIC EQN.
             AA=1.0
             BB=2.*BI-LI
@@ -5676,7 +5572,8 @@ C           Previous equation corrected to consistently express salinity in uS/c
         ENDIF
 
          VO=MOMENT/QW
-            AREA = QW/VO+(LI*2.*BI)	  
+            !AREA = QW/VO+(LI*2.*BI)   
+            AREA = QW/VO
             !SOLVE FOR DIMENSIONS USING L^2+(2Bo-Lo)L-AREA=0 USING QUADRATIC EQN.
             AA=1.0
             BB=2.*BI-LI
@@ -5687,31 +5584,7 @@ C           Previous equation corrected to consistently express salinity in uS/c
             ENDIF		 
 		    BO=AREA/(2.0*LO)
 
-!        TOTAL ENTRAIMENT: Shear and Vortex
-!          E=2.*PI*B*ALPHAI*V
-!         PRINT*,"Shear" 
-!         SHEARE=2.*PI*B*ALPHAI*V
-!        Vortex Entraiment: Hypothesis Projected Area Entraiment
-!         VORTEXE=(2*B*(SQRT(ABS(UAMB)*ABS(UAMB)+ABS(VAMB)*ABS(VAMB)))) 
-!	 a) Additive hypothesis 
-!          PRINT*,"Additive" 
-!      	     E=SHEARE+VORTEXE
-!	 b) Maximun hypothesis
-!          PRINT*,"Maximun" 
-!	    IF (SHEARE.GT.VORTEXE) THEN
-!	 	E=SHEARE
-!            ELSE
-!		E=VORTEXE
-!            ENDIF
-!         
-
-
-!        ACC 2026: perimetro = solo lados largos (2*LI, 2*LO), Dissanayake 2021 linea fuente 2D.
-!        Lineas erroneas comentadas (perimetro rectangulo completo):
-!         EI=+(2.*(LI+2.*BI))*ALPHAI*(VI+C1*VO)
-!         EO=-(2.*(LI+2.*BI))*ALPHAO*VO ! JCT_2020 VO es negativa
-!         EA=-(2.*(LO+2.*BO))*ALPHAA*VO ! JCT_2020
-         EI=+2.*LI*ALPHAI*(VI+C1*VO)  ! ACC 2026: solo lados largos
+         EI=+2.*LI*ALPHAI*(VI-C1*VO)  ! ACC 2026: solo lados largos
          EO=-2.*LI*ALPHAO*VO           ! ACC 2026: solo lados largos
          EA=-2.*LO*ALPHAA*VO           ! ACC 2026: solo lados largos
 
@@ -6126,10 +5999,14 @@ C     +DENSEP*G*(LAMBDA*LI*2*LAMBDA*BI)
 !      DYDX(2)=(1/GAMMA1)*(((DENSEA-DENSEW)/DENSEP)*G*(LI*2.0*BI)*
 !     +(1-LAMBDA**2)+((DENSEA-DENSEP)/DENSEP)*G*(LI*2.0*BI)*
 !     +LAMBDA**2)+EI*VO-EO*VI
+
+!      DYDX(2)=(1/GAMMA1)*(((DENSEA-DENSEW)/DENSEP)*G*(LI*2.0*BI)*
+!     +(1-LAMBDA)+((DENSEA-DENSEP)/DENSEP)*G*(LI*2.0*BI)*
+!     +LAMBDA)+EI*VO-EO*VI  ! ACC 2026
+
       DYDX(2)=(1/GAMMA1)*(((DENSEA-DENSEW)/DENSEP)*G*(LI*2.0*BI)*
      +(1-LAMBDA)+((DENSEA-DENSEP)/DENSEP)*G*(LI*2.0*BI)*
      +LAMBDA)+EI*VO-EO*VI  ! ACC 2026
-
 
 !      DYDX(2)=(1/GAMMA1)*((PI*G*BI**2/DENSE20)*(LAMBDA**2*VG*(DENSEA-0)+
 !     +LAMBDA**2*(1-VG)*(DENSEA-DENSEW)))
