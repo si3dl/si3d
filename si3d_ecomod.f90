@@ -914,20 +914,6 @@ SUBROUTINE WQinit
     settling_vel(:) = 0.0
   end if
 
-  if ((iHg0 == 1) .or. (iMeHg == 1) .or. (iHgII == 1)) then
-    open(unit=ihg_sed, file='si3d_init_hgsed.txt', status='old', form='formatted', iostat=ios)
-    if(ios /= 0) call open_error('Error opening si3d_init_hgsed.txt', ios)
-
-    read(ihg_sed, fmt='(/)', iostat=ios)
-    if(ios /= 0) call input_error(ios, 15)
-    read(unit=ihg_sed, fmt='(3X,I10)', iostat=ios) l_hgsed
-    close(ihg_sed)
-    print*, 'l_hgsed', l_hgsed
-    allocate(r_hg_sed(l_hgsed), stat=istat)
-    if (istat /= 0) call allocate_error( istat, 100)
-    r_hg_sed(:) = 1.0
-  end if
-
   print*, 'Constituents to model:'
   print*, tracer_list(:)
 

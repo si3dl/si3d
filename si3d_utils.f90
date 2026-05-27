@@ -455,6 +455,13 @@ SUBROUTINE AllocateSpace
      IF (istat /= 0) CALL allocate_error ( istat, 9 )
    ENDIF
 
+   if ((iHg0 == 1) .or. (iMeHg == 1) .or. (iHgII == 1)) then
+    allocate(r_hg_sed(lm1))
+    r_hg_sed(:) = 1.0
+  end if
+
+
+
 END SUBROUTINE AllocateSpace
 
 !************************************************************************
