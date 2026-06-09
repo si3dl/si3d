@@ -62,16 +62,16 @@ SUBROUTINE sourceDO(kwq,lwq)
   ! ...Calculate reaeration only at the lake surface
   ! for now using constant reaeration defined in wq_inp, but in future, can have
   ! alternatives for reaeration rates.
-  IF (kwq .le. k1z(lwq)) THEN
+  IF (kwq .le. k1z(lwq) + 1) THEN
     ws = SQRT(uair(lwq)**2. + vair(lwq)**2.)
     ! if (ws .le. 0.6) then
     !   ws = 0.6
     ! end if
-    ! if (kwq .eq. k1z(lwq)) then
+    if (kwq .eq. k1z(lwq)) then
       reaeration = R_reaer * (ws ** 1.64)* (OS - tracerpp(kwq,lwq,LDO))
-    ! else
-    !   reaeration = 1/2 * (R_reaer * (ws ** 1.64))* (OS - tracerpp(kwq,lwq,LDO))
-    ! end if
+    else
+      reaeration = 1/2 * (R_reaer * (ws ** 1.64))* (OS - tracerpp(kwq,lwq,LDO))
+    end if
 
     ! Units: [mg/m^2/s] = [m/s] * [mg/m^3]
   ELSE
