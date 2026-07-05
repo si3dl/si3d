@@ -68,7 +68,7 @@ Model rates: Four algae groups, oxygen, SOD, and Nutrientes
  R_miner_dop     !      0.00          ! (1/d) Mineralization rate of DOP 
  R_decom_poc     !      0.00          ! (1/d) Rate of decomposition of POC
  R_miner_doc     !      0.000         ! (1/d) Rate of mineralization of DOC
- R_reaer         !      0.00          ! (m/d) Reaeration rate
+ R_reaer         !      0.05          ! (m/d) Reaeration rate
  R_settl         !      0.001         ! (m/d) Rate of settling of nutrients         
  R_resusp        !      0.0000        ! (m/d) Rate of resuspension of nutrients
  vspa            !      0.0000        ! [m/d] Settling velocity of algae
@@ -92,7 +92,7 @@ Temperature Correction Factors
 -------------------------------------------------------------------------------
 Fluxes (atmospheric and sediments)
 -------------------------------------------------------------------------------
- R_SOD           !      0.0           ! (mg/m2/day) Sediment oxygen demand rate
+ R_SOD           !      0.9           ! (mg/m2/day) Sediment oxygen demand rate
  ATM_DON         !      0.0           ! (mg/m2/day) Atmospheric deposition of DON
  ATM_NH4         !      0.0           ! (mg/m2/day) Atmospheric deposition of NH4
  ATM_NO3         !      0.0           ! (mg/m2/day) Atmospheric deposition of NO3

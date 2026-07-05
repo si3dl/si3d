@@ -3889,7 +3889,7 @@ C     Interpolate input profiles to obtain the plume initial conditions
       SALPLU=SALAMB    
       TPLUME=TAMB
 C     ... Guess the initial velocity 
-      VGUESS=0.12
+      VGUESS=0.07
       VI=VGUESS
 !     INITIAL DIFFUSER SIZE
 !     At first the plume radius BNOT (initial plume HALF WIDTH) in the TOP HAT models 
@@ -3965,7 +3965,8 @@ C     ... Bubbles
       N=QGAS/VBUB
       VDIFF=1
       DO WHILE (VDIFF.GT.1.0E-6)
-  9     VG=QGAS/((VGUESS+VB)*(2.*LAMBDA*BI*LI)) 
+        VG=QGAS/((VGUESS+VB)*(2.*LAMBDA*BI*LI)) 
+        !VG=QGAS/((VGUESS+VB)*(PI*(LAMBDA*BI)**2))
         DENSEP=(1.0-VG)*DENSEW
         VI=FRNI*(2.0*LAMBDA*BI*G*(DENSEA-DENSEP)/DENSEP)**0.5
         VDIFF=ABS(VI-VGUESS)
@@ -3980,7 +3981,7 @@ C     ------------------------------------------------------------------
 
       PRINT*,'........VARIABLE TRANSFORMATION.......... '
       VO = 0.00
-      EI=2.*LI*ALPHAI*(VI-C1*VO)          ! ACC 2026: solo lados largos (2D linea fuente)
+      EI=2.*LI*ALPHAI*(VI+C1*VO)          ! ACC 2026: solo lados largos (2D linea fuente)
       EO=-2.*LI*ALPHAO*VO
       
       QW=VI*(2.*LI*BI) 
@@ -4163,7 +4164,7 @@ C        Use subroutines for Runge Kutta method solution
          AREA=QW/VI
          LI=LNOT          ! ACC 2026: longitud fija = longitud del difusor
          BI=AREA/(2.0*LI) ! ACC 2026: solo crece el semiancho
-         EI= 2.*LI*ALPHAI*(VI-C1*VO)     ! ACC 2026: solo lados largos
+         EI= 2.*LI*ALPHAI*(VI+C1*VO)     ! ACC 2026: solo lados largos
          EO=-2.*LI*ALPHAO*VO             ! ACC 2026: solo lados largos
          TPLUME=FTEMP/QW
          SALPLU=FSAL/QW  !JCT2020_Sal
@@ -5416,7 +5417,7 @@ C     CALCULATION OF INITIAL WATER VELOCITY USING FROUDE NUMBER
 		 BO=AREA/(2.0*LO)
 !        ACC 2026: denominador DENSEA fisicamente correcto (pluma externa mas densa que ambiente)
 !        Linea erronea comentada: VO=-FRNO*(ABS((BO-BITOP)*G*(DENSEA-DENSEP)/DENSEP))**0.5
-         VO=-FRNO*(ABS((BO-BITOP)*G*(DENSEP-DENSEA)/DENSEA))**0.5  ! ACC 2026
+         VO=-FRNO*(ABS((BO-BITOP)*G*(DENSEA-DENSEP)/DENSEP))**0.5  ! ACC 2026
          VDIFF=ABS(VO-VGUESS)
          VGUESS=VO
       END DO
@@ -5434,7 +5435,7 @@ C     ------------------------------------------------------------------
       LI=LITOP ! JCT_RECT_2022
 	  
 !      EA=-(2.*(LO+2.*BO))*ALPHAA*VO ! JCT_RECT JCT_2022
-	  EI=+2.*LI*ALPHAI*(VI-C1*VO)  ! ACC 2026: solo lados largos (2D linea fuente)
+	  EI=+2.*LI*ALPHAI*(VI+C1*VO)  ! ACC 2026: solo lados largos (2D linea fuente)
       EO=-2.*LI*ALPHAO*VO           ! ACC 2026: solo lados largos
       EA=-2.*LO*ALPHAA*VO           ! ACC 2026: solo lados largos
       EP=QINTOP
@@ -5544,8 +5545,8 @@ C           Previous equation corrected to consistently express salinity in uS/c
             VO=MOMENT/QW
 			
 			
-            !AREA = QW/VO+(LI*2.*BI)
-            AREA = QW/VO	  
+            AREA = QW/VO+(LI*2.*BI)
+            !AREA = QW/VO	  
             !SOLVE FOR DIMENSIONS USING L^2+(2Bo-Lo)L-AREA=0 USING QUADRATIC EQN.
             AA=1.0
             BB=2.*BI-LI
@@ -5572,8 +5573,8 @@ C           Previous equation corrected to consistently express salinity in uS/c
         ENDIF
 
          VO=MOMENT/QW
-            !AREA = QW/VO+(LI*2.*BI)   
-            AREA = QW/VO
+            AREA = QW/VO+(LI*2.*BI)   
+            !AREA = QW/VO
             !SOLVE FOR DIMENSIONS USING L^2+(2Bo-Lo)L-AREA=0 USING QUADRATIC EQN.
             AA=1.0
             BB=2.*BI-LI
@@ -5584,7 +5585,7 @@ C           Previous equation corrected to consistently express salinity in uS/c
             ENDIF		 
 		    BO=AREA/(2.0*LO)
 
-         EI=+2.*LI*ALPHAI*(VI-C1*VO)  ! ACC 2026: solo lados largos
+         EI=+2.*LI*ALPHAI*(VI+C1*VO)  ! ACC 2026: solo lados largos
          EO=-2.*LI*ALPHAO*VO           ! ACC 2026: solo lados largos
          EA=-2.*LO*ALPHAA*VO           ! ACC 2026: solo lados largos
 
@@ -5722,7 +5723,7 @@ C
 !      DYDX(2)=((1/GAMMA1)*(-G*(LO*2*BO-LI*2*BI)*
 !     +((DENSEP-DENSEA)/DENSE20))-EI*VO+EO*VI)
       DYDX(2)=((1/GAMMA1)*(-G*(LO*2*BO-LI*2*BI)*
-     +((DENSEP-DENSEA)/DENSEA))-EI*VO+EO*VI)  ! ACC 2026
+     +((DENSEP-DENSEA)/DENSE20))-EI*VO+EO*VI)  ! ACC 2026
       DYDX(3)=EA*TARO+EO*TIN-EI*TPLUME
       DYDX(4)=EA*SALAMB+EO*SALIN-EI*SALPLU
       DYDX(5)=EA*DOAMB/32.+EO*COMGIN/32.-EI*COMGP/32.
@@ -5847,7 +5848,7 @@ C----------------------------------------------------------------------
 !      DYDX(2)=((1/GAMMA1)*(-G*(LO*2*BO-LI*2*BI)*
 !     +((DENSEP-DENSEA)/DENSE20))-EI*VO+EO*VI)
       DYDX(2)=((1/GAMMA1)*(-G*(LO*2*BO-LI*2*BI)*
-     +((DENSEP-DENSEA)/DENSEA))-EI*VO+EO*VI)  ! ACC 2026
+     +((DENSEP-DENSEA)/DENSE20))-EI*VO+EO*VI)  ! ACC 2026
 	 
 	    ! PRINT*," DYDX(2)_drevis",DYDX(2), GAMMA1,G,LO,BO,LI,BI
 		! PRINT*,DENSEP,DENSEA,DENSE20,EI,VO,EO,VI

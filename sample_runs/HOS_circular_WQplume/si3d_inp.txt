@@ -10,8 +10,8 @@ Start date and time for simulations
 -------------------------------------------------------
 Space-time domains, cell size & time steps  
 -------------------------------------------------------
- xl          !    23900.          ! Length of domain (m) in EW direction
- yl          !    19300.          !   "    "    "    (m) in NS       "
+ xl          !     4100.          ! Length of domain (m) in EW direction
+ yl          !     4100.          !   "    "    "    (m) in NS       "
  zl          !       17.5         !   "    "    "    (m) in vertical
  tl          !   648000.          ! Length of time (s) simulated (7.5d)
  idx         !     100.0          ! Cell size (m) in EW direction
@@ -55,9 +55,9 @@ Parameters controlling solution algorithm
 Output specifications for time files (individual nodes)
 -------------------------------------------------------  
  ipt         !      180           ! No. of time step between consecutive output to time file  (1h)
- nnodes      !        5           ! From the diffuser to the narrows, plus SBMM
- inodes      ! 193,183,172,162,205
- jnodes      !  74,78,80,84,72
+ nnodes      !        1           ! UA-06, LA-03, OA-04,LGsonic,harvesting
+ inodes      !  21
+ jnodes      !  21
 -------------------------------------------------------
 Output specifications for H-plane files (plot in matlab with LoadPlotSheetFile3L)
 -------------------------------------------------------
@@ -72,7 +72,7 @@ Output specifications for X-section files (plot in matlab with LoadPlotSectionFi
 -------------------------------------------------------
 Output specifications for 3D space files
 -------------------------------------------------------
- ipxml       !       180          ! No. of time step between consecutive output to 3D-space file (1h)
+ ipxml       !         0          ! No. of time step between consecutive output to 3D-space file (1h)
  itspf       !         0          ! No. of time steps before first output to 3D-space file
  iTurbVars   !         0          ! 0 for only velocity and temperature outputs and 1 to include turbulent parameters
 -------------------------------------------------------  
@@ -109,30 +109,13 @@ Specification for tracer (including oxygen) simulation
 -------------------------------------------------------       
 Specification for oxgygenation system simulations
 -------------------------------------------------------            
- iopts       !       20           ! No. of columns with point sources-sinks
+ iopts       !        3           ! No. of columns with point sources-sinks
  Nodev       !        1           ! No. of devices acting as sources-sinks 
  iodt        !     3600.          ! Time (secs) between consecutive records in io files
- ###         ! i-, j- for device number   
- PlumeLoc 193  70   1
- PlumeLoc 193  71   1
- PlumeLoc 193  72   1
- PlumeLoc 193  73   1
- PlumeLoc 193  74   1 
- PlumeLoc 193  75   1   
- PlumeLoc 193  76   1  
- PlumeLoc 193  77   1 
- PlumeLoc 193  78   1   
- PlumeLoc 193  79   1  
- PlumeLoc 190  70   1
- PlumeLoc 190  71   1
- PlumeLoc 190  72   1
- PlumeLoc 190  73   1
- PlumeLoc 190  74   1 
- PlumeLoc 190  75   1   
- PlumeLoc 190  76   1  
- PlumeLoc 190  77   1 
- PlumeLoc 190  78   1   
- PlumeLoc 190  79   1 
+ ###         ! i-, j- for device number
+ PlumeLoc  21  21   1 
+ PlumeLoc  22  21   1    
+ PlumeLoc  23  21   1  
 -------------------------------------------------------       
 Specification for interpolation method
 ------------------------------------------------------- 

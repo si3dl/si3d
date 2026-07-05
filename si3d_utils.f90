@@ -4416,7 +4416,7 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
              outerplume = 0
              toler = 10         ! in
 
-             DO WHILE (NITERPLUME .LT. 1)
+             DO WHILE (NITERPLUME .LT. 3)
                 NITERPLUME = NITERPLUME+1
                 PRINT*, 'NITERPLUME', NITERPLUME
 
@@ -4438,8 +4438,8 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
                                  innerplume,                          &
                                  outerplume,                          &
                                  alphaii, alphaoo, alphaaa, lambdaa,  &
-                                 froudeii, froudeoo, gammapp,linot,oteff,   &
-                 lwdi(1:ksrc))
+                                 froudeii, froudeoo, gammapp,linot,   &
+                                 oteff, lwdi(1:ksrc))
 
              PRINT*, '******************************************************'
              PRINT*, '----OUTPUT FROM PLUME ROUTINES (RECTANGULAR-inner) ---'
@@ -4554,12 +4554,12 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
 
              ! ... Define flow at entrainment cells
              qwd = 0.0
-             qwd(ktop:kint-1)  = -qwdo(ktop:kint-1) ! JCT_2020 --- ACC 03/2026 added negative signed to qwdo, same as in the circular plume (line 4457)
+             qwd(ktop:kint-1)  = qwdo(ktop:kint-1) ! JCT_2020 --- ACC 03/2026 added negative signed to qwdo, same as in the circular plume (line 4457)
              qwd(kint:ksrc)    = qwdi(kint:ksrc)
-             IF (ktop.EQ.kint) THEN                          !ACC 2026 for cases when ktop equals kint
-               qwd(ktop:kint+1)  = -qwdo(ktop:kint+1) 
-               qwd(kint+2:ksrc)    = qwdi(kint+2:ksrc)
-             END IF
+             !IF (ktop.EQ.kint) THEN                          !ACC 2026 for cases when ktop equals kint
+             !  qwd(ktop:kint+1)  = -qwdo(ktop:kint+1) 
+             !  qwd(kint+2:ksrc)    = qwdi(kint+2:ksrc)
+             !END IF
 
              !$OMP END CRITICAL (plumemodel)
 
