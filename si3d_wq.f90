@@ -34,7 +34,7 @@ SUBROUTINE sourceDO(kwq,lwq)
   !. . . Local Variables
   REAL    ::   Tk, lnOS, OS, Patm_do, ln_Pwv, Pwv, theta2, f_SOD 
   REAL    :: reaeration, sedoxydemand
-  real    :: ws, R_SOD_ij
+  real    :: ws, R_SOD_ij, n_air, Sco2
   integer :: i, j
 
   reaeration = 0.0
@@ -62,16 +62,22 @@ SUBROUTINE sourceDO(kwq,lwq)
   ! ...Calculate reaeration only at the lake surface
   ! for now using constant reaeration defined in wq_inp, but in future, can have
   ! alternatives for reaeration rates.
-  IF (kwq .le. k1z(lwq) + 1) THEN
+  IF (kwq .le. k1z(lwq)) THEN
     ws = SQRT(uair(lwq)**2. + vair(lwq)**2.)
-    ! if (ws .le. 0.6) then
-    !   ws = 0.6
+
+    ! if (kwq .eq. k1z(lwq)) then
+      ! reaeration = R_reaer * (ws ** 2.0) * (OS - tracerpp(kwq,lwq,LDO))
+      if (ws .ge. 8) then
+        n_air = 1/2
+      else
+        n_air = 2/3
+      end if
+      Sco2 = 1800.6 - 120.1 * salp(kwq, lwq) + 3.7818 * salp(kwq, lwq) ** 2 - 0.047608 * salp(kwq, lwq) ** 3
+      reaeration = R_reaer * (ws ** 2.0) * ((Sco2 / 600) ** -n_air) * (OS - tracerpp(kwq,lwq,LDO))
+      ! reaeration = R_reaer * (ws ** 2.0) * (OS - tracerpp(kwq,lwq,LDO))
+    ! else
+      ! reaeration = 1/5 * (R_reaer * (ws ** 2.0))* (OS - tracerpp(kwq,lwq,LDO))
     ! end if
-    if (kwq .eq. k1z(lwq)) then
-      reaeration = R_reaer * (ws ** 1.64)* (OS - tracerpp(kwq,lwq,LDO))
-    else
-      reaeration = 1/2 * (R_reaer * (ws ** 1.64))* (OS - tracerpp(kwq,lwq,LDO))
-    end if
 
     ! Units: [mg/m^2/s] = [m/s] * [mg/m^3]
   ELSE

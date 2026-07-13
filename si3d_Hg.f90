@@ -1022,7 +1022,7 @@ SUBROUTINE MeHg_diffusion(MeHgw_diffusion, MeHgw, MeHgs, kwq, lwq)
   i = l2i(lwq)
   j = l2j(lwq)
 
-  MeHgw_diffusion = (1 + (KDO / (KDO + tracerpp(kwq, lwq, LDO)))) * kws3 * (MeHgs - MeHgw)
+  MeHgw_diffusion = kws3 * (MeHgs - MeHgw)
 
   if (MeHgw .gt. MeHgs) then
     if (abs(MeHgw_diffusion) .gt. (MeHgw * hp(kwq, lwq) / dt)) then
@@ -1057,7 +1057,7 @@ SUBROUTINE HgII_diffusion(HgIIw_diffusion, HgIIw, HgIIs, kwq,lwq)
   i = l2i(lwq)
   j = l2j(lwq)
 
-  HgIIw_diffusion = (1 + (KDO / (KDO + tracerpp(kwq, lwq, LDO)))) * kws2 * (HgIIs - HgIIw)
+  HgIIw_diffusion = kws2 * (HgIIs - HgIIw)
 
   if (HgIIw .gt. HgIIs) then
     if (abs(HgIIw_diffusion) .gt. (HgIIw * hp(kwq, lwq) / dt)) then
@@ -1092,7 +1092,7 @@ SUBROUTINE Hg0_diffusion(Hg0w_diffusion, Hg0w, Hg0s, kwq, lwq)
   i = l2i(lwq)
   j = l2j(lwq)
 
-  Hg0w_diffusion = (1 + (KDO / (KDO + tracerpp(kwq, lwq, LDO)))) * kws1 * (Hg0s - Hg0w)
+  Hg0w_diffusion = kws1 * (Hg0s - Hg0w)
 
   ! Mass conservation of the dissolved phase flux
   if (Hg0w .gt. Hg0s) then
