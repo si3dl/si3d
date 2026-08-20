@@ -92,7 +92,8 @@ SUBROUTINE init
       
       ! Changing thickness of bottom dry cell to have the thickness of a sediment layer
       ! Only applicable when tracers are modeled
-      if (ntr > 0) then
+      hp(kms + 1, l) = hp(kms, l)
+      if (iSS .eq. 1) then
         hp(kms + 1, l) = sed_h
       end if
 
@@ -348,38 +349,38 @@ SUBROUTINE InitializeScalarFields
             kms = kmz(l)
             i = l2i(l)
             j = l2j(l)
-            if ((nn .eq. LHg0) .or. (nn .eq. LHgII) .or. (nn .eq. LMeHg)) then
-              if ((((i >= 1) .and. (i <= 135)) .and. ((j >=1) .and. (j <= 195)))) then
-                if (nn .eq. LHg0) then
-                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.1
-                elseif (nn .eq. LHgII) then
-                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.1
-                elseif (nn .eq. LMeHg) then
-                  tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 1.0
-                end if
-              elseif ( ((i > 135) .and. ((i <=180))) .and. (j >= 66)) then
-                if (nn .eq. LHg0) then
-                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.1
-                elseif (nn .eq. LHgII) then
-                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.1
-                elseif (nn .eq. LMeHg) then
-                  tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 1.0
-                end if
-              elseif ((i > 135) .and. ((j >= 1) .and. (j < 66))) then
-              ! elseif ( ((i > 135) .and. ((j >= 1) .and. (j <= 65))) .or. &
-                      ! (((i > 135) .and. (i <= 180)) .and. ((j > 65) .and. (j <= 71))) .or. &
-                      ! (((i > 135) .and. (i <= 164)) .and. ((j > 71) .and. (j <= 75))) .or. &
-                      ! (((i > 135) .and. (i <= 149)) .and. ((j > 75) .and. (j <= 83))) .or. &
-                      ! (((i > 149) .and. (i <= 159)) .and. ((j > 75) .and. (j <= 77))) ) then
-                if (nn .eq. LHg0) then
-                  tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.1
-                elseif (nn .eq. LHgII) then
-                  tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.1
-                elseif (nn .eq. LMeHg) then
-                  tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 0.2
-                end if              
-              end if
-            elseif (nn .eq. LSS1) then
+            ! if ((nn .eq. LHg0) .or. (nn .eq. LHgII) .or. (nn .eq. LMeHg)) then
+            !   if ((((i >= 1) .and. (i <= 135)) .and. ((j >=1) .and. (j <= 195)))) then
+            !     if (nn .eq. LHg0) then
+            !       tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.1
+            !     elseif (nn .eq. LHgII) then
+            !       tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.1
+            !     elseif (nn .eq. LMeHg) then
+            !       tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 1.0
+            !     end if
+            !   elseif ( ((i > 135) .and. ((i <=180))) .and. (j >= 66)) then
+            !     if (nn .eq. LHg0) then
+            !       tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.1
+            !     elseif (nn .eq. LHgII) then
+            !       tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.1
+            !     elseif (nn .eq. LMeHg) then
+            !       tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 1.0
+            !     end if
+            !   elseif ((i > 135) .and. ((j >= 1) .and. (j < 66))) then
+            !   ! elseif ( ((i > 135) .and. ((j >= 1) .and. (j <= 65))) .or. &
+            !           ! (((i > 135) .and. (i <= 180)) .and. ((j > 65) .and. (j <= 71))) .or. &
+            !           ! (((i > 135) .and. (i <= 164)) .and. ((j > 71) .and. (j <= 75))) .or. &
+            !           ! (((i > 135) .and. (i <= 149)) .and. ((j > 75) .and. (j <= 83))) .or. &
+            !           ! (((i > 149) .and. (i <= 159)) .and. ((j > 75) .and. (j <= 77))) ) then
+            !     if (nn .eq. LHg0) then
+            !       tracer(:kms, l, LHg0) = tracer(:kms, l, LHg0) * 0.1
+            !     elseif (nn .eq. LHgII) then
+            !       tracer(:kms, l, LHgII) = tracer(:kms, l, LHgII) * 0.1
+            !     elseif (nn .eq. LMeHg) then
+            !       tracer(:kms, l, LMeHg) = tracer(:kms, l, LMeHg) * 0.2
+            !     end if              
+            !   end if
+            if (nn .eq. LSS1) then
               if (((i >= 1) .and. (i <= 135)) .and. ((j >=1) .and. (j <= 195))) then
                 tracer(kms + 1, l, nn) = (1 - sed_por) * sed_dens(nn - LSS1 + 1)
               else
@@ -407,30 +408,30 @@ SUBROUTINE InitializeScalarFields
               else
                 tracer(kms + 1, l, nn) = 0.0 
               end if
-            elseif ((nn .eq. LDOC)) then
-              if (((i >= 1) .and. (i <= 135)) .and. ((j >=1) .and. (j <= 195))) then
-                tracer(kms + 1, l, nn) = DOC_sed * 0.8
-              elseif ( ((i > 135) .and. ((j >= 1) .and. (j <= 65))) .or. &
-                      (((i > 135) .and. (i <= 180)) .and. ((j > 65) .and. (j <= 71))) .or. &
-                      (((i > 135) .and. (i <= 164)) .and. ((j > 71) .and. (j <= 75))) .or. &
-                      (((i > 135) .and. (i <= 149)) .and. ((j > 75) .and. (j <= 83))) .or. &
-                      (((i > 149) .and. (i <= 159)) .and. ((j > 75) .and. (j <= 77))) ) then
-                tracer(kms + 1, l, nn) = DOC_sed * 0.94
-              else
-                tracer(kms + 1, l, nn) = DOC_sed * 1.0 
-              end if
-            elseif ((nn .eq. LPOC)) then
-              if (((i >= 1) .and. (i <= 135)) .and. ((j >=1) .and. (j <= 195))) then
-                tracer(kms + 1, l, nn) = POC_sed * 0.65   
-              elseif ( ((i > 135) .and. ((j >= 1) .and. (j <= 65))) .or. &
-                      (((i > 135) .and. (i <= 180)) .and. ((j > 65) .and. (j <= 71))) .or. &
-                      (((i > 135) .and. (i <= 164)) .and. ((j > 71) .and. (j <= 75))) .or. &
-                      (((i > 135) .and. (i <= 149)) .and. ((j > 75) .and. (j <= 83))) .or. &
-                      (((i > 149) .and. (i <= 159)) .and. ((j > 75) .and. (j <= 77))) ) then
-                tracer(kms + 1, l, nn) = POC_sed * 1.1              
-              else
-                tracer(kms + 1, l, nn) = POC_sed * 1.0 
-              end if
+            ! elseif ((nn .eq. LDOC)) then
+              ! if (((i >= 1) .and. (i <= 135)) .and. ((j >=1) .and. (j <= 195))) then
+              !   tracer(kms + 1, l, nn) = DOC_sed * 0.8
+              ! elseif ( ((i > 135) .and. ((j >= 1) .and. (j <= 65))) .or. &
+              !         (((i > 135) .and. (i <= 180)) .and. ((j > 65) .and. (j <= 71))) .or. &
+              !         (((i > 135) .and. (i <= 164)) .and. ((j > 71) .and. (j <= 75))) .or. &
+              !         (((i > 135) .and. (i <= 149)) .and. ((j > 75) .and. (j <= 83))) .or. &
+              !         (((i > 149) .and. (i <= 159)) .and. ((j > 75) .and. (j <= 77))) ) then
+              !   tracer(kms + 1, l, nn) = DOC_sed * 0.94
+              ! else
+              !   tracer(kms + 1, l, nn) = DOC_sed * 1.0 
+              ! end if
+            ! elseif ((nn .eq. LPOC)) then
+              ! if (((i >= 1) .and. (i <= 135)) .and. ((j >=1) .and. (j <= 195))) then
+              !   tracer(kms + 1, l, nn) = POC_sed * 0.65   
+              ! elseif ( ((i > 135) .and. ((j >= 1) .and. (j <= 65))) .or. &
+              !         (((i > 135) .and. (i <= 180)) .and. ((j > 65) .and. (j <= 71))) .or. &
+              !         (((i > 135) .and. (i <= 164)) .and. ((j > 71) .and. (j <= 75))) .or. &
+              !         (((i > 135) .and. (i <= 149)) .and. ((j > 75) .and. (j <= 83))) .or. &
+              !         (((i > 149) .and. (i <= 159)) .and. ((j > 75) .and. (j <= 77))) ) then
+              !   tracer(kms + 1, l, nn) = POC_sed * 1.1              
+              ! else
+              !   tracer(kms + 1, l, nn) = POC_sed * 1.0 
+              ! end if
             elseif ((nn .eq. LDO)) then
               tracer(kms + 1, l, nn) = 0.0
             end if
@@ -448,29 +449,28 @@ SUBROUTINE InitializeScalarFields
           if(ios /= 0) call input_error(ios, 15)
           read(ihg_sed, fmt='(A)', iostat=ios)
           if(ios /= 0) call input_error(ios, 15)
-          do iter = 1, l_hgsed
-            read(unit=ihg_sed, fmt='(I8,I8,G16.6,G16.6,G16.6,G16.6)', iostat=ios) im_hgsed, jm_hgsed, hg0sed, hgiised, mehgsed, rhgsed
-            if(ios /= 0) call input_error(ios, 15)
-            l = ij2l(im_hgsed, jm_hgsed)
-            kms = kmz(l)
-            tracer(kms + 1, l, LHg0) = hg0sed
-            tracer(kms + 1, l, LHgII) = hgiised
-            tracer(kms + 1, l, LMeHg) = mehgsed
-            r_hg_sed(l) = rhgsed
-          end do
-        end if
+          ! do iter = 1, l_hgsed
+          !   read(unit=ihg_sed, fmt='(I8,I8,G16.6,G16.6,G16.6,G16.6)', iostat=ios) im_hgsed, jm_hgsed, hg0sed, hgiised, mehgsed, rhgsed
+          !   if(ios /= 0) call input_error(ios, 15)
+            ! l = ij2l(im_hgsed, jm_hgsed)
+            ! kms = kmz(l)
+            tracer(-1, :, LHg0) = 0.0!hg0sed
+            tracer(-1, :, LHgII) = 0.0!hgiised
+            tracer(-1, :, LMeHg) = 0.0!mehgsed
+            r_hg_sed(:) = 1.0!rhgsed
+          ! end do
+          close(ihg_sed)
+        end if  
       END IF
       tracerpp = tracer
     END IF
-
-  ! ... Deallocate array holding scalar concs.
-  DEALLOCATE ( Scalardepthile )
-
-  ! ... Close io file
-  CLOSE (i4)
-  close(ihg_sed)
+    ! ... Close io file
+    CLOSE (i4)
+    ! ... Deallocate array holding scalar concs.
+    DEALLOCATE ( Scalardepthile )
 
   END SELECT
+ 
 
   ! ... Initialize density field at time n-1 & n
   DO l = 1, lm1
@@ -1499,7 +1499,7 @@ SUBROUTINE matmom ( ieq, t_matmom2,Bstart, Bend, Bex,Beagx,Bearx,Bagx,Barx,Beagy
                     ! ... Velocity of the source in E direction (positive
                     !     towards east if a source; negative or towards west if
                     !     a sink) - idetr = 1 by default;
-                    Uhvalue = (Qpss(k,inn)*uEpss(iodev(inn))/dy)*idetr(iodev(inn)) !mod ACC oct11
+                    Uhvalue = (Qpss(k,inn)*uEpss(iodev(inn))/dy)/idetr(iodev(inn)) !mod ACC oct11
                     aa(2,k) = aa(2,k) + Usource
                     gg(  k) = gg(  k) + Usource * Uhvalue
                   ENDDO
@@ -1516,7 +1516,7 @@ SUBROUTINE matmom ( ieq, t_matmom2,Bstart, Bend, Bex,Beagx,Bearx,Bagx,Barx,Beagy
                     ! ... Velocity of the source in N direction (positive
                     !     towards north if a source; negative or towards south if
                     !     a sink) - idetr = 1 by default;
-                    Uhvalue = -(Qpss(k,inn)*uWpss(iodev(inn))/dy)*idetr(iodev(inn)) !mod ACC oct11
+                    Uhvalue = -(Qpss(k,inn)*uWpss(iodev(inn))/dy)/idetr(iodev(inn)) !mod ACC oct11
                     aa(2,k) =   aa(2,k) + Usource
                     gg(  k) =   gg(  k) + Usource * Uhvalue
                   ENDDO
@@ -1691,7 +1691,7 @@ SUBROUTINE matmom ( ieq, t_matmom2,Bstart, Bend, Bex,Beagx,Bearx,Bagx,Barx,Beagy
                     ! ... Velocity of the source in N direction (positive
                     !     towards north if a source; negative or towards south if
                     !     a sink) - idetr = 1 by default;
-                    Vhvalue = (Qpss(k,inn)*vNpss(iodev(inn))/dx)*idetr(iodev(inn)) !mod ACC oct11
+                    Vhvalue = (Qpss(k,inn)*vNpss(iodev(inn))/dx)/idetr(iodev(inn)) !mod ACC oct11
                     aa(2,k) = aa(2,k) + Vsource
                     gg(  k) = gg(  k) + Vsource * Vhvalue
                   ENDDO
@@ -1708,7 +1708,7 @@ SUBROUTINE matmom ( ieq, t_matmom2,Bstart, Bend, Bex,Beagx,Bearx,Bagx,Barx,Beagy
                     ! ... Velocity of the source in S direction (negative
                     !     towards south if a source; positive or towards north if
                     !     a sink) - idetr = 1 by default;
-                    Vhvalue = -(Qpss(k,inn)*vSpss(iodev(inn))/dx)*idetr(iodev(inn)) !mod ACC oct11
+                    Vhvalue = -(Qpss(k,inn)*vSpss(iodev(inn))/dx)/idetr(iodev(inn)) !mod ACC oct11
                     aa(2,k) = aa(2,k) + Vsource
                     gg(  k) = gg(  k) + Vsource * Vhvalue
                   ENDDO
@@ -2344,10 +2344,6 @@ SUBROUTINE layer_h
    ENDDO
 
 END SUBROUTINE layer_h
-
-
-
-
 
 !***********************************************************************
 SUBROUTINE layer_hp2
@@ -3597,7 +3593,6 @@ SUBROUTINE settrap
        salpp(k,l) = salp(k,l);
        salp (k,l)=(sal(k,l)+salpp(k,l))/2.
        rhop (k,l)=densty_s(salp(k,l), 0.00004, z)-1000.
-       ! PRINT *, "z=",z,"rho=",rhop(k,l)+1000
      ENDDO
 
      ! ... At u-points
@@ -4481,52 +4476,52 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
 !
 !-----------------------------------------------------------------------
 
-   ! ... Arguments
-   INTEGER, INTENT (IN) :: nt
-   INTEGER, INTENT(IN) :: Bstart,Bend
-   REAL, DIMENSION (1:km1,Bstart:Bend+1), INTENT(INOUT) :: Bex
+  ! ... Arguments
+  INTEGER, INTENT (IN) :: nt
+  INTEGER, INTENT(IN) :: Bstart,Bend
+  REAL, DIMENSION (1:km1,Bstart:Bend+1), INTENT(INOUT) :: Bex
 
-   !.....Local variables.....
-   REAL :: twodt1, Osource, Qsource
-   INTEGER :: i, j, k, l, k1s, kms, kt, nwlayers, inn, kk, noc,liter,innH
-   REAL, DIMENSION (1:km1) :: hn
-   REAL, DIMENSION (3,1:km1) :: aa
-   REAL, DIMENSION (1:km) :: ds
-   REAL, DIMENSION (1:ndz) :: sal1
+  !.....Local variables.....
+  REAL :: twodt1, Osource, Qsource
+  INTEGER :: i, j, k, l, k1s, kms, kt, nwlayers, inn, kk, noc,liter,innH
+  REAL, DIMENSION (1:km1) :: hn
+  REAL, DIMENSION (3,1:km1) :: aa
+  REAL, DIMENSION (1:km) :: ds
+  REAL, DIMENSION (1:ndz) :: sal1
 
-   !.....Timing.....
-   REAL, EXTERNAL :: TIMER
-   REAL :: btime, etime
-   btime = TIMER(0.0)
+  !.....Timing.....
+  REAL, EXTERNAL :: TIMER
+  REAL :: btime, etime
+  btime = TIMER(0.0)
 
-   ! ... Constants used in solution
-   twodt1 = twodt*tz
+  ! ... Constants used in solution
+  twodt1 = twodt*tz
 
-   !.....Loop over interior sal-pts to solve for
-   !     matrix from the active scalar equation.....
-   DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
+  !.....Loop over interior sal-pts to solve for
+  !     matrix from the active scalar equation.....
+  DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
 
-      l = id_column(liter)
+    l = id_column(liter)
 
-      ! ... 3D-(i,j) indexes for l - FJR - uncomment
-      i = l2i(l); j = l2j(l);
+    ! ... 3D-(i,j) indexes for l - FJR - uncomment
+    i = l2i(l); j = l2j(l);
 
-      !.....Compute top & bottom layer numbers & No. of layers ....
-      kms = kmz(l)
-      k1s = k1z(l)
-      nwlayers = (kms-k1s)+1
+    !.....Compute top & bottom layer numbers & No. of layers ....
+    kms = kmz(l)
+    k1s = k1z(l)
+    nwlayers = (kms-k1s)+1
 
-      ! ... Define layer thikness at time n - The corrections for
-      !     surface and recently submerged cells are needed to
-      !     keep mass conservation
-      hn(k1s+1:kms) = h(k1s+1:kms,l)
-      hn(k1s      ) = twodt1*wp(k1s,l)+hpp(k1s,l)
-      IF (hpp(k1s,l)<= ZERO) THEN
-        hn(k1s+1) = hpp(k1s+1,l)
-      ENDIF
+    ! ... Define layer thikness at time n - The corrections for
+    !     surface and recently submerged cells are needed to
+    !     keep mass conservation
+    hn(k1s+1:kms) = h(k1s+1:kms,l)
+    hn(k1s      ) = twodt1*wp(k1s,l)+hpp(k1s,l)
+    IF (hpp(k1s,l)<= ZERO) THEN
+      hn(k1s+1) = hpp(k1s+1,l)
+    ENDIF
 
-      !.....Calculate active scalar for case of a single layer.....
-      SELECT CASE (nwlayers)
+    !.....Calculate active scalar for case of a single layer.....
+    SELECT CASE (nwlayers)
       CASE (1)
 
         aa( 2,k1s) = hn(k1s)/twodt1
@@ -4536,67 +4531,78 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
       !.....Calculate active scalar for case of two or more layers.....
       CASE (2:)
 
-         !.....Form coefficient matrix [aa]
-         ! Define upper diagonal terms
-         aa(3,k1s:kms-1) = -Dv(k1s+1:kms,l)/(hn(k1s:kms-1)+hn(k1s+1:kms))*2.
-         aa(3,kms)       =  0.0
-         ! Define lower diagonal terms
-         aa(1,k1s+1:kms) = -Dv(k1s+1:kms,l)/(hn(k1s:kms-1)+hn(k1s+1:kms))*2.
-         aa(1,k1s)       =  0.0
-         ! Define center diagonal terms
-         aa(2,k1s:kms)   =  hn(k1s:kms)/twodt1-aa(1,k1s:kms)-aa(3,k1s:kms)
+        !.....Form coefficient matrix [aa]
+        ! Define upper diagonal terms
+        aa(3,k1s:kms-1) = -Dv(k1s+1:kms,l)/(hn(k1s:kms-1)+hn(k1s+1:kms))*2.
+        aa(3,kms)       =  0.0
+        ! Define lower diagonal terms
+        aa(1,k1s+1:kms) = -Dv(k1s+1:kms,l)/(hn(k1s:kms-1)+hn(k1s+1:kms))*2.
+        aa(1,k1s)       =  0.0
+        ! Define center diagonal terms
+        aa(2,k1s:kms)   =  hn(k1s:kms)/twodt1-aa(1,k1s:kms)-aa(3,k1s:kms)
 
-         !.....form r.h.s. matrix [ds].....
-         DO k = k1s, kms
-            ds(k) = Bex(k,l) + sourcesink(k,l,nt)
-         ENDDO
+        !.....form r.h.s. matrix [ds].....
+        DO k = k1s, kms
+          ds(k) = Bex(k,l) + sourcesink(k,l,nt)
+        ENDDO
 
-         ! ... Modify transport eqs. to accont for sources & sinks.
-         IF ( iopssH(omp_get_thread_num ( )+1) > 0 ) THEN
-           DO innH = 1, iopssH(omp_get_thread_num ( )+1)
-             inn = ioph2iop(innH,omp_get_thread_num ( )+1)
-             IF ( j /= jpss(inn) .OR. i /=ipss(inn) ) CYCLE
-             DO k = k1s, kms
-               IF (ABS(Qpss(k,inn))<1.E-10) CYCLE
+        ! ... Modify transport eqs. to accont for sources & sinks.
+        IF ( iopssH(omp_get_thread_num ( )+1) > 0 ) THEN
+          DO innH = 1, iopssH(omp_get_thread_num ( )+1)
+            inn = ioph2iop(innH,omp_get_thread_num ( )+1)
+            IF ( j /= jpss(inn) .OR. i /=ipss(inn) ) CYCLE
+            
+            DO k = k1s, kms
+              IF (ABS(Qpss(k,inn))<1.E-10) CYCLE
 
-               Qsource  = Qpss(k,inn)/(dx*dy)  ! Inflow per unit area (m/s)
-               Osource  = Rpss(k,inn,nt)       ! Concentration (kg/m3)
-               ds(k)=ds(k)+Qsource*Osource     ! kg/m2/s = conc.* thickness / time
-             ENDDO
-           ENDDO
-           ! ... Include SOD when modelling oxygen plumes -
-           IF (nt == ntr) ds(kms) = ds(kms) - k4sod
+              Qsource  = Qpss(k,inn) / (dx*dy)  ! Inflow per unit area (m/s)
+              Osource  = Rpss(k,inn,nt)
+              ds(k)= ds(k) + Qsource * Osource     ! kg/m2/s = conc.* thickness / time
 
-         ENDIF
+              ! print*, 'adding sourcesink term to tracer ', nt, 'device', inn
+              ! print*, 'k', k, 'nt', nt, 'LDO', LDO, 'i', i, 'j', j
+              ! print*, 'ds(k)', ds(k)
+              ! print*, 'Bex(k, l)', Bex(k,l)
+              ! print*, 'sourcesink(k, l, nt)', sourcesink(k,l,nt)
+              ! print*, 'source_pss(k, nn)', Qsource * Osource
 
-         !.....Solve tridiagonal system for the
-         !     vertical distribution of active scalar.....
-         CALL trid1 (aa, ds, sal1, k1s, kms, km1, nwlayers) ! The output is "sal"
+            ENDDO
+          ENDDO
+        END IF
+      
 
-         !.....Define scalars at new time step....
-         tracer(k1s:kms  ,l,nt) = sal1(1:nwlayers)
-         tracer(k1 :k1s-1,l,nt) = sal1(1         )
-         tracer(k1-1,l,nt) = sal1(1)
-      END SELECT
+      !.....Solve tridiagonal system for the
+      !     vertical distribution of active scalar.....
+      CALL trid1 (aa, ds, sal1, k1s, kms, km1, nwlayers) ! The output is "sal"
 
-      ! Adding solution to sediment layer
-      hn(kms + 1) = hpp(kms + 1, l)
-      aa( 2, kms + 1) = hn(kms + 1) / twodt1
-      ds(kms + 1) = Bex(kms + 1, l) + sourcesink(kms + 1, l, nt)
-      tracer(kms + 1, l, nt) = ds(kms + 1) / aa(2, kms + 1)
+      !.....Define scalars at new time step....
+      tracer(k1s:kms  ,l,nt) = sal1(1:nwlayers)
+      tracer(k1 :k1s-1,l,nt) = sal1(1         )
+      tracer(k1-1,l,nt) = sal1(1)
+    END SELECT
 
-      do k = k1-1, kms+1
-        if (tracer(k, l, nt) .lt. 0.0) then
-          tracer(k, l, nt) = 0.0
-        end if 
-      end do
+    ! if ((i == 20) .and. (j == 11)) then
+    !   print*, 'tracer(:,l,nt)', tracer(:,l,nt)
+    ! end if
 
-   !.....End loop over scalar-pts.....
-   END DO
+    ! Adding solution to sediment layer
+    hn(kms + 1) = hpp(kms + 1, l)
+    aa( 2, kms + 1) = hn(kms + 1) / twodt1
+    ds(kms + 1) = Bex(kms + 1, l) + sourcesink(kms + 1, l, nt)
+    tracer(kms + 1, l, nt) = ds(kms + 1) / aa(2, kms + 1)
 
-   !.....Compute CPU time spent in subroutine.....
-   etime = TIMER(0.0)
-   t_salin = t_salin + (etime - btime)
+    do k = k1-1, kms+1
+      if (tracer(k, l, nt) .lt. 0.0) then
+        tracer(k, l, nt) = 0.0
+      end if 
+    end do
+
+  !.....End loop over scalar-pts.....
+  END DO
+
+  !.....Compute CPU time spent in subroutine.....
+  etime = TIMER(0.0)
+  t_salin = t_salin + (etime - btime)
 
 END SUBROUTINE ImTracer
 

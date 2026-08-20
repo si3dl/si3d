@@ -212,15 +212,16 @@ SUBROUTINE input
 
     ! ... Read in locations & characteristics of diffusers
     !     At this point, they are pressumed constants in time
-    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (ipss(nn), nn=1, iopss)
+    READ (UNIT=i5, FMT='(14X,60I)', IOSTAT=ios) (ipss(nn), nn=1, iopss)
     IF (ios/= 0) CALL input_error ( ios, 10)
-    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (jpss(nn), nn=1, iopss)
+    READ (UNIT=i5, FMT='(14X,60I)', IOSTAT=ios) (jpss(nn), nn=1, iopss)
     IF (ios/= 0) CALL input_error ( ios, 10)
-    READ (UNIT=i5, FMT='(14X,20I)', IOSTAT=ios) (iodev(nn), nn=1, iopss)
+    READ (UNIT=i5, FMT='(14X,60I)', IOSTAT=ios) (iodev(nn), nn=1, iopss)
     IF (ios/= 0) CALL input_error ( ios, 10)
 
-    IF (iodev(npssdev) /= npssdev) THEN  ! iodev es el identificador del dispositivo. Nodev es el numero de dispositivos. Entonces, el ultimo valor de iodev debe ser igual al Nodev. 
-      PRINT*, '*** ERROR *** No. of Devices causing point sources'
+    IF (iodev(size(iodev)) /= npssdev) THEN  ! iodev es el identificador del dispositivo. Nodev es el numero de dispositivos. Entonces, el ultimo valor de iodev debe ser igual al Nodev. 
+      PRINT*, '*** ERROR ***'
+      print*, '# of Devices does not match the number of device from the last point source'
       STOP
     END IF
     ! ... Read sources & sinks specifications -
@@ -1246,9 +1247,9 @@ SUBROUTINE outt(n,thrs)
   !.....Output values at time step  n  to timefile(s).....
   DO nn = 1, nnodes
 
-    i = inode(nn);
-    j = jnode(nn);
-    i60 = i6 + nn;
+    i = inode(nn)
+    j = jnode(nn)
+    i60 = i6 + nn
 
     ! ... Map (i,j)- into l-index
     l = ij2l(i,j)
@@ -4006,69 +4007,87 @@ PURE FUNCTION densty_s ( temperature, salinity, elevation )
 !
 !-----------------------------------------------------------------------
 
-    ! ... Io variables
-  REAL, INTENT(IN) :: temperature, salinity, elevation
-  REAL             :: densty_s, rhoguess,rhomin,rhomax,delta, densw,   &
-                      pressureh, pressure, densws, kw, ks, k, maxiter,     &
-                      iter, of, ofmin, pressuremin, kmin
+  ! ... Io variables
+  REAL   , INTENT(IN) :: temperature, salinity, elevation
+  REAL(8)             :: densty_s, rhoguess, delta, densw
+  real(8)             :: pressureh, pressure, densws, kw, ks, k                      
+  real(8)             :: alpha_k, beta_k, dk_dp, residual, drho_dp, derivative
+  integer             :: maxiter, iter
 
-    densw = 999.842594                    &
-          + 6.793952e-2*temperature       &
-          - 9.095290e-3*temperature**2.    &
-          + 1.001685e-4*temperature**3.    &
-          - 1.120083e-6*temperature**4.    &
-          + 6.536332e-9*temperature**5.
+  ! Density of pure water at atmospheric pressure
+  densw = 999.842594d0                    &
+        + 6.793952d-2 * temperature       &
+        - 9.095290d-3 * temperature**2    &
+        + 1.001685d-4 * temperature**3    &
+        - 1.120083d-6 * temperature**4    &
+        + 6.536332d-9 * temperature**5
+  ! densty_s = densw
+  ! Density at atmospheric pressure
+  densws = densw + salinity * (0.824493d0 - 4.0899d-3 * temperature   &
+          + 7.6438d-5 * temperature**2                            &
+          - 8.2467d-7 * temperature**3                            &
+          + 5.3875d-9 * temperature**4)                           &
+          + salinity**1.5d0 * (-5.72466d-3                        &
+          + 1.0227d-4 * temperature                               &
+          - 1.6546d-6 * temperature**2) + 4.8314d-4 * salinity**2
+  
+  ! Pure-water secant bulk modulus
+  kw = 19652.21d0 + 148.4206d0 * temperature                          &
+          - 2.327105d0 * temperature**2                                 &
+          + 1.360477d-2 * temperature**3                              &
+          - 5.155288d-5 * temperature**4
+  
+  ! Seawater secant bulk modulus at atmospheric pressure
+  ks = kw + salinity * (54.6746d0 - 0.603459d0 * temperature            &
+      + 1.09987d-2 * temperature**2                               &
+      - 6.1670d-5 * temperature**3)                               &
+      + salinity**1.5d0 * (7.944d-2  &
+      + 1.6483d-2 * temperature                                   &
+      - 5.3009d-4 * temperature**2)
+  
+  ! Coefficient multiplying pressure in k(p)
+  alpha_k = 3.239908d0                                   &
+          + 1.43713d-3 * temperature & 
+          + 1.16092d-4*temperature**2      &
+          - 5.77905d-7 * temperature**3 &
+          + salinity * (2.2838d-3                            &
+          - 1.0981d-5 * temperature                                   &
+          - 1.6078d-6 * temperature**2) &
+          + 1.91075d-4 * salinity**1.5d0
+  ! Coefficient multiplying pressure squared in k(p)
+  beta_k = 8.50935d-5                                 &
+          - 6.12293d-6 * temperature                                  &
+          + 5.2787d-8 * temperature**2                               &
+          + salinity*(-9.9348d-7                        &
+          + 2.0816d-8 * temperature & 
+          + 9.1697d-10 * temperature**2)
+  
+  ! Pressure factor
+  pressureh = 1d-5 * 9.806d0 * elevation
 
-    densws = densw + salinity*(0.824493 - 4.0899e-3*temperature   &
-            + 7.6438e-5*temperature**2                            &
-            - 8.2467e-7*temperature**3                            &
-            + 5.3875e-9*temperature**4)                           &
-            + salinity**(3/2)*(-5.72466e-3                        &
-            + 1.0227e-4*temperature                               &
-            - 1.6546e-6*temperature**2) + 4.8314e-4*salinity**2
-    ! IF (elevation < 4) THEN
-    !   densty_s = densws
-    ! ELSE
-    ! ! Fixed Method root finding for density equation with Pressure. SV
-      rhoguess = densws
-      delta = 1
-      iter = 0
-      maxiter = 10000
-      DO WHILE (delta > 1e-6 .AND. iter < maxiter)
-        pressureh = rhoguess*9.806*elevation
-        pressure = 1e-5*pressureh
+  rhoguess = densws
+  delta = 10.0
+  iter = 0
+  maxiter = 10000
+  DO WHILE (delta > 1d-16 .AND. iter < maxiter)
+    ! Hydrostatic pressure in bar
+    pressure = rhoguess*pressureh
+    
+    ! Secant bulk modulus and its pressure derivative
+    k = ks + alpha_k * pressure + beta_k * pressure ** 2
+    dk_dp = alpha_k + 2.0 * beta_k * pressure
 
-        kw = 19652.21 + 148.4206*temperature                          &
-            - 2.327105*temperature**2                                 &
-            + 1.360477e-2*temperature**3                              &
-            - 5.155288e-5*temperature**4
+    ! Density from the equation of state
+    densty_s = densws / (1.0 - pressure / k)
 
-        ks = kw + salinity*(54.6746 - 0.603459*temperature            &
-            + 1.09987e-2*temperature**2                               &
-            - 6.1670e-5*temperature**3)                               &
-            + salinity**(3/2)*(7.944e-2                               &
-            + 1.6483e-2*temperature                                   &
-            - 5.3009e-4*temperature**2)
-
-        k = ks + pressure*(3.239908                                   &
-            + 1.43713e-3*temperature + 1.16092e-4*temperature**2      &
-            - 5.77905e-7*temperature**3)                              &
-            + pressure*salinity*(2.2838e-3                            &
-            - 1.0981e-5*temperature                                   &
-            - 1.6078e-6*temperature**2)                               &
-            + 1.91075e-4*pressure*salinity**(3/2)                     &
-            + pressure**2*(8.50935e-5                                 &
-            - 6.12293e-6*temperature                                  &
-            + 5.2787e-8*temperature**2)                               &
-            + pressure**2*(salinity)*(-9.9348e-7                        &
-            + 2.0816e-8*temperature + 9.1697e-10*temperature**2)
-
-        densty_s = densws/(1-pressure/k)
-        delta = abs(densty_s - rhoguess)
-        rhoguess = densty_s
-        iter = iter + 1
-      END DO
-    ! END IF
+    residual = rhoguess - densty_s
+    drho_dp = densws * (k - pressure * dk_dp) / ((k - pressure) ** 2)
+    derivative = 1.0 - pressureh * drho_dp
+    densty_s = rhoguess - residual / derivative
+    delta = abs(densty_s - rhoguess)
+    rhoguess = densty_s
+    iter = iter + 1
+  END DO
 
 END FUNCTION densty_s
 
@@ -4090,313 +4109,730 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
 !
 !-----------------------------------------------------------------------
 
-   INTEGER,INTENT(IN) :: n,istep
-   REAL,INTENT(IN) :: thrs
+  INTEGER,INTENT(IN) :: n,istep
+  REAL,INTENT(IN) :: thrs
 
-   INTEGER :: nn, inn, i, j, k, kk, l, k1s, kms, nwl, ktop, ksrc, plmdim, itr,innH
-   REAL    :: areatot, Tsource, Rsource
-   REAL(8) :: wselev, dfelev, dflgth, hcell, rjulday, lambnot, diamm
-   REAL(8) :: elevt, qwt, tplumt, comgpt, tplum0, comgp0, qscfm, frconot
-   REAL(8), DIMENSION (1:km1) :: zamb, Tamb, DOamb ! B.C. for plume model
-   REAL(8), DIMENSION (1:km1) :: qwd               ! Outflow rate for plume
-   LOGICAL, SAVE :: DiffON
+  INTEGER :: nn, inn, i, j, k, kk, l, k1s, kms, nwl, ksrc, plmdim, itr,innH
+  INTEGER :: NITERMAX, kint, e1, jct, FLAG
+  INTEGER, SAVE :: NITERPLUME, NLI, NLO, ktop
+  REAL    :: areatot, Tsource, Rsource, sumQpss, qdenom
+  REAL(8) :: wselev, dfelev, dflgth, hcell, rjulday, lambnot, diamm, linot
+  REAL(8) :: elevt, qwt, tplumt, comgpt, tplum0, comgp0, qscfm, frconot
+  REAL(8) :: ERRORDP, ERRORDPA, toler, depthed, salplut, qwed, QpssED
+  REAL(8) :: tplumti,comgpti,salpluti,tplumed,salplued,comgped
+  REAL(8) :: alphaii,alphaaa,alphaoo,gammapp,froudeii,froudeoo,lambdaa
+  real    :: rho_amb, rho_source, depth
+  REAL(8), DIMENSION (1:km1) :: zamb, Tamb, DOamb, UA, VA ! B.C. for plume model
+  REAL(8), DIMENSION (1:km1) :: qwd, qwdi, qwdo               ! Outflow rate for plume
+  REAL(8), DIMENSION (1:km1) :: bwd, bwdi, bwdo                 ! Radius of plume
+  REAL(8), DIMENSION (1:km1) :: lwdi, lwdo                 ! Radius of plume
+  LOGICAL, SAVE :: DiffON
 
-   ! ... Return if no points sources/sinks are specified
-   IF (iopss <= 0) RETURN
+  ! ... Return if no points sources/sinks are specified
+  IF (iopss <= 0) RETURN 
 
-   ! ... Define Qpss, Tpss, & Rpss for columns in each device
-   DO nn = 1, npssdev
+  ! ... Define Qpss, Tpss, & Rpss for columns in each device
+  DO nn = 1, npssdev
 
-     SELECT CASE (ptype(nn))
+    SELECT CASE (ptype(nn))
 
      ! ************ Section Boundary Conditions ***********************
-     CASE (-2)
+    CASE (-2) 
 
-       ! ... Only do computations when there is flow
-       IF (ABS(flpss(nn)) < qthrs(nn)) CYCLE
+      ! ... Only do computations when there is flow
+      IF (ABS(flpss(nn)) < qthrs(nn)) CYCLE
 
-       ! ... Only determine boundary conditions on leapfrog iterations
-       IF( (n > 1) .AND. (istep > 1)) CYCLE
+      ! ... Only determine boundary conditions on leapfrog iterations
+      IF( (n > 1) .AND. (istep > 1)) CYCLE
 
-       ! ... Interpolate forcing variables (flpss, scpss, trpss)
-       !     to present time using time series input -
-       CALL PointSourceSinkForcing (nn,thrs)
+      ! ... Interpolate forcing variables (flpss, scpss, trpss) 
+      !     to present time using time series input - 
+      CALL PointSourceSinkForcing (nn,thrs)
 
-       ! ... Find total volume of cells holding boundary conditions
-       areatot = 0.0
-       DO innH = 1, iopssH(omp_get_thread_num ( )+1)
-            inn = ioph2iop(innH,omp_get_thread_num ( )+1)
-         IF (iodev(inn) .NE. nn) CYCLE
-         ! ... Define i,j,l indexes
-         i = ipss(inn);
-         j = jpss(inn);
-         l = ij2l(i,j);
-         ! ... Define top and bottom cells & no. of layers
-         !     The diffuser is set to be one cell above the bottom
-         k1s = k1z(l) ;
-         kms = kmz(l) ;
-         DO k = k1s, kms
-           areatot = areatot + hp(k,l)
-         ENDDO
-       ENDDO
+      ! ... Find total volume of cells holding boundary conditions
+      areatot = 0.0
+      DO innH = 1, iopssH(omp_get_thread_num ( )+1)
+        inn = ioph2iop(innH,omp_get_thread_num ( )+1) 
+        IF (iodev(inn) .NE. nn) CYCLE  
+        ! ... Define i,j,l indexes
+        i = ipss(inn); 
+        j = jpss(inn); 
+        l = ij2l(i,j);
+        ! ... Define top and bottom cells & no. of layers 	
+        !     The diffuser is set to be one cell above the bottom
+        k1s = k1z(l) ;
+        kms = kmz(l) ;
+        DO k = k1s, kms
+          areatot = areatot + hp(k,l) 
+        ENDDO
+      ENDDO
+     
+	    ! ... Determine flow rate, temp. and tracer for each cell
+	    !     Inflow rate is pressumed uniform in space
+      DO innH = 1, iopssH(omp_get_thread_num ( )+1)
+        inn = ioph2iop(innH,omp_get_thread_num ( )+1) 
 
-     ! ... Determine flow rate, temp. and tracer for each cell
-     !     Inflow rate is pressumed uniform in space
-       DO innH = 1, iopssH(omp_get_thread_num ( )+1)
-            inn = ioph2iop(innH,omp_get_thread_num ( )+1)
+        IF (iodev(inn) .NE. nn) CYCLE 
 
-         IF (iodev(inn) .NE. nn) CYCLE
+        ! ... Define i,j,l indexes
+        i = ipss(inn); 
+        j = jpss(inn); 
+        l = ij2l(i,j);
 
-         ! ... Define i,j,l indexes
-         i = ipss(inn);
-         j = jpss(inn);
-         l = ij2l(i,j);
+        ! ... Define k- indexes
+        k1s = k1z(l) ;
+        kms = kmz(l) ;
 
-         ! ... Define k- indexes
-         k1s = k1z(l) ;
-         kms = kmz(l) ;
-
-         ! ... Loop over cells in the water column
-         DO k = k1s, kms
-           Qpss(k,inn) = flpss(nn) * hp(k,l) / areatot
-           IF (scpss(nn)<0.0 .OR. flpss(nn)<=0.0) THEN
-             Tpss(k,inn) = salp (k,l)
-           ELSE
-             Tpss(k,inn) = scpss(nn )
-           ENDIF
-           IF (ntr > 0) THEN
-             DO itr = 1, ntr
-               IF (trpss(nn,itr)<0.0 .OR. flpss(nn)<=0.0) THEN
-                 Rpss(k,inn,itr) = tracerpp(k,l,itr)
-               ELSE
-                 Rpss(k,inn,itr) = trpss(nn,itr)
-               ENDIF
-             ENDDO
-           ENDIF
-         ENDDO
-       ENDDO
-
+        ! Inicializamos Qpss, Tpss, Rpss !cintia cambio
+        
+        Qpss(:,inn)  =0.0 ;
+        Tpss(:,inn)  =0.0 ;
+        Rpss(:,inn,:)=0.0 ;
+         
+        ! ... Loop over cells in the water column
+        DO k = k1s, kms
+          Qpss(k,inn) = flpss(nn) * hp(k,l) / areatot 
+          IF (scpss(nn)<0.0 .OR. flpss(nn)<=0.0) THEN
+            Tpss(k,inn) = salp (k,l)
+          ELSE 
+            Tpss(k,inn) = scpss(nn )
+          ENDIF
+          IF (ntr > 0) THEN
+            DO itr = 1, ntr 
+              IF (trpss(nn,itr)<0.0 .OR. flpss(nn)<=0.0) THEN 
+                Rpss(k,inn,itr) = tracerpp(k,l,itr)
+              ELSE
+                Rpss(k,inn,itr) = trpss(nn,itr)
+              ENDIF 
+            ENDDO
+          ENDIF
+          !PRINT*, "hp:", hp(k1s,l)
+        
+        ENDDO
+       !PRINT*, "step : ", n  !cintia
+       !PRINT*, "iopss:", inn
+       !PRINT*, "flpss:", flpss(:)
+       !PRINT*, "areatot",areatot
+       !PRINT*, "Caudal", Qpss(:,inn)
+       !PRINT*, "hp    ", hp(:,l)
+        !  DO k = k1s, kms
+        !  PRINT*, "k",k,"hp/areatot",hp(k,l)/areatot
+        !  ENDDO
+       !PRINT*, "-------------------" 
+      ENDDO
+      !PRINT*, "contador: ",iopssH(omp_get_thread_num ( )+1)
 
      ! ************ Bottom cell Boundary Conditions  ********************
-     CASE (-1)
+    CASE (-1) 
 
-       ! ... Only do computations when there is flow
-       IF (ABS(flpss(nn)) < qthrs(nn)) CYCLE
+      ! ... Only do computations when there is flow
+      IF (ABS(flpss(nn)) < qthrs(nn)) CYCLE
 
-       ! ... Only determine boundary conditions on leapfrog iterations
-       IF( (n > 1) .AND. (istep > 1)) CYCLE
+      ! ... Only determine boundary conditions on leapfrog iterations
+      IF( (n > 1) .AND. (istep > 1)) CYCLE
 
-       ! ... Interpolate forcing variables (flpss, scpss, trpss) for each device
-       !     to present time,  using time series input -
-       CALL PointSourceSinkForcing (nn,thrs)
+      ! ... Interpolate forcing variables (flpss, scpss, trpss) for each device
+      !     to present time,  using time series input - 
+      CALL PointSourceSinkForcing (nn,thrs)
+      
+      DO innH = 1, iopssH(omp_get_thread_num ( )+1)
+        inn = ioph2iop(innH,omp_get_thread_num ( )+1) 
 
-       DO innH = 1, iopssH(omp_get_thread_num ( )+1)
-            inn = ioph2iop(innH,omp_get_thread_num ( )+1)
+        IF (iodev(inn) .NE. nn) CYCLE 
 
-         IF (iodev(inn) .NE. nn) CYCLE
+        ! ... Define i,j,l indexes
+        i = ipss(inn); 
+        j = jpss(inn); 
+        l = ij2l(i,j);
 
-         ! ... Define i,j,l indexes
-         i = ipss(inn);
-         j = jpss(inn);
-         l = ij2l(i,j);
+        ! ... Define k- indexes
+        kms = kmz(l) ;
 
-         ! ... Define k- indexes
-         kms = kmz(l) ;
-
-         ! ... Loop over cells in the water column
-     Qpss(:,inn)   = 0.0;
-     Tpss(:,inn)   = 0.0;
-     Rpss(:,inn,:) = 0.0;
-       Qpss(kms,inn  ) = flpss(nn)
-     !PRINT *, Qpss(kms,inn), flpss(nn)
-       IF (scpss(nn)<0.0 .OR. flpss(nn)<=0.0) THEN
-           Tpss(kms,inn) = salp (kms,l)
-       ELSE
-           Tpss(kms,inn) = scpss(nn   )
-     !PRINT *, scpss(nn)
-         ENDIF
-       IF (ntr > 0) THEN
-         DO itr = 1, ntr
-             IF (trpss(nn,itr)<0.0 .OR. flpss(nn) <= 0.0) THEN
-               Rpss(kms,inn,itr) = tracerpp(kms,l,itr)
-             ELSE
-               Rpss(kms,inn,itr) = trpss(nn,itr)
-           ENDIF
-           ENDDO
-         ENDIF
-       ENDDO ! Loop over columns in device
-
+        ! ... Loop over cells in the water column
+        Qpss(:,inn)   = 0.0; 
+        Tpss(:,inn)   = 0.0; 
+        Rpss(:,inn,:) = 0.0; 
+	      Qpss(kms,inn  ) = flpss(nn)
+		    !PRINT *, Qpss(kms,inn), flpss(nn)
+	      IF (scpss(nn)<0.0 .OR. flpss(nn)<=0.0) THEN
+  	      Tpss(kms,inn) = salp (kms,l)
+	      ELSE 
+  	      Tpss(kms,inn) = scpss(nn   )
+		      !PRINT *, scpss(nn)
+        ENDIF
+	      IF (ntr > 0) THEN
+	        DO itr = 1, ntr 
+            IF (trpss(nn,itr)<0.0 .OR. flpss(nn) <= 0.0) THEN 
+  	          Rpss(kms,inn,itr) = tracerpp(kms,l,itr)
+            ELSE
+              Rpss(kms,inn,itr) = trpss(nn,itr)
+	         ENDIF 
+          ENDDO
+        ENDIF
+      ENDDO ! Loop over columns in device
+   
 
      ! ************ Water pumped inflow ****************************
-     CASE (0)
+    CASE (0) 
 
-        PRINT *, '***************** ERROR *****************'
-        PRINT *, 'Water pumped inflow still NOT incorporated'
-        PRINT *, '***************** ERROR *****************'
-      STOP
-
-
+      PRINT *, '***************** ERROR *****************'
+      PRINT *, 'Water pumped inflow still NOT incorporated'
+      PRINT *, '***************** ERROR *****************'
+	    STOP
+      
      ! ************ Oxygen-gas diffuser ****************************
-     CASE (1:)
+    CASE (1:)
+
+      ! ... Update forcing variables before deciding if diffuser is OFF
+      CALL PointSourceSinkForcing (nn,thrs)
+      IF (ABS(flpss(nn)) < qthrs(nn)) THEN  ! Diffuser OFF
+        DiffON = .FALSE.  
+        DO innH = 1, iopssH(omp_get_thread_num ( )+1)
+          inn = ioph2iop(innH,omp_get_thread_num ( )+1)  
+          IF (iodev(inn) .NE. nn) CYCLE 
+          Qpss (inn,:) = 0.0E0
+		      kdetr(inn  ) = km1
+        ENDDO
+      ELSE                                  ! Update diffuser FLOWS          
+        IF ((DiffON == .FALSE.) .OR.  & ! Diffuser is TURNED ON
+           (n == 1)             .OR.  &
+           (istep == 1 .AND. (MOD(n,MAX(pdt(nn),1))==0))) THEN   ! Update every pdt time steps
+
+          DiffON = .TRUE.                     ! Diffuser remains ON
+          DO innH = 1, iopssH(omp_get_thread_num ( )+1)
+            inn = ioph2iop(innH,omp_get_thread_num ( )+1)       
+            IF (iodev(inn) .NE. nn) CYCLE 
+          
+            ! ... Define i,j,l indexes
+            i = ipss(inn); 
+            j = jpss(inn); 
+            l = ij2l(i,j);
+
+            ! ... Define k- indexes
+            k1s = k1z(l) ;
+            kms = kmz(l) ;
+            nwl = kms-k1s+1;
+                                        
+            ! ... Define ambient temperatures
+            Tamb(k1s:kms) = salpp(k1s:kms,l)
+            Tamb(kms+1  ) = Tamb(kms);
+            Tamb(1      ) = Tamb(k1s);
+          
+            ! ... Define DO concentrations
+            DOamb(k1s:kms) = tracerpp(k1s:kms,l,ntr)
+            DOamb(kms+1  ) = DOamb(kms);
+            DOamb(1      ) = DOamb(k1s);
+
+            ! ... Define ambient U water velocity
+            UA(k1s:kms) = upp(k1s:kms,l)
+            UA(kms+1  ) = UA(kms);
+            UA(1      ) = UA(k1s);
+
+            ! ... Define ambient V water velocity
+            VA(k1s:kms) = vpp(k1s:kms,l)
+            VA(kms+1  ) = VA(kms);
+            VA(1      ) = VA(k1s);
+          
+            ! ... Depths for cells in plume column from datum
+            zamb(k1s  ) = hp(k1s,l)/2.
+            DO k = k1s+1, kms
+              zamb(k) = zamb(k-1) + (hp(k-1,l)+hp(k,l))/2.
+            END DO
+            zamb(kms+1) =  zamb(kms)+hp(kms,l)
+            zamb(1    ) = -zamb(k1s) 
+
+            ! ... Inputs for plume model
+            dfLgth  = real(dfL(nn),8)         ;       ! Length of diffuser
+            rjulday = doy             ;       ! Julian day (arbitrary) 
+            wselev  = 0.0000          ;       ! Elevation of free surface
+            ksrc    = kms-1           ;       ! Layer No. where diffuser is located
+            dfelev  = -zamb(ksrc)     ;       ! Elevation of diffuser  
+            hcell   = real(ddz,8)             ;       ! Pressumed constant - thickess of cells
+            qwd     = 0.0E0           ;       ! Initialize qwd
+            bwd     = 0.0E0                   ! Initialize perimeter (FJRplume)
+            bwdi    = 0.0E0           ! Initialize perimeter (JCT)
+            bwdo    = 0.0E0           ! Initialize perimeter (JCT)
+            lwdi    = 0.0E0           ! Initialize perimeter (JCT)
+            lwdo    = 0.0E0           ! Initialize perimeter (JCT)             
+            qscfm   = real(flpss(nn),8)       ;       ! Air flow rate 
+            frconot = 1.00            ;       ! Fraction of O2 in air (not used?)
+            lambnot = lambdanot(nn)   ;       ! Half-width 
+            !linot   = lnot(nn)        ;       ! Diffuser length
+            linot   = dfLgth        ;       ! Diffuser length
+            diamm   = diammb(nn)      ;       ! Initial bubble diameter
+            alphaii  = alphai(nn)          ! Entrainment coefficient inner plume (-)
+            alphaoo  = alphao(nn)          ! Entrainment coefficient outer plume (-)
+            alphaaa  = alphaa(nn)          ! Entrainment coefficient from ambient (-)
+            lambdaa  = lambda(nn)          ! Fraccion of plume occupied by bubble
+            froudeii = froudei(nn)         ! Froude number inner plume
+            froudeoo = froudeo(nn)         ! Froude number outer plume
+            gammapp  = gammap(nn)          !
+
+            IF (ptype(nn) < 2) THEN
+              plmdim = 1 ! Linear Plume
+ 
+              ! ... Run plume model
+              CALL lineplu_v1(iyr,rjulday,wselev,dfelev,kms,dfLgth, &
+                              lambnot,salamb,patm, diamm, plmdim, &
+                              qscfm, frconot,                     & ! boundary conditions
+                              ksrc, hcell,                        &
+                              zamb (1:kms),                       &
+                              Tamb (1:kms),                       &
+                              DOamb(1:kms),                       &
+                              elevt, qwt , tplumt, comgpt,        &
+                              qwd(1:ksrc), ktop) 
+
+              ! ... CIRCULAR PLUME
+            ELSEIF (ptype(nn) ==2) THEN 
+              plmdim = 2 ! Circular Plume
 
 
-       ! ... Calculate en-detrainment flows induced by diffuser
-       IF (ABS(flpss(nn)) < qthrs(nn)) THEN  ! Diffuser OFF
-         DiffON = .FALSE.
-         DO inn = 1, iopss
-           IF (iodev(inn) .NE. nn) CYCLE
-           Qpss (inn,:) = 0.0E0
-       kdetr(inn  ) = km1
-         ENDDO
-       ELSE                                  ! Update diffuser FLOWS
-         IF &
-         ( (DiffON == .FALSE.)       .OR.  & ! Diffuser is TURNED ON
-         (  istep  ==  1            .AND.  & ! Update on first iterations
-         (MOD(n,MAX(pdt(nn),1))==0))) THEN   ! Update every pdt time steps
+              ! ... Run plume model
+              CALL CIRCULAR_PLUME(iyr,rjulday,wselev,dfelev,kms,    &
+                                  lambnot,salamb,patm,diamm,        &
+                                  qscfm,frconot,                    &
+                                  ksrc, hcell,                      &
+                                  zamb (1:kms),                     &
+                                  Tamb (1:kms),                     &
+                                  DOamb (1:kms),                    &
+                                  UA(1:kms),                        &
+                                  VA(1:kms),                        &
+                                  elevt, qwt, tplumt, comgpt,       &
+                                  qwd(1:ksrc), bwd(1:ksrc), ktop)
 
-           DiffON = .TRUE.                     ! Diffuser remains ON
-           DO innH = 1, iopssH(omp_get_thread_num ( )+1)
-            inn = ioph2iop(innH,omp_get_thread_num ( )+1)
-             IF (iodev(inn) .NE. nn) CYCLE
+              ! PRINT*, '******************************************************'
+              ! PRINT*, '----OUTPUT FROM PLUME ROUTINES (CIRCULAR) ------------'
+              ! PRINT*, '******************************************************'
+              ! PRINT*, 'Results of Plume Model elev',elevt,dfelev
+              ! PRINT*, 'Results of Plume Model qwt ',qwt,ktop
+              ! PRINT*, 'Results of Plume Model T&O ',tplumt,comgpt
+              ! PRINT*, 'Results of Plume Model pwd ',ksrc, bwdi(ksrc),bwdi(ktop+1)
+              ! PRINT*, '******************************************************'
+              
+              ! ... CIRCULAR DOUBLE PLUME
+            ELSEIF (ptype(nn) == 3 .OR. ptype(nn)==4 ) THEN ! Double plume - circular
 
-             ! ... Define i,j,l indexes
-             i = ipss(inn);
-             j = jpss(inn);
-             l = ij2l(i,j);
+              ! ... Run plume model
+              NITERMAX = 10
+              NITERPLUME = 0
+              ERRORDPA = 100.0
+              !innerplumeold = 0
+              innerplume = 0
+              outerplume = 0
+              
+              toler = 10         ! in            
 
-             ! ... Define k- indexes
-             k1s = k1z(l) ;
-             kms = kmz(l) ;
-             nwl = kms-k1s+1;
+              DO WHILE (NITERPLUME .LT. 3)
+                NITERPLUME = NITERPLUME+1
 
-             ! ... Interpolate forcing variables (flpss, scpss, trpss) for each device
-             !     to present time,  using time series input -
-             CALL PointSourceSinkForcing (nn,thrs)
+                !... Run plume model
+                CALL INNER_PLUME(iyr,rjulday,wselev,dfelev,kms,       &
+                                 lambnot,salamb,patm,diamm,           &
+                                 qscfm, frconot, ksrc, hcell,         &
+                                 zamb (1:kms),                        &
+                                 Tamb (1:kms),                        &
+                                 DOamb(1:kms),                        &
+                                 UA(1:kms),                           &
+                                 VA(1:kms),                           &
+                                 elevt, qwt, tplumt, comgpt, salplut, &
+                                 qwdi(1:ksrc),                        &
+                                 bwdi(1:ksrc),                        &
+                                 ktop,kint,depthed, NLI, NLO,         &
+                                 NITERPLUME,                          &
+                                 innerplume,                          &
+                                 outerplume,                          &
+                                 alphaii, alphaoo, alphaaa, lambdaa,      &
+                                 froudeii, froudeoo, gammapp)
 
-             ! ... Define ambient temperatures
-             Tamb(k1s:kms) = salpp(k1s:kms,l)
-             Tamb(kms+1  ) = Tamb(kms);
-             Tamb(1      ) = Tamb(k1s);
+                ! PRINT*, '******************************************************'
+                ! PRINT*, '----OUTPUT FROM PLUME ROUTINES (CIRCULAR-inner) ------'
+                ! PRINT*, '******************************************************'
+                ! PRINT*, 'Results of Plume Model elev',elevt,dfelev
+                ! PRINT*, 'Results of Plume Model qwt ',qwt,ktop,kint
+                ! PRINT*, 'Results of Plume Model T&O ',tplumt,comgpt
+                ! PRINT*, 'Results of Plume Model pwd ',ksrc, bwdi(ksrc),bwdi(ktop+1)
+                ! PRINT*, '******************************************************'
 
-             ! ... Define DO concentrations
-             DOamb(k1s:kms) = tracerpp(k1s:kms,l,ntr)
-             DOamb(kms+1  ) = DOamb(kms);
-             DOamb(1      ) = DOamb(k1s);
 
-             ! ... Depths for cells in plume column from datum
-             zamb(k1s  ) = hp(k1s,l)/2.
-             DO k = k1s+1, kms
-               zamb(k) = zamb(k-1) + (hp(k-1,l)+hp(k,l))/2.
-             END DO
-             zamb(kms+1) =  zamb(kms)+hp(kms,l)
-             zamb(1    ) = -zamb(k1s)
+                ! ... Save information from the inner plume to the outer plume
+                tplumti  = tplumt
+                comgpti  = comgpt
+                salpluti = salplut
 
-             ! ... Inputs for plume model
-             dfLgth  = dfL(nn)         ;       ! Length of diffuser
-             rjulday = doy             ;       ! Julian day (arbitrary)
-             wselev  = 0.0000          ;       ! Elevation of free surface
-             ksrc    = kms-1           ;       ! Layer No. where diffuser is located
-             dfelev  = -zamb(ksrc)     ;       ! Elevation of diffuser
-             hcell   = ddz             ;       ! Pressumed constant - thickess of cells
-             qwd     = 0.0E0           ;       ! Initialize qwd
-             qscfm   = flpss(nn)       ;       ! Air flow rate
-             frconot = 0.21            ;       ! Fraction of O2 in air (not used?)
-       lambnot = lambda(nn)      ;       ! Half-width
-       diamm   = diammb(nn)      ;       ! Initial bubble diameter
-             IF (ptype(nn) <= 2) THEN
-               plmdim = 1 ! Linear Plume
-             ELSE
-               plmdim = 2 ! Circular Plume
-             ENDIF
+                ! ... Define flow at cells
+                Qpss(:,inn) = 0.0
 
-             ! ... Run plume model
-             CALL lineplu_v1(iyr,rjulday,wselev,dfelev,kms,dfLgth, &
-                               lambnot,salamb,patm, diamm, plmdim, &
-                               qscfm, frconot,                     & ! boundary conditions
-                               ksrc, hcell,                        &
-                               zamb (1:kms),                       &
-                               Tamb (1:kms),                       &
-                               DOamb(1:kms),                       &
-                               elevt, qwt , tplumt, comgpt,        &
-                               qwd(1:ksrc), ktop)
+                ! ... Define flow at entrainment cells
+                DO k = ktop+1,ksrc
+                  Qpss(k,inn) = -real(qwdi(k))*dy/real(dfLgth)
+                ENDDO
 
-             ! ....Detrainment cell - save it for later
-             kdetr(inn) = ktop
+                ! ... Define flow at detrainment cell to force volume conservation
+                Qpss(ktop,inn) = -SUM(Qpss(ktop+1:ksrc,inn))
 
-             ! ... Define flow at cells
-             Qpss(:,inn)   = 0.0;
+                CALL OUTER_PLUME(iyr,rjulday,wselev,dfelev,kms,          &
+                                    bwdi(ktop+1),salamb,patm,            &
+                                    qwt, frconot, ksrc, hcell,           &
+                                    zamb (1:kms),                        &
+                                    Tamb (1:kms),                        &
+                                    DOamb(1:kms),                        &
+                                    UA(1:kms),                           &
+                                    VA(1:kms),                           &
+                                    elevt, qwed,                         &
+                                    qwdo(1:ksrc),                        &
+                                    bwdo(1:ksrc),                        &
+                                    ktop,kint, tplumed,salplued,comgped, &
+                                    depthed, NLI, NLO,                   &
+                                    NITERPLUME,                          &
+                                    innerplume,                          &
+                                    outerplume,                          &
+                                    alphaii, alphaoo, alphaaa, lambdaa,      &
+                                    froudeii, froudeoo, gammapp)
 
-             ! ... Define flow at entrainment cells
-             DO k = ktop+1,ksrc
-                Qpss(k,inn) = -qwd(k)*dy/dfLgth
-             ENDDO
 
-             ! ... Define flow at detrainment cell to force volume conservation
-             Qpss(ktop,inn) = -SUM(Qpss(ktop+1:ksrc,inn));
+                ! PRINT*, '******************************************************'
+                ! PRINT*, '----OUTPUT FROM PLUME ROUTINES (CIRCULAR-outer) ------'
+                ! PRINT*, '******************************************************'
+                ! PRINT*, 'Results of Plume Model elev',depthed, elevt
+                ! PRINT*, 'Results of Plume Model qwt ',qwed,ktop,kint
+                ! PRINT*, 'Results of Plume Model T&O ',tplumed,comgped
+                ! PRINT*, 'Results of Plume Model pwd ',ksrc, bwdo(ktop),bwdo(kint+1),bwdo(kint)
+                ! PRINT*, '******************************************************'
+                ! PRINT*, 'NLI,NLO', NLI,NLO
+              ENDDO
+              ! ... Define flow at entrainment cells
+              qwd = 0.0
+              qwd(ktop:kint-1)  = -qwdo(ktop:kint-1) ! JCT_2022
+              qwd(kint:ksrc)    = qwdi(kint:ksrc)
 
-             PRINT *, '****************************************************'
-             PRINT *, '----OUTPUT FROM PLUME ROUTINES----------------------'
-             PRINT *, '****************************************************'
-             PRINT *, 'Results of Plume Model elev', elevt, ktop
-             PRINT *, 'Resutls of Plume Model qwt ', qwt
-             PRINT *, 'Results of Plume Model T&O ', tplumt, comgpt
-             PRINT *, '****************************************************'
-           ENDDO
-         ENDIF
-       ENDIF
+              ! DO k = ktop+1, ksrc
+                ! OPEN (UNIT = 55, FILE="check_outter.txt", POSITION="APPEND")
+                ! WRITE(UNIT = 55, FMT = '(4F12.6)') zamb(k),qwdi(k),qwdo(k),qwd(k)
+                ! CLOSE(UNIT = 55)
+              ! ENDDO
 
-       ! ... Define temperature of entrained and detrained water in plume
-       !     based on existing values of Qpss & temperatures
-       DO innH = 1, iopssH(omp_get_thread_num ( )+1)
-            inn = ioph2iop(innH,omp_get_thread_num ( )+1)
-         IF (iodev(inn) .NE. nn) CYCLE
 
-         ! ... Define i,j,l indexes
-         i = ipss(inn);
-         j = jpss(inn);
-         l = ij2l(i,j);
+              ! ... DOUBLE PLUME RECTANGULAR:
+            ELSE
 
-         ! ... Define k- indexes
-         k1s = k1z(l) ;
-         kms = kmz(l) ;
-         nwl = kms-k1s+1;
-         Tpss(:,inn) = salpp(:,l)
-         k = kdetr(inn);
-         IF (k < kms) THEN
-           DO kk = k+1,kms
-             Tsource  = Tsource + salpp(kk,l)*Qpss(kk,inn)
-           ENDDO
-           Tsource = Tsource / SUM(Qpss(k+1:kms,inn))
-         ELSE
-           Tsource = salpp(k,l)
-         ENDIF
-         Tpss(k,inn) = Tsource
+              ! ... Run plume model 
+              NITERMAX = 10
+              NITERPLUME = 0
+              ERRORDPA = 100.0
+              innerplume = 0
+              outerplume = 0
+              toler = 10         ! in
 
-         ! ... Define tracer concentrations in entrained & detrained water
-         !     in the plume (assumes dx = dy) based on existing values of
-         !     Qpss, tracer concs. and location of detrainment cell
-         IF (ntr > 0) THEN
-           DO itr = 1, ntr
-             Rpss(:,inn,itr) = tracerpp(:,l,itr)
-             k = kdetr(inn);
-             IF (k < kms) THEN
-               Rsource = 0.0
-               DO kk = k+1,kms
-                 Rsource  = Rsource + tracerpp(kk,l,itr) * Qpss(kk,inn)
-               ENDDO
-               Rsource = Rsource/SUM(Qpss(k+1:kms,inn))+  &
-                         trpss(nn,itr)*dy/dfL(nn)/Qpss(k,inn)
-             ELSE
-               Rsource = trpss(nn,itr)*dy/dfL(nn)/Qpss(k,inn)
-             ENDIF
-             Rpss(k,inn,itr) = Rsource
-           ENDDO
-         ENDIF
-       ENDDO
+              DO WHILE (NITERPLUME .LT. 3)
+                NITERPLUME = NITERPLUME+1
 
-     END SELECT
+                !... Run plume model
+                CALL INNER_PLUME_RECT(iyr,rjulday,wselev,dfelev,kms,  &
+                                  lambnot,salamb,patm,diamm,           &
+                                  qscfm, frconot, ksrc, hcell,         &
+                                  zamb (1:kms),                        &
+                                  Tamb (1:kms),                        &
+                                  DOamb(1:kms),                        &
+                                  UA(1:kms),                           &
+                                  VA(1:kms),                           &
+                                  elevt, qwt, tplumt, comgpt, salplut, &
+                                  qwdi(1:ksrc),                        &
+                                  bwdi(1:ksrc),                        &
+                                  ktop,kint,depthed, NLI, NLO,         &
+                                  NITERPLUME,                          &
+                                  innerplume,                          &
+                                  outerplume,                          &
+                                  alphaii, alphaoo, alphaaa, lambdaa,  &
+                                  froudeii, froudeoo, gammapp,linot,   &
+                                  lwdi(1:ksrc))
 
-   ENDDO
+                ! PRINT*, '******************************************************'
+                ! PRINT*, '----OUTPUT FROM PLUME ROUTINES (RECTANGULAR-inner) ---'
+                ! PRINT*, '******************************************************'
+                ! PRINT*, 'Results of Plume Model elev',elevt,dfelev
+                ! PRINT*, 'Results of Plume Model qwt ',qwt,ktop,kint
+                ! PRINT*, 'Results of Plume Model T&O ',tplumt,comgpt
+                ! PRINT*, 'Results of Plume Model pwd ',ksrc, bwdi(ksrc),bwdi(ktop+1)
+                ! PRINT*, '******************************************************'
+
+                ! DO k = ktop+1, ksrc
+                !   OPEN (UNIT = 54, FILE="check_inner.txt", POSITION="APPEND")
+                !   WRITE(UNIT = 54, FMT = '(3F12.6)') zamb(k),qwdi(k),bwdi(k)
+                !   CLOSE(UNIT = 54)
+                ! ENDDO
+
+                ! ... Save information from the inner plume to the outer plume
+                tplumti  = tplumt
+                comgpti  = comgpt
+                salpluti = salplut
+
+                ! ... Define flow at cells
+                Qpss(:,inn) = 0.0
+
+                ! ... Define flow at entrainment cells
+                DO k = ktop+1,ksrc
+                    Qpss(k,inn) = -(real(qwdi(k)))*dy/real(dfLgth)
+                ENDDO
+
+                ! ... Define flow at detrainment cell to force volume conservation
+                Qpss(ktop,inn) = -SUM(Qpss(ktop+1:ksrc,inn))
+
+                ! CALL OUTER_PLUME_RECT(iyr,rjulday,wselev,dfelev,kms,     &
+                                    ! lambnot,linot, bwdi(ktop+1),         &
+                                    ! salamb,patm,                         &
+                                    ! qwt, frconot, ksrc, hcell,           &
+                                    ! zamb (1:kms),                        &
+                                    ! Tamb (1:kms),                        &
+                                    ! DOamb(1:kms),                        &
+                                    ! UA(1:kms),                           &
+                                    ! VA(1:kms),                           &
+                                    ! elevt, qwed,                         &
+                                    ! qwdo(1:ksrc),                        &
+                                    ! bwdo(1:ksrc),                        &
+                                    ! ktop,kint, tplumed,salplued,comgped, &
+                                    ! depthed, NLI, NLO,                   &
+                                    ! NITERPLUME,                          &
+                                    ! innerplume,                          &
+                                    ! outerplume,                          &
+                                    ! alphaii, alphaoo, alphaaa, lambdaa,  &
+                                    ! froudeii, froudeoo, gammapp,         &
+                    ! lwdo(1:ksrc))
+								 
+                CALL OUTER_PLUME_RECT2(iyr,rjulday,wselev,dfelev,kms,    &
+                                              bwdi(ktop+1),salamb,patm,            &
+                                              qwt, frconot, ksrc, hcell,           &
+                                              zamb (1:kms),                        &
+                                              Tamb (1:kms),                        &
+                                              DOamb(1:kms),                        &
+                                              UA(1:kms),                           &
+                                              VA(1:kms),                           &
+                                              elevt, qwed,                         &
+                                              qwdo(1:ksrc),                        &
+                                              bwdo(1:ksrc),                        &
+                                              ktop,kint, tplumed,salplued,comgped, &
+                                              depthed, NLI, NLO,                   &
+                                              NITERPLUME,                          &
+                                              innerplume,                          &
+                                              outerplume,                          &
+                                              alphaii, alphaoo, alphaaa, lambdaa,      &
+                                              froudeii, froudeoo, gammapp,         &
+                                              lwdo(1:ksrc))
+								 
+                ! CALL OUTER_PLUME(iyr,rjulday,wselev,dfelev,kms,          &
+                                    ! bwdi(ktop+1),salamb,patm,            &
+                                    ! qwt, frconot, ksrc, hcell,           &
+                                    ! zamb (1:kms),                        &
+                                    ! Tamb (1:kms),                        &
+                                    ! DOamb(1:kms),                        &
+                                    ! UA(1:kms),                           &
+                                    ! VA(1:kms),                           &
+                                    ! elevt, qwed,                         &
+                                    ! qwdo(1:ksrc),                        &
+                                    ! bwdo(1:ksrc),                        &
+                                    ! ktop,kint, tplumed,salplued,comgped, &
+                                    ! depthed, NLI, NLO,                   &
+                                    ! NITERPLUME,                          &
+                                    ! innerplume,                          &
+                                    ! outerplume,                          &
+                                    ! alphaii, alphaoo, alphaaa, lambdaa,      &
+                                    ! froudeii, froudeoo, gammapp)
+                ! PRINT*, '******************************************************'
+                ! PRINT*, '----OUTPUT FROM PLUME ROUTINES (RECTANGULAR-outer) ---'
+                ! PRINT*, '******************************************************'
+                ! PRINT*, 'Results of Plume Model elev',depthed, elevt
+                ! PRINT*, 'Results of Plume Model qwt ',qwed,ktop,kint
+                ! PRINT*, 'Results of Plume Model T&O ',tplumed,comgped
+                ! PRINT*, 'Results of Plume Model pwd ',ksrc, bwdo(ktop),bwdo(kint+1),bwdo(kint)
+                ! PRINT*, '******************************************************'
+
+                ! DO k = ktop+1, ksrc
+                !   OPEN (UNIT = 55, FILE="check_outter.txt", POSITION="APPEND")
+                !   WRITE(UNIT = 55, FMT = '(3F12.6)') zamb(k),qwdo(k),bwdo(k)
+                !   CLOSE(UNIT = 55)
+                ! ENDDO
+              ENDDO
+
+              ! ... Define flow at entrainment cells
+              qwd = 0.0
+              qwd(ktop:kint-1)  = qwdo(ktop:kint-1) ! JCT_2020
+              qwd(kint:ksrc)    = qwdi(kint:ksrc)
+
+
+            ENDIF  ! End plume type 
+
+            ! ... ******* (The rest is common to all CASE(1:)) *******************
+            ! ... Define flow at cells
+            Qpss(:,inn) = 0.0
+
+            IF (ptype(nn)<3) THEN
+              kdetr(inn) = ktop
+              ! ... Define flow at entrainment cells
+              DO kk = ktop+1, ksrc
+                Qpss(kk,inn) = real(qwd(kk))*dy/real(dfLgth)
+              ENDDO
+            ELSE
+              ! ... Define flow at entrainment cells
+              DO kk = ktop+1,ksrc
+                Qpss(kk,inn) = -real(qwd(kk))*dy/real(dfLgth)
+              ENDDO
+              IF (ptype(nn) ==3 .OR. ptype(nn)==5) THEN ! detrainment at end of outter plume JCT_2020
+                kdetr(inn) = kint -1
+                !! ... Define flow at entrainment cells
+                ! DO kk = ktop +1, ksrc
+                !    Qpss(kk,inn)=-qwd(kk)
+                ! ENDDO
+                !! ... Define flow at detrainment cell to force volume conservation
+                !    Qpss(kdetr(inn),inn) = -SUM(Qpss(ktop+1:ksrc,inn)) + Qpss(kdetr(inn),inn) ! JCT_2017
+              
+              ELSEIF (ptype(nn) ==4 .OR. ptype(nn)==6) THEN  ! detrainment at equilibrium depth JCT_2020
+                Tsource = 0.0 ! FJRPlumes
+                DO kk = ktop+1,kms
+                  Tsource = Tsource + salpp(kk,l)*Qpss(kk,inn)
+                ENDDO
+                sumQpss = SUM(Qpss(ktop+1:kms,inn))
+                IF (ABS(sumQpss) > 1.0E-12) THEN
+                  Tsource = Tsource / sumQpss
+                ELSE
+                  Tsource = salpp(ktop,l)
+                END IF
+                FLAG = 0
+                kdetr(inn) = MAX(ktop, MIN(kms, kint-1)) ! fallback if no equilibrium depth is found
+                DO kk=1,kms
+                  IF (Tamb(kk) .LE. Tsource .AND. FLAG .EQ. 0) THEN
+                    kdetr(inn) = kk ! JCT_2020
+                    FLAG = 1
+                  ENDIF
+                ENDDO
+                IF (FLAG .EQ. 0) THEN
+                  PRINT*, 'WARNING: no equilibrium depth found for outer plume, fallback kdetr=', kdetr(inn), 'ktop=', ktop, 'kint=', kint
+                ENDIF
+              ENDIF
+
+              !! ... Define flow at entrainment cells .-DEFINES ABOVE ALREADY FJR 2021 01 24
+              !DO kk = ktop+1,ksrc
+              !Qpss(kk,inn) = -qwd(kk)
+              !ENDDO
+
+              ! ... Define flow at detrainment cell to force volume conservation - ACC June 2026
+              qdenom = 0.0
+              IF (ksrc >= ktop+1) THEN
+                qdenom = SUM(Qpss(ktop+1:ksrc,inn))
+              END IF
+              IF (kdetr(inn) < ktop) kdetr(inn) = ktop
+              IF (kdetr(inn) > ksrc) kdetr(inn) = ksrc
+              IF (ABS(qdenom) > 1.0E-12) THEN
+                Qpss(kdetr(inn),inn) = -qdenom + Qpss(kdetr(inn),inn)
+              ELSE
+                Qpss(kdetr(inn),inn) = 0.0
+              END IF
+
+              ! OPEN (UNIT=55, FILE="doubleplume.txt", POSITION="APPEND")
+              ! WRITE(UNIT=55, FMT = '(7F12.6)') elevt,kdetr(inn),-zamb(kdetr(inn)),Qpss(kdetr(inn),inn),Tsource,Tamb(kdetr(inn)),-zamb(kint)
+              ! CLOSE(UNIT=55)
+
+              ! PRINT*, 'kk', kk, 'ktop',ktop,'ksrc',ksrc,'inn',inn,'kdetr(inn)',kdetr(inn),'Tamb(kdetr(inn))',Tamb(kdetr(inn))
+
+              ! DO kk = 1,ksrc
+              !   OPEN (UNIT=56, FILE="check_plumes.txt", POSITION="APPEND")
+              !   !WRITE (UNIT=56, FMT='(3I3,8F8.2)') kk,ktop,ksrc,-zamb(kk),Qpss(kk,inn),salpp(kk,l),-zamb(kdetr(inn)),Qpss(kdetr(inn),inn),Tsource,Tamb(kdetr(inn)),-zamb(kint)
+              !   WRITE (UNIT=56, FMT='(4I3,14F10.2)') kk,ktop,ksrc,kdetr(inn),-zamb(kk),Qpss(kk,inn),qwdi(kk),qwdo(kk),salpp(kk,l),-zamb(kdetr(inn)),Qpss(kdetr(inn),inn),Tsource,Tamb(kdetr(inn)),-zamb(kint),bwdi(kk),bwdo(kk),lwdi(kk),lwdo(kk)
+              !   CLOSE (UNIT=56)
+              ! ENDDO
+
+            ENDIF
+          ENDDO
+
+        ENDIF
+      ENDIF
+
+      DO innH = 1, iopssH(omp_get_thread_num ( )+1)
+        inn = ioph2iop(innH,omp_get_thread_num ( )+1)
+
+        IF (iodev(inn) .NE. nn) CYCLE 
+
+        ! ... Define i,j,l indexes
+        i = ipss(inn); 
+        j = jpss(inn); 
+        l = ij2l(i,j);
+
+        ! ... Define k- indexes
+        k1s = k1z(l) ;
+        kms = kmz(l) ;
+        nwl = kms-k1s+1;
+        Tpss(:,inn) = salpp(:,l)
+
+        IF (ptype(nn) < 3) THEN
+          k = ktop;
+        ELSE
+          k = kdetr(inn);
+        ENDIF
+
+        IF (k < kms) THEN
+          Tsource = 0.0 ! FJRPlumes
+          DO kk = ktop+1,kms
+              Tsource  = Tsource + salpp(kk,l)*Qpss(kk,inn)
+          ENDDO
+          Tsource  = Tsource - salpp(k,l) * Qpss(k,inn)
+          qdenom  = SUM(Qpss(ktop+1:kms,inn)) - Qpss(k,inn)
+          IF (ABS(qdenom) > 1.0E-12) THEN
+            Tsource  = Tsource / qdenom
+          ELSE
+            Tsource  = salpp(k,l)
+          ENDIF
+        ELSE
+          Tsource = salpp(k,l)
+        ENDIF
+        Tpss(k,inn) = Tsource  ! Tpss conection plume <-> 3D
+        !PRINT *, 'FJR junk', ktop, Tsource
+        IF (ntr > 0) THEN
+          DO itr = 1, ntr
+            Rpss(:,inn,itr) = tracerpp(:,l,itr) 
+            IF (ptype(nn) < 3) THEN
+              k = ktop;
+            ELSE
+              k = kdetr(inn);
+            ENDIF
+            ! *********** Amisk NO PLUME MIXING
+            IF (k < kms) THEN
+              Rsource = 0.0 
+              DO kk = ktop+1,kms
+                Rsource  = Rsource + tracerpp(kk,l,itr) * Qpss(kk,inn)
+              ENDDO  
+              Rsource = Rsource - tracerpp(k,l,itr) * Qpss(k,inn)
+              qdenom = SUM(Qpss(ktop+1:kms,inn)) - Qpss(k,inn)
+              IF (ABS(Qpss(k,inn)) > 1.0E-12) THEN
+                IF (ABS(qdenom) > 1.0E-12) THEN
+                  Rsource = Rsource / qdenom + trpss(nn,itr)*dy/dfL(nn)/Qpss(k,inn)
+                ELSE
+                  Rsource = tracerpp(k,l,itr)
+                ENDIF
+              ELSE
+                Rsource = tracerpp(k,l,itr)
+              ENDIF
+            ELSE
+              IF (ABS(Qpss(k,inn)) > 1.0E-12) THEN
+                Rsource = trpss(nn,itr)*dy/dfL(nn)/Qpss(k,inn)
+              ELSE
+                Rsource = tracerpp(k,l,itr)
+              ENDIF
+            ENDIF  
+            Rpss(k,inn,itr) = Rsource ! Rpss conection plume <-> 3D
+            ! *********** Amisk NO PLUME MIXING
+            !DO kk  = k1,kms
+            !   Qpss(kk,inn) = 0.0
+            !ENDDO
+            !Qpss(k-1,inn)= -0.1
+            !Qpss(k  ,inn)=  0.1
+            !Tpss(k  ,inn)= salpp(k,l)
+            !Rpss(k,inn,itr)= Qpss(k,inn)*tracerpp(k,l,itr)+trpss(nn,itr)*dy/dfL(nn)/Qpss(k,inn)
+            ! *********** Amisk NO PLUME MIXING
+          ENDDO
+        ENDIF
+      ENDDO
+    END SELECT
+
+  ENDDO
+             
 
 END SUBROUTINE PointSourceSinkSolve
 
@@ -4411,17 +4847,26 @@ SUBROUTINE PointSourceSinkInput
 !------------------------------------------------------------------------
 
    !.....Local variables.....
-   INTEGER :: i, j, k, l, nn, itr, ios, istat, nptspss, ncdev
+   INTEGER :: i, j, k, l, nn, itr, ios, istat, nptspss, ncdev, pos
+   CHARACTER(LEN=200) :: line
    CHARACTER(LEN=14) :: pssfmt, pssfile
 
    ! ... Allocate space for device characteristics
    ALLOCATE (  ptype (npssdev), &               ! Type of device simulated
-               dfL   (npssdev), &               ! Length of diffuser (not allways used)
-         pdt   (npssdev), &               ! Update frequency of forcing variables
+               dfL   (npssdev), &               ! Length of diffuser (not allways used
+               pdt   (npssdev), &               ! Update frequency of forcing variables
                diammb(npssdev), &               ! Initial diameter of bubbles
-         lambda(npssdev), &         ! Half-width of the plume
-               idetr (npssdev), &
-         STAT = istat)
+               alphai(npssdev), &              
+               alphao(npssdev), &
+               alphaa(npssdev), &
+               froudei(npssdev),&
+               froudeo(npssdev),&
+               gammap(npssdev), &
+               lambda(npssdev), &	        ! Half-width of the plume
+	             lambdanot(npssdev), &            ! Half-width of the plume
+	             lnot(npssdev), &                 ! Length of the plume  
+               idetr (npssdev), & 
+			   STAT = istat) 
    IF (istat /= 0) CALL allocate_error ( istat, 22 )
 
    ! ... Allocate space for input information on forcing variables pss -
@@ -4453,18 +4898,35 @@ SUBROUTINE PointSourceSinkInput
       OPEN (UNIT=i52, FILE=pssfile, STATUS="old", IOSTAT=ios)
       IF (ios /= 0) CALL open_error ( "Error opening "//pssfile, ios )
 
-      ! Skip over first five header records in open boundary condition file
-      READ (UNIT=i52, FMT='(//////)', IOSTAT=ios)
+      ! Skip over the header records in open boundary condition file
+    DO i = 1, 6
+      READ (UNIT=i52, FMT='(A)', IOSTAT=ios) line
       IF (ios /= 0) CALL input_error ( ios, 48 )
+    END DO
 
       ! Read type of source-sink simulated (plumes, boundary conditions, pumped inflows)
-      READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) ptype(nn)
+      READ (UNIT=i52, FMT='(A)', IOSTAT=ios) line
+      IF (ios /= 0) CALL input_error ( ios, 48 )
+      pos = INDEX(line, '!')
+      IF (pos > 0) THEN
+         line = line(pos+1:)
+      END IF
+      line = ADJUSTL(line)
+      READ (line, '(I5)', IOSTAT=ios) ptype(nn)
       IF (ios /= 0) CALL input_error ( ios, 48 )
 
       ! Read number of points in file (it has to be equal in all arrays)
-      READ (UNIT=i52, FMT='(10X,I7)', IOSTAT=ios) nptspss
+      READ (UNIT=i52, FMT='(A)', IOSTAT=ios) line
       IF (ios /= 0) CALL input_error ( ios, 48 )
-
+      pos = INDEX(line, '!')
+      IF (pos > 0) THEN
+         line = line(pos+1:)
+      END IF
+      line = ADJUSTL(line)
+      READ (line, '(I7)', IOSTAT=ios) nptspss
+      IF (ios /= 0) CALL input_error ( ios, 48 )
+      PRINT*, "Nº datos pss.txt : ",nptspss
+      
       ! Allocate space for the array of data first time in loop
       IF ( nn == 1) THEN
         ALLOCATE ( varspss(npssdev, ntr+2, nptspss), STAT=istat )
@@ -4507,6 +4969,7 @@ SUBROUTINE PointSourceSinkInput
               (varspss(nn,i,j), i=1,ntr+2)
          IF (ios /= 0) CALL input_error ( ios, 49 )
         END DO
+        PRINT*, "Primera fila pss.txt ", varspss(nn,:,1)
 
         ! ... Assign initial values to forcing variables
         flpss (nn) = varspss(nn,1,1) ! Flow rate
@@ -4518,7 +4981,7 @@ SUBROUTINE PointSourceSinkInput
         ENDIF
 
         ! ... Set idetr to 1 - (default value)
-    idetr(nn) = 1;
+      idetr(nn) = 1;
 
         ! *************** Cell inflows ***********************
         CASE (-1)
@@ -4587,15 +5050,15 @@ SUBROUTINE PointSourceSinkInput
 
         ! Read how water is detrained at west face
         READ (UNIT=i52, FMT='(A)', IOSTAT=ios) commentline
-        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) uWpss(nn)
+        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) uEpss(nn)
         IF (ios /= 0) CALL input_error ( ios, 51 )
 
         ! Read how water is detrained at north face
-        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) vNpss(nn)
+        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) uWpss(nn)
         IF (ios /= 0) CALL input_error ( ios, 51 )
 
         ! Read how water is detrained at east face
-        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) uEpss(nn)
+        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) vNpss(nn)
         IF (ios /= 0) CALL input_error ( ios, 51 )
 
         ! Read how water is detrained at south face
@@ -4608,15 +5071,57 @@ SUBROUTINE PointSourceSinkInput
 
         ! Read how water velocity at detrainment cell is calculated
         READ (UNIT=i52, FMT='(A)', IOSTAT=ios) commentline
-        READ (UNIT=i52, FMT='(10X,I11)', IOSTAT=ios) idetr(nn)
-        IF (ios /= 0) CALL input_error ( ios, 51 )
+        PRINT*,'flag3.1.1', nn, idetr(nn)
 
-        ! Read half diffuser length (m)
-        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) lambda(nn)
+        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) idetr(nn)
+        PRINT*,'flag3.1.2', nn, idetr(nn), ios
+        IF (ios /= 0) CALL input_error ( ios, 51 ) ! JCT_error
+        PRINT*,'flag3.2'
+
+        ! Read half diffuser length (m) JCT_2020
+        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) lambdanot(nn)
+					    PRINT*,'flag3.3'   
+
         IF (ios /= 0) CALL input_error ( ios, 51 )
+			    PRINT*,'flag3.4'   
+
+		    ! Read half diffuser length (m) JCT_2020_RECT
+        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) lnot(nn)
+					    PRINT*,'flag3.5'   
+
+        IF (ios /= 0) CALL input_error ( ios, 51 )
+	       PRINT*,'flag4'
 
         ! Read initial bubble diameter (mm)
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) diammb(nn)
+        IF (ios /= 0) CALL input_error ( ios, 51 )
+
+        ! Read initial bubble diameter (mm) JCT_2020
+        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) alphai(nn)
+        IF (ios /= 0) CALL input_error ( ios, 51 )
+
+        ! Read initial bubble diameter (mm) JCT_2020
+        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) alphao(nn)
+        IF (ios /= 0) CALL input_error ( ios, 51 )
+
+        ! Read initial bubble diameter (mm) JCT_2020
+        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) alphaa(nn)
+        IF (ios /= 0) CALL input_error ( ios, 51 )
+
+        ! Read initial bubble diameter (mm) JCT_2020
+        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) lambda(nn)
+        IF (ios /= 0) CALL input_error ( ios, 51 )
+        PRINT*,'flag5'
+        ! Read initial bubble diameter (mm) JCT_2020
+        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) froudei(nn)
+        IF (ios /= 0) CALL input_error ( ios, 51 )
+
+        ! Read initial bubble diameter (mm) JCT_2020
+        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) froudeo(nn)
+        IF (ios /= 0) CALL input_error ( ios, 51 )
+
+        ! Read initial bubble diameter (mm) JCT_2020
+        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) gammap(nn)
         IF (ios /= 0) CALL input_error ( ios, 51 )
 
         ! Read ambient salinity (constant, uS/cm)
@@ -4626,47 +5131,91 @@ SUBROUTINE PointSourceSinkInput
         ! Read atmospheric pressure (Pascals)
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) patm
         IF (ios /= 0) CALL input_error ( ios, 51 )
+          PRINT*,'flag6'
 
         ! Read constant sediment oxygen demand
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) k4sod
+          !unidades: g/m2/day to g/m2/s
+          PRINT*, 'k4sod', k4sod ! JCT
+          k4sod = k4sod/86400.00
+
+        ! Read constant water oxygen demand --- Added ACC 2026
+        IF (ios /= 0) CALL input_error ( ios, 51 )
+        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) k4wod
+          !unidades: g/m2/day to g/m2/s
+          PRINT*, 'k4wod', k4wod ! JCT
+          k4wod = k4wod/86400.00
         IF (ios /= 0) CALL input_error ( ios, 51 )
 
-        ! Read frequency of update
+        ! Read frequency of update 
+		        PRINT*,'flag7'
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) pdt(nn)
         IF (ios /= 0) CALL input_error ( ios, 51 )
-
+                PRINT*,'flag8'
         ! Read data array
+
         READ (UNIT=i52, FMT='(A)', IOSTAT=ios) commentline
         DO j = 1, nptspss
            READ (UNIT=i52, FMT=pssfmt, IOSTAT=ios) &
                 (varspss(nn,i,j), i=1,ntr+2)
            IF (ios /= 0) CALL input_error ( ios, 51 )
         END DO
-
-        ! ... Assign values to forcing variables
+        PRINT*,'flag9'
+        ! ... Assign values to forcing variables 
         !     (ntr should be >= 1 otherwise the model issues an error message)
-        flpss (nn) = varspss(nn,1,1) ! Flow rate
+        flpss (nn) = varspss(nn,1,1) ! Flow rate 
         scpss (nn) = varspss(nn,2,1) ! Active scalar concentration (temp.) - Not used here
-        DO itr = 1, ntr              ! Tracer loads -
-          trpss(nn,itr) = varspss(nn,2+itr,1) ! Tracer load
+        DO itr = 1, ntr              ! Tracer loads - 
+          trpss(nn,itr) = varspss(nn,2+itr,1) ! Tracer load 
         ENDDO
 
         ! ... Calculate diffuser length & set kdetr to default values
         ncdev = 0
         DO j = 1, iopss
           IF (iodev(j) == nn) THEN
-        kdetr(j) = km1
+            kdetr(j) = km1
             ncdev    = ncdev + 1
           ENDIF
         ENDDO
-        dfL(nn) = ncdev * idx
-
+        dfL(nn) = ncdev * idx 
      END SELECT
 
      ! ... Close IO unit
      CLOSE (i52)
 
    ENDDO
+
+    if (idbg .eq. 1) then
+      print *, 'Type     = ', ptype
+      print *, 'NumRecs  = ', nptspss
+
+      print *, 'uEpss    = ', uEpss
+      print *, 'uWpss    = ', uWpss
+      print *, 'vNpss    = ', vNpss
+      print *, 'vSpss    = ', vSpss
+      print *, 'qthresh  = ', qthrs
+
+      print *, 'idetr    = ', idetr
+      print *, 'labmnot  = ', lambdanot
+      print *, 'lnot     = ', lnot
+      print *, 'diamm    = ', diammb
+      print *, 'alphai   = ', alphai
+      print *, 'alphao   = ', alphao
+      print *, 'alphaa   = ', alphaa
+      print *, 'lambda   = ', lambda
+      print *, 'froudei  = ', froudei
+      print *, 'froudeo  = ', froudeo
+      print *, 'gammap   = ', gammap
+      print *, 'salamb   = ', salamb
+      print *, 'patm     = ', patm
+      print *, 'k4sod    = ', k4sod
+      print *, 'k4wod    = ', k4wod
+      print *, 'pdt      = ', pdt
+      print *, 'dfL      = ', dfL
+      print *, 'flpss    = ', flpss
+      print *, 'scpss    = ', scpss  
+      print *, 'trpss    =', trpss
+    end if
 
 END SUBROUTINE PointSourceSinkInput
 
@@ -4689,6 +5238,8 @@ SUBROUTINE PointSourceSinkForcing (nn,thrs)
    dthrs_pss = dtsecpss/3600.
 
    ! ... Get new values (NewOpenBC)
+
+
    flpss(nn)  = linear(0.,thrs,varspss(nn,1,:),dthrs_pss)
    scpss(nn)  = linear(0.,thrs,varspss(nn,2,:),dthrs_pss)
    IF (ntr > 0) THEN
@@ -4697,6 +5248,12 @@ SUBROUTINE PointSourceSinkForcing (nn,thrs)
       ENDDO
    ENDIF
 
+! PRINT*, "newvalues"
+! PRINT*, "flps :", flpss(:) !cintia
+! PRINT*, "temp :", scpss(:) ! cintia
+! PRINT*, "tracer: ", trpss(:,1) !cintia
+! stop
 END SUBROUTINE PointSourceSinkForcing
 
 END MODULE si3d_utils
+

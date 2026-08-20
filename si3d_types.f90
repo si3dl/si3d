@@ -38,7 +38,7 @@
    REAL, PARAMETER :: u0 = 0.0, u0h0 = 0.0, v0 = 0.0, v0h0 = 0.0, w0 = 0.0
 
    !.....Maximum number of nodes where time series output is desired.....
-   INTEGER, PARAMETER :: maxnodes = 20
+   INTEGER, PARAMETER :: maxnodes = 50
 
    !.....Maximum number of open boundaries.....
    INTEGER, PARAMETER :: maxnopen = 10
@@ -302,12 +302,26 @@
    !          ----- Point Sources & Sinks Eqs. Vars. & Arrays *********************
    ! ... Variables used specificallly to model plumes -
    REAL    :: k4sod      ! 5.7870E-6 ! g/m2/s
+   REAL    :: k4wod      ! ACC 2026
    REAL(8) :: salamb     ! Vars. for generalized version of plume model
    REAL(8) :: patm       ! Vars. for generalized version of plume model
-   REAL   , ALLOCATABLE, DIMENSION(:    )  :: lambda ! Plume width
-   REAL   , ALLOCATABLE, DIMENSION(:    )  :: diammb ! Initial diammeter of bubbles
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: lambdanot ! Plume width
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: diammb ! Initial diammeter of bubbles
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: lnot ! Plume length
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: alphai    ! Entrainment coefficient inner plume (-)
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: alphao    ! Entrainment coefficient outer plume (-)
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: alphaa    ! Entrainment coefficient from ambient (-)
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: lambda    ! Fraction of plume occupied by bubble (-)
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: froudei   ! Froude number inner plume
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: froudeo   ! Froude number outer plume
+   REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: gammap
+   ! REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: salamb
+   ! REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: patm
+   ! REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: k4sod
+   REAL(8), DIMENSION (35000,9) :: innerplume
+   REAL(8), DIMENSION (35000,9) :: outerplume
    INTEGER, ALLOCATABLE, DIMENSION(:    )  :: kdetr          ! k for detrainment cell
-   INTEGER, ALLOCATABLE, DIMENSION(:    )  :: idetr          ! How detrainment is modelled in diffuser devices
+   REAL   , ALLOCATABLE, DIMENSION(:    )  :: idetr          ! How detrainment is modelled in diffuser devices
    REAL   , ALLOCATABLE, DIMENSION(:    )  :: dfL            ! Diffuser length (device)
 
    ! ... Variables for boundary conditions as point sources and sinks BCasPSS
@@ -497,3 +511,4 @@
 !                        -----Data Dictionary-----
 
 END MODULE si3d_types
+

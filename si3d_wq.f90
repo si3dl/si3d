@@ -48,6 +48,11 @@ SUBROUTINE sourceDO(kwq,lwq)
   &                 - 8.621949*1E11/(Tk**4.)
   OS = EXP(lnos)
 
+  ! ... Atmospheric pressure is defined in si3d_surfbc, but if ifsurfbc = 0, then Pa = 101325 Pa or sea level.
+  if (ifsurfbc .eq. 0) then
+    Pa = 101325.0
+  end if
+
   ! Correct for Patmospheric (Pa - declared in si3d_types and defined in surfbc0)
   Patm_do   = Pa * 0.00000986923; ! Transform atmospheric pressure from Pa to atm
   ln_Pwv = 11.8751 - (3840.70/Tk) - (216961/(Tk**2.))
@@ -56,6 +61,7 @@ SUBROUTINE sourceDO(kwq,lwq)
   &                    6.436*1E-8 * salp(kwq,lwq)**2.
   OS = OS*Patm_do*((1-Pwv/Patm_do) *(1-theta2*Patm_do))&
   &           /((1-Pwv)*(1-theta2) )
+
   ! Estimate of OS is in mg/L. Si3D uses mg/m3 then:
   OS = OS * 1000
 
@@ -64,7 +70,6 @@ SUBROUTINE sourceDO(kwq,lwq)
   ! alternatives for reaeration rates.
   IF (kwq .le. k1z(lwq)) THEN
     ws = SQRT(uair(lwq)**2. + vair(lwq)**2.)
-
     ! if (kwq .eq. k1z(lwq)) then
       ! reaeration = R_reaer * (ws ** 2.0) * (OS - tracerpp(kwq,lwq,LDO))
       if (ws .ge. 8) then

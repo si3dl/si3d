@@ -109,7 +109,7 @@ Specification for tracer (other than oxygen) simulation
 -------------------------------------------------------       
 Specification for oxgygenation system simulations
 -------------------------------------------------------            
- iopts       !        0           ! No. of columns with point sources-sinks
+ iopss       !        0           ! No. of columns with point sources-sinks
  Nodev       !        0           ! No. of devices acting as sources-sinks 
  iodt        !      600.          ! Time (secs) between consecutive records in io files
  ipss        !  17

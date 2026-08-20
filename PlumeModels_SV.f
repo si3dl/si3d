@@ -2214,7 +2214,7 @@ C     --------------------------------------------------------------------------
       QSCMS=QGFRAC*QSCFM/3.281**3/60.0
       QGAS=PSTD*QSCMS*(TAMB+273.15)/((PATM+DENSEA*G*Z)*TSTD)
 
-      PRINT*,'QGAS',QGAS,PSTD,QSCMS,TAMB,PATM,DENSEA,G,Z,TSTD
+      ! PRINT*,'QGAS',QGAS,PSTD,QSCMS,TAMB,PATM,DENSEA,G,Z,TSTD
 
 
 C     Initial bubble size.     
@@ -2229,7 +2229,7 @@ C     Initial bubble size.
             VB=2.995*RB**0.489
       ENDIF
 
-      PRINT*,'RBinicial',RB,VB
+      ! PRINT*,'RBinicial',RB,VB
 
 !     Mass transfer coefficient
       KOLO=0.6*RB
@@ -2237,14 +2237,14 @@ C     Initial bubble size.
             KOLO=4.0E-4
       ENDIF
       KOLN=KOLO
-      PRINT*,'Test 1'
+      ! PRINT*,'Test 1'
 !
 C     CALCULATION OF INITIAL WATER VELOCITY USING FROUDE NUMBER
       VBUB=4./3.*PI*RB**3
       N=QGAS/VBUB
       VDIFF=1
 
-      PRINT*,'VIinicial',FRNI,LAMBDA,BI,G,DENSEA,QGAS,VB,PI,DENSEW
+      ! PRINT*,'VIinicial',FRNI,LAMBDA,BI,G,DENSEA,QGAS,VB,PI,DENSEW
 
 
       DO WHILE (VDIFF.GT.1.0E-6)
@@ -2309,7 +2309,7 @@ C     Revised gaseous flux equations.
       BWDI(LAYDIFF)= BI 
 !
 
-      PRINT*,'Initial',BI, VI, QW
+      ! PRINT*,'Initial',BI, VI, QW
 !     -------------------------------------------------------------------------- 
 C	SOLUTION PROCEEDURE
 !     --------------------------------------------------------------------------
@@ -2498,7 +2498,7 @@ C        Previous equation corrected to consistently express salinity in uS/cm
             INPLUME(NLI,6)=COMGP
             INPLUME(NLI,7)=EI 
             INPLUME(NLI,8)=EO
-            PRINT*,'MOMENT',MOMENT
+            ! PRINT*,'MOMENT',MOMENT
 	    GOTO 20
          ENDIF
 
@@ -2688,9 +2688,9 @@ C
       TPLUMET=TPLUME
       COMGPT=COMGP
       LAYTOP=LAYDIFF-JJ
-      PRINT*,"LAYTOP_inner",LAYTOP
-      PRINT*,"LAYDIFF_inner",LAYDIFF
-      PRINT*,"JJ_inner",JJ
+      ! PRINT*,"LAYTOP_inner",LAYTOP
+      ! PRINT*,"LAYDIFF_inner",LAYDIFF
+      ! PRINT*,"JJ_inner",JJ
       BTOP=BI
       SALPLUMET=SALPLU
 
@@ -2704,7 +2704,7 @@ C
 !      PRINT*,"LAYTOP",LAYTOP
 !      PRINT*,"BTOP",BTOP
 !      PRINT*,"INPLUMEDEPTH",INPLUME(:,1)
-      PRINT*,'fuera final'
+      ! PRINT*,'fuera final'
       RETURN
       END
 C
@@ -2907,11 +2907,11 @@ C     CONSTANTS
 C     --------------------------------------------------------------------------
 !
 
-      PRINT*,'OUTER_PLUME'
+      ! PRINT*,'OUTER_PLUME'
 
-      PRINT*,'NITERPLUMEinOUTERPLUME', NITERPLUME
+      ! PRINT*,'NITERPLUMEinOUTERPLUME', NITERPLUME
 
-      PRINT*, 'OUTER_PLUME',ALPHAI,ALPHAO,ALPHAA,LAMBDA,FRNI,FRNO,GAMMA1
+      ! PRINT*, 'OUTER_PLUME',ALPHAI,ALPHAO,ALPHAA,LAMBDA,FRNI,FRNO,GAMMA1
 
 
     !  PRINT*,'Yearplume', YEAR
@@ -3071,7 +3071,7 @@ C     Interpolate input profiles to obtain the plume initial conditions
       SALPLU=224  ! Eliminar JCT SAlinidad
 	  SALIN = 224
 
-	  PRINT*,'Init_input_frominner',QINTOP,BITOP,TPLUME
+	!   PRINT*,'Init_input_frominner',QINTOP,BITOP,TPLUME
 
 !     Guess the initial velocity 
       VGUESS=0.07
@@ -3229,6 +3229,7 @@ C     ------------------------------------------------------------------
 
       QW=QINTOP
       MOMENT=QW*VO
+      ! PRINT*,"MOMENTinicial",MOMENT,VO,QW
 	  
       FTEMP=QW*TPLUME 
       !FSAL=QW*(SALPLU*GAMMA/DENSE20)*DENSEP
@@ -3435,8 +3436,8 @@ C           Previous equation corrected to consistently express salinity in uS/c
             OUTPLUME(NLO,6)=COMGP
             OUTPLUME(NLO,7)=SALPLU
             OUTPLUME(NLO,8)=VO
-            PRINT*,"me voy por momento"
-			PRINT*,"QW, MOMENT,VO",QW,MOMENT,VO
+            ! PRINT*,"me voy por momento"
+		! 	PRINT*,"QW, MOMENT,VO",QW,MOMENT,VO
 
 	    GOTO 20
          ENDIF
@@ -3834,21 +3835,23 @@ C
       INTEGER NELS,ierror,M,CONT,
      +LAYINTR,
      +NITERPLUME,NLI,NLO,NLIO,k
-      DOUBLE PRECISION DENSTY_S
-      EXTERNAL DENSTY_S
+      REAL(8), EXTERNAL :: density
 C 
 C     --------------------------------------------------------------------------
 C     CONSTANTS
 C     --------------------------------------------------------------------------
 !
+
+      ! PRINT*,'INNER_PLUME'
  
       G=9.80665
       GAMMA=6.9E-4
       PI=ACOS(-1.0)
       PSTD=101325.
+      ! PRINT*,'LDIFF', LDIFF
       RGAS=8.314
       TSTD=293.15
-      DENSE20=DENSTY_S(20.0, 0.00004, 0.0)
+      DENSE20=density(20.0, 0.00004, 0.0)
       FRCNATM=0.79
       QGFRAC=1.0
 !      C1=-1
@@ -3858,12 +3861,19 @@ C     --------------------------------------------------------------------------
 C     PARAMETERS AND INITIALIZE THE VARIABLES 
 C     --------------------------------------------------------------------------
 C      
+      ! PRINT*,'INNER_PLUME1_j' 
+      ! PRINT*,'INPLUME(1,1)', INPLUME(1,1)
      
       INPLUME(:,:)=0.0
-C     Geometric caracteristic 
+      ! PRINT*,'INNER_PLUME1a'
+!     Geometric caracteristic 
       DEPTH=WSEL-DIFFEL  
+      ! PRINT*,'INNER_PLUME1b'
+  !    PRINT*,'DEPTHINNER_PLUME', DEPTH
       Z=DEPTH
+      ! PRINT*,'INNER_PLUME1c'
       ELEV=DIFFEL
+      ! PRINT*,'INNER_PLUME1.5'
 !        
 C     Assume that gas bubbles are composed of oxygen and nitrogen only.
       FRACO=FRCONOT 
@@ -3872,6 +3882,7 @@ C     Assume that gas bubbles are composed of oxygen and nitrogen only.
 C     Interpolate input profiles to obtain the plume initial conditions
       X=0.
       XLOC=DEPTH-X
+      ! PRINT*,'INNER_PLUME2'
       CALL LININT(LOCAT,TE,LAYERS,XLOC,TAMB)
       CALL LININT(LOCAT,CO2M,LAYERS,XLOC,COMG)
       CALL LININT(LOCAT,UA,LAYERS,XLOC,UAMB)
@@ -3891,29 +3902,39 @@ C     Interpolate input profiles to obtain the plume initial conditions
       BNOT=LAMBNOT/LAMBDA
       BI=BNOT
 !     BDIFF=LAMBNOT
+      ! PRINT*,'INNER_PLUME3'
       ! .... JCT_RECT ...
 !     Revised LNOT to account for additional length due to spreading of velocity/water plume beyond bubble plume (4-16-09)  
       LNOT=LDIFF+2.0*BNOT*(1.0-LAMBDA) ! 
       LI=LNOT
       !BEQUIV=0.5*(4.*LDIFF*2.*LAMBNOT/PI)**0.5
       ! .... JCT_RECT ...	  
-
+	  
+      !   PRINT*,'LI4', LI
 C     AMBIENT AND AVERAGE WATER DENSITIES
-      DENSEA=DENSTY_S(TAMB, 0.00004, Z)
+!       DENSEA=(0.059385*TAMB**3-8.56272*TAMB**2+65.4891*TAMB)*0.001
+!      ++999.84298 !+(GAMMA)*SALAMB !JCT_2022
+!       DENSEW=DENSEA
+
+      DENSEA=density(TAMB, 0.00004, Z)
       DENSEW=DENSEA
 C
+      !   PRINT*,'INNER_PLUME4a'
 !     Solubility constant (mol/m3/Pa)
       HO2=(2.125-0.05023*TPLUME+5.7714E-4*TPLUME**2)/100000.
       HN2=(1.042-0.02457*TPLUME+3.1714E-4*TPLUME**2)/100000.
 C	
+      !   PRINT*,'INNER_PLUME4b'
 C     Assume initial ambient dissolved nitrogen conc. equals saturated conc. at surface.
       CN2=(PATM*FRCNATM)*HN2      
       CNMG=CN2*28.0
       CNMGP=CNMG
       DNAMB=CNMG
 !
+      !   PRINT*,'INNER_PLUMEc'
 !     Outer plume
       OUTXLOC=OUTPLUME(:,1)
+      !   PRINT*,'INNER_PLUME4d'
       OUTQW=OUTPLUME(:,3)
       OUTMOMENT=OUTPLUME(:,4)
       OUTTEMP=OUTPLUME(:,5)
@@ -3923,9 +3944,14 @@ C     Assume initial ambient dissolved nitrogen conc. equals saturated conc. at 
 C     --------------------------------------------------------------------------
 C     BUBBLE PROPERTIES
 C     --------------------------------------------------------------------------
-
+!
+      ! PRINT*,'INNER_PLUME5'
       QSCMS=QGFRAC*QSCFM/3.281**3/60.0
       QGAS=PSTD*QSCMS*(TAMB+273.15)/((PATM+DENSEA*G*Z)*TSTD)
+
+!      PRINT*,'QSCMS',QSCMS,QGFRAC,QSCFM
+!      PRINT*,'QGAS',QGAS,PSTD,QSCMS,TAMB,PATM,DENSEA,G,Z,TSTD
+
 
 C     Initial bubble size.     
       RB=DIAMM/2000.
@@ -3938,6 +3964,7 @@ C     Initial bubble size.
             VB=2.995*RB**0.489
       ENDIF
 
+      ! PRINT*,'RBinicial',RB,VB
 
 !     Mass transfer coefficient
       KOLO=0.6*RB
@@ -3945,12 +3972,14 @@ C     Initial bubble size.
             KOLO=4.0E-4
       ENDIF
       KOLN=KOLO
+      ! PRINT*,'Test 2'
 !
 C     CALCULATION OF INITIAL WATER VELOCITY USING FROUDE NUMBER
       VBUB=4./3.*PI*RB**3
       N=QGAS/VBUB
       VDIFF=1
 
+      ! PRINT*,'VIinicial',FRNI,LAMBDA,BI,LI,G,DENSEA,QGAS,VB,PI,DENSEW,VGUESS,LAMBDA,DENSEP
       DO WHILE (VDIFF.GT.1.0E-6)
          !VG=QGAS/((VGUESS+VB)*(PI*(LAMBDA*BI)**2))
          VG=QGAS/((VGUESS+VB)*((2.*LAMBDA*BI)*(LI-2.0*BI*(1.0-LAMBDA)))) !JCT_RECT		 
@@ -3959,7 +3988,7 @@ C     CALCULATION OF INITIAL WATER VELOCITY USING FROUDE NUMBER
          VDIFF=ABS(VI-VGUESS)
          VGUESS=VI
       END DO
-
+      ! PRINT*,'VI',VI
 C     ------------------------------------------------------------------
 C     VARIABLE TRANSFORMATION      
 C     ------------------------------------------------------------------
@@ -4003,6 +4032,7 @@ C     Revised gaseous flux equations.
 	  LWDI(LAYDIFF)= LI ! JCT_RECT
 !
 
+      ! PRINT*,'Initial BI, LI, VI, QW',BI, LI, VI, QW
 !     -------------------------------------------------------------------------- 
 C	SOLUTION PROCEEDURE
 !     --------------------------------------------------------------------------
@@ -4026,6 +4056,8 @@ C
 C        Interpolate input profiles to obtain line plume boundary conditions
          XLOC=DEPTH-X
 
+         !PRINT*,'if',XLOC,DEPTHINTR,ELEVT
+
          CALL LININT(LOCAT,UA,LAYERS,XLOC,UAMB)
          CALL LININT(LOCAT,VA,LAYERS,XLOC,VAMB)
          IF (NITERPLUME.EQ.1)THEN
@@ -4044,6 +4076,7 @@ C        Interpolate input profiles to obtain line plume boundary conditions
                !VO=0
                SALARO=SALAMB
             ELSEIF (-XLOC.GT.DEPTHINTR.AND.-XLOC.LE.ELEVT)THEN
+            !   !PRINT*,'NLI',NLI, NLIO
                COMG=OUTO2(NLIO)
                DOARO=COMG
                CALL LININT(LOCAT,TE,LAYERS,XLOC,TAMB)
@@ -4060,6 +4093,7 @@ C        Interpolate input profiles to obtain line plume boundary conditions
                !VO=-0.03
 
                NLIO=NLIO+1
+               !PRINT*,'VO', VO 
             ENDIF
           ELSE
             PRINT*, "---------------------------------"
@@ -4069,6 +4103,8 @@ C        Interpolate input profiles to obtain line plume boundary conditions
 C                  
 C        Use subroutines for Runge Kutta method solution
          NEQN=8
+!      PRINT*,'QWbeforeEQ',QW
+!      PRINT*,'MOMENTbeforeEQ',MOMENT
 
          Y(1)=QW
          Y(2)=MOMENT
@@ -4079,17 +4115,42 @@ C        Use subroutines for Runge Kutta method solution
          Y(7)=FGO
          Y(8)=FGN
  
+        !PRINT*, "Y_in", Y(1), Y(2), Y(3), Y(4), Y(5), Y(6), Y(7), Y(8)
+
+       !PRINT*, "NEQN", NEQN
          CALL DERIVS_6(EI,EO,DENSEA,DENSEW,DENSEP,G,BI,LI,LAMBDA,TARO,
      +            VG,SALARO,GAMMA,DENSE20,DOARO,PI,RB,N,VI,VO,VB,KOLO,
      +            HO2,PO,GAMMA1,TPLUME,SALPLU,COMGP,DNAMB,KOLN,HN2,PN,
      +            CNMGP,Z,Y,DYDX,XLOC,TAMB)
- 
+       !PRINT*, "NEQN_b", NEQN
+
+       
+      !PRINT*, "B1", EI,EO,DENSEA
+      !PRINT*, "B2", DENSEW,DENSEP,G
+      !PRINT*, "B3", BI,LI,LAMBDA
+      !PRINT*, "B4", TARO,VG,SALARO
+      !PRINT*, "B5", GAMMA,DENSE20,DOARO
+      !PRINT*, "B6", PI,RB,N
+      !PRINT*, "B7", VI,VO,VB
+      !PRINT*, "B8", KOLO,HO2,PO
+      !PRINT*, "B9", GAMMA1,TPLUME,SALPLU
+      !PRINT*, "B10", COMGP,DNAMB,KOLN
+      !PRINT*, "B11", HN2,PN,CNMGP
+      !PRINT*, "B12", Y,DYDX,NEQN
+      !PRINT*, "B13", Z,H,YOUT
+      !PRINT*, "B14", XLOC,TAMB
 
          CALL RK4_6(EI,EO,DENSEA,DENSEW,DENSEP,G,BI,LI,LAMBDA,
      +         TARO,VG,SALARO,GAMMA,DENSE20,DOARO,PI,RB,N,VI,
      +         VO,VB,KOLO,HO2,PO,GAMMA1,TPLUME,SALPLU,COMGP,
      +         DNAMB,KOLN,HN2,PN,CNMGP,Y,DYDX,NEQN,Z,H,YOUT,
      +         XLOC,TAMB)
+
+
+       !PRINT*, "NEQN", NEQN
+
+        !PRINT*, "Y_out", YOUT(1), YOUT(2), YOUT(3), YOUT(4)
+        !PRINT*, "Y_out", YOUT(5), YOUT(6), YOUT(7), YOUT(8)
 
          QW=YOUT(1)
          MOMENT=YOUT(2)
@@ -4106,6 +4167,7 @@ C        Use subroutines for Runge Kutta method solution
             !SALPLU=FSAL/(QW*DENSEW)/(GAMMA/DENSE20) JCT2020_Sal
             SALPLU=FSAL/QW  !JCT2020_Sal
 C        Previous equation corrected to consistently express salinity in uS/cm	   
+            !  PRINT*,'fuera momento'
 	    CO2=FDO/QW
 	    CN2=FDN/QW
 !           Save inner plume information
@@ -4118,12 +4180,14 @@ C        Previous equation corrected to consistently express salinity in uS/cm
             INPLUME(NLI,7)=EI 
             INPLUME(NLI,8)=EO
             INPLUME(NLI,9)=LI
+            ! PRINT*,'MOMENT',MOMENT
 	    GOTO 20
          ENDIF
 
 
          VI=MOMENT/QW
          AREA=QW/VI
+         !PRINT*,'AREA=QW/VI, MOMENT', AREA,QW,VI,MOMENT
        
          !BI=SQRT(AREA/PI) 
          !EI= 2.*PI*BI*ALPHAI*(VI+C1*VO)
@@ -4140,6 +4204,11 @@ C        Previous equation corrected to consistently express salinity in uS/cm
           ENDIF
           BI=AREA/(2.0*LI)
 
+          !PRINT*,'AA, BB, CC ', AA, BB, CC
+          !PRINT*,'BNOT, LNOT, AREA', BNOT, LNOT, AREA
+
+          !PRINT*,'BI LI', BI, LI
+
 	      EI= (2.*(LI+2.*BI))*ALPHAI*(VI+C1*VO)
           EO=-(2.*(LI+2.*BI))*ALPHAO*VO  ! JCT
 		  ! JCT_RECT ....
@@ -4154,6 +4223,7 @@ C        Previous equation corrected to consistently express salinity in uS/cm
          SALPLU=SALAMB
 !         !!!!! ******* !!!!! ******* !!!!! ******* !!!!!*******  !!!!!         
 
+         !PRINT*, XLOC, TPLUME
 C        Previous equation corrected to consistently express salinity in uS/cm
 !        Dissolved oxygen and nitrogen concentration
          CO2=FDO/QW
@@ -4217,6 +4287,7 @@ C        Previous equation revised to account for correct plume cross-sectional 
          IF(RB.LT.0.0)THEN
             RB=1.0E-8
          ENDIF
+         !PRINT*,'RB',RB
          FRACO=FGO/(FGO+FGN)
          FRACN=1.0-FRACO
 C	
@@ -4224,9 +4295,14 @@ C
          PO=PZ*FRACO
          PN=PZ*FRACN
 !        Density (ambient water, water in plume and of the plume)
-      DENSEA=DENSTY_S(TAMB, 0.00004, Z)
-      DENSEW=DENSTY_S(TPLUME, 0.00004, Z)
- 
+!       DENSEA=(0.059385*TAMB**3-8.56272*TAMB**2+65.4891*TAMB)*0.001
+!      ++999.84298 !+(GAMMA)*SALARO !JCT_2022
+!       DENSEW=(0.059385*TPLUME**3-8.56272*TPLUME**2+65.4891*TPLUME)*0.001
+!      ++999.84298 !+(GAMMA)*SALPLU  !JCT_2022
+         !PRINT*,'JCT',SALARO,SALAMB,SALPLU
+
+      DENSEA=density(TAMB, 0.00004, Z)
+      DENSEW=DENSEA
 	  
 C        Previous equation re-revised to account for correct salinity units (uS/cm) in density calculations.      
          DENSEP=(1.0-VG)*DENSEW
@@ -4272,8 +4348,12 @@ C
       TPLUMET=TPLUME
       COMGPT=COMGP
       LAYTOP=LAYDIFF-JJ
+      ! PRINT*,"LAYTOP_inner",LAYTOP
+      ! PRINT*,"LAYDIFF_inner",LAYDIFF
+      ! PRINT*,"JJ_inner",JJ
       BTOP=BI
       SALPLUMET=SALPLU
+      ! PRINT*,'fuera final'
       RETURN
       END
 C
@@ -4475,13 +4555,53 @@ C
       INTEGER II,IJ,IK,JJ,LL,NEQN,NN,MI,JK,JL,LAYTOP,
      +LAYERS,KM,KN,KO,KP,ROWS,KQ,KR,KU,KV,KW,KX,KY,KZ,KS,LAYDIFF,YEAR 
       INTEGER NELS,ierror,M,CONT,LAYINTR,NLI,NLO,NITERPLUME
+      REAL(8), EXTERNAL :: density
 C 
 C     --------------------------------------------------------------------------
 C     CONSTANTS
 C     --------------------------------------------------------------------------
 !
 
-      PRINT*,'OUTER_PLUME_RECT'
+      ! PRINT*,'OUTER_PLUME_RECT'
+
+      ! PRINT*,'NITERPLUMEinOUTERPLUME', NITERPLUME
+
+      ! PRINT*, 'OUTER_PLUME',ALPHAI,ALPHAO,ALPHAA,LAMBDA,FRNI,FRNO,GAMMA1
+
+
+    !  PRINT*,'Yearplume', YEAR
+    !  PRINT*,'Julday', JULDAY
+    !  PRINT*,'WSEL', WSEL
+    !  PRINT*,'DIFFEL', DIFFEL
+    !  PRINT*,'LAYERS', LAYERS
+    !  PRINT*,'BITOP', BITOP
+    !  PRINT*,'SALAMB', SALAMB
+    !  PRINT*,'PATM', PATM
+    !  PRINT*,'QINTOP', QINTOP
+    !  PRINT*,'FRCONOT',FRCONOT
+    !  PRINT*,'LAYDIFF',LAYDIFF
+    !  PRINT*,'HCELL',HCELL
+      !PRINT*,'LOCAT',LOCAT
+      !PRINT*,'TE',TE
+    !  !PRINT*,'CO2M',CO2M
+    !  !PRINT*,'UA',UA
+    !  !PRINT*,'VA',VA
+    !  PRINT*,'ELEVT',ELEVT
+    !  PRINT*,'QWDET',QWDET
+    !  !PRINT*,'QWDO',QWDO
+    !  !PRINT*,'BWDO',BWDO
+    !  PRINT*,'LAYTOP',LAYTOP
+    !  PRINT*,'LAYINTR',LAYINTR
+    !  PRINT*,'TPLUMED',TPLUMED
+    !  PRINT*,'SALPLUMED',SALPLUMED
+    !  PRINT*,'COMGPD',COMGPD
+    !  PRINT*,'DEPTHINTR',DEPTHINTR
+    !  PRINT*,'NLI',NLI
+    !  PRINT*,'NLO',NLO
+    !  PRINT*,'NITERPLUME',NITERPLUME
+    !  !PRINT*,'INPLUME',INPLUME
+    !  !PRINT*,'OUTPLUME',OUTPLUME
+
 
       !ALPHAI=0.055 ! Crounse et al 2007
       !ALPHAO=0.11  ! Crounse et al 2007
@@ -4497,7 +4617,7 @@ C     --------------------------------------------------------------------------
       PSTD=101325.
       RGAS=8.314
       TSTD=293.15
-      DENSE20=998.2
+      DENSE20=density(20.0, 0.00004, 0.0)
       FRCNATM=0.79
       QGFRAC=1.0
 !      C1=-1
@@ -4567,13 +4687,19 @@ C     Interpolate input profiles to obtain the plume initial conditions
 C      
 C     AMBIENT AND AVERAGE WATER DENSITIES
 
-      DENSEA=(0.059385*TARO**3-8.56272*TARO**2+65.4891*TARO)*0.001
-     ++999.84298 !+(GAMMA)*SALAMB !JCT_2022
-!!      DENSEW=DENSEA
-      DENSEP=(0.059385*TPLUME**3-8.56272*TPLUME**2+65.4891*TPLUME)*0.001
-     ++999.84298 !+(GAMMA)*SALPLU !JCT_2022
-      DENSEINNER=(0.059385*TIN**3-8.56272*TIN**2+65.4891*TIN)*0.001
-     ++999.84298 !+(GAMMA)*SALIN !JCT_2022
+!       DENSEA=(0.059385*TARO**3-8.56272*TARO**2+65.4891*TARO)*0.001
+!      ++999.84298 !+(GAMMA)*SALAMB !JCT_2022
+! !!      DENSEW=DENSEA
+!       DENSEP=(0.059385*TPLUME**3-8.56272*TPLUME**2+65.4891*TPLUME)*0.001
+!      ++999.84298 !+(GAMMA)*SALPLU !JCT_2022
+!       DENSEINNER=(0.059385*TIN**3-8.56272*TIN**2+65.4891*TIN)*0.001
+!      ++999.84298 !+(GAMMA)*SALIN !JCT_2022
+      DENSEA=density(TARO, 0.00004, Z)
+      DENSEP=density(TPLUME, 0.00004, Z)
+      DENSEINNER=density(TIN, 0.00004, Z)
+
+C	
+      !   PRINT*,"DENSEP,DENSEA",DENSEP,DENSEA,TPLUME,TARO
 
 C     Assume initial ambient dissolved nitrogen conc. equals saturated conc. at surface.
 !!      CN2=(PATM*FRCNATM)*HN2      
@@ -4622,8 +4748,8 @@ C     CALCULATION OF INITIAL WATER VELOCITY USING FROUDE NUMBER
 		  VDIFF=ABS(VO-VGUESS)
 		  VGUESS=VO
       END DO
-      PRINT*,"QINTOP",QINTOP
-      PRINT*,"VOinicial",VO
+      ! PRINT*,"QINTOP",QINTOP
+      ! PRINT*,"VOinicial",VO
 !     Water velocity in the top of the inner plume
       !VI=QINTOP/(PI*BITOP**2)
       VI=-QINTOP/(LITOP*BITOP*2) ! JCT_RECT JCT_2022
@@ -4658,15 +4784,15 @@ C     ------------------------------------------------------------------
       EA=-(2.*(LO+2.*BO))*ALPHAA*VO ! JCT_RECT JCT_2022
       EP=QINTOP
 	   
-      PRINT*,"LI,LO,BI,BO,VI,VO", LI,LO,BI,BO,VI,VO
-      PRINT*,"ALPHAI,ALPHAO,ALPHAA", ALPHAI,ALPHAO,ALPHAA
+      ! PRINT*,"LI,LO,BI,BO,VI,VO", LI,LO,BI,BO,VI,VO
+      ! PRINT*,"ALPHAI,ALPHAO,ALPHAA", ALPHAI,ALPHAO,ALPHAA
 
-      PRINT*,"EA,EO,EI",EA,EO,EI, VO
+      ! PRINT*,"EA,EO,EI",EA,EO,EI, VO
 
       QW=QINTOP
       MOMENT=QW*VO
-      PRINT*,"MOMENTinicial",MOMENT,VO,QW
-      PRINT*,"TPLUME QW",TPLUME,QW
+      ! PRINT*,"MOMENTinicial",MOMENT,VO,QW
+      ! PRINT*,"TPLUME QW",TPLUME,QW
       FTEMP=QW*TPLUME 
       !FSAL=QW*(SALPLU*GAMMA/DENSE20)*DENSEP
       FSAL=QW*SALPLU !JCT2020_Sal
@@ -4745,8 +4871,8 @@ C        Use subroutines for Runge Kutta method solution
 		 
  
 	    IF(M.EQ.1)THEN
-	       PRINT*," DYDX(2)",DYDX(2), GAMMA1,G,LO,BO,LI,BI,DENSEP,DENSEA
-		   PRINT*,DENSE20,EI,VO,EO,VI
+	      !  PRINT*," DYDX(2)",DYDX(2), GAMMA1,G,LO,BO,LI,BI,DENSEP,DENSEA
+		!    PRINT*,DENSE20,EI,VO,EO,VI
         ENDIF
 
 
@@ -4806,7 +4932,7 @@ C           Previous equation corrected to consistently express salinity in uS/c
             OUTPLUME(NLO,8)=VO
             OUTPLUME(NLO,9)=LO
 			
-            PRINT*,"me voy por momento"
+            ! PRINT*,"me voy por momento"
 	    GOTO 20
          ENDIF
 
@@ -4940,19 +5066,19 @@ C
      ++999.84298 !+(GAMMA)*SALIN  !JCT_2022
 
         IF(M.EQ.1)THEN
-        PRINT*,"DENSEP,DENSEA",DENSEP,DENSEA, TPLUME,TARO
+      !   PRINT*,"DENSEP,DENSEA",DENSEP,DENSEA, TPLUME,TARO
         ENDIF
 		
 		IF(M.EQ.100)THEN
-        PRINT*,"DENSEP,DENSEA",DENSEP,DENSEA, TPLUME,TARO
+      !   PRINT*,"DENSEP,DENSEA",DENSEP,DENSEA, TPLUME,TARO
         ENDIF
 		
 		IF(M.EQ.1000)THEN
-        PRINT*,"DENSEP,DENSEA",DENSEP,DENSEA, TPLUME,TARO
+      !   PRINT*,"DENSEP,DENSEA",DENSEP,DENSEA, TPLUME,TARO
         ENDIF
 		
 		IF(M.EQ.5000)THEN
-        PRINT*,"DENSEP,DENSEA",DENSEP,DENSEA, TPLUME,TARO
+      !   PRINT*,"DENSEP,DENSEA",DENSEP,DENSEA, TPLUME,TARO
         ENDIF
 C        Previous equation re-revised to account for correct salinity units (uS/cm) in density calculations.      
 C
@@ -5224,20 +5350,23 @@ C
       INTEGER II,IJ,IK,JJ,LL,NEQN,NN,MI,JK,JL,LAYTOP,
      +LAYERS,KM,KN,KO,KP,ROWS,KQ,KR,KU,KV,KW,KX,KY,KZ,KS,LAYDIFF,YEAR 
       INTEGER NELS,ierror,M,CONT,LAYINTR,NLI,NLO,NITERPLUME
-      DOUBLE PRECISION DENSTY_S
+      REAL(8), EXTERNAL :: density
 C 
 C     --------------------------------------------------------------------------
 C     CONSTANTS
 C     --------------------------------------------------------------------------
 !
 
+      ! PRINT*,'OUTER_PLUME_RECT2'
+      ! PRINT*,'NLI',NLI
+      ! PRINT*,'NLO',NLO
       G=9.80665
       GAMMA=6.9E-4
       PI=ACOS(-1.0)
       PSTD=101325.
       RGAS=8.314
       TSTD=293.15
-      DENSE20=DENSTY_S(20.0, 0.00004, 0.0)
+      DENSE20=density(20.0, 0.00004, 0.0)
       FRCNATM=0.79
       QGFRAC=1.0
 !      C1=-1
@@ -5305,11 +5434,17 @@ C     Interpolate input profiles to obtain the plume initial conditions
 C      
 C     AMBIENT AND AVERAGE WATER DENSITIES
 
-      DENSEA=DENSTY_S(TARO, 0.00004, Z)
-!!      DENSEW=DENSEA
-      DENSEP=DENSTY_S(TPLUME, 0.00004, Z)
-      DENSEINNER=DENSTY_S(TIN, 0.00004, Z)
+!       DENSEA=(0.059385*TARO**3-8.56272*TARO**2+65.4891*TARO)*0.001
+!      ++999.84298 !+(GAMMA)*SALAMB
+! !!      DENSEW=DENSEA
+!       DENSEP=(0.059385*TPLUME**3-8.56272*TPLUME**2+65.4891*TPLUME)*0.001
+!      ++999.84298 !+(GAMMA)*SALPLU
+!       DENSEINNER=(0.059385*TIN**3-8.56272*TIN**2+65.4891*TIN)*0.001
+!      ++999.84298 !+(GAMMA)*SALIN
       ! ELIMI SALINIDAD JCT2022
+      DENSEA=density(TARO, 0.00004, Z)
+      DENSEP=density(TPLUME, 0.00004, Z)
+      DENSEINNER=density(TIN, 0.00004, Z)
 
 C     --------------------------------------------------------------------------
 C     PLUME PROPERTIES
@@ -5318,6 +5453,10 @@ C     --------------------------------------------------------------------------
 C     CALCULATION OF INITIAL WATER VELOCITY USING FROUDE NUMBER
 
       VDIFF=1
+	!    PRINT*,"QINTOP",QINTOP
+      !  PRINT*,"VO",VO
+      !  PRINT*,"LITOP",LITOP
+      !  PRINT*,"BITOP",BITOP
       DO WHILE (VDIFF.GT.1.0E-6)
          AREA = QINTOP/VO+(LITOP*2.*BITOP)	  
          !SOLVE FOR DIMENSIONS USING L^2+(2Bo-Lo)L-AREA=0 USING QUADRATIC EQN.
@@ -5338,6 +5477,7 @@ C     CALCULATION OF INITIAL WATER VELOCITY USING FROUDE NUMBER
       ! VI=-QINTOP/(PI*BITOP**2)
 	  VI=-QINTOP/(LITOP*BITOP*2) ! JCT_RECT JCT_2022
 
+      !  PRINT*,"VI",VI
 	  
 C     ------------------------------------------------------------------
 C     VARIABLE TRANSFORMATION      
@@ -5354,8 +5494,11 @@ C     ------------------------------------------------------------------
       EA=-(2.*(LO+2.*BO))*ALPHAA*VO ! JCT_RECT JCT_2022
       EP=QINTOP
 
+      ! PRINT*,"EA,EO,EI,EP,VO",EA,EO,EI,EP, VO
+
       QW=QINTOP
       MOMENT=QW*VO
+      ! PRINT*,"MOMENTinicial",MOMENT,VO,QW
 	  FTEMP=QW*TPLUME 
       !FSAL=QW*(SALPLU*GAMMA/DENSE20)*DENSEP
       FSAL=QW*SALPLU !JCT2020_Sal
@@ -5565,9 +5708,15 @@ C        Previous equation corrected to consistently express salinity in uS/cm
          ENDIF
 
 !        Density (ambient water, water in plume and of the plume)
-      DENSEA=DENSTY_S(TARO, 0.00004, Z)
-      DENSEP=DENSTY_S(TPLUME, 0.00004, Z)
-      DENSEINNER=DENSTY_S(TIN, 0.00004, Z)
+!       DENSEA=(0.059385*TARO**3-8.56272*TARO**2+65.4891*TARO)*0.001
+!      ++999.84298 !+(GAMMA)*SALAMB
+!       DENSEP=(0.059385*TPLUME**3-8.56272*TPLUME**2+65.4891*TPLUME)*0.001
+!      ++999.84298 !+(GAMMA)*SALPLU
+!       DENSEINNER=(0.059385*TIN**3-8.56272*TIN**2+65.4891*TIN)*0.001
+!      ++999.84298 !+(GAMMA)*SALIN
+      DENSEA=density(TARO, 0.00004, Z)
+      DENSEP=density(TPLUME, 0.00004, Z)
+      DENSEINNER=density(TIN, 0.00004, Z)
 
       END DO
 C
@@ -5582,6 +5731,9 @@ C     CALCULATION OF AVERAGE NET OXYGEN MASS TRANSFER FOR DAY
       LAYINTR=LAYTOP+JJ
       RETURN
       END
+	  
+	  
+	  
 
 C     
 C----------------------------------------------------------------------
@@ -5762,6 +5914,9 @@ C----------------------------------------------------------------------
 
       DYDX(2)=((1/GAMMA1)*(-G*(LO*2*BO-LI*2*BI)*
      +((DENSEP-DENSEA)/DENSE20))-EI*VO+EO*VI)
+	 
+	    ! PRINT*," DYDX(2)_drevis",DYDX(2), GAMMA1,G,LO,BO,LI,BI
+		! PRINT*,DENSEP,DENSEA,DENSE20,EI,VO,EO,VI
 		
 
 !      DYDX(2)=(-1/GAMMA1)*(PI*G*(BO**2-BI**2)*((DENSEP-DENSEA)/DENSE20))
@@ -5800,12 +5955,29 @@ C
      +DYM(NMAX),DYT(NMAX),YT(NMAX),GAMMA1,SALPLU,XLOC,TAMB
       EXTERNAL DERIVS_6
 
+
+      !PRINT*, "A1", EI,EO,DENSEA
+      !PRINT*, "A2", DENSEW,DENSEP,G
+      !PRINT*, "A3", BI,LI,LAMBDA
+      !PRINT*, "A4", TARO,VG,SALARO
+      !PRINT*, "A5", GAMMA,DENSE20,DOAMB
+      !PRINT*, "A6", PI,RB,N
+      !PRINT*, "A7", VI,VO,VB
+      !PRINT*, "A8", KOLO,HO2,PO
+      !PRINT*, "a9", GAMMA1,TPLUME,SALPLU
+      !PRINT*, "A10", COMGP,DNAMB,KOLN
+      !PRINT*, "a11", HN2,PN,CNMGP
+      !PRINT*, "A12", Y,DYDX,NN
+      !PRINT*, "A13", X,H,YOUT
+      !PRINT*, "A14", XLOC,TAMB
+
       HH=H*0.5
       H6=H/6.
       XH=X+HH
 
       !NN=8
 
+      !PRINT*, "NNa", NN
       DO 11 I=1,NN
           YT(I)=Y(I)+HH*DYDX(I)
    11 CONTINUE
@@ -5849,6 +6021,24 @@ C
      +GAMMA,DENSE20,DOAMB,PI,RB,N,VI,VO,VB,KOLO,HO2,PO,COMGP,SALPLU,
      +DNAMB,KOLN,HN2,PN,TPLUME,CNMGP,X,Y(8),DYDX(8),VG,GAMMA1,MOM1,
      +MOM2,MOM3,MOM4,MOM0,XLOC,TAMB
+
+      !PRINT *, BI,LI
+
+      !PRINT*, "D1", EI,EO,DENSEA
+      !PRINT*, "D2", DENSEW,DENSEP,G
+      !PRINT*, "D3", BI,LI,LAMBDA
+      !PRINT*, "D4", TARO,VG,SALARO
+      !PRINT*, "D5", GAMMA,DENSE20,DOAMB
+      !PRINT*, "D6", PI,RB,N
+      !PRINT*, "D7", VI,VO,VB
+      !PRINT*, "D8", KOLO,HO2,PO
+      !PRINT*, "D9", GAMMA1,TPLUME,SALPLU
+      !PRINT*, "D10", COMGP,DNAMB,KOLN
+      !PRINT*, "D11", HN2,PN,CNMGP
+      !PRINT*, "D12", Y,DYDX,NN
+      !PRINT*, "D13", X,H,YOUT
+      !PRINT*, "D14", XLOC,TAMB
+
 
 C     Right-hand side of differential equations for Runge-Kutta solution
       DYDX(1)=EI-EO      
@@ -5913,6 +6103,11 @@ C     +DENSEP*G*(LAMBDA*LI*2*LAMBDA*BI)
 C
 C------------------------------------------------------------------------------
 C
+
+
+
+
+
 
 
 C     
@@ -6224,136 +6419,89 @@ C     Right-hand side of differential equations for Runge-Kutta solution
       DYDX(5)=E*DOAMB/32.
       DYDX(6)=E*DNAMB/28.
       RETURN
-      END
+      END 
 
-           DOUBLE PRECISION FUNCTION DENSTY_S(TEMPERATURE, SALINITY,
-     &                                   ELEVATION)
-C
-C     Calculates water density as a function of:
-C       TEMPERATURE : degrees Celsius
-C       SALINITY    : practical salinity
-C       ELEVATION   : water depth in meters
-C
-C     Result:
-C       DENSTY_S    : density in kg/m^3
-C
-      IMPLICIT NONE
+      !***********************************************************************
+      PURE FUNCTION density (T, S, E)
+      !***********************************************************************
+      !
+      !  Purpose: To compute density (in kg/m**3) from active scalars
+      !           It uses UNESCO Eq.of state for density of freshwater
+      !           taken from Gill(1982) - Atmosphere-Ocean Dynamics, Appendix 3
+      !           However, at this point pressure (depth) effects are not
+      !           included in the calculation of water density.
+      !           This function is based on the original function written by
+      !           P.E. Smith in which the first arg. was salinity and the 2nd temp.
+      !           Here, we use temp. as first argument, as it is the first arg. whose
+      !           transport equation is solved in the code. These changes
+      !           were made as temp. is the main active scalar in Stockton Channel.
+      !
+      !  Revisions:
+      !    Date            Programmer        Description of revision
+      !    ----            ----------        -----------------------
+      !
+      !-----------------------------------------------------------------------
 
-      DOUBLE PRECISION TEMPERATURE, SALINITY, ELEVATION
-      DOUBLE PRECISION DENSW, DENSWS
-      DOUBLE PRECISION KW, KS
-      DOUBLE PRECISION ALPHA_K, BETA_K
-      DOUBLE PRECISION PRESSUREH, PRESSURE
-      DOUBLE PRECISION RHOGUESS, DELTA
-      DOUBLE PRECISION K, DK_DP
-      DOUBLE PRECISION RESIDUAL, DRHO_DP, DERIVATIVE
-      INTEGER ITER, MAXITER
+      ! ... Io variables
+      REAL   , INTENT(IN) :: T, S, E
+      REAL(8)             :: density, rhoguess, delta, densw
+      real(8)             :: pressureh, pressure, densws, kw, ks, k                      
+      real(8)             :: alpha_k, beta_k, dk_dp, residual, drho_dp
+      real(8)             :: derivative 
+      integer             :: maxiter, iter
 
-C     Density of pure water at atmospheric pressure
-      DENSW = 999.842594D0
-     &      + 6.793952D-2 * TEMPERATURE
-     &      - 9.095290D-3 * TEMPERATURE**2
-     &      + 1.001685D-4 * TEMPERATURE**3
-     &      - 1.120083D-6 * TEMPERATURE**4
-     &      + 6.536332D-9 * TEMPERATURE**5
+      ! Density of pure water at atmospheric pressure
+      densw=999.842594+6.793952e-2*T-9.095290d-3*T**(2)
+     &+1.001685d-4*T**(3)-1.120083d-6*T**(4)+6.536332d-9*T**(5)
+      
+!       ! Density at atmospheric pressure
+!       densws=densw + S*(0.824493d0-4.0899d-3*T
+!      &+7.6438d-5*T**(2)-8.2467d-7*T**(3)+5.3875d-9*T**(4))
+!      &+S**(1.5d0)*(-5.72466d-3+1.0227d-4*T-1.6546d-6*T**(2))+4.8314d-4*S**(2)
+      
+!       ! Pure-water secant bulk modulus
+!       kw=19652.21d0+148.4206d0*T-2.327105d0*T**(2)+1.360477d-2*T**(3)-5.155288d-5*T**(4)
+      
+!       ! Seawater secant bulk modulus at atmospheric pressure
+!       ks=kw+S*(54.6746d0-0.603459d0*T
+!      &+1.09987d-2*T**2-6.1670d-5*T**3)
+!      &+S**1.5d0*(7.944d-2+1.6483d-2*T-5.3009d-4*T**2)
+      
+!       ! Coefficient multiplying pressure in k(p)
+!       alpha_k=3.239908d0+1.43713d-3*T+1.16092d-4*T**2
+!      &-5.77905d-7*T**3+S*(2.2838d-3-1.0981d-5*T
+!      &-1.6078d-6*T**2)
+!      &+1.91075d-4*S**1.5d0
+!       ! Coefficient multiplying pressure squared in k(p)
+!       beta_k=8.50935d-5-6.12293d-6*T
+!      &+5.2787d-8*T**2+S*(-9.9348d-7+2.0816d-8*T+9.1697d-10*T**2)
+      
+!       ! Pressure factor
+!       pressureh=1d-5*9.806d0*E
 
-      ! DENSTY_S = DENSW
+!       rhoguess=densws
+!       delta=10.0
+!       iter=0
+!       maxiter=100
+!       DO WHILE (delta>1d-10.AND.iter<maxiter)
+!             ! Hydrostatic pressure in bar
+!             pressure = rhoguess*pressureh
+            
+!             ! Secant bulk modulus and its pressure derivative
+!             k = ks + alpha_k*pressure + beta_k*pressure**2
+!             dk_dp = alpha_k + 2.0 * beta_k * pressure
 
-C     Density of saline water at atmospheric pressure
-      DENSWS = DENSW
-     &       + SALINITY *
-     &         (0.824493D0
-     &         - 4.0899D-3 * TEMPERATURE
-     &         + 7.6438D-5 * TEMPERATURE**2
-     &         - 8.2467D-7 * TEMPERATURE**3
-     &         + 5.3875D-9 * TEMPERATURE**4)
-     &       + SALINITY**1.5D0 *
-     &         (-5.72466D-3
-     &         + 1.0227D-4 * TEMPERATURE
-     &         - 1.6546D-6 * TEMPERATURE**2)
-     &       + 4.8314D-4 * SALINITY**2
+!             ! Density from the equation of state
+!             density = densws/(1.0 - pressure/k)
 
-C     Pure-water secant bulk modulus
-      KW = 19652.21D0
-     &   + 148.4206D0 * TEMPERATURE
-     &   - 2.327105D0 * TEMPERATURE**2
-     &   + 1.360477D-2 * TEMPERATURE**3
-     &   - 5.155288D-5 * TEMPERATURE**4
+!             residual = rhoguess - density
+!             drho_dp = densws*(k - pressure*dk_dp) / ((k - pressure)**2)
+!             derivative = 1.0 - pressureh*drho_dp
+!             density = rhoguess - residual/derivative
+!             delta = abs(density - rhoguess)
+!             rhoguess = density
+!             iter = iter + 1
+!       END DO
+      density = densw
 
-C     Seawater secant bulk modulus at atmospheric pressure
-      KS = KW
-     &   + SALINITY *
-     &     (54.6746D0
-     &     - 0.603459D0 * TEMPERATURE
-     &     + 1.09987D-2 * TEMPERATURE**2
-     &     - 6.1670D-5 * TEMPERATURE**3)
-     &   + SALINITY**1.5D0 *
-     &     (7.944D-2
-     &     + 1.6483D-2 * TEMPERATURE
-     &     - 5.3009D-4 * TEMPERATURE**2)
-
-C     Coefficient multiplying pressure in K(P)
-      ALPHA_K = 3.239908D0
-     &        + 1.43713D-3 * TEMPERATURE
-     &        + 1.16092D-4 * TEMPERATURE**2
-     &        - 5.77905D-7 * TEMPERATURE**3
-     &        + SALINITY *
-     &          (2.2838D-3
-     &          - 1.0981D-5 * TEMPERATURE
-     &          - 1.6078D-6 * TEMPERATURE**2)
-     &        + 1.91075D-4 * SALINITY**1.5D0
-
-C     Coefficient multiplying pressure squared in K(P)
-      BETA_K = 8.50935D-5
-     &       - 6.12293D-6 * TEMPERATURE
-     &       + 5.2787D-8 * TEMPERATURE**2
-     &       + SALINITY *
-     &         (-9.9348D-7
-     &         + 2.0816D-8 * TEMPERATURE
-     &         + 9.1697D-10 * TEMPERATURE**2)
-
-C     Converts hydrostatic pressure to bar
-      PRESSUREH = 1.0D-5 * 9.806D0 * ELEVATION
-
-C     Initialize Newton-Raphson iteration
-      RHOGUESS = DENSWS
-      DELTA = 10.0D0
-      ITER = 0
-      MAXITER = 10000
-
-C     Newton-Raphson iteration
-   10 IF (DELTA .LE. 1.0D-16 .OR. ITER .GE. MAXITER) GO TO 20
-
-C     Hydrostatic pressure in bar
-      PRESSURE = RHOGUESS * PRESSUREH
-
-C     Secant bulk modulus and pressure derivative
-      K = KS + ALPHA_K * PRESSURE
-     &       + BETA_K * PRESSURE**2
-
-      DK_DP = ALPHA_K + 2.0D0 * BETA_K * PRESSURE
-
-C     Density from the equation of state
-      DENSTY_S = DENSWS / (1.0D0 - PRESSURE / K)
-
-C     Newton-Raphson correction
-      RESIDUAL = RHOGUESS - DENSTY_S
-
-      DRHO_DP = DENSWS * (K - PRESSURE * DK_DP)
-     &          / (K - PRESSURE)**2
-
-      DERIVATIVE = 1.0D0 - PRESSUREH * DRHO_DP
-
-      DENSTY_S = RHOGUESS - RESIDUAL / DERIVATIVE
-
-      DELTA = DABS(DENSTY_S - RHOGUESS)
-      RHOGUESS = DENSTY_S
-      ITER = ITER + 1
-
-      GO TO 10
-
-   20 CONTINUE
-      DENSTY_S = RHOGUESS
-
-      RETURN
-      END
+      END FUNCTION density

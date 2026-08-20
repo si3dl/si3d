@@ -1930,8 +1930,8 @@ SUBROUTINE MODexmom4openBCX
                      -((wD+ABS(wD)) * upp(k+1,l) +           &
                        (wD-ABS(wD)) * upp(k  ,l)) / 4.
 
-            !.....Final explicit term.....             Cola Beznar
-            !ex(k,l) = uhpp(k,l) - twodt1*(advx*iadv)
+            !.....Final explicit term.....
+            ex(k,l) = uhpp(k,l) - twodt1*(advx*iadv)
 
            END DO
          ENDDO
