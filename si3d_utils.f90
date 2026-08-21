@@ -4115,15 +4115,15 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
   INTEGER :: nn, inn, i, j, k, kk, l, k1s, kms, nwl, ksrc, plmdim, itr,innH
   INTEGER :: NITERMAX, kint, e1, jct, FLAG
   INTEGER, SAVE :: NITERPLUME, NLI, NLO, ktop
-  REAL    :: areatot, Tsource, Rsource, sumQpss, qdenom
-  REAL(8) :: wselev, dfelev, dflgth, hcell, rjulday, lambnot, diamm, linot
+  REAL    :: areatot, Tsource, Rsource,sumQpss,qdenom
+  REAL(8) :: wselev, dfelev, dflgth, hcell, rjulday, lambnot, diamm,linot
   REAL(8) :: elevt, qwt, tplumt, comgpt, tplum0, comgp0, qscfm, frconot
   REAL(8) :: ERRORDP, ERRORDPA, toler, depthed, salplut, qwed, QpssED
   REAL(8) :: tplumti,comgpti,salpluti,tplumed,salplued,comgped
   REAL(8) :: alphaii,alphaaa,alphaoo,gammapp,froudeii,froudeoo,lambdaa
-  real    :: rho_amb, rho_source, depth
-  REAL(8), DIMENSION (1:km1) :: zamb, Tamb, DOamb, UA, VA ! B.C. for plume model
-  REAL(8), DIMENSION (1:km1) :: qwd, qwdi, qwdo               ! Outflow rate for plume
+  real    :: rho_amb, rho_source
+  REAL(8), DIMENSION (1:km1) :: zamb, Tamb, DOamb, UA,VA ! B.C. for plume model
+  REAL(8), DIMENSION (1:km1) :: qwd,qwdi,qwdo               ! Outflow rate for plume
   REAL(8), DIMENSION (1:km1) :: bwd, bwdi, bwdo                 ! Radius of plume
   REAL(8), DIMENSION (1:km1) :: lwdi, lwdo                 ! Radius of plume
   LOGICAL, SAVE :: DiffON
@@ -4315,23 +4315,23 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
                                         
             ! ... Define ambient temperatures
             Tamb(k1s:kms) = salpp(k1s:kms,l)
-            Tamb(kms+1  ) = Tamb(kms);
-            Tamb(1      ) = Tamb(k1s);
+            Tamb(kms+1  ) = Tamb(kms)
+            Tamb(1      ) = Tamb(k1s)
           
             ! ... Define DO concentrations
-            DOamb(k1s:kms) = tracerpp(k1s:kms,l,ntr)
-            DOamb(kms+1  ) = DOamb(kms);
-            DOamb(1      ) = DOamb(k1s);
+            DOamb(k1s:kms) = tracerpp(k1s:kms,l,LDO) / 1000
+            DOamb(kms+1  ) = DOamb(kms)
+            DOamb(1      ) = DOamb(k1s)
 
             ! ... Define ambient U water velocity
             UA(k1s:kms) = upp(k1s:kms,l)
-            UA(kms+1  ) = UA(kms);
-            UA(1      ) = UA(k1s);
+            UA(kms+1  ) = UA(kms)
+            UA(1      ) = UA(k1s)
 
             ! ... Define ambient V water velocity
             VA(k1s:kms) = vpp(k1s:kms,l)
-            VA(kms+1  ) = VA(kms);
-            VA(1      ) = VA(k1s);
+            VA(kms+1  ) = VA(kms)
+            VA(1      ) = VA(k1s)
           
             ! ... Depths for cells in plume column from datum
             zamb(k1s  ) = hp(k1s,l)/2.
@@ -4342,24 +4342,24 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
             zamb(1    ) = -zamb(k1s) 
 
             ! ... Inputs for plume model
-            dfLgth  = real(dfL(nn),8)         ;       ! Length of diffuser
-            rjulday = doy             ;       ! Julian day (arbitrary) 
-            wselev  = 0.0000          ;       ! Elevation of free surface
-            ksrc    = kms-1           ;       ! Layer No. where diffuser is located
-            dfelev  = -zamb(ksrc)     ;       ! Elevation of diffuser  
-            hcell   = real(ddz,8)             ;       ! Pressumed constant - thickess of cells
-            qwd     = 0.0E0           ;       ! Initialize qwd
-            bwd     = 0.0E0                   ! Initialize perimeter (FJRplume)
-            bwdi    = 0.0E0           ! Initialize perimeter (JCT)
-            bwdo    = 0.0E0           ! Initialize perimeter (JCT)
-            lwdi    = 0.0E0           ! Initialize perimeter (JCT)
-            lwdo    = 0.0E0           ! Initialize perimeter (JCT)             
-            qscfm   = real(flpss(nn),8)       ;       ! Air flow rate 
-            frconot = 1.00            ;       ! Fraction of O2 in air (not used?)
-            lambnot = lambdanot(nn)   ;       ! Half-width 
-            !linot   = lnot(nn)        ;       ! Diffuser length
-            linot   = dfLgth        ;       ! Diffuser length
-            diamm   = diammb(nn)      ;       ! Initial bubble diameter
+            dfLgth  = real(dfL(nn),8)      ! Length of diffuser
+            rjulday = doy                  ! Julian day (arbitrary) 
+            wselev  = 0.0000               ! Elevation of free surface
+            ksrc    = kms-1                ! Layer No. where diffuser is located
+            dfelev  = -zamb(ksrc)          ! Elevation of diffuser  
+            hcell   = real(ddz,8)          ! Pressumed constant - thickess of cells
+            qwd     = 0.0E0                ! Initialize qwd
+            bwd     = 0.0E0                ! Initialize perimeter (FJRplume)
+            bwdi    = 0.0E0                ! Initialize perimeter (JCT)
+            bwdo    = 0.0E0                ! Initialize perimeter (JCT)
+            lwdi    = 0.0E0                ! Initialize perimeter (JCT)
+            lwdo    = 0.0E0                ! Initialize perimeter (JCT)             
+            qscfm   = real(flpss(nn),8)    ! Air flow rate 
+            frconot = 1.00                 ! Fraction of O2 in air (not used?)
+            lambnot = lambdanot(nn)        ! Half-width 
+            !linot   = lnot(nn)            ! Diffuser length
+            linot   = dfLgth               ! Diffuser length
+            diamm   = diammb(nn)           ! Initial bubble diameter
             alphaii  = alphai(nn)          ! Entrainment coefficient inner plume (-)
             alphaoo  = alphao(nn)          ! Entrainment coefficient outer plume (-)
             alphaaa  = alphaa(nn)          ! Entrainment coefficient from ambient (-)
@@ -4783,7 +4783,7 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
           Tsource = salpp(k,l)
         ENDIF
         Tpss(k,inn) = Tsource  ! Tpss conection plume <-> 3D
-        !PRINT *, 'FJR junk', ktop, Tsource
+
         IF (ntr > 0) THEN
           DO itr = 1, ntr
             Rpss(:,inn,itr) = tracerpp(:,l,itr) 
@@ -4815,7 +4815,7 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
               ELSE
                 Rsource = tracerpp(k,l,itr)
               ENDIF
-            ENDIF  
+            ENDIF
             Rpss(k,inn,itr) = Rsource ! Rpss conection plume <-> 3D
             ! *********** Amisk NO PLUME MIXING
             !DO kk  = k1,kms
