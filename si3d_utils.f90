@@ -4786,37 +4786,41 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
 
         IF (ntr > 0) THEN
           DO itr = 1, ntr
-            Rpss(:,inn,itr) = tracerpp(:,l,itr) 
-            IF (ptype(nn) < 3) THEN
-              k = ktop;
-            ELSE
-              k = kdetr(inn);
-            ENDIF
-            ! *********** Amisk NO PLUME MIXING
-            IF (k < kms) THEN
-              Rsource = 0.0 
-              DO kk = ktop+1,kms
-                Rsource  = Rsource + tracerpp(kk,l,itr) * Qpss(kk,inn)
-              ENDDO  
-              Rsource = Rsource - tracerpp(k,l,itr) * Qpss(k,inn)
-              qdenom = SUM(Qpss(ktop+1:kms,inn)) - Qpss(k,inn)
-              IF (ABS(Qpss(k,inn)) > 1.0E-12) THEN
-                IF (ABS(qdenom) > 1.0E-12) THEN
-                  Rsource = Rsource / qdenom + trpss(nn,itr)*dy/dfL(nn)/Qpss(k,inn)
+            if (itr .ne. LDO) then
+              Rpss(:,inn,itr) = tracerpp(:,l,itr)
+            else
+              Rpss(:,inn,itr) = tracerpp(:,l,itr) / 1000.0    
+              IF (ptype(nn) < 3) THEN
+                k = ktop;
+              ELSE
+                k = kdetr(inn);
+              ENDIF
+              ! *********** Amisk NO PLUME MIXING
+              IF (k < kms) THEN
+                Rsource = 0.0 
+                DO kk = ktop+1,kms
+                  Rsource  = Rsource + (tracerpp(kk,l,itr) / 1000.0) * Qpss(kk,inn)
+                ENDDO  
+                Rsource = Rsource - (tracerpp(k,l,itr) / 1000.0) * Qpss(k,inn)
+                qdenom = SUM(Qpss(ktop+1:kms,inn)) - Qpss(k,inn)
+                IF (ABS(Qpss(k,inn)) > 1.0E-12) THEN
+                  IF (ABS(qdenom) > 1.0E-12) THEN
+                    Rsource = Rsource / qdenom + trpss(nn,itr)*dy/dfL(nn)/Qpss(k,inn)
+                  ELSE
+                    Rsource = tracerpp(k,l,itr) / 1000.0
+                  ENDIF
                 ELSE
-                  Rsource = tracerpp(k,l,itr)
+                  Rsource = tracerpp(k,l,itr) / 1000.0
                 ENDIF
               ELSE
-                Rsource = tracerpp(k,l,itr)
+                IF (ABS(Qpss(k,inn)) > 1.0E-12) THEN
+                  Rsource = trpss(nn,itr)*dy/dfL(nn)/Qpss(k,inn)
+                ELSE
+                  Rsource = tracerpp(k,l,itr) / 1000.0
+                ENDIF
               ENDIF
-            ELSE
-              IF (ABS(Qpss(k,inn)) > 1.0E-12) THEN
-                Rsource = trpss(nn,itr)*dy/dfL(nn)/Qpss(k,inn)
-              ELSE
-                Rsource = tracerpp(k,l,itr)
-              ENDIF
-            ENDIF
-            Rpss(k,inn,itr) = Rsource ! Rpss conection plume <-> 3D
+              Rpss(k,inn,itr) = Rsource ! Rpss conection plume <-> 3D
+            end if
             ! *********** Amisk NO PLUME MIXING
             !DO kk  = k1,kms
             !   Qpss(kk,inn) = 0.0
