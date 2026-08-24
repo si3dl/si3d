@@ -4304,14 +4304,14 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
             IF (iodev(inn) .NE. nn) CYCLE 
           
             ! ... Define i,j,l indexes
-            i = ipss(inn); 
-            j = jpss(inn); 
-            l = ij2l(i,j);
+            i = ipss(inn)
+            j = jpss(inn)
+            l = ij2l(i,j)
 
             ! ... Define k- indexes
-            k1s = k1z(l) ;
-            kms = kmz(l) ;
-            nwl = kms-k1s+1;
+            k1s = k1z(l)
+            kms = kmz(l)
+            nwl = kms-k1s+1
                                         
             ! ... Define ambient temperatures
             Tamb(k1s:kms) = salpp(k1s:kms,l)
@@ -4789,13 +4789,12 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
             if (itr .ne. LDO) then
               Rpss(:,inn,itr) = tracerpp(:,l,itr)
             else
-              Rpss(:,inn,itr) = tracerpp(:,l,itr) / 1000.0    
+              Rpss(:,inn,itr) = tracerpp(:,l,itr)    
               IF (ptype(nn) < 3) THEN
                 k = ktop;
               ELSE
                 k = kdetr(inn);
               ENDIF
-              ! *********** Amisk NO PLUME MIXING
               IF (k < kms) THEN
                 Rsource = 0.0 
                 DO kk = ktop+1,kms
@@ -4819,17 +4818,8 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
                   Rsource = tracerpp(k,l,itr) / 1000.0
                 ENDIF
               ENDIF
-              Rpss(k,inn,itr) = Rsource ! Rpss conection plume <-> 3D
+              Rpss(k,inn,itr) = Rsource * 1000.0! Rpss conection plume <-> 3D
             end if
-            ! *********** Amisk NO PLUME MIXING
-            !DO kk  = k1,kms
-            !   Qpss(kk,inn) = 0.0
-            !ENDDO
-            !Qpss(k-1,inn)= -0.1
-            !Qpss(k  ,inn)=  0.1
-            !Tpss(k  ,inn)= salpp(k,l)
-            !Rpss(k,inn,itr)= Qpss(k,inn)*tracerpp(k,l,itr)+trpss(nn,itr)*dy/dfL(nn)/Qpss(k,inn)
-            ! *********** Amisk NO PLUME MIXING
           ENDDO
         ENDIF
       ENDDO
