@@ -34,7 +34,7 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
   REAL(8), DIMENSION (1:km1) :: lwdi, lwdo                 ! Radius of plume
   LOGICAL, SAVE :: DiffON
 
-  ! ... Return if no points sources/sinks are specified
+    ! ... Return if no points sources/sinks are specified
   IF (iopss <= 0) RETURN
 
   ! ... Define Qpss, Tpss, & Rpss for columns in each device
@@ -238,25 +238,25 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
             zamb(1    ) = -zamb(k1s)
 
             ! ... Inputs for plume model
-            dfLgth  = real(dfL(nn),8)         ;       ! Length of diffuser
-            rjulday = doy             ;       ! Julian day (arbitrary)
-            wselev  = 0.0000          ;       ! Elevation of free surface
-            ksrc    = kms-1           ;       ! Layer No. where diffuser is located
-            dfelev  = -zamb(ksrc)     ;       ! Elevation of diffuser
-            hcell   = real(ddz,8)             ;       ! Pressumed constant - thickess of cells
-            qwd     = 0.0E0           ;       ! Initialize qwd
-            bwd     = 0.0E0                   ! Initialize perimeter (FJRplume)
-            bwdi    = 0.0E0           ! Initialize perimeter (JCT)
-            bwdo    = 0.0E0           ! Initialize perimeter (JCT)
-            lwdi    = 0.0E0           ! Initialize perimeter (JCT)
-            lwdo    = 0.0E0           ! Initialize perimeter (JCT) 
-            qscfm   = real(flpss(nn),8)       ;       ! Air flow rate
-            frconot = 1.00            ;       ! Fraction of O2 in air (not used?)
-            lambnot = lambdanot(nn)   ;       ! Half-width
-            !linot   = lnot(nn)        ;       ! Diffuser length
-            linot   = dfLgth        ;       ! Diffuser length
+            dfLgth  = real(dfL(nn),8)      ! Length of diffuser
+            rjulday = doy                  ! Julian day (arbitrary)
+            wselev  = 0.0000               ! Elevation of free surface
+            ksrc    = kms-1                ! Layer No. where diffuser is located
+            dfelev  = -zamb(ksrc)          ! Elevation of diffuser
+            hcell   = real(ddz,8)          ! Pressumed constant - thickess of cells
+            qwd     = 0.0E0                ! Initialize qwd
+            bwd     = 0.0E0                ! Initialize perimeter (FJRplume)
+            bwdi    = 0.0E0                ! Initialize perimeter (JCT)
+            bwdo    = 0.0E0                ! Initialize perimeter (JCT)
+            lwdi    = 0.0E0                ! Initialize perimeter (JCT)
+            lwdo    = 0.0E0                ! Initialize perimeter (JCT) 
+            qscfm   = real(flpss(nn),8)    ! Air flow rate
+            frconot = 1.00                 ! Fraction of O2 in air (not used?)
+            lambnot = lambdanot(nn)        ! Half-width
+            !linot   = lnot(nn)            ! Diffuser length
+            linot   = dfLgth               ! Diffuser length
             ! PRINT*,'linot ',linot
-            diamm   = diammb(nn)      ;       ! Initial bubble diameter
+            diamm   = diammb(nn)           ! Initial bubble diameter
             alphaii  = alphai(nn)          ! Entrainment coefficient inner plume (-)
             alphaoo  = alphao(nn)          ! Entrainment coefficient outer plume (-)
             alphaaa  = alphaa(nn)          ! Entrainment coefficient from ambient (-)
@@ -590,27 +590,24 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
                 !    Qpss(kdetr(inn),inn) = -SUM(Qpss(ktop+1:ksrc,inn)) + Qpss(kdetr(inn),inn) ! JCT_2017
 
               ELSEIF (ptype(nn) ==4 .OR. ptype(nn)==6) THEN  ! detrainment at equilibrium depth JCT_2020
-                ! PRINT*, 'flag_plume7'
-                Tsource = 0.0 ! FJRPlumes
-                DO kk = ktop+1,kms
-                  Tsource = Tsource + salpp(kk,l)*Qpss(kk,inn)
-                ENDDO
-                sumQpss = SUM(Qpss(ktop+1:kms,inn))
+                ! Tsource = 0.0 ! FJRPlumes
+                rho_source = 0.0
+                sumQpss = SUM(Qpss(ktop+1:ksrc,inn))
                 IF (ABS(sumQpss) > 1.0E-12) THEN
-                  Tsource = Tsource / sumQpss
+                  DO kk = ktop+1,ksrc
+                    ! Tsource = Tsource + salpp(kk,l)*Qpss(kk,inn)
+                    rho_source = rho_source + Qpss(kk, inn) * densty_s(real(salpp(kk, l)), 0.00004, real(zamb(kk)))
+                  ENDDO
+                  ! Tsource = Tsource / sumQpss
+                  rho_source = rho_source / sumQpss
                 ELSE
-                  Tsource = salpp(ktop,l)
+                  ! Tsource = salpp(ktop,l)
+                  rho_source = densty_s(real(salpp(ktop, l)), 0.00004, real(zamb(ktop)))
                 END IF
                 FLAG = 0
-                kdetr(inn) = MAX(ktop, MIN(kms, kint-1)) ! fallback if no equilibrium depth is found
+                kdetr(inn) = MAX(ktop, MIN(ksrc, kint-1)) ! fallback if no equilibrium depth is found
                 DO kk=1,kms
-                  if (zlevel(kk) == -100) then
-                    depth = 0.5 * hp(kk,l)
-                  else
-                    depth = zlevel(kk) + 0.5 * hp(kk,l)
-                  end if
-                  rho_amb = densty_s(real(Tamb(kk)), 0.00004, depth)
-                  rho_source = densty_s(real(Tsource), 0.00004, depth)
+                  rho_amb = densty_s(real(Tamb(kk)), 0.00004, real(zamb(kk)))
                   IF ((rho_amb .ge. rho_source) .AND. (FLAG .EQ. 0)) THEN
                     kdetr(inn) = kk ! JCT_2020
                     FLAG = 1
@@ -690,13 +687,15 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
           k = kdetr(inn);
         ENDIF
 
+        print*, 'Intrusion layer', k
+
         Tsource = 0.0 ! FJRPlumes
         IF (k > k1s) THEN  
-          DO kk = ktop+1,kms
+          DO kk = ktop+1,ksrc
             Tsource  = Tsource + salpp(kk,l)*Qpss(kk,inn)
           ENDDO
           Tsource  = Tsource - salpp(k,l) * Qpss(k,inn)
-          qdenom  = SUM(Qpss(ktop+1:kms,inn)) - Qpss(k,inn)
+          qdenom  = SUM(Qpss(ktop+1:ksrc,inn)) - Qpss(k,inn)
           IF (ABS(qdenom) > 1.0E-12) THEN
             Tsource  = Tsource / qdenom
           ELSE
@@ -710,10 +709,9 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
         ! Rpss(:, inn, :) = 0.0
         IF (ntr > 0) THEN
           DO itr = 1, ntr
-            ! if (itr .ne. LDO) then
-              ! print*, 'SV - itr != LDO, Rsource and Rpss not calculated for this tracer'
-              ! Rpss(:, inn, itr) = tracerpp(:, l, itr)
-            ! else
+            if (itr .ne. LDO) then
+              Rpss(:, inn, itr) = tracerpp(:, l, itr)
+            else
               Rpss(:,inn,itr) = tracerpp(:,l,itr) / 1000.0 ! Concentrations are in mg/m3 and need to be g/m3 for plume model
               IF (ptype(nn) < 3) THEN
                 k = ktop;
@@ -723,21 +721,18 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
               ! *********** Amisk NO PLUME MIXING
               Rsource = 0.0 
               IF (k > k1s) THEN  
-                DO kk = ktop+1,kms
-                  Rsource  = Rsource + (tracerpp(kk,l,itr) / 1000.0) * Qpss(kk,inn)
-                ENDDO
-                Rsource = Rsource - (tracerpp(k,l,itr) / 1000.0) * Qpss(k,inn)
-                qdenom = SUM(Qpss(ktop+1:kms,inn)) - Qpss(k,inn)
-                IF (ABS(Qpss(k,inn)) > 1.0E-12) THEN
-                  IF (ABS(qdenom) > 1.0E-12) THEN   
-                    Rsource = Rsource / qdenom + trpss(nn,itr) * dy / dfL(nn) / Qpss(k,inn)
-                  ELSE
-                    Rsource = tracerpp(k,l,itr) / 1000.0
-                  ENDIF
+                IF ((ABS(Qpss(k,inn)) > 1.0E-12) .and. ((ABS(qdenom) > 1.0E-12))) THEN
+                  DO kk = ktop+1,ksrc
+                    Rsource  = Rsource + (tracerpp(kk,l,itr) / 1000.0) * Qpss(kk,inn)
+                  ENDDO  
+                  Rsource = Rsource - (tracerpp(k,l,itr) / 1000.0) * Qpss(k,inn)
+                  qdenom = SUM(Qpss(ktop+1:ksrc,inn)) - Qpss(k,inn)  
+                  Rsource = Rsource / qdenom + trpss(nn,itr) * dy / dfL(nn) / Qpss(k,inn)
                 ELSE
                   Rsource = tracerpp(k,l,itr) / 1000.0
                 ENDIF
               ELSE
+                print*,'I HAPPEN TO ACTUALLY GET HERE'
                 IF (ABS(Qpss(k,inn)) > 1.0E-12) THEN
                   Rsource = trpss(nn,itr) * dy / dfL(nn) / Qpss(k,inn)
                 ELSE
@@ -745,7 +740,7 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
                 ENDIF
               ENDIF
               Rpss(k,inn,itr) = Rsource * 1000.0! is in g/m3
-            ! end if
+            end if
             ! print*, 'Rsource and Rpss updated for tracer', itr, 'LDO', LDO, 'device ', inn
             ! print*, 'k', k, 'ktop', ktop, 'kdetr', kdetr(inn), 'ktop+1', ktop+1, 'kms', kms
             ! print*, 'Rpss', Rpss(k, inn, itr)

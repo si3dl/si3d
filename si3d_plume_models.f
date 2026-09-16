@@ -5252,7 +5252,7 @@ C
 
       INXLOC   =INPLUME(:,1)
       INBI     =INPLUME(:,2)
-	  INLI     =INPLUME(:,9) ! JCT_RECT_2022
+	INLI     =INPLUME(:,9) ! JCT_RECT_2022
       INQW     =INPLUME(:,3)
       INMOMENT =INPLUME(:,4)
       INTEMP   =INPLUME(:,5)

@@ -16979,8 +16979,8 @@ c                         = 1  if matrix is nonsymmetric
 c
 c ... specifications for parameters
 c
-      dimension coef(ndim,2)
-      integer   jcoef(ndim,2)
+      dimension coef(ndim,maxnzz)
+      integer   jcoef(ndim,maxnzz)
 c
       n = nn
       maxnz = maxnzz
@@ -32054,7 +32054,7 @@ c       wksp      workspace vector of length n  (keygs = 1 only)
 c
 c ... specifications for parameters
 c
-      dimension a(ndimr,3), ja(ndimi,3), x(1), y(1), wksp(1)
+      dimension a(ndimr,mm), ja(ndimi,mm), x(nn), y(nn), wksp(nn)
 c
 c *** begin -- package common
 c

@@ -488,7 +488,9 @@ SUBROUTINE AllocateSpace2
 
    ALLOCATE ( l2i(lm1), l2j(lm1), &
    &          lEC(lm1), lWC(lm1), &
-   &          lNC(lm1), lSC(lm1), STAT=istat )
+   &          lNC(lm1), lSC(lm1), &
+   &          lNEC(lm1), lNWC(lm1), &
+   &          lSEC(lm1), lSWC(lm1), STAT=istat)
    IF (istat /= 0) CALL allocate_error ( istat, 11 )
 
    ALLOCATE ( lh(num_threads), lh_aux(num_threads), &
@@ -791,12 +793,12 @@ SUBROUTINE bathy
     DO j = 1, jm1;
       c = c + 1
       IF(mask2d(i,j)) THEN
-      l = l + 1
-      l2i (l  ) = i ; ! Goes from ipl to index i in the i,j plane
-      l2j (l  ) = j ; ! Goes from ipl to index j in the i,j plane
-      ij2l(i,j) = l ; ! Goes from i,j to the ipl index in the ipl line
-      c2l(l)=c
-      l2c(c)=l
+        l = l + 1
+        l2i (l  ) = i ; ! Goes from ipl to index i in the i,j plane
+        l2j (l  ) = j ; ! Goes from ipl to index j in the i,j plane
+        ij2l(i,j) = l ; ! Goes from i,j to the ipl index in the ipl line
+        c2l(l)=c
+        l2c(c)=l
       END IF
     END DO
   END DO
@@ -811,8 +813,13 @@ SUBROUTINE bathy
       lWC(l) = ij2l(i-1,j); ! Defines water column West  of l
       lNC(l) = ij2l(i,j+1); ! Defines water column North of l
       lSC(l) = ij2l(i,j-1); ! Defines water column South of l
+      lNEC(l) = ij2l(i + 1, j + 1) ! Defines water column northeast of l
+      lNWC(l) = ij2l(i - 1, j + 1) ! Defines water column northwest of l
+      lSEC(l) = ij2l(i + 1, j - 1) ! Defines water column southeast of l
+      lSWC(l) = ij2l(i - 1, j - 1) ! Defines water column southwest of l
     END DO
-  END DO;
+  END DO
+
   !.....Allocate space for arrays.....
   CALL AllocateSpace
 
@@ -4285,12 +4292,14 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
 
       ! ... Update forcing variables before deciding if diffuser is OFF
       CALL PointSourceSinkForcing (nn,thrs)
-      IF (ABS(flpss(nn)) < qthrs(nn)) THEN  ! Diffuser OFF
+      IF (ABS(flpss(nn)) .le. qthrs(nn)) THEN  ! Diffuser OFF
         DiffON = .FALSE.  
         DO innH = 1, iopssH(omp_get_thread_num ( )+1)
           inn = ioph2iop(innH,omp_get_thread_num ( )+1)  
           IF (iodev(inn) .NE. nn) CYCLE 
-          Qpss (inn,:) = 0.0E0
+          Qpss(:, inn) = 0.0
+          Tpss(:, inn) = 0.0
+          Rpss(:, inn, :) = 0.0
 		      kdetr(inn  ) = km1
         ENDDO
       ELSE                                  ! Update diffuser FLOWS          
@@ -4345,7 +4354,7 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
             dfLgth  = real(dfL(nn),8)      ! Length of diffuser
             rjulday = doy                  ! Julian day (arbitrary) 
             wselev  = 0.0000               ! Elevation of free surface
-            ksrc    = kms-1                ! Layer No. where diffuser is located
+            ksrc    = kms-2                ! Layer No. where diffuser is located
             dfelev  = -zamb(ksrc)          ! Elevation of diffuser  
             hcell   = real(ddz,8)          ! Pressumed constant - thickess of cells
             qwd     = 0.0E0                ! Initialize qwd
@@ -4517,14 +4526,13 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
 
               ! ... Run plume model 
               NITERMAX = 10
-              NITERPLUME = 0
+              NITERPLUME = 1
               ERRORDPA = 100.0
               innerplume = 0
               outerplume = 0
               toler = 10         ! in
 
               DO WHILE (NITERPLUME .LT. 3)
-                NITERPLUME = NITERPLUME+1
 
                 !... Run plume model
                 CALL INNER_PLUME_RECT(iyr,rjulday,wselev,dfelev,kms,  &
@@ -4650,6 +4658,7 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
                 !   WRITE(UNIT = 55, FMT = '(3F12.6)') zamb(k),qwdo(k),bwdo(k)
                 !   CLOSE(UNIT = 55)
                 ! ENDDO
+                NITERPLUME = NITERPLUME+1
               ENDDO
 
               ! ... Define flow at entrainment cells
@@ -4703,9 +4712,9 @@ SUBROUTINE PointSourceSinkSolve(n,istep,thrs)
                     FLAG = 1
                   ENDIF
                 ENDDO
-                IF (FLAG .EQ. 0) THEN
-                  PRINT*, 'WARNING: no equilibrium depth found for outer plume, fallback kdetr=', kdetr(inn), 'ktop=', ktop, 'kint=', kint
-                ENDIF
+                ! IF (FLAG .EQ. 0) THEN
+                !   PRINT*, 'WARNING: no equilibrium depth found for outer plume, fallback kdetr=', kdetr(inn), 'ktop=', ktop, 'kint=', kint
+                ! ENDIF
               ENDIF
 
               !! ... Define flow at entrainment cells .-DEFINES ABOVE ALREADY FJR 2021 01 24
@@ -4884,9 +4893,9 @@ SUBROUTINE PointSourceSinkInput
    DO nn = 1, npssdev
 
       ! ... Construct file name (beware that nopen cannot be > 99)
-      pssfile = "pss0 .txt"
-      IF ( nn < 10  ) WRITE ( pssfile(5:5), FMT='(I1)' ) nn
-      IF ( nn >= 10 ) WRITE ( pssfile(4:5), FMT='(I2)' ) nn
+      pssfile = "si3d_pss0 .txt"
+      IF ( nn < 10  ) WRITE ( pssfile(10:10), FMT='(I1)' ) nn
+      IF ( nn >= 10 ) WRITE ( pssfile(9:10), FMT='(I2)' ) nn
 
       ! ... Open IO unit
       OPEN (UNIT=i52, FILE=pssfile, STATUS="old", IOSTAT=ios)
@@ -4919,7 +4928,6 @@ SUBROUTINE PointSourceSinkInput
       line = ADJUSTL(line)
       READ (line, '(I7)', IOSTAT=ios) nptspss
       IF (ios /= 0) CALL input_error ( ios, 48 )
-      PRINT*, "Nº datos pss.txt : ",nptspss
       
       ! Allocate space for the array of data first time in loop
       IF ( nn == 1) THEN
@@ -5065,26 +5073,19 @@ SUBROUTINE PointSourceSinkInput
 
         ! Read how water velocity at detrainment cell is calculated
         READ (UNIT=i52, FMT='(A)', IOSTAT=ios) commentline
-        PRINT*,'flag3.1.1', nn, idetr(nn)
 
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) idetr(nn)
-        PRINT*,'flag3.1.2', nn, idetr(nn), ios
         IF (ios /= 0) CALL input_error ( ios, 51 ) ! JCT_error
-        PRINT*,'flag3.2'
 
         ! Read half diffuser length (m) JCT_2020
-        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) lambdanot(nn)
-					    PRINT*,'flag3.3'   
+        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) lambdanot(nn)  
 
-        IF (ios /= 0) CALL input_error ( ios, 51 )
-			    PRINT*,'flag3.4'   
+        IF (ios /= 0) CALL input_error ( ios, 51 )  
 
 		    ! Read half diffuser length (m) JCT_2020_RECT
-        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) lnot(nn)
-					    PRINT*,'flag3.5'   
+        READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) lnot(nn) 
 
         IF (ios /= 0) CALL input_error ( ios, 51 )
-	       PRINT*,'flag4'
 
         ! Read initial bubble diameter (mm)
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) diammb(nn)
@@ -5105,7 +5106,7 @@ SUBROUTINE PointSourceSinkInput
         ! Read initial bubble diameter (mm) JCT_2020
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) lambda(nn)
         IF (ios /= 0) CALL input_error ( ios, 51 )
-        PRINT*,'flag5'
+
         ! Read initial bubble diameter (mm) JCT_2020
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) froudei(nn)
         IF (ios /= 0) CALL input_error ( ios, 51 )
@@ -5125,27 +5126,22 @@ SUBROUTINE PointSourceSinkInput
         ! Read atmospheric pressure (Pascals)
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) patm
         IF (ios /= 0) CALL input_error ( ios, 51 )
-          PRINT*,'flag6'
 
         ! Read constant sediment oxygen demand
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) k4sod
           !unidades: g/m2/day to g/m2/s
-          PRINT*, 'k4sod', k4sod ! JCT
           k4sod = k4sod/86400.00
 
         ! Read constant water oxygen demand --- Added ACC 2026
         IF (ios /= 0) CALL input_error ( ios, 51 )
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) k4wod
           !unidades: g/m2/day to g/m2/s
-          PRINT*, 'k4wod', k4wod ! JCT
           k4wod = k4wod/86400.00
         IF (ios /= 0) CALL input_error ( ios, 51 )
 
         ! Read frequency of update 
-		        PRINT*,'flag7'
         READ (UNIT=i52, FMT='(10X,G11.2)', IOSTAT=ios) pdt(nn)
         IF (ios /= 0) CALL input_error ( ios, 51 )
-                PRINT*,'flag8'
         ! Read data array
 
         READ (UNIT=i52, FMT='(A)', IOSTAT=ios) commentline
@@ -5154,7 +5150,6 @@ SUBROUTINE PointSourceSinkInput
                 (varspss(nn,i,j), i=1,ntr+2)
            IF (ios /= 0) CALL input_error ( ios, 51 )
         END DO
-        PRINT*,'flag9'
         ! ... Assign values to forcing variables 
         !     (ntr should be >= 1 otherwise the model issues an error message)
         flpss (nn) = varspss(nn,1,1) ! Flow rate 

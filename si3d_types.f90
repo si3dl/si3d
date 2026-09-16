@@ -203,7 +203,10 @@
    INTEGER, ALLOCATABLE, DIMENSION(:,:) :: ij2l
    INTEGER, ALLOCATABLE, DIMENSION(:  ) :: l2i, l2j, &
                                            lEC, lWC, &
-                                           lNC, lSC,c2l,l2c
+                                           lNC, lSC, &
+                                           lNEC, lNWC, &
+                                           lSEC, lSWC, &
+                                           c2l,l2c
 
    !         ----- Arrays & vars. for 2Eq. Turb. models ----------------------------
    INTEGER, PARAMETER :: real_G1 = SELECTED_REAL_KIND(P=15,R=80)

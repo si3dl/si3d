@@ -1,3 +1,52 @@
+sources := \
+	si3d_nspcg.f \
+	si3d_plume_models.f \
+	si3d_types.f90 \
+	si3d_stwave.f90 \
+	si3d_sed.f90 \
+	si3d_Hg.f90 \
+	si3d_wq.f90 \
+	si3d_ecomod.f90 \
+	si3d_utils.f90 \
+	si3d_boundaryconditions.f90 \
+	si3d_mixing.f90 \
+	si3d_procedures.f90 \
+	si3d.f90
+
+compiler ?= ifx
+mode ?= release
+
+flags := -qopenmp -qopenmp-link=static
+objects := $(addsuffix .o,$(basename $(sources)))
+
+.PHONY: si3d clean
+
+ifeq ($(mode),debug)
+flags += -O0 -g -traceback -check bounds
+program := si3d_debug
+else ifeq ($(mode),release)
+flags += -O2
+program := si3d
+else
+$(error Unsupported mode "$(mode)")
+endif
+
+ifeq ($(compiler),ifx)
+flags += -static-intel
+else ifneq ($(compiler),ifort)
+$(error Unsupported compiler "$(compiler)"; use ifx or ifort)
+endif
+
+si3d:
+	$(compiler) $(flags) -module . $(sources) -c
+	$(compiler) $(flags) -o $(program) $(objects)
+	@$(MAKE) --no-print-directory clean
+clean:
+	rm -f *.o *.mod *.smod
+
+
+
+# OLD RECIPES
 omp_ifort_old:
 	ifort -qopenmp -qopenmp-link=static -module $(MODDIR) -I$(INCDIR) nspcg.f PlumeModels.f si3d_types.f90 si3d_stwave.f90 si3d_sed.f90 si3d_Hg.f90 si3d_wq.f90 si3d_ecomod.f90 si3d_utils.f90 si3d_boundaryconditions.f90 si3d_mixing.f90 si3d_procedures.f90 si3d.f90 -c
 	ifort -qopenmp -qopenmp-link=static -o psi3d *.o -module $(MODDIR) -I$(INCDIR) -L$(LIBDIR) -lturbulence_prod -lutil_prod
@@ -11,13 +60,13 @@ sec:
 	ifort -qopenmp -module $(MODDIR) -I/$(INCDIR) nspcg.f PlumeModels.f si3d_types.f90 si3d_ecomod.f90 si3d_boundaryconditions.f90 si3d_mixing.f90 si3d_procedures.f90 si3d.f90 -c -O2
 	ifort -qopenmp -o psi3d *.o -module $(MODDIR) -I/$(INCDIR) -L/$(LIBDIR) -lturbulence_prod -lutil_prod -O2
 old:
-	ifort -I/opt/mpich2/gnu/include -I/opt/mpich2/gnu/include -L/opt/mpich2/gnu/lib -L/opt/mpich2/gnu/lib -lmpichf90 -Wl,-rpath -Wl,/opt/mpich2/gnu/lib -lmpichf90 -lmpich -lopa -lpthread -lrt -luuid -lrt -o psi3d si3d_types.f90 si3d_utils.f90 si3d_mixing.f90 si3d_boundaryconditions.f90 si3d_procedures.f90 nspcg.f PlumeModels.f si3d.f90 -lm -qopenmp -O2
+	ifort -I/opt/mpich2/gnu/include -I/opt/mpich2/gnu/include -L/opt/mpich2/gnu/lib -L/opt/mpich2/gnu/lib -lmpichf90 -Wl,-rpath -Wl,/opt/mpich2/gnu/lib -lmpichf90 -lmpich -lopa -lpthread -lrt -luuid -lrt -o psi3d si3d_types.f90 si3d_utils.f90 si3d_boundaryconditions.f90 si3d_mixing.f90 si3d_procedures.f90 nspcg.f PlumeModels.f si3d.f90 -lm -qopenmp -O2
 mpi:
-	mpif90 -qopenmp -qopenmp-link=static si3d_types.f90 si3d_utils.f90 si3d_mixing.f90 si3d_boundaryconditions.f90 si3d_procedures.f90 nspcg.f PlumeModels.f si3d.f90 -g -O2
+	mpif90 -qopenmp -qopenmp-link=static si3d_types.f90 si3d_utils.f90 si3d_ecomod.f90 si3d_boundaryconditions.f90 si3d_mixing.f90 si3d_procedures.f90 nspcg.f PlumeModels.f si3d.f90 -g -O2
 mmm:
-	mpif90-vt -c -vt:f90 ifort -auto -qopenmp -qopenmp-link=static si3d_types.f90 si3d_utils.f90 si3d_mixing.f90 si3d_boundaryconditions.f90 si3d_procedures.f90 nspcg.f PlumeModels.f si3d.f90 -g -O2
+	mpif90-vt -c -vt:f90 ifort -auto -qopenmp -qopenmp-link=static si3d_types.f90 si3d_utils.f90 si3d_ecomod.f90 si3d_boundaryconditions.f90 si3d_mixing.f90 si3d_procedures.f90 nspcg.f PlumeModels.f si3d.f90 -g -O2
 mpich:
-	/opt/mpich2-1.2/bin/mpif90 -qopenmp -qopenmp-link=static si3d_types.f90 si3d_utils.f90 si3d_mixing.f90 si3d_boundaryconditions.f90 si3d_procedures.f90 nspcg.f PlumeModels.f si3d.f90 -g -O2
+	/opt/mpich2-1.2/bin/mpif90 -qopenmp -qopenmp-link=static si3d_types.f90 si3d_utils.f90 si3d_ecomod.f90 si3d_boundaryconditions.f90 si3d_mixing.f90 si3d_procedures.f90 nspcg.f PlumeModels.f si3d.f90 -g -O2
 omp_ifx:
 	ifx -qopenmp -qopenmp-link=static -static-intel -module $(MODDIR) nspcg.f PlumeModels.f si3d_types.f90 si3d_stwave.f90 si3d_sed.f90 si3d_Hg.f90 si3d_wq.f90 si3d_ecomod.f90 si3d_utils.f90 si3d_boundaryconditions.f90 si3d_mixing.f90 si3d_procedures.f90 si3d.f90 -c
 	ifx -qopenmp -qopenmp-link=static -static-intel -o psi3d *.o -module $(MODDIR)

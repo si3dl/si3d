@@ -1,7 +1,6 @@
-# pSi3D
+# Si3D
 
-
-pSi3D is a semi-implicit 3D hydrodynamic model written in Fortran 90 and parallelized for computation across CPU threads using the OpenMP directive framework. For more technical details regarding governing equations and numerical schemes, see [this paper](https://pubs.usgs.gov/of/2006/1004/pdf/ofr2006-1004.pdf).
+Si3D is a semi-implicit 3D hydrodynamic model written in Fortran 90 and parallelized for computation across CPU threads using the OpenMP directive framework. For more technical details regarding governing equations and numerical schemes, see [this paper](https://pubs.usgs.gov/of/2006/1004/pdf/ofr2006-1004.pdf).
 
 ## Installation
 
@@ -10,23 +9,38 @@ Compilation of the source code requires an environment configured with the [Inte
 To download the source code, clone the repository:
 
 ```
-git clone https://github.com/SI3DL/psi3d.git
-cd psi3d
+git clone https://github.com/SI3DL/si3d.git
+cd si3d
 ```
 
-Then, to compile the source code into a binary file (`psi3d`), simply run
+## Compilation
 
-```
-bash ./Compiler.sh
+Run these commands from the source directory after loading the Intel
+compiler environment.
+
+```bash
+make compiler=ifx mode=release
+make compiler=ifort mode=debug
 ```
 
-This should create a `psi3d` binary in the working directory (Note: you may need to `chmod` for execution permissions).
+Defaults: `compiler=ifx`, `mode=release`.
+
+Debug mode enables bounds checking and source-line tracebacks.
+Executables are created in the source directory.
+
+Remove generated object and module files:
+
+```bash
+make clean
+```
+
+This should create a `si3d` or `si3d_debug` binary in the working directory (Note: you may need to `chmod` for execution permissions).
 
 ## Quickstart
 
-The pSi3D repository comes with template input files for setting up a model (`./SampleFiles/`) as well as an sample model run (`./sampleRuns/windDrivenFlow`). Details for this sample model are included as a `readme.txt` file in its subdirectory.
+The Si3D repository comes with template input files for setting up a model (`./SampleFiles/`) as well as an sample model run (`./sampleRuns/windDrivenFlow`). Details for this sample model are included as a `readme.txt` file in its subdirectory.
 
-To run the sample model, simply copy the `psi3d` binary to the sample run directory and execute it:
+To run the sample model, simply copy the `si3d` binary to the sample run directory and execute it:
 
 ```
 cp ./psi3d ./sampleRuns/windDrivenFlow/
@@ -42,8 +56,8 @@ For more details regarding how to setup models, prepare input files, and analyze
 
 ## Troubleshooting
 
-Users are welcome to report any issues/bugs on the GitHub [Issues page](https://github.com/SI3DL/psi3d/issues).
+Users are welcome to report any issues/bugs on the GitHub [Issues page](https://github.com/SI3DL/si3d/issues).
 
 ## Contributing
 
-Contributions to pSi3D are welcome. Please reach out to the current developers for contribution guidelines.
+Contributions to Si3D are welcome. Please reach out to the current developers for contribution guidelines.
