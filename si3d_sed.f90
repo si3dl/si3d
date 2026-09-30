@@ -41,6 +41,8 @@ SUBROUTINE sourceSS(kwq,lwq)
   real, dimension(sedNumber) :: burial_flux
   real                       :: cb
   real :: c_sed
+  real :: bed_frac(sedNumber)
+  real(kind=8) :: settling_local(sedNumber)
 
   resus_flux(:) = 0.0
   resus_sed(:) = 0.0
@@ -53,17 +55,17 @@ SUBROUTINE sourceSS(kwq,lwq)
     w_dens = (rhop(kwq, lwq) + 1000)
     ! Estimate bottom shear stress
     call tauBottom(taub, ustarb, kwq, lwq)
-    call totalMass(sed_frac, kwq, lwq)
+    call totalMass(bed_frac, kwq, lwq)
 
     do i = 1, sedNumber
       ! Estimate properties of sediment for a given water density at bottom cell
       cb = tracerpp(kwq,lwq,LSS1 + i - 1) ! kg/m3
       c_sed = tracerpp(kwq + 1, lwq, LSS1 + i - 1) ! kg/m3
 
-      call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
+      call get_sed_prop(settling_local(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
       ! Estimate erosion flux
       ! Estimate erosion flux fluff layer
-      if ((sed_frac(i) .le. 0.0) .or. (c_sed .le. 0.0)) then
+      if ((bed_frac(i) .le. 0.0) .or. (c_sed .le. 0.0)) then
         flux_fluff(i) = 0.0
       else
         if ((l2i(lwq) .ge. 185) .and. (l2j(lwq) .ge. 65)) then
@@ -78,11 +80,11 @@ SUBROUTINE sourceSS(kwq,lwq)
       
       if (taub .gt. tauCrt(i)) then
         if (sed_type(i) == 0) then
-          call resuspension_noncohesive(resus_sed(i), ustarb, Rep(i), settling_vel(i), lwq)
-          resus_flux(i) = resus_sed(i) * sed_frac(i) * c_sed
+          call resuspension_noncohesive(resus_sed(i), ustarb, Rep(i), settling_local(i), lwq)
+          resus_flux(i) = resus_sed(i) * bed_frac(i) * c_sed
         else if (sed_type(i) == 1) then
           call resuspension_cohesive(resus_sed(i), taub, tauCrt(i), M_cohesive(i), lwq)
-          resus_flux(i) = resus_sed(i) * sed_frac(i)
+          resus_flux(i) = resus_sed(i) * bed_frac(i)
         end if
       else
         resus_flux(i) = 0.0
@@ -92,13 +94,9 @@ SUBROUTINE sourceSS(kwq,lwq)
       ! Estimate deposition flux
       if (cb .gt. 0.0) then
         if (sed_type(i) == 0) then
-          call deposition_noncohesive(deposition_flux(i), settling_vel(i), tauCrt(i), taub, cb)
+          call deposition_noncohesive(deposition_flux(i), settling_local(i), tauCrt(i), taub, cb, kwq, lwq)
         else if (sed_type(i) == 1) then
-          call deposition_cohesive(deposition_flux(i), settling_vel(i), tauCrt(i), taub, cb, ustarb, sed_dens(i), hp(kwq, lwq), lwq)
-        end if
-        ! To correct deposition flux as it can not remove more sediment than what is in the water layer on top of sediment
-        if (deposition_flux(i) .gt. (cb * hp(kwq, lwq) / dt)) then
-          deposition_flux(i) = cb * hp(kwq, lwq) / dt
+          call deposition_cohesive(deposition_flux(i), settling_local(i), tauCrt(i), taub, cb, ustarb, sed_dens(i), kwq, lwq)
         end if
       else
         deposition_flux(i) = 0.0
@@ -114,30 +112,30 @@ SUBROUTINE sourceSS(kwq,lwq)
 
     ! if ((l2i(lwq) .eq. 185) .and. (l2j(lwq) .eq. 80)) then
     !   print*, '----------------- OA04 SS Model ------------------'
-    !   print*, 'vs =', settling_vel * 86400, 'm/d'
+    !   print*, 'vs =', settling_local * 86400, 'm/d'
     !   print*, 'taub =',taub
     !   print*, 'tauCr =', tauCrt
-    !   print*, 'sed_frac = ', sed_frac
+    !   print*, 'sed_frac = ', bed_frac
     !   print*, 'resuspension_flux = ', resus_flux
     !   print*, 'depo_flux', deposition_flux
     !   print*, 'sed_conc = ', tracerpp(kwq + 1,lwq,LSS1:LSS3)
     ! end if
     ! if ((l2i(lwq) .eq. 83) .and. (l2j(lwq) .eq. 134)) then
     !   print*, '----------------- UA06 SS Model ------------------'
-    !   print*, 'vs =', settling_vel * 86400, 'm/d'
+    !   print*, 'vs =', settling_loca * 86400, 'm/d'
     !   print*, 'taub =',taub
     !   print*, 'tauCr =', tauCrt
-    !   print*, 'sed_frac = ', sed_frac
+    !   print*, 'sed_frac = ', bed_frac
     !   print*, 'resuspension_flux = ', resus_flux
     !   print*, 'depo_flux', deposition_flux
     !   print*, 'sed_conc = ', tracerpp(kwq + 1,lwq,LSS1:LSS3)
     ! end if
     ! if ((l2i(lwq) .eq. 170) .and. (l2j(lwq) .eq. 47)) then
     !   print*, '----------------- LA03 SS Model ------------------'
-    !   print*, 'vs =', settling_vel * 86400, 'm/d'
+    !   print*, 'vs =', settling_local * 86400, 'm/d'
     !   print*, 'taub =',taub
     !   print*, 'tauCr =', tauCrt
-    !   print*, 'sed_frac = ', sed_frac
+    !   print*, 'sed_frac = ', bed_frac
     !   print*, 'resuspension_flux = ', resus_flux
     !   print*, 'depo_flux', deposition_flux
     !   print*, 'sed_conc = ', tracerpp(kwq + 1,lwq,LSS1:LSS3)
@@ -167,7 +165,7 @@ SUBROUTINE totalMass(sed_frc, kwq, lwq)
 !
 ! --------------------------------------------------------------------
   ! Arguments
-  real, intent(inout), dimension(sedNumber) :: sed_frc
+  real, intent(out), dimension(sedNumber) :: sed_frc
   integer, intent(in)                       :: kwq
   integer, intent(in)                       :: lwq
   real , dimension(sedNumber)               :: massSed
@@ -184,7 +182,7 @@ SUBROUTINE totalMass(sed_frc, kwq, lwq)
     if (totalMass_bed .gt. 0.0) then
       sed_frc(i) = massSed(i) / totalMass_bed
     else
-      sed_frc(i) = 1 / sedNumber
+      sed_frc(i) = 1.0 / real(sedNumber)
     end if
   end do
 
@@ -214,6 +212,8 @@ SUBROUTINE resuspension_noncohesive(resus_flux, ustarb, Rep, sett_vel, lwq)
     z_u = 0.586 * ustarb * (Rep ** 1.23) / sett_vel
   else if (Rep .gt. 3.5) then
     z_u = 1 * ustarb * (Rep ** 0.6) / sett_vel
+  else
+    z_u = 0.0
   end if
 
   ! Sediment entrainment coefficient
@@ -260,7 +260,7 @@ SUBROUTINE resuspension_cohesive(resus_flux, taub, tauCrt, M_param, lwq)
 END SUBROUTINE resuspension_cohesive
 
 ! ********************************************************************
-SUBROUTINE deposition_noncohesive(deposition_flux, sett_vel, tauCrt, taub, cb)
+SUBROUTINE deposition_noncohesive(deposition_flux, sett_vel, tauCrt, taub, cb, kwq, lwq)
 ! ********************************************************************
 !
 ! Purpose: To estimate the suspended sediment deposition at the
@@ -272,6 +272,7 @@ SUBROUTINE deposition_noncohesive(deposition_flux, sett_vel, tauCrt, taub, cb)
   real, intent(in) :: taub
   real, intent(in) :: tauCrt
   real, intent(in) :: cb
+  integer, intent(in) :: kwq, lwq
   real, intent(out) :: deposition_flux
 
     if (taub .le. tauCrt) then
@@ -279,12 +280,14 @@ SUBROUTINE deposition_noncohesive(deposition_flux, sett_vel, tauCrt, taub, cb)
     else
       deposition_flux = 0.0
     end if
+    ! To correct deposition flux as it can not remove more sediment than what is in the water layer on top of sediment
+    deposition_flux = min(deposition_flux, max(0.0, cb * hpp(kwq, lwq)) / (twodt * tz))
 
   return
 END SUBROUTINE deposition_noncohesive
 
 ! ********************************************************************
-SUBROUTINE deposition_cohesive(deposition_flux, sett_vel, tauCrt, taub, c_ref, ustar, sed_den, z_ref, lwq)
+SUBROUTINE deposition_cohesive(deposition_flux, sett_vel, tauCrt, taub, c_ref, ustar, sed_den, kwq, lwq)
 ! ********************************************************************
 !
 ! Purpose: To estimate the suspended sediment deposition at the
@@ -298,18 +301,29 @@ SUBROUTINE deposition_cohesive(deposition_flux, sett_vel, tauCrt, taub, c_ref, u
   real, intent(in) :: c_ref
   real, intent(in) :: ustar
   real, intent(in) :: sed_den
-  real, intent(in) :: z_ref
   real, intent(out) :: deposition_flux
-  integer, intent(in) :: lwq
+  integer, intent(in) :: kwq, lwq
 
-  real :: b, zb, cb, c_gel, P
+  real :: b, zb, cb, c_gel, P, z_ref, c_sed
 
-  P = min(3.5, max(2.5, sett_vel / (kappaS * ustar)))
+  deposition_flux = 0.0
+
+  if (ustar .eq. 0.0) then
+    P = 3.5
+  else
+    P = real(min(3.5d0, max(2.5d0, sett_vel / (kappaS * ustar))))
+  end if
+
+  z_ref = hpp(kwq, lwq)
+
   zb = 0.003
   c_gel = 0.04 * sed_den ! [kg/m3] Concentration at which sediment deposition is zero
   cb = min(c_gel, c_ref * (zb / (z_ref)) ** (-P))
 
   deposition_flux = (sett_vel * (max(0.0, (1.0 - cb / c_gel)) ** 2)) * (c_ref) * max(0.0, (1.0 - taub / (0.7 * tauCrt)))
+  ! To correct deposition flux as it can not remove more sediment than what is in the water layer on top of sediment
+  deposition_flux = min(deposition_flux, max(0.0, c_ref * hpp(kwq, lwq)) / (twodt * tz))
+  
   ! deposition_flux = (sett_vel * c_ref) * max(0.0, (1.0 - taub / (0.7 * tauCrt)))
   ! deposition_flux = 0.0
 
@@ -475,6 +489,8 @@ SUBROUTINE settling_velocity(sett_vel, g_ss, submerged_spec_g, Rep, sed_d, ki_vi
   ! real              :: b_5 = 0.000245 
   real(kind=8), intent(out) :: sett_vel         !< (m/s) Settling
 
+  vanRijnFlag = .false.
+
   if ( present(ivanRijn) ) then
     vanRijnFlag = ivanRijn
   end if
@@ -552,8 +568,6 @@ SUBROUTINE tauBottom(taub, ustarb,kwq,lwq)
   integer               :: kms    !< bottom layer
   real                  :: ubott  !< (m/s) vel u at bottom cell
   real                  :: vbott  !< (m/s) vel v at bottom cell
-  real                  :: taubx  !< (Pa) bottom shear stress in x
-  real                  :: tauby  !< (Pa) bottom shear stress in y
   ! real, intent(in)      :: tauwbx !< (Pa) bottom shear stress induced by waves
   ! real, intent(in)      :: tauwby !< (Pa) bottom shear stress induced by waves  
   real, intent(out)     :: taub   !< (Pa) Bottom shear stress
@@ -572,17 +586,14 @@ SUBROUTINE tauBottom(taub, ustarb,kwq,lwq)
     ! ....Compute Currend-Induced Bottom Shear Stress
     ubott = ( uhp( kmxp, lwq ) + uhp( kmxm, lWC(lwq)) ) / 2. / hp(kms,lwq)
     vbott = ( vhp( kmyp, lwq ) + vhp( kmym, lSC(lwq)) )/2. / hp(kms,lwq)
-    taubx = cd * (rhop(kms,lwq)+1000.) * ubott**2.
-    tauby = cd * (rhop(kms,lwq)+1000.) * vbott**2.
+    taub = cd * (rhop(kms, lwq) + 1000.0) * (ubott ** 2 + vbott ** 2)
 
     ! ... Add Wave-Induced Bottom Shear Stress & calculate friction velocity
     if (iSTWAVE == 1) then
-      taub  = sqrt( (sqrt((taubx)**2. + (tauby)**2.)) ** 2 + tau_stwave(l2i(lwq), l2j(lwq)) ** 2)
-    else
-      taub  = sqrt((taubx)**2. + (tauby)**2.)
+      taub  = sqrt( (taub) ** 2 + tau_stwave(l2i(lwq), l2j(lwq)) ** 2)
     end if
     ustarb = sqrt(taub/(rhop(kms, lwq) + 1000.))
-  endif
+  end if
 
 END SUBROUTINE tauBottom
 

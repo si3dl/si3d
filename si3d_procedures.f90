@@ -540,9 +540,7 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
   !.... Find magnitude of sources and sinks and their scalar loads
 
   if (iopss > 0) then
-    !$omp critical(pss_debug)
     CALL PointSourceSinkSolve(n,istep,thrs)
-    !$omp end critical(pss_debug)
   end if
 
   !$omp barrier
@@ -556,6 +554,7 @@ SUBROUTINE fd(n,t_exmom2,t_matmom2,t_matcon2,Bhaxpp,Bhaypp,Bth,Bth1,Bstart,Bend,
   !$omp barrier
   ! print *,"hihihi5:",omp_get_thread_num()
   !.....Evaluate explicit terms in x-momentum eq................
+
   CALL exmom(1)
   !$omp barrier
   !print *,"ex1:",sum(ex(:,:))
@@ -4572,14 +4571,6 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
         !.....form r.h.s. matrix [ds].....
         DO k = k1s, kms
           ds(k) = Bex(k,l) + sourcesink(k,l,nt)
-          ! if ((i == 185) .and. (j == 73)) then
-            ! print*, 'adding sourcesink term to tracer ', nt
-            ! print*, 'k', k, 'nt', nt, 'LDO', LDO, 'i', i, 'j', j
-            ! print*, 'ds(k)', ds(k)
-            ! print*, 'Bex(k, l)', Bex(k,l)
-            ! print*, 'sourcesink(k, l, nt)', sourcesink(k,l,nt)
-            ! print*, 'source_pss(k, nn)', Qsource * Osource
-            ! end if
         ENDDO
 
         ! ... Modify transport eqs. to accont for sources & sinks.
@@ -4595,8 +4586,9 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
               Osource  = Rpss(k,inn,nt)
               ds(k)= ds(k) + Qsource * Osource     ! kg/m2/s = conc.* thickness / time
               
-              ! print*, 'adding sourcesink term to tracer ', nt, 'device', inn
-              ! print*, 'k', k, 'nt', nt, 'LDO', LDO, 'i', i, 'j', j
+              ! print*, 'adding sourcesink device', inn
+              ! print*, 'k', k, 'i', i, 'j', j
+              ! print*, 'Q=', Qsource, 'O2=', Osource
               ! print*, 'source_pss(k, nn)', Qsource * Osource
 
             ENDDO
@@ -4625,12 +4617,15 @@ SUBROUTINE ImTracer (nt,Bstart,Bend,Bex)
     ds(kms + 1) = Bex(kms + 1, l) + sourcesink(kms + 1, l, nt)
     tracer(kms + 1, l, nt) = ds(kms + 1) / aa(2, kms + 1)
 
-    do k = k1-1, kms+1
+    do k = k1s, kms+1
       if (tracer(k, l, nt) .lt. 0.0) then
         tracer(k, l, nt) = 0.0
       elseif (.not. ieee_is_finite(tracer(k, l, nt))) then
-        print *, 'Non-finite tracer: nt, l, i, j, k =', nt,l,i,j,k
-        print *, 'k1s, kms =', k1s,kms
+        print *, 'Non-finite cell:  l, i, j, k =', l, i, j, k
+        print*, 'Tracer:', nt
+        print*, 'tracer(k,l,nt)', tracer(k, l, nt)
+        print*, 'T cell:', sal(k, l)
+        print *, 'k1s, kms =', k1s, kms
         print *, 'hpp, h =', hpp(k,l),h(k,l)
         print *, 'Bex, sourcesink =', Bex(k,l), sourcesink(k,l,nt)
         error stop 'Tracer solution contains NaN or infinity'

@@ -321,11 +321,14 @@
    ! REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: salamb
    ! REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: patm
    ! REAL(8)   , ALLOCATABLE, DIMENSION(:    )  :: k4sod
-   REAL(8), DIMENSION (35000,9) :: innerplume
-   REAL(8), DIMENSION (35000,9) :: outerplume
+   REAL(8), allocatable :: innerplume(:, :, :)
+   REAL(8), allocatable :: outerplume(:, :, :)
    INTEGER, ALLOCATABLE, DIMENSION(:    )  :: kdetr          ! k for detrainment cell
+   INTEGER, ALLOCATABLE, DIMENSION(:    )  :: ktop           ! k for plume-top index for each point source
    REAL   , ALLOCATABLE, DIMENSION(:    )  :: idetr          ! How detrainment is modelled in diffuser devices
    REAL   , ALLOCATABLE, DIMENSION(:    )  :: dfL            ! Diffuser length (device)
+   logical, allocatable :: plume_on(:)
+   logical, allocatable :: plume_update(:)
 
    ! ... Variables for boundary conditions as point sources and sinks BCasPSS
    INTEGER :: npssdev    ! No. of devices producing point sinks and sources (i.e. diffusers)
@@ -450,8 +453,9 @@
    real, allocatable, dimension(:,:)    :: tau_stwave
    real, allocatable, dimension(:,:,:)  :: uair_tmp
    real, allocatable, dimension(:,:,:)  :: udir_tmp
+   real, allocatable, dimension(:, :)   :: u_stwave
+   real, allocatable, dimension(:, :)   :: udir_stwave
    real                                 :: Ti_4_stwave = 2.0 !< [hrs] 0.25Ti 1/4 of the internal wave period
-   real(kind=8), allocatable, dimension(:) :: settling_vel     !< (m/s) Settling velocity of sediment
    
    ! ----------------------------- Mercury module (HgM) ----------------------------------
    ! Parameters

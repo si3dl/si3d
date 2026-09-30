@@ -948,10 +948,10 @@ END SUBROUTINE save_2EqTvars
           ! HORCON*DX*DY*SQRT((DU/DX)**2+(DV/DY)**2+.5*(DU/DY+DV/DX)**2)
           dudx = ( upp(k,l) - upp(k,lWC(l)) )/dx
           dvdy = ( vpp(k,l) - vpp(k,lSC(l)) )/dy
-          dudy = ((upp(k,lNC(l)) + upp(k,lNC(lWC(l)))) -      &
-              &   (upp(k,lSC(l)) + upp(k,lSC(lWC(l))))) / fourdy
-          dvdx = ((vpp(k,lEC(l)) + vpp(k,lEC(lSC(l)))) -      &
-              &   (vpp(k,lWC(l)) + vpp(k,lWC(lSC(l))))) / fourdx
+          dudy = ((upp(k,lNC(l)) + upp(k,lNWC(l))) -      &
+              &   (upp(k,lSC(l)) + upp(k,lSWC(l)))) / fourdy
+          dvdx = ((vpp(k,lEC(l)) + vpp(k,lSEC(l))) -      &
+              &   (vpp(k,lWC(l)) + vpp(k,lSWC(l)))) / fourdx
           kh(k,l) = MAX(Ax0, horcon*dx*dy* &
                     SQRT(dudx**2.+dvdy**2.+.5*(dudy+dvdx)**2.))
         ENDIF

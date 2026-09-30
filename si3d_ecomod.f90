@@ -432,6 +432,11 @@ SUBROUTINE WQinput
       iHg0, iSS 
   IF (ios /= 0) CALL input_error ( ios, 92)
 
+  IF (iHg0 == 1 .OR. iHgII == 1 .OR. iMeHg == 1) THEN
+    IF (iHg0 /= 1 .OR. iHgII /= 1 .OR. iMeHg /= 1) &
+        ERROR STOP 'Coupled mercury model requires Hg0, HgII and MeHg'
+  END IF
+
   !. . . Read model stochiometeric constants and other constants
   READ (UNIT=i99,FMT='(///(18X,G20.3))',IOSTAT=ios) rnc, rpc, roc, ron, &
   &     KSOD, KDECMIN, KSED, KNIT, KSN, KSP, FNH4,  &
@@ -680,92 +685,9 @@ SUBROUTINE WQinput
   end if
 
   !.....Close wq input file.....
-   CLOSE (UNIT=i99)
+  CLOSE (UNIT=i99)
 
-  !... Convert model rates [1/s] and [m/s]. Input file has 1/day values. WQ module is run every hour
-  ! ALG 
-  mu_max1 =  mu_max1/86400.0
-  R_mor1 =  R_mor1/86400.0
-  R_gr1 =  R_gr1/86400.0
-  mu_max2 =  mu_max2/86400.0
-  R_mor2 =  R_mor2/86400.0
-  R_gr2 =  R_gr2/86400.0
-  mu_max3 =  mu_max3/86400.0
-  R_mor3 =  R_mor3/86400.0
-  R_gr3 =  R_gr3/86400.0
-  mu_max4 =  mu_max4/86400.0
-  R_mor4 =  R_mor4/86400.0
-  R_gr4 =  R_gr4/86400.0
-  mu_max5 =  mu_max5/86400.0
-  R_mor5 =  R_mor5/86400.0
-  R_gr5 =  R_gr5/86400.0
-
-  ! Nutrients
-  R_decom_pon =  R_decom_pon/86400.0
-  R_miner_don =  R_miner_don/86400.0
-  R_nitrif =  R_nitrif/86400.0
-  R_denit =  R_denit/86400.0
-  R_decom_pop =  R_decom_pop/86400.0
-  R_miner_dop =  R_miner_dop/86400.0
-  R_decom_poc =  R_decom_poc/86400.0
-  R_miner_doc =  R_miner_doc/86400.0
-  R_settl =  R_settl/86400.0
-  vspa = vspa / 86400.0
-  vspoc = vspoc / 86400.0
-  R_resusp =  R_resusp/86400.0
-
-  ! DO
-  R_reaer   =  R_reaer/86400.0
-
-  R_SOD   = R_SOD/86400.0
-  ATM_DON = ATM_DON/86400.0
-  ATM_NH4 = ATM_NH4/86400.0
-  ATM_NO3 = ATM_NO3/86400.0
-  ATM_DOP = ATM_DOP/86400.0
-  ATM_PO4 = ATM_PO4/86400.0
-  ATM_DOC = ATM_DOC/86400.0
-  SED_DON = SED_DON/86400.0
-  SED_NH4 = SED_NH4/86400.0
-  SED_NO3 = SED_NO3/86400.0
-  SED_DOP = SED_DOP/86400.0
-  SED_PO4 = SED_PO4/86400.0
-  SED_DOC = SED_DOC/86400.0
-
-  ! Tranform units for SS
-  ! To convert sediment density from kg/m3 ----------
-  sed_dens = sed_dens
-  ! To convert sediment diameter from um to m
-  sed_diameter = sed_diameter * 0.000001
-
-
-  ! Transform units for Hg models
-  ! Convert time units - input is in days and should be in seconds.   
-  ! ---------- MeHg -------------
-  ! time units - days -> seconds
-  kw31 = kw31 / 86400.0
-  atm_MeHg = atm_MeHg / 86400.0
-  k_MeHgw = k_MeHgw / 86400.0
-  k_MeHgatm = k_MeHgatm / 86400.0
-  kw32 = kw32 / 86400.0
-  ks32 = ks32 / 86400.0
-  kws3 = kws3 / 86400.0
-
-  ! ------------ HgII ----------
-  ! time units - days -> seconds
-  kw21 = kw21 / 86400.0
-  atm_HgII = atm_HgII / 86400.0
-  kw23 = kw23 / 86400.0
-  ks23 = ks23 / 86400.0
-  kws2 = kws2 / 86400.0
-
-  ! ------------- Hg0 ------------
-  ! time units - days to seconds
-  k_Hg0w = k_Hg0w / 86400.0
-  k_Hg0atm = k_Hg0atm / 86400.0
-  kws1 = kws1 / 86400.0
-
-
-  IF (idbg == 1) THEN
+    IF (idbg == 1) THEN
     PRINT*, 'iDO  = ', iDO , 'iPOC = ', iPOC, 'iDOC = ', iDOC
     PRINT*, 'iPON = ', iPON, 'iDON = ', iDON, 'iNH4 = ', iNH4
     PRINT*, 'iPOP = ', iPOP, 'iDOP = ', iDOP, 'iPO4 = ', iPO4
@@ -856,6 +778,89 @@ SUBROUTINE WQinput
     print*, 'Hg0_sed = ', Hg0_sed
   END IF
 
+
+  !... Convert model rates [1/s] and [m/s]. Input file has 1/day values.
+  ! ALG 
+  mu_max1 =  mu_max1/86400.0
+  R_mor1 =  R_mor1/86400.0
+  R_gr1 =  R_gr1/86400.0
+  mu_max2 =  mu_max2/86400.0
+  R_mor2 =  R_mor2/86400.0
+  R_gr2 =  R_gr2/86400.0
+  mu_max3 =  mu_max3/86400.0
+  R_mor3 =  R_mor3/86400.0
+  R_gr3 =  R_gr3/86400.0
+  mu_max4 =  mu_max4/86400.0
+  R_mor4 =  R_mor4/86400.0
+  R_gr4 =  R_gr4/86400.0
+  mu_max5 =  mu_max5/86400.0
+  R_mor5 =  R_mor5/86400.0
+  R_gr5 =  R_gr5/86400.0
+
+  ! Nutrients
+  R_decom_pon =  R_decom_pon/86400.0
+  R_miner_don =  R_miner_don/86400.0
+  R_nitrif =  R_nitrif/86400.0
+  R_denit =  R_denit/86400.0
+  R_decom_pop =  R_decom_pop/86400.0
+  R_miner_dop =  R_miner_dop/86400.0
+  R_decom_poc =  R_decom_poc/86400.0
+  R_miner_doc =  R_miner_doc/86400.0
+  R_settl =  R_settl/86400.0
+  vspa = vspa / 86400.0
+  vspoc = vspoc / 86400.0
+  R_resusp =  R_resusp/86400.0
+
+  ! DO
+  R_reaer   =  R_reaer/86400.0
+
+  R_SOD   = R_SOD/86400.0
+  ATM_DON = ATM_DON/86400.0
+  ATM_NH4 = ATM_NH4/86400.0
+  ATM_NO3 = ATM_NO3/86400.0
+  ATM_DOP = ATM_DOP/86400.0
+  ATM_PO4 = ATM_PO4/86400.0
+  ATM_DOC = ATM_DOC/86400.0
+  SED_DON = SED_DON/86400.0
+  SED_NH4 = SED_NH4/86400.0
+  SED_NO3 = SED_NO3/86400.0
+  SED_DOP = SED_DOP/86400.0
+  SED_PO4 = SED_PO4/86400.0
+  SED_DOC = SED_DOC/86400.0
+
+  ! Tranform units for SS
+  ! To convert sediment density from kg/m3 ----------
+  sed_dens = sed_dens
+  ! To convert sediment diameter from um to m
+  sed_diameter = sed_diameter * 0.000001
+
+
+  ! Transform units for Hg models
+  ! Convert time units - input is in days and should be in seconds.   
+  ! ---------- MeHg -------------
+  ! time units - days -> seconds
+  kw31 = kw31 / 86400.0
+  atm_MeHg = atm_MeHg / 86400.0
+  k_MeHgw = k_MeHgw / 86400.0
+  k_MeHgatm = k_MeHgatm / 86400.0
+  kw32 = kw32 / 86400.0
+  ks32 = ks32 / 86400.0
+  kws3 = kws3 / 86400.0
+
+  ! ------------ HgII ----------
+  ! time units - days -> seconds
+  kw21 = kw21 / 86400.0
+  atm_HgII = atm_HgII / 86400.0
+  kw23 = kw23 / 86400.0
+  ks23 = ks23 / 86400.0
+  kws2 = kws2 / 86400.0
+
+  ! ------------- Hg0 ------------
+  ! time units - days to seconds
+  k_Hg0w = k_Hg0w / 86400.0
+  k_Hg0atm = k_Hg0atm / 86400.0
+  kws1 = kws1 / 86400.0
+
 END SUBROUTINE WQinput
 
 !************************************************************************
@@ -908,11 +913,6 @@ SUBROUTINE WQinit
       read(tracer_line, '(A11, A)', iostat=ios) tracer_list(i), tracer_line
       tracer_list(i) = adjustl(tracer_list(i))
   end do
-
-  if (iSS == 1) then
-    allocate(settling_vel(sedNumber))
-    settling_vel(:) = 0.0
-  end if
 
   print*, 'Constituents to model:'
   print*, tracer_list(:)
@@ -1032,9 +1032,6 @@ SUBROUTINE srcsnkWQ(n)
   INTEGER:: i, k, l, liter, k1s, kms, iteration
   integer, intent(in) :: n
 
-  ! reset soursesink = 0
-  sourcesink(:, :, :) = 0.0
-
   ! STWAVE controlling section. (SergioValbuena 03-11-2023) 
   if ((iSS == 1) .and. (iSTWAVE == 1)) then
     call stwave_input(n)
@@ -1044,6 +1041,9 @@ SUBROUTINE srcsnkWQ(n)
 
   DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
     l = id_column(liter)
+
+    ! reset soursesink = 0
+    sourcesink(:, l, :) = 0.0
     ! ... Retrieve top & bottom wet sal-pts .................
     kms = kmz(l)
     k1s = k1z(l)
@@ -1076,12 +1076,6 @@ SUBROUTINE srcsnkWQ(n)
       IF (iPO4 == 1) THEN
         CALL sourcePO4(k,l)
       END IF
-      IF (iDOC == 1) THEN
-        CALL sourceDOC(k,l)
-      END IF
-      IF (iPOC == 1) THEN
-        CALL sourcePOC(k,l)
-      END IF
       IF (iALG1 == 1) THEN
         CALL sourceALG1(k,l)
       END IF
@@ -1096,6 +1090,12 @@ SUBROUTINE srcsnkWQ(n)
       END IF
       IF (iALG5 == 1) THEN
         CALL sourceALG5(k,l)
+      END IF
+      IF (iPOC == 1) THEN
+        CALL sourcePOC(k,l)
+      END IF
+      IF (iDOC == 1) THEN
+        CALL sourceDOC(k,l)
       END IF
       IF ((iHg0 == 1) .OR. (iHgII == 1) .OR. (iMeHg == 1)) THEN
         CALL sourceHg(k, l)

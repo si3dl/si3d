@@ -4526,6 +4526,7 @@ SUBROUTINE surfbc(n,istep,thrs)
         END IF
       END IF 
 
+      !$omp single
       !.....Interpolate heat & momentum flux vars. to time n .....
       dthrs_surfbc = dtSurfbc/3600.
       eta = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
@@ -4534,6 +4535,8 @@ SUBROUTINE surfbc(n,istep,thrs)
       cdw = parab(0.,thrs,surfbc1(4,:),dthrs_surfbc)
       uair= parab(0.,thrs,surfbc1(5,:),dthrs_surfbc)
       vair= parab(0.,thrs,surfbc1(6,:),dthrs_surfbc)
+
+      !$omp end single
 
       ! ... Calculate 3D-spatially variable sources
       CALL DistributeQswH
@@ -4550,6 +4553,7 @@ SUBROUTINE surfbc(n,istep,thrs)
         END IF
       END IF
 
+      !$omp single
       !.....Interpolate heat & momentum flux vars. values to present time step .....
       dthrs_surfbc = dtSurfbc/3600.
       eta = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
@@ -4561,6 +4565,8 @@ SUBROUTINE surfbc(n,istep,thrs)
       cdw = parab(0.,thrs,surfbc1(7,:),dthrs_surfbc)
       uair= parab(0.,thrs,surfbc1(8,:),dthrs_surfbc)
       vair= parab(0.,thrs,surfbc1(9,:),dthrs_surfbc)
+
+      !$omp end single
 
       ! ... Calculate 3D-spatially variable heat sources
       CALL DistributeQswH
@@ -4577,6 +4583,7 @@ SUBROUTINE surfbc(n,istep,thrs)
         END IF
       END IF 
 
+      !$omp single
       !.....Interpolate heat & momentum flux vars. values to present time step .....
       dthrs_surfbc = dtSurfbc/3600.
       eta = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
@@ -4588,6 +4595,8 @@ SUBROUTINE surfbc(n,istep,thrs)
       cdw = parab(0.,thrs,surfbc1(7,:),dthrs_surfbc)
       uair= parab(0.,thrs,surfbc1(8,:),dthrs_surfbc)
       vair= parab(0.,thrs,surfbc1(9,:),dthrs_surfbc)
+
+      !$omp end single
 
       ! ... Calculate 3D-spatially variable heat sources
       CALL DistributeQswH
@@ -4604,6 +4613,7 @@ SUBROUTINE surfbc(n,istep,thrs)
       END IF
 
       !.....Interpolate heat & momentum flux vars. values to present time step .....
+      !$omp single
       DO imet = 1, nmetstat
         dthrs_surfbc  = dtSurfbc/3600.
         eta           = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
@@ -4615,6 +4625,7 @@ SUBROUTINE surfbc(n,istep,thrs)
         uair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 7,:),dthrs_surfbc)
         vair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 8,:),dthrs_surfbc)
       ENDDO
+      !$omp end single
 
       ! ... Distribute heat and momentum sources entering through free surface
       CALL DistributeQswH
@@ -4631,6 +4642,7 @@ SUBROUTINE surfbc(n,istep,thrs)
       END IF 
 
       !.....Interpolate heat & momentum flux vars. values to present time step .....
+      !$omp single
       DO imet = 1, nmetstat
         dthrs_surfbc  = dtSurfbc/3600.
         eta           = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
@@ -4642,6 +4654,7 @@ SUBROUTINE surfbc(n,istep,thrs)
         uair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 7,:),dthrs_surfbc)
         vair2D(imet)  = parab(0.,thrs,surfbc1((imet-1)*6 + 8,:),dthrs_surfbc)
       ENDDO
+      !$omp end single
 
       ! ... Distribute heat and momentum sources entering through free surface
       CALL DistributeQswH
@@ -4655,10 +4668,13 @@ SUBROUTINE surfbc(n,istep,thrs)
         END IF
       END IF 
       !.....Interpolate heat & momentum flux vars. to time n .....
+      !$omp single
       dthrs_surfbc = dtSurfbc/3600.
       cdw = parab(0.,thrs,surfbc1(1,:),dthrs_surfbc)
       uair = parab(0.,thrs,surfbc1(2,:),dthrs_surfbc)
       vair = parab(0.,thrs,surfbc1(3,:),dthrs_surfbc)
+
+      !$omp end single
 
       ! ... Calculate 3D-spatially variable sources
       CALL DistributeQswH
@@ -4841,20 +4857,20 @@ SUBROUTINE DistributeMomentumHeatSources
   REAL, PARAMETER :: SpecificHeatAir = 1012.0
 
   ! ... Define parameters on first call
-!  IF ( n == 1) THEN
-    range = (/  0.000, 2.2000, 5.0000, 8.0000, 25.00, 50.0 /)
-    a_d   = (/  0.000, 0.7710, 0.8670, 1.2000, 0.000 /)
-    b_d   = (/  1.080, 0.0858, 0.0667, 0.0250, 0.073 /)
-    p_d   = (/ -0.150, 1.0000, 1.0000, 1.0000, 1.000 /)
-    a_h   = (/  0.000, 0.9270, 1.1500, 1.1700, 1.652 /)
-    b_h   = (/  1.185, 0.0521, 0.0100, 0.0075,-0.017 /)
-    c_h   = (/  0.000, 0.0000, 0.0000,-4.5E-4, 0.000 /)
-    p_h   = (/ -0.157, 1.0000, 1.0000, 1.0000, 1.000 /)
-    a_e   = (/  0.000, 0.9690, 1.1800, 1.1960, 1.680 /)
-    b_e   = (/  1.230, 0.0521, 0.0100, 0.0080,-0.016 /)
-    c_e   = (/  0.000, 0.0000, 0.0000,-4.0E-4, 0.000 /)
-    p_e   = (/ -0.160, 1.0000, 1.0000, 1.0000, 1.000 /)
-!  ENDIF
+  !  IF ( n == 1) THEN
+      range = (/  0.000, 2.2000, 5.0000, 8.0000, 25.00, 50.0 /)
+      a_d   = (/  0.000, 0.7710, 0.8670, 1.2000, 0.000 /)
+      b_d   = (/  1.080, 0.0858, 0.0667, 0.0250, 0.073 /)
+      p_d   = (/ -0.150, 1.0000, 1.0000, 1.0000, 1.000 /)
+      a_h   = (/  0.000, 0.9270, 1.1500, 1.1700, 1.652 /)
+      b_h   = (/  1.185, 0.0521, 0.0100, 0.0075,-0.017 /)
+      c_h   = (/  0.000, 0.0000, 0.0000,-4.5E-4, 0.000 /)
+      p_h   = (/ -0.157, 1.0000, 1.0000, 1.0000, 1.000 /)
+      a_e   = (/  0.000, 0.9690, 1.1800, 1.1960, 1.680 /)
+      b_e   = (/  1.230, 0.0521, 0.0100, 0.0080,-0.016 /)
+      c_e   = (/  0.000, 0.0000, 0.0000,-4.0E-4, 0.000 /)
+      p_e   = (/ -0.160, 1.0000, 1.0000, 1.0000, 1.000 /)
+  !  ENDIF
 
   ! ... Initialize Heat Source
   HeatSource = 0.0E0
@@ -4862,14 +4878,19 @@ SUBROUTINE DistributeMomentumHeatSources
 
   CASE (1) ! Heat budget on PRE-PROCESS mode - spatially uniform conditions
 
-    DO l = 1,lm ;
+    DO l = 1,lm
 
       ! ... Map 2D-l into 3D(i,j) indexes ........................
-      i = l2i(l); j = l2j(l);
+      i = l2i(l); j = l2j(l)
 
       ! ... Define top & bottom wet layers........................
-      k1s = k1z(l);
-      kms = kmz(l);
+      k1s = k1z(l)
+      kms = kmz(l)
+
+      if (ntr .gt. 0) then
+        Qsw = max(0.0, Qsw)
+        Qsw_wq(l) = Qsw
+      end if
 
       ! ... Add non-penetrative components to surface layer ......
       HeatSource(k1s,l)=HeatSource(k1s,l)+ (Qn-Qsw)
@@ -4897,12 +4918,12 @@ SUBROUTINE DistributeMomentumHeatSources
     DO l = 1, lm;
 
       ! ... Map 2D-l into 3D(i,j) indexes ........................
-      i = l2i(l); j = l2j(l);
+      i = l2i(l); j = l2j(l)
 
-      if (Qsw .lt. 0.0) then
-        Qsw = 0.0
+      if (ntr .gt. 0) then
+        Qsw = max(0.0, Qsw)
+        Qsw_wq(l) = Qsw
       end if
-      Qsw_wq(l) = Qsw
 
       ! ... Define bulk aerodynamic coefficients for neutral conditions
       !     based on Kondo, 1975. Air-sea bulk transfer coefficients in diabatic
@@ -4950,12 +4971,12 @@ SUBROUTINE DistributeMomentumHeatSources
     DO l = 1, lm;
 
       ! ... Map 2D-l into 3D(i,j) indexes ........................
-      i = l2i(l); j = l2j(l);
+      i = l2i(l); j = l2j(l)
 
-      if (Qsw .lt. 0.0) then
-        Qsw = 0.0
+      if (ntr .gt. 0) then
+        Qsw = max(0.0, Qsw)
+        Qsw_wq(l) = Qsw
       end if
-      Qsw_wq(l) = Qsw
 
       ! ... Define bulk aerodynamic coefficients for neutral conditions
       !     based on Kondo, 1975. Air-sea bulk transfer coefficients in diabatic
@@ -5010,10 +5031,10 @@ SUBROUTINE DistributeMomentumHeatSources
       CALL InterpMetData (i,j,Qswresid,Taresid,RHresid,Qlwresid,uresid,vresid, &
                         & Qsw,Ta,RH,Qlw,uair(l),vair(l))
 
-      if (Qsw .lt. 0.0) then
-        Qsw = 0.0
+      if (ntr .gt. 0) then
+        Qsw = max(0.0, Qsw)
+        Qsw_wq(l) = Qsw
       end if
-      Qsw_wq(l) = Qsw
 
       ! ... Wind speed over the water column
       ws  = SQRT (uair(l)**2.+vair(l)**2.);
@@ -5039,7 +5060,7 @@ SUBROUTINE DistributeMomentumHeatSources
         if (ws == 0) then
           cdw(l) = cw
         else
-          cdw(l) = ((0.239 + 0.0433 * ((ws - 8.271) + (0.12 * (ws - 8.271) ** 2 + 0.181) ** (1/2))) / ws) ** 2
+          cdw(l) = ((0.239 + 0.0433 * ((ws - 8.271) + (0.12 * (ws - 8.271) ** 2.0 + 0.181) ** (1.0/2.0))) / ws) ** 2.0
         end if
       end if
 
@@ -5079,7 +5100,7 @@ SUBROUTINE DistributeMomentumHeatSources
     ! Calculate residuals from first Barnes pass at met station points (added 12/2010 SWA)
     CALL CalculateMetResiduals (Qswresid,Taresid,RHresid,Qlwresid,uresid,vresid)
     ! ... Interpolate other variables & compute heat fluxes
-    DO l = 1, lm;
+    DO l = 1, lm
 
       ! ... Map 2D-l into 3D(i,j) indexes ........................
       i = l2i(l); j = l2j(l);
@@ -5088,10 +5109,10 @@ SUBROUTINE DistributeMomentumHeatSources
       CALL InterpMetData (i,j,Qswresid,Taresid,RHresid,Qlwresid,uresid,vresid, &
                         & Qsw,Ta,RH,Qlw,uair(l),vair(l))
 
-      if (Qsw .lt. 0.0) then
-        Qsw = 0.0
+      if (ntr .gt. 0) then
+        Qsw = max(0.0, Qsw)
+        Qsw_wq(l) = Qsw
       end if
-      Qsw_wq(l) = Qsw
 
       ! ... Wind speed over the water column
       ws  = SQRT (uair(l)**2.+vair(l)**2.);
@@ -5117,7 +5138,7 @@ SUBROUTINE DistributeMomentumHeatSources
         if (ws == 0) then
           cdw(l) = cw
         else
-          cdw(l) = ((0.239 + 0.0433 * ((ws - 8.271) + (0.12 * (ws - 8.271) ** 2 + 0.181) ** (1/2))) / ws) ** 2
+          cdw(l) = ((0.239 + 0.0433 * ((ws - 8.271) + (0.12 * (ws - 8.271) ** 2.0 + 0.181) ** (1.0/2.0))) / ws) ** 2.0
         end if
       end if
 
@@ -5125,8 +5146,8 @@ SUBROUTINE DistributeMomentumHeatSources
       Qbra  = Qlw * ( 1. - Al )
 
       ! ... Define top & bottom wet layers........................
-      k1s = k1z(l);
-      kms = kmz(l);
+      k1s = k1z(l)
+      kms = kmz(l)
 
       ! ... Add non-penetrative components to surface cells
       ea  = saturated_vapor_pressure(Ta         +273.) * Rh
@@ -5150,7 +5171,10 @@ SUBROUTINE DistributeMomentumHeatSources
 
     ENDDO
   END SELECT
-  fluxes_out(:, :, 1) = HeatSource(:, :) 
+
+  DO l = 1, lm
+    fluxes_out(:,l,1) = HeatSource(:,l)
+  END DO
 
 END SUBROUTINE DistributeMomentumHeatSources
 
@@ -5163,13 +5187,14 @@ SUBROUTINE DistributeMomentumHeatSourcesH(n,istep)
 !
 !------------------------------------------------------------------------
 
-  INTEGER,INTENT(IN) :: n,istep
+  INTEGER,INTENT(IN) :: n, istep
 
   ! ... Local variables
   INTEGER         :: i, j, k,l, k1s, kms, irg, imet, ii, jj, nF,liter
   REAL            :: esw, ea, Lv, EmAir, Qbri, Qbra
   REAL            :: coeffE, coeffH, ws, wsi, ws0
   REAL, DIMENSION(nmetstat) :: Qswresid,Taresid,RHresid,Qlwresid,uresid,vresid
+  Real :: Qsw_local, Ta_local, RH_local, Qlw_local
 
   ! ... Local arrays containing parameters
   INTEGER, DIMENSION (6) :: range
@@ -5204,8 +5229,7 @@ SUBROUTINE DistributeMomentumHeatSourcesH(n,istep)
 
   ! ... Initialize Heat Source
 DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
-
-       l = id_column(liter)
+  l = id_column(liter)
   HeatSource(:,l) = 0.0E0
 END DO
 
@@ -5218,11 +5242,16 @@ END DO
        l = id_column(liter)
 
       ! ... Map 2D-l into 3D(i,j) indexes ........................
-      i = l2i(l); j = l2j(l);
+      i = l2i(l); j = l2j(l)
 
       ! ... Define top & bottom wet layers........................
-      k1s = k1z(l);
-      kms = kmz(l);
+      k1s = k1z(l)
+      kms = kmz(l)
+
+      if (ntr .gt. 0) then
+        Qsw = max(0.0, Qsw)
+        Qsw_wq(l) = Qsw
+      end if
 
       ! ... Add non-penetrative components to surface layer ......
       HeatSource(k1s,l)=HeatSource(k1s,l)+ (Qn-Qsw)
@@ -5254,10 +5283,10 @@ END DO
       ! ... Map 2D-l into 3D(i,j) indexes ........................
       i = l2i(l); j = l2j(l);
 
-      if (Qsw .lt. 0.0) then
-        Qsw = 0.0
+      if (ntr .gt. 0) then
+        Qsw = max(0.0, Qsw)
+        Qsw_wq(l) = Qsw
       end if
-      Qsw_wq(l) = Qsw
 
       ! ... Define bulk aerodynamic coefficients for neutral conditions
       !     based on Kondo, 1975. Air-sea bulk transfer coefficients in diabatic
@@ -5304,15 +5333,15 @@ END DO
     ! ... Loop over surface cells
     DO liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
 
-       l = id_column(liter)
+      l = id_column(liter)
 
       ! ... Map 2D-l into 3D(i,j) indexes ........................
-      i = l2i(l); j = l2j(l);
+      i = l2i(l); j = l2j(l)
 
-      if (Qsw .lt. 0.0) then
-        Qsw = 0.0
+      if (ntr .gt. 0) then
+        Qsw = max(0.0, Qsw)
+        Qsw_wq(l) = Qsw
       end if
-      Qsw_wq(l) = Qsw
 
       ! ... Define bulk aerodynamic coefficients for neutral conditions
       !     based on Kondo, 1975. Air-sea bulk transfer coefficients in diabatic
@@ -5363,16 +5392,16 @@ END DO
       l = id_column(liter)
 
       ! ... Map 2D-l into 3D(i,j) indexes ........................
-      i = l2i(l); j = l2j(l);
+      i = l2i(l); j = l2j(l)
 
       ! ... Interpolate met records to grid points (added 12/2010 SWA)
       CALL InterpMetData (i,j,Qswresid,Taresid,RHresid,Qlwresid,uresid,vresid, &
-                        & Qsw,Ta,RH,Qlw,uair(l),vair(l))
+                        & Qsw_local,Ta_local,RH_local,Qlw_local,uair(l),vair(l))
 
-      if (Qsw .lt. 0.0) then
-        Qsw = 0.0
+      if (ntr .gt. 0) then
+        Qsw_local = max(0.0, Qsw_local)
+        Qsw_wq(l) = Qsw_local
       end if
-      Qsw_wq(l) = Qsw
 
       ! ... Wind speed over the water column
       ws  = SQRT (uair(l)**2.+vair(l)**2.);
@@ -5398,15 +5427,15 @@ END DO
         if (ws == 0) then
           cdw(l) = cw
         else
-          cdw(l) = ((0.239 + 0.0433 * ((ws - 8.271) + (0.12 * (ws - 8.271) ** 2 + 0.181) ** (1/2))) / ws) ** 2
+          cdw(l) = ((0.239 + 0.0433 * ((ws - 8.271) + (0.12 * (ws - 8.271) ** 2.0 + 0.181) ** (1.0/2.0))) / ws) ** 2.0
         end if
       end if
 
       ! ... Define variables used in cals. and equal to all surface cells
-      ea    = saturated_vapor_pressure (Ta+273.) * Rh
-      EmAir = 0.642 * ( ea / (Ta+273.) )**0.14285714
+      ea    = saturated_vapor_pressure (Ta_local + 273.) * RH_local
+      EmAir = 0.642 * ( ea / (Ta_local + 273.) )**0.14285714
       EmAir = EmAir * ( 1. + 0.17 * Cc**2. )
-      Qbri  = EmAir * StephanBoltzman * (Ta+273.) ** 4.
+      Qbri  = EmAir * StephanBoltzman * (Ta_local + 273.) ** 4.
       Qbra  = Qbri * ( 1. - Al )
 
       ! ... Define top & bottom wet layers........................
@@ -5414,23 +5443,23 @@ END DO
       kms = kmz(l);
 
       ! ... Add non-penetrative components to surface cells
-      esw = saturated_vapor_pressure(salp(k1s,l)+273.)
-      Lv  = latent_heat_vaporization(salp(k1s,l)+273.)
+      esw = saturated_vapor_pressure(salp(k1s,l) + 273.)
+      Lv  = latent_heat_vaporization(salp(k1s,l) + 273.)
       ! a. Long wave radiation
       HeatSource(k1s,l)  = Qbra - EmWater * StephanBoltzman *    &
-                           (salp(k1s,l)+273.) ** 4.
+                           (salp(k1s,l) + 273.) ** 4.
       ! b. Latent & Sensible heat fluxes
       HeatSource(k1s,l) = HeatSource(k1s,l) -                    &
       & rhoair*             Lv * coeffE*(esw-ea)*0.622/Pa * ws - &
-      & rhoair*SpecificHeatAir * coeffH*(salp(k1s,l)-Ta ) * ws
+      & rhoair*SpecificHeatAir * coeffH*(salp(k1s,l) - Ta_local) * ws
 
       ! ... Add penetrative components to water column &
       !     express heat sources in temperature units ............
       DO k = k1s, kms
         HeatSource(k,l) = (HeatSource(k,l) +                     &
 
-          Qsw*QswFr(k,l))/((rhop(k,l)+1000.)*Cp)
-        IF (Qsw<-100.) THEN; HeatSource(k,l) = 0.0E0; ENDIF
+          Qsw_local * QswFr(k,l))/((rhop(k,l)+1000.)*Cp)
+        IF (Qsw_local < -100.) THEN; HeatSource(k,l) = 0.0E0; ENDIF
       END DO
 
     ENDDO
@@ -5450,12 +5479,12 @@ END DO
 
       ! ... Interpolate met records to grid points (added 12/2010 SWA)
       CALL InterpMetData (i,j,Qswresid,Taresid,RHresid,Qlwresid,uresid,vresid, &
-                        & Qsw,Ta,RH,Qlw,uair(l),vair(l))
+                        & Qsw_local,Ta_local,RH_local,Qlw_local,uair(l),vair(l))
 
-      if (Qsw .lt. 0.0) then
-        Qsw = 0.0
+      if (ntr .gt. 0) then
+        Qsw_local = max(0.0, Qsw_local)
+        Qsw_wq(l) = Qsw_local
       end if
-      Qsw_wq(l) = Qsw
       ! ... Wind speed over the water column
       ws  = SQRT (uair(l)**2.+vair(l)**2.);
 
@@ -5480,19 +5509,19 @@ END DO
         if (ws == 0) then
           cdw(l) = cw
         else
-          cdw(l) = ((0.239 + 0.0433 * ((ws - 8.271) + (0.12 * (ws - 8.271) ** 2 + 0.181) ** (1/2))) / ws) ** 2
+          cdw(l) = ((0.239 + 0.0433 * ((ws - 8.271) + (0.12 * (ws - 8.271) ** 2.0 + 0.181) ** (1.0/2.0))) / ws) ** 2.0
         end if
       end if
 
       ! ... Define variables used in cals. and equal to all surface cells
-      Qbra  = Qlw * ( 1. - Al )
+      Qbra  = Qlw_local * ( 1. - Al )
 
       ! ... Define top & bottom wet layers........................
-      k1s = k1z(l);
-      kms = kmz(l);
+      k1s = k1z(l)
+      kms = kmz(l)
 
       ! ... Add non-penetrative components to surface cells
-      ea  = saturated_vapor_pressure(Ta         +273.) * Rh
+      ea  = saturated_vapor_pressure(Ta_local       +273.) * RH_local
       esw = saturated_vapor_pressure(salp(k1s,l)+273.)
       Lv  = latent_heat_vaporization(salp(k1s,l)+273.)
       ! a. Long wave radiation
@@ -5501,20 +5530,24 @@ END DO
       ! b. Latent & Sensible heat fluxes
       HeatSource(k1s,l) = HeatSource(k1s,l) -                    &
       & rhoair*             Lv * coeffE*(esw-ea)*0.622/Pa * ws - &
-      & rhoair*SpecificHeatAir * coeffH*(salp(k1s,l)-Ta ) * ws
+      & rhoair*SpecificHeatAir * coeffH*(salp(k1s,l)-Ta_local) * ws
 
       ! ... Add penetrative components to water column &
       !     express heat sources in temperature units ............
       DO k = k1s, kms
         HeatSource(k,l) = (HeatSource(k,l) +                     &
-          Qsw*QswFr(k,l))/((rhop(k,l)+1000.)*Cp)
-        IF (Qsw<-100.) THEN; HeatSource(k,l) = 0.0E0; ENDIF
+          Qsw_local*QswFr(k,l))/((rhop(k,l)+1000.)*Cp)
+        IF (Qsw_local < -100.) THEN; HeatSource(k,l) = 0.0E0; ENDIF
       END DO
-
+ 
     ENDDO
 
   END SELECT
-  fluxes_out(:, :, 1) = HeatSource(:, :) 
+
+  DO liter = lhi(omp_get_thread_num()+1), lhf(omp_get_thread_num()+1)
+    l = id_column(liter)
+    fluxes_out(:,l,1) = HeatSource(:,l)
+  END DO
 
 END SUBROUTINE DistributeMomentumHeatSourcesH
 
@@ -5731,7 +5764,7 @@ SUBROUTINE CalculateMetResiduals (Qswresid,Taresid,RHresid,Qlwresid,uresid,vresi
 END SUBROUTINE CalculateMetResiduals
 
 !***********************************************************************
-SUBROUTINE InterpMetData (iin,jin,Qswresid,Taresid,RHresid,Qlwresid,uresid,vresid,Qsw,Ta,RH,Qlw,uair,vair)
+SUBROUTINE InterpMetData (iin,jin,Qswresid,Taresid,RHresid,Qlwresid,uresid,vresid,Qsw_l,Ta_l,RH_l,Qlw_l,uair_l,vair_l)
 !***********************************************************************
 !
 !  Purpose: Interpolated met data at cell i,j
@@ -5741,40 +5774,40 @@ SUBROUTINE InterpMetData (iin,jin,Qswresid,Taresid,RHresid,Qlwresid,uresid,vresi
   INTEGER, INTENT (IN) :: iin,jin
   REAL, DIMENSION(nmetstat), INTENT (IN) :: Qswresid,Taresid,RHresid,Qlwresid
   REAL, DIMENSION(nmetstat), INTENT (IN) :: uresid,vresid
-  REAL, INTENT (OUT) :: Qsw,Ta,RH,Qlw,uair,vair
+  REAL, INTENT (OUT) :: Qsw_l,Ta_l,RH_l,Qlw_l, uair_l, vair_l
   ! Local variables
   INTEGER :: imet
   REAL :: sumw
 
   ! Initialize
-  Qsw = 0.0; Ta = 0.0; RH = 0.0; Qlw = 0.0;
-  uair = 0.0E0; vair = 0.0E0;
+  Qsw_l = 0.0; Ta_l = 0.0; RH_l = 0.0; Qlw_l = 0.0;
+  uair_l = 0.0E0; vair_l = 0.0E0;
   ! Interpolation
   DO imet = 1, nmetstat
-    Qsw  = Qsw    + WeightSt(iin,jin,imet) * Qsw2D (imet)
-    Ta   = Ta     + WeightSt(iin,jin,imet) * Ta2D  (imet)
-    RH   = RH     + WeightSt(iin,jin,imet) * RH2D  (imet)
-    Qlw  = Qlw    + WeightSt(iin,jin,imet) * Qlw2D (imet)
-    uair = uair + WeightSt(iin,jin,imet) * uair2D(imet)
-    vair = vair + WeightSt(iin,jin,imet) * vair2D(imet)
+    Qsw_l  = Qsw_l    + WeightSt(iin,jin,imet) * Qsw2D (imet)
+    Ta_l   = Ta_l    + WeightSt(iin,jin,imet) * Ta2D  (imet)
+    RH_l  = RH_l     + WeightSt(iin,jin,imet) * RH2D  (imet)
+    Qlw_l  = Qlw_l    + WeightSt(iin,jin,imet) * Qlw2D (imet)
+    uair_l = uair_l + WeightSt(iin,jin,imet) * uair2D(imet)
+    vair_l = vair_l + WeightSt(iin,jin,imet) * vair2D(imet)
   ENDDO
   IF (iinterp == 2) THEN ! Modify for new Barnes interpolation
     sumw=SUM(Weightst(iin,jin,:)) ! These weights weren't initially normalized
-    Qsw  = Qsw  / sumw
-    RH   =  RH  / sumw
-    Ta   =  Ta  / sumw
-    Qlw  = Qlw  / sumw
-    uair = uair / sumw
-    vair = vair / sumw
+    Qsw_l  = Qsw_l  / sumw
+    RH_l   =  RH_l  / sumw
+    Ta_l   =  Ta_l  / sumw
+    Qlw_l  = Qlw_l  / sumw
+    uair_l = uair_l / sumw
+    vair_l = vair_l / sumw
     ! Second pass Barnes interpolation
     sumw=sum(WeightSt(iin,jin,:)**(1.0/gammaB))
     DO imet = 1, nmetstat
-      Qsw  = Qsw    + WeightSt(iin,jin,imet)**(1.0/gammaB)/sumw * Qswresid (imet)
-      Ta   = Ta     + WeightSt(iin,jin,imet)**(1.0/gammaB)/sumw * Taresid  (imet)
-      RH   = RH     + WeightSt(iin,jin,imet)**(1.0/gammaB)/sumw * RHresid  (imet)
-      Qlw  = Qlw    + WeightSt(iin,jin,imet)**(1.0/gammaB)/sumw * Qlwresid (imet)
-      uair = uair + WeightSt(iin,jin,imet)**(1.0/gammaB)/sumw * uresid(imet)
-      vair = vair + WeightSt(iin,jin,imet)**(1.0/gammaB)/sumw * vresid(imet)
+      Qsw_l  = Qsw_l    + WeightSt(iin,jin,imet)**(1.0/gammaB)/sumw * Qswresid (imet)
+      Ta_l   = Ta_l     + WeightSt(iin,jin,imet)**(1.0/gammaB)/sumw * Taresid  (imet)
+      RH_l   = RH_l    + WeightSt(iin,jin,imet)**(1.0/gammaB)/sumw * RHresid  (imet)
+      Qlw_l  = Qlw_l    + WeightSt(iin,jin,imet)**(1.0/gammaB)/sumw * Qlwresid (imet)
+      uair_l = uair_l + WeightSt(iin,jin,imet)**(1.0/gammaB)/sumw * uresid(imet)
+      vair_l = vair_l + WeightSt(iin,jin,imet)**(1.0/gammaB)/sumw * vresid(imet)
     ENDDO
   ENDIF
 

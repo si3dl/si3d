@@ -41,7 +41,7 @@ SUBROUTINE sourceDO(kwq,lwq)
   sedoxydemand = 0.0
 
   ! ...Calculate DO saturation
-  Tk = salp(kwq, lwq) + 273
+  Tk = salp(kwq, lwq) + 273.
   lnOS = -139.34410 + 1.575701*1E5 /(Tk    ) &
   &                 - 6.642308*1E7 /(Tk**2.) &
   &                 + 1.243800*1E10/(Tk**3.) &
@@ -50,40 +50,31 @@ SUBROUTINE sourceDO(kwq,lwq)
 
   ! ... Atmospheric pressure is defined in si3d_surfbc, but if ifsurfbc = 0, then Pa = 101325 Pa or sea level.
   if (ifsurfbc .eq. 0) then
-    Pa = 101325.0
+    Patm_do = 101325.0 * 0.00000986923
+  else
+    ! Correct for Patmospheric (Pa - declared in si3d_types and defined in surfbc0)
+    Patm_do = Pa * 0.00000986923 ! Transform atmospheric pressure from Pa to atm
   end if
 
-  ! Correct for Patmospheric (Pa - declared in si3d_types and defined in surfbc0)
-  Patm_do   = Pa * 0.00000986923; ! Transform atmospheric pressure from Pa to atm
-  ln_Pwv = 11.8751 - (3840.70/Tk) - (216961/(Tk**2.))
+  ln_Pwv = 11.8751 - (3840.70/Tk) - (216961./(Tk**2.))
   Pwv    = EXP(ln_Pwv)
   theta2 = 0.000975 - 1.426*1E-5 * salp(kwq,lwq) + &
   &                    6.436*1E-8 * salp(kwq,lwq)**2.
-  OS = OS*Patm_do*((1-Pwv/Patm_do) *(1-theta2*Patm_do))&
-  &           /((1-Pwv)*(1-theta2) )
+  OS = OS*Patm_do*((1.-Pwv/Patm_do) *(1.-theta2*Patm_do))&
+  &           /((1.-Pwv)*(1.-theta2) )
 
   ! Estimate of OS is in mg/L. Si3D uses mg/m3 then:
-  OS = OS * 1000
+  OS = OS * 1000.0
 
   ! ...Calculate reaeration only at the lake surface
   ! for now using constant reaeration defined in wq_inp, but in future, can have
   ! alternatives for reaeration rates.
   IF (kwq .le. k1z(lwq)) THEN
     ws = SQRT(uair(lwq)**2. + vair(lwq)**2.)
-    ! if (kwq .eq. k1z(lwq)) then
-      ! reaeration = R_reaer * (ws ** 2.0) * (OS - tracerpp(kwq,lwq,LDO))
-      if (ws .ge. 8) then
-        n_air = 1/2
-      else
-        n_air = 2/3
-      end if
-      Sco2 = 1800.6 - 120.1 * salp(kwq, lwq) + 3.7818 * salp(kwq, lwq) ** 2 - 0.047608 * salp(kwq, lwq) ** 3
-      reaeration = R_reaer * (ws ** 2.0) * ((Sco2 / 600) ** -n_air) * (OS - tracerpp(kwq,lwq,LDO))
-      ! reaeration = R_reaer * (ws ** 2.0) * (OS - tracerpp(kwq,lwq,LDO))
-    ! else
-      ! reaeration = 1/5 * (R_reaer * (ws ** 2.0))* (OS - tracerpp(kwq,lwq,LDO))
-    ! end if
-
+    ! Wanninkhof 1991 where R_reaer is 0.108 * (600.0 / Sc) ** 0.5, which for oxygen Sc~500, which results in R_reaer=0.1183
+    ! however the Sc changes with temperature.
+    ! OG reaeration = R_reaer * (ws ** 1.64) * (OS - tracerpp(kwq,lwq,LDO))
+    reaeration = R_reaer * (ws ** 2.0) * (OS - tracerpp(kwq,lwq,LDO))
     ! Units: [mg/m^2/s] = [m/s] * [mg/m^3]
   ELSE
      reaeration  = 0.0
@@ -95,20 +86,22 @@ SUBROUTINE sourceDO(kwq,lwq)
     i = l2i(lwq)
     j = l2j(lwq)
     if (((i >= 1) .and. (i <= 134)) .and. ((j >=1) .and. (j <= 195))) then
-      R_SOD_ij = R_SOD * 0.2 !0.45
+      R_SOD_ij = R_SOD
     elseif ((i > 170) .and. ((j >= 1) .and. (j <= 63))) then
-      R_SOD_ij = R_SOD * 0.05 !0.05
+      R_SOD_ij = R_SOD
     elseif (((i > 134) .and. (i <= 180)) .and. ((j > 63) .and. (j <= 70))) then
-      R_SOD_ij = R_SOD * 0.05 !0.05
+      R_SOD_ij = R_SOD
     else
       R_SOD_ij = R_SOD
     end if
     ! Units of KSDO need to be mg/m3
-    sedoxydemand = R_SOD_ij * f_SOD * (Theta_SOD ** (salp(kwq, lwq) - 20)) 
+    sedoxydemand = R_SOD_ij * f_SOD * (Theta_SOD ** (salp(kwq, lwq) - 20.0)) 
     ! Units: [mg/m^2/s] = [mg/m^2/s] * [-] * [-] 
+  ! else if (kwq .lt. kmz(lwq)) then
+    ! WOD assumed to be 0.15 g/m2/d = 150 mg/m2/day
+    ! sedoxydemand = 150.0 / (24.0 * 3600.0) * f_SOD * (Theta_SOD ** (salp(kwq, lwq) - 20.0)) 
   ELSE
      sedoxydemand = 0.0
-
   END IF
 
   ! ... Incorporate all terms to the source-sink DO term
@@ -566,6 +559,7 @@ SUBROUTINE sourcePOC (kwq, lwq)
   resuspensionPOC = 0.0
   decompositionPOC = 0.0
   decomp_poc_sed = 0.0
+  f_decom = 1.0
 
   !... Calculate decompositionPOC
   ! Calculate DO inhibition of decomposition
@@ -581,16 +575,18 @@ SUBROUTINE sourcePOC (kwq, lwq)
 
   ! ... Calculate deposition of POC only in the bottom layer
   IF (kwq .eq. kmz(lwq)) THEN
-    call tauBottom(taub, ustar, kwq, lwq)
-    taucr_poc = 0.01
-    depositionPOC = vspoc * tracerpp(kwq,lwq,LPOC) * max(0.0, (1 - taub / taucr_poc))
+    ! call tauBottom(taub, ustar, kwq, lwq)
+    ! taucr_poc = 0.01
+    ! depositionPOC = vspoc * tracerpp(kwq,lwq,LPOC) * max(0.0, (1 - taub / taucr_poc))
+    depositionPOC = vspoc * tracerpp(kwq,lwq,LPOC)
     ! depositionPOC = 0.0 ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3] 
     ! ... Calculate resusupension of POC only in the bottom layer
-    resuspensionPOC = R_resusp * tracerpp(kwq, lwq, LPOC) * max(0.0, (taub / taucr_poc - 1))
+    ! resuspensionPOC = R_resusp * tracerpp(kwq, lwq, LPOC) * max(0.0, (taub / taucr_poc - 1))
+    resuspensionPOC = R_resusp * tracerpp(kwq, lwq, LPOC)
     ! resuspensionPOC = 0.0
     ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
-    if (depositionPOC .gt. (tracerpp(kwq, lwq, LPOC) * hp(kwq, lwq) / dt)) then
-      depositionPOC = tracerpp(kwq, lwq, LPOC) * hp(kwq, lwq) / dt
+    if (depositionPOC .gt. (tracerpp(kwq, lwq, LPOC) * hpp(kwq, lwq) / (twodt * tz))) then
+      depositionPOC = tracerpp(kwq, lwq, LPOC) * hpp(kwq, lwq) / (twodt * tz)
     end if
 
     ! decomp_poc_sed = (1 / 1000) * R_decom_poc * (Theta_decom ** (salp(kwq + 1, lwq) - 20.0)) * tracerpp(kwq + 1, lwq, LPOC) * hpp(kwq + 1, lwq)
@@ -644,11 +640,11 @@ SUBROUTINE sourceDOC(kwq, lwq)
 
   !. . Mineralization of DO by bacteria into inorganic nutrients (there is biological oxygen demand)
     ! Calculate DO inhibition of mineralization
-    IF (IDO == 1) THEN
-      f_miner = tracerpp(kwq,lwq,LDO) /(KDECMIN + tracerpp(kwq,lwq,LDO) )
-    ELSE
-      f_miner = 1.0
-    END IF
+  IF (IDO == 1) THEN
+    f_miner = tracerpp(kwq,lwq,LDO) /(KDECMIN + tracerpp(kwq,lwq,LDO) )
+  ELSE
+    f_miner = 1.0
+  END IF
   mineralizationDOC = R_miner_doc * f_miner * (Theta_miner**(salp(kwq,lwq) - 20.0)) * tracerpp(kwq,lwq,LDOC) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [-] * [mg/m^3] * [m]
 
@@ -669,7 +665,7 @@ SUBROUTINE sourceDOC(kwq, lwq)
     ELSE
        f_sedflux = 1.0
     END IF
-    sedfluxDOC = SED_DOC * f_sedflux * (Theta_sedflux**(salp(kwq,lwq) - 20))
+    sedfluxDOC = SED_DOC * f_sedflux * (Theta_sedflux**(salp(kwq,lwq) - 20.0))
     ! Units: [mg/m^2/s] =  [mg/m^2/s] * [-] * [-]
     ! doc_miner_sed = 0.1 * R_miner_doc * (Theta_miner ** (salp(kwq, lwq) - 20.0)) * tracerpp(kwq + 1, lwq, LDOC) * hpp(kwq + 1, lwq)
     ! sourcesink(kwq + 1, lwq, LDOC) = sourcesink(kwq + 1, lwq, LDOC) !- doc_miner_sed
@@ -714,25 +710,34 @@ SUBROUTINE sourceALG1(kwq, lwq)
 
   deposi1 = 0.0
   resus1 = 0.0
+  growth1 = 0.0
+  mort1 = 0.0
+  graz1 = 0.0
+  mu1 = 0.0
+  f_L1 = 1.0
+  f_T = 1.0
+  f_N = 1.0
+  f_P = 1.0
+  N_conc = 0.0
 
   !. .  Calculate growth limiting factors
   ! Light Limitation
-  f_L1 = ((Qsw*QswFr(kwq,lwq))/light_sat1) *EXP(1 -((Qsw*QswFr(kwq,lwq))/light_sat1)) ! Steele (1962) = Photoinhibited
+  f_L1 = ((Qsw_wq(lwq)*QswFr(kwq,lwq))/light_sat1) *EXP(1.0 -((Qsw_wq(lwq)*QswFr(kwq,lwq))/light_sat1)) ! Steele (1962) = Photoinhibited
   IF (f_L1 .lt. 0.01) THEN
     f_L1 = 0.01
   END IF
 
   ! temperature limitaton
-  Tmax1 = 35
-  Tmin1 = 5
-  IF (salp(kwq,lwq) .lt. Tmin1) THEN
-    f_T = 0
+  Tmax1 = 35.0
+  Tmin1 = 5.0
+  IF (salp(kwq,lwq) .le. Tmin1) THEN
+    f_T = 0.0
   ELSE IF ((salp(kwq,lwq) .gt. Tmin1) .AND. (salp(kwq,lwq) .lt. Topt1)) THEN
     f_T = (salp(kwq,lwq) - Tmin1) / (Topt1 - Tmin1)
-  ELSE IF ((salp(kwq,lwq) .gt. Topt1) .AND. (salp(kwq, lwq) .lt. Tmax1)) THEN 
+  ELSE IF ((salp(kwq,lwq) .ge. Topt1) .AND. (salp(kwq, lwq) .lt. Tmax1)) THEN 
     f_T = (Tmax1 - salp(kwq,lwq)) / (Tmax1 - Topt1)
-  ELSE IF (salp(kwq, lwq) .gt. Tmax1) THEN
-    f_T = 0
+  ELSE IF (salp(kwq, lwq) .ge. Tmax1) THEN
+    f_T = 0.0
   END IF
 
   ! nutrient limitation - but only if the nutrients are modeled
@@ -780,7 +785,7 @@ SUBROUTINE sourceALG1(kwq, lwq)
 
   growth1 = mu1 * f_T * tracerpp(kwq,lwq,LALG1) * hpp(kwq,lwq)
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF (tracerpp(kwq,lwq,LALG1) + (growth1 * dt / hpp(kwq, lwq)) .le. 10.00) THEN
+  IF (tracerpp(kwq,lwq,LALG1) + (growth1 * (twodt * tz) / hpp(kwq, lwq)) .le. 10.00) THEN
     growth1 = 0.0 ! This limits growth to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then growth will be zero
   END IF
 
@@ -794,23 +799,24 @@ SUBROUTINE sourceALG1(kwq, lwq)
   !. . Calculate grazing
   graz1   = R_gr1 * Theta_gr**(salp(kwq,lwq) - 20.0) * tracerpp(kwq,lwq,LALG1) * hpp(kwq,lwq)  
   ! Units: [mg/m^2/s] =  [1/s] * [-] * [mg/m^3] * [m]
-  IF (tracerpp(kwq,lwq,LALG1) - (graz1 * dt / hpp(kwq, lwq)) .le. 10.00) THEN
+  IF (tracerpp(kwq,lwq,LALG1) - (graz1 * (twodt * tz) / hpp(kwq, lwq)) .le. 10.00) THEN
     graz1 = 0.0 ! This limits grazing to a minium phytoplankton concentration. If phyto < 0.01 ug/L, then grazing will be zero
   END IF
 
   if (kwq .eq. kmz(lwq)) then
-    call tauBottom(taub, ustar, kwq, lwq)
-    taucr_alg1 = 0.005
+    ! call tauBottom(taub, ustar, kwq, lwq)
+    ! taucr_alg1 = 0.005
     !. . Calculate deposition
-    deposi1 = vspa * tracerpp(kwq,lwq,LALG1) * max(0.0, (1 - taub / taucr_alg1))
+    ! deposi1 = vspa * tracerpp(kwq,lwq,LALG1) * max(0.0, (1 - taub / taucr_alg1))
+    deposi1 = vspa * tracerpp(kwq,lwq,LALG1)
     ! deposi1 = 0.0
-    ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3] 
-    if (deposi1 .gt. (tracerpp(kwq, lwq, LALG1) * hp(kwq, lwq) / dt)) then
-      deposi1 = tracerpp(kwq, lwq, LALG1) * hp(kwq, lwq) / dt
+    ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
+    if (deposi1 .gt. (tracerpp(kwq, lwq, LALG1) * hpp(kwq, lwq) / (twodt * tz))) then
+      deposi1 = tracerpp(kwq, lwq, LALG1) * hpp(kwq, lwq) / (twodt * tz)
     end if 
     !. . Calculate resuspension
-    resus1 = R_settl * tracerpp(kwq, lwq, LALG1) * max(0.0, (taub / taucr_alg1 - 1))
-    ! resus1 = R_settl * tracerpp(kwq, lwq, LALG1) 
+    ! resus1 = R_settl * tracerpp(kwq, lwq, LALG1) * max(0.0, (taub / taucr_alg1 - 1))
+    resus1 = R_settl * tracerpp(kwq, lwq, LALG1) 
     ! Units: [mg/m^2/s] =  [m/s] * [mg/m^3]
   end if
 
@@ -885,7 +891,7 @@ SUBROUTINE sourceALG2(kwq, lwq)
 
   !. .  Calculate growth limiting factors
     ! Light Limitation
-    f_L2 = ((Qsw*QswFr(kwq,lwq))/light_sat2) *EXP(1 -((Qsw*QswFr(kwq,lwq))/light_sat2)) ! Steele (1962) = Photoinhibited
+    f_L2 = ((Qsw_wq(lwq)*QswFr(kwq,lwq))/light_sat2) *EXP(1 -((Qsw_wq(lwq)*QswFr(kwq,lwq))/light_sat2)) ! Steele (1962) = Photoinhibited
     IF (f_L2 .lt. 0.01) THEN
         f_L2 = 0.01
     END IF
@@ -1018,7 +1024,7 @@ SUBROUTINE sourceALG3(kwq, lwq)
 
   !. .  Calculate growth limiting factors
     ! Light Limitation
-    f_L3 = ((Qsw*QswFr(kwq,lwq))/light_sat3) *EXP(1 -((Qsw*QswFr(kwq,lwq))/light_sat3)) ! Steele (1962) = Photoinhibited
+    f_L3 = ((Qsw_wq(lwq)*QswFr(kwq,lwq))/light_sat3) *EXP(1 -((Qsw_wq(lwq)*QswFr(kwq,lwq))/light_sat3)) ! Steele (1962) = Photoinhibited
     IF (f_L3 .lt. 0.01) THEN
         f_L3 = 0.01
     END IF
@@ -1151,7 +1157,7 @@ SUBROUTINE sourceALG4(kwq, lwq)
 
   !. .  Calculate growth limiting factors
     ! Light Limitation
-    f_L4 = ((Qsw*QswFr(kwq,lwq))/light_sat4) *EXP(1 -((Qsw*QswFr(kwq,lwq))/light_sat4)) ! Steele (1962) = Photoinhibited
+    f_L4 = ((Qsw_wq(lwq)*QswFr(kwq,lwq))/light_sat4) *EXP(1 -((Qsw_wq(lwq)*QswFr(kwq,lwq))/light_sat4)) ! Steele (1962) = Photoinhibited
     IF (f_L4 .lt. 0.01) THEN
         f_L4 = 0.01
     END IF
@@ -1284,7 +1290,7 @@ SUBROUTINE sourceALG5(kwq, lwq)
 
   !. .  Calculate growth limiting factors
     ! Light Limitation
-    f_L5 = ((Qsw*QswFr(kwq,lwq))/light_sat5) *EXP(1 -((Qsw*QswFr(kwq,lwq))/light_sat5)) ! Steele (1962) = Photoinhibited
+    f_L5 = ((Qsw_wq(lwq)*QswFr(kwq,lwq))/light_sat5) *EXP(1 -((Qsw_wq(lwq)*QswFr(kwq,lwq))/light_sat5)) ! Steele (1962) = Photoinhibited
     IF (f_L5 .lt. 0.01) THEN
         f_L5 = 0.01
     END IF

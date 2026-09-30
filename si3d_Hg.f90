@@ -735,6 +735,8 @@ SUBROUTINE HgII_reduction(HgIIw_reduction, kwq, lwq, HgII)
     Io = Qsw_wq(lwq)
   case (10, 11)
     Io = Qsw_wq(lwq)
+  case(0, 20)
+    Io = 0.0
   end select
 
   HgIIw_reduction = h(kwq, lwq) * (Io * QswFr(kwq, lwq)) * kw21 * HgII
@@ -772,17 +774,20 @@ SUBROUTINE Hg0_oxidation(Hg0w_oxidation, Hg0w, HgIIwd, MeHgwd, HgIIw_reduction, 
 
   kw12 = DGMra
 
-  DGMr = Hg0w / (HgIIwd + Hg0w + MeHgwd)
+  Hg0w_oxidation = 0.0
   DOC = tracerpp(kwq, lwq, LDOC) / 1000
+  if (Hg0w .le. 0.0) return
+  if (DOC .eq. 0.0) return
+
+  DGMr = Hg0w / (HgIIwd + Hg0w + MeHgwd)
+  
   PH_2 = 8.0
   DGMra_2 = 0.001882 * DOC ** (-0.73385) * PH_2 ** (2.0409)
   ! One option is to increase DOC ** -0.5
   ! DGMra_2 = 9.465868e-07 * DOC ** (-0.0047) * PH_2 ** (5.4311)
 
-  if (DGMr > DGMra_2) then
+  if (DGMr .gt. DGMra_2) then
     Hg0w_oxidation = HgIIw_reduction * (DGMr / DGMra_2)
-  else if (DGMr .le. DGMra_2) then
-    Hg0w_oxidation = 0
   end if
 
   ! if (Hg0w_oxidation .gt. Hg0w * hp(kwq, lwq) / dt) then
@@ -814,6 +819,8 @@ SUBROUTINE MeHg_photodegradation(MeHgw_photodeg, kwq, lwq, MeHg)
     Io = Qsw_wq(lwq)
   case (10, 11)
     Io = Qsw_wq(lwq)
+  case (0, 20)
+    Io = 0.0
   end select
 
   MeHgw_photodeg = h(kwq, lwq) * (Io * QswFr(kwq, lwq)) * kw31 * MeHg
@@ -1024,15 +1031,19 @@ SUBROUTINE MeHg_diffusion(MeHgw_diffusion, MeHgw, MeHgs, kwq, lwq)
 
   MeHgw_diffusion = kws3 * (MeHgs - MeHgw)
 
-  if (MeHgw .gt. MeHgs) then
-    if (abs(MeHgw_diffusion) .gt. (MeHgw * hp(kwq, lwq) / dt)) then
-      MeHgw_diffusion = -MeHgw * hp(kwq, lwq) / dt
-    end if
-  else
-    if (abs(MeHgw_diffusion) .gt. (MeHgs * hp(kwq, lwq) / dt)) then
-      MeHgw_diffusion = MeHgs * hp(kwq, lwq) / dt
-    end if
-  end if
+  MeHgw_diffusion = max(-max(0.0, MeHgw * hpp(kwq, lwq)) / (twodt * tz), &
+                        min(MeHgw_diffusion, &
+                        max(0.0, MeHgs * sed_por * hpp(kwq + 1, lwq)) / (twodt * tz)))
+
+  ! if (MeHgw .gt. MeHgs) then
+  !   if (abs(MeHgw_diffusion) .gt. (MeHgw * hpp(kwq, lwq) / (twodt * tz))) then
+  !     MeHgw_diffusion = -MeHgw * hp(kwq, lwq) / dt
+  !   end if
+  ! else
+  !   if (abs(MeHgw_diffusion) .gt. (MeHgs * hpp(kwq, lwq) / (twodt * tz))) then
+  !     MeHgw_diffusion = MeHgs * hp(kwq, lwq) / dt
+  !   end if
+  ! end if
 
 END SUBROUTINE MeHg_diffusion
 
@@ -1058,16 +1069,19 @@ SUBROUTINE HgII_diffusion(HgIIw_diffusion, HgIIw, HgIIs, kwq,lwq)
   j = l2j(lwq)
 
   HgIIw_diffusion = kws2 * (HgIIs - HgIIw)
+  HgIIw_diffusion = max(-max(0.0, HgIIw * hpp(kwq, lwq)) / (twodt * tz), &
+                        min(HgIIw_diffusion, &
+                        max(0.0, HgIIs * sed_por * hpp(kwq + 1, lwq)) / (twodt * tz)))
 
-  if (HgIIw .gt. HgIIs) then
-    if (abs(HgIIw_diffusion) .gt. (HgIIw * hp(kwq, lwq) / dt)) then
-      HgIIw_diffusion = -HgIIw * hp(kwq, lwq) / dt
-    end if
-  else
-    if (abs(HgIIw_diffusion) .gt. (HgIIs * hp(kwq, lwq) / dt)) then
-      HgIIw_diffusion = HgIIs * hp(kwq, lwq) / dt
-    end if
-  end if
+  ! if (HgIIw .gt. HgIIs) then
+  !   if (abs(HgIIw_diffusion) .gt. (HgIIw * hpp(kwq, lwq) / (twodt * tz))) then
+  !     HgIIw_diffusion = -HgIIw * hp(kwq, lwq) / dt
+  !   end if
+  ! else
+  !   if (abs(HgIIw_diffusion) .gt. (HgIIs * hpp(kwq, lwq) / (twodt * tz))) then
+  !     HgIIw_diffusion = HgIIs * hp(kwq, lwq) / dt
+  !   end if
+  ! end if
 
 END SUBROUTINE HgII_diffusion
 
@@ -1095,15 +1109,20 @@ SUBROUTINE Hg0_diffusion(Hg0w_diffusion, Hg0w, Hg0s, kwq, lwq)
   Hg0w_diffusion = kws1 * (Hg0s - Hg0w)
 
   ! Mass conservation of the dissolved phase flux
-  if (Hg0w .gt. Hg0s) then
-    if (abs(Hg0w_diffusion) .gt. (Hg0w * hp(kwq, lwq) / dt)) then
-      Hg0w_diffusion = - Hg0w * hp(kwq, lwq) / dt
-    end if
-  else
-    if (abs(Hg0w_diffusion) .gt. (Hg0s * hp(kwq, lwq) / dt)) then
-      Hg0w_diffusion = Hg0s * hp(kwq, lwq) / dt
-    end if
-  end if
+  Hg0w_diffusion = max(-max(0.0, Hg0w * hpp(kwq, lwq)) / (twodt * tz), &
+                        min(Hg0w_diffusion, &
+                        max(0.0, Hg0s * hpp(kwq + 1, lwq)) / (twodt * tz)))
+
+  
+  ! if (Hg0w .gt. Hg0s) then
+  !   if (abs(Hg0w_diffusion) .gt. (Hg0w * hpp(kwq, lwq) / (twodt * tz))) then
+  !     Hg0w_diffusion = - Hg0w * hp(kwq, lwq) / dt
+  !   end if
+  ! else
+  !   if (abs(Hg0w_diffusion) .gt. (Hg0s * hpp(kwq, lwq) / (twodt * tz))) then
+  !     Hg0w_diffusion = Hg0s * hp(kwq, lwq) / dt
+  !   end if
+  ! end if
 
 END SUBROUTINE Hg0_diffusion
 
@@ -1187,38 +1206,38 @@ SUBROUTINE HgII_deposition(HgIIw_deposition, HgII_wpa, HgII_wpom, HgII_wpn, kwq,
   real :: ustarb
   real :: cb
   real :: taucr_alg1, taucr_poc
+  real :: bed_frac(sedNumber)
+  real(kind=8) :: settling_local(sedNumber)
 
   w_dens = (rhop(kwq, lwq) + 1000)
+  deposition_pn(:) = 0.0
   call tauBottom(taub, ustarb, kwq, lwq)
+
   if (inst_eq .eq. 1) then
     do i = 1, sedNumber
       cb = tracerpp(kwq, lwq, LSS1 + i - 1) ! kg/m3
-      call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
-      if (sed_type(i) == 0) then
-        call deposition_noncohesive(deposition_pn(i), settling_vel(i), tauCrt(i), taub, HgII_wpn(i))
-      else if (sed_type(i) == 1) then
-        ! call deposition_cohesive(deposition_pn(i), settling_vel(i), tauCrt(i), taub, HgII_wpn(i), ustarb, sed_dens(i), hpp(kwq, lwq), lwq)
-        if (cb .gt. 0.0) then
-          call deposition_cohesive(deposition_pn(i), settling_vel(i), tauCrt(i), taub, cb, ustarb, sed_dens(i), hpp(kwq, lwq), lwq)
-          deposition_pn(i) = deposition_pn(i) * HgII_wpn(i) / cb
-        else
-          deposition_pn(i) = 0.0
+      if (cb .gt. 0.0) then
+        call get_sed_prop(settling_local(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
+        if (sed_type(i) == 0) then
+          call deposition_noncohesive(deposition_pn(i), settling_local(i), tauCrt(i), taub, cb, kwq, lwq)
+        else if (sed_type(i) == 1) then
+          call deposition_cohesive(deposition_pn(i), settling_local(i), tauCrt(i), taub, cb, ustarb, sed_dens(i), kwq, lwq)
         end if
+        deposition_pn(i) = deposition_pn(i) * HgII_wpn(i) / cb
+      else
+        deposition_pn(i) = 0.0
       end if
     end do
   end if
 
-  taucr_alg1 = 0.005
-  taucr_poc = 0.01
-  HgIIw_deposition = (vspa * HgII_wpa * max(0.0, (1 - taub / taucr_alg1))) + (vspoc * HgII_wpom * max(0.0, (1 - taub / taucr_poc))) + sum(deposition_pn)
+  ! taucr_alg1 = 0.005
+  ! taucr_poc = 0.01
+  ! HgIIw_deposition = (vspa * HgII_wpa * max(0.0, (1 - taub / taucr_alg1))) + (vspoc * HgII_wpom * max(0.0, (1 - taub / taucr_poc))) + sum(deposition_pn)
+   HgIIw_deposition = (vspa * HgII_wpa) + (vspoc * HgII_wpom) + sum(deposition_pn)
   ! HgIIw_deposition = 0.0
 
   HgII_cb = HgII_wpa + HgII_wpom + sum(HgII_wpn)
-  ! HgIIw_deposition = min(HgIIw_deposition, HgII_cb * hp(kwq, lwq) / dt)
-  if (HgIIw_deposition .gt. (HgII_cb * hp(kwq, lwq) / dt)) then
-      HgIIw_deposition = HgII_cb * hp(kwq, lwq) / dt
-  end if
-
+  HgIIw_deposition = min(HgIIw_deposition, max(0.0, HgII_cb * hpp(kwq, lwq)) / (twodt * tz))
 
 END SUBROUTINE HgII_deposition
 
@@ -1246,38 +1265,38 @@ SUBROUTINE MeHg_deposition(MeHgw_deposition, MeHg_wpa, MeHg_wpom, MeHg_wpn, kwq,
   real :: ustarb
   real :: taucr_alg1, taucr_poc
   real :: cb
+  real :: bed_frac(sedNumber)
+  real(kind=8) :: settling_local(sedNumber)
 
   w_dens = (rhop(kwq, lwq) + 1000)
+  deposition_pn(:) = 0.0
+
   call tauBottom(taub, ustarb, kwq, lwq)
+
   if (inst_eq .eq. 1) then
     do i = 1, sedNumber
       cb = tracerpp(kwq,lwq,LSS1 + i - 1) ! kg/m3
-      call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
-      if (sed_type(i) == 0) then
-        call deposition_noncohesive(deposition_pn(i), settling_vel(i), tauCrt(i), taub, MeHg_wpn(i))
-      else if (sed_type(i) == 1) then
-        ! call deposition_cohesive(deposition_pn(i), settling_vel(i), tauCrt(i), taub, MeHg_wpn(i), ustarb, sed_dens(i), hp(kwq, lwq), lwq)
-        if (cb .gt. 0.0) then
-          call deposition_cohesive(deposition_pn(i), settling_vel(i), tauCrt(i), taub, cb, ustarb, sed_dens(i), hp(kwq, lwq), lwq)
-          deposition_pn(i) = deposition_pn(i) * MeHg_wpn(i) / cb
-        else
-          deposition_pn(i) = 0.0
+      if (cb .gt. 0.0) then
+        call get_sed_prop(settling_local(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
+        if (sed_type(i) == 0) then
+          call deposition_noncohesive(deposition_pn(i), settling_local(i), tauCrt(i), taub, cb, kwq, lwq)
+        else if (sed_type(i) == 1) then
+            call deposition_cohesive(deposition_pn(i), settling_local(i), tauCrt(i), taub, cb, ustarb, sed_dens(i), kwq, lwq)
         end if
+        deposition_pn(i) = deposition_pn(i) * MeHg_wpn(i) / cb
+      else
+        deposition_pn(i) = 0.0
       end if
     end do
   end if
 
   taucr_alg1 = 0.005
   taucr_poc = 0.01
-  MeHgw_deposition = (vspa * MeHg_wpa * max(0.0, (1 - taub / taucr_alg1))) + (vspoc * MeHg_wpom * max(0.0, (1 - taub / taucr_poc))) + sum(deposition_pn)
-  ! MeHgw_deposition = 0.0
+  ! MeHgw_deposition = (vspa * MeHg_wpa * max(0.0, (1 - taub / taucr_alg1))) + (vspoc * MeHg_wpom * max(0.0, (1 - taub / taucr_poc))) + sum(deposition_pn)
+  MeHgw_deposition = (vspa * MeHg_wpa) + (vspoc * MeHg_wpom) + sum(deposition_pn)
   
   MeHg_cb = MeHg_wpa + MeHg_wpom + sum(MeHg_wpn)
-  ! MeHgw_deposition = min(MeHgw_deposition, MeHg_cb * hp(kwq, lwq) / dt)
-  if (MeHgw_deposition .gt. (MeHg_cb * hp(kwq, lwq) / dt)) then
-      MeHgw_deposition = MeHg_cb * hp(kwq, lwq) / dt
-  end if
-
+  MeHgw_deposition = min(MeHgw_deposition, max(0.0, MeHg_cb * hpp(kwq, lwq)) / (twodt * tz))
 
 END SUBROUTINE MeHg_deposition
 
@@ -1312,6 +1331,8 @@ SUBROUTINE HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, HgII_sp
   real :: Pr, Ct, hr, zr, ratio, zt, ze, r_r, re, rt
   real :: c_sed
   real :: taucr_alg1, taucr_poc
+  real :: bed_frac(sedNumber)
+  real(kind=8) :: settling_local(sedNumber)
 
   resus_wqpn(:) = 0.0
   flux_fluff(:) = 0.0
@@ -1320,10 +1341,11 @@ SUBROUTINE HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, HgII_sp
   ! Estimate properties of sediment for a given water density at bottom cell
   w_dens = (rhop(kwq, lwq) + 1000)
   call tauBottom(taub, ustarb, kwq, lwq)
+  call totalMass(bed_frac, kwq, lwq)
   
   do i = 1, sedNumber
     c_sed = tracerpp(kwq + 1, lwq, LSS1 + i - 1)
-    call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
+    call get_sed_prop(settling_local(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
 
     hr = zlevel(kwq + 1)
     if (zlevel(kwq) == -100) then
@@ -1372,7 +1394,7 @@ SUBROUTINE HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, HgII_sp
     Ct = HgII_spn(i)
     Ctv(i) = Ct
 
-    if ((sed_frac(i) .le. 0.0) .or. (c_sed .le. 0.0)) then
+    if ((bed_frac(i) .le. 0.0) .or. (c_sed .le. 0.0)) then
       flux_fluff(i) = 0.0
     else
       if ((l2i(lwq) .ge. 185) .and. (l2j(lwq) .ge. 65)) then
@@ -1389,20 +1411,14 @@ SUBROUTINE HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, HgII_sp
     ! Estimate erosion flux
     if (taub .gt. tauCrt(i)) then
       if (sed_type(i) == 0) then
-        call resuspension_noncohesive(resus_wqpn(i), ustarb, Rep(i), settling_vel(i), lwq)
-        ! flux(i) = resus_wqpn(i) * HgII_wpn(i)
-        ! flux(i) = resus_wqpn(i) * Ct
-        flux(i) = resus_wqpn(i) * Ct
+        call resuspension_noncohesive(resus_wqpn(i), ustarb, Rep(i), settling_local(i), lwq)
+        flux(i) = resus_wqpn(i) * bed_frac(i) * Ct
       else if (sed_type(i) == 1) then
         call resuspension_cohesive(resus_wqpn(i), taub, tauCrt(i), M_cohesive(i), lwq)
-        if ((sed_frac(i) .le. 0.0) .or. (c_sed .le. 0.0)) then
+        if ((bed_frac(i) .le. 0.0) .or. (c_sed .le. 0.0)) then
           flux(i) = 0.0
         else
-          ! flux(i) = (resus_wqpn(i) / (sed_dens(i) * sed_frac(i))) * HgII_wpn(i)
-          ! flux(i) = (resus_wqpn(i) / (c_sed * sed_frac(i))) * HgII_wpn(i)
-          ! flux(i) = (resus_wqpn(i) / (sed_dens(i) * sed_frac(i))) * Ct + flux_fluff(i) * Ct
-          flux(i) = (resus_wqpn(i) / (c_sed * sed_frac(i))) * Ct
-          ! flux(i) = (resus_wqpn(i) / (c_sed * sed_frac(i))) * Ct
+          flux(i) = ((resus_wqpn(i) * bed_frac(i)) / (c_sed)) * Ct
         end if
       end if
     else
@@ -1412,10 +1428,10 @@ SUBROUTINE HgII_resuspension(HgIIs_resus, HgII_wpa, HgII_wpom, HgII_wpn, HgII_sp
 
   end do
 
-  taucr_poc = 0.01
-  taucr_alg1 = 0.005
-  resus_poc = R_resusp * HgII_wpom * max(0.0, (taub / taucr_poc - 1))
-  resus_alg = R_settl  * HgII_wpa  * max(0.0, (taub / taucr_alg1 - 1))
+  ! taucr_poc = 0.01
+  ! taucr_alg1 = 0.005
+  resus_poc = R_resusp * HgII_wpom !* max(0.0, (taub / taucr_poc - 1))
+  resus_alg = R_settl  * HgII_wpa  !* max(0.0, (taub / taucr_alg1 - 1))
 
   ! resus_poc = (R_resusp) * HgII_wpom
   ! resus_alg = (R_settl) * HgII_wpa
@@ -1455,6 +1471,8 @@ SUBROUTINE MeHg_resuspension(MeHgs_resus, MeHg_wpa, MeHg_wpom, MeHg_wpn, MeHg_sp
   real :: Pr, Ct, hr, zr, ratio, zt, ze, r_r, re, rt
   real :: c_sed
   real :: taucr_poc, taucr_alg1
+  real :: bed_frac(sedNumber)
+  real(kind=8) :: settling_local(sedNumber)
 
   resus_wqpn(:) = 0.0
   flux_fluff(:) = 0.0
@@ -1463,10 +1481,11 @@ SUBROUTINE MeHg_resuspension(MeHgs_resus, MeHg_wpa, MeHg_wpom, MeHg_wpn, MeHg_sp
   ! Estimate properties of sediment for a given water density at bottom cell
   w_dens = (rhop(kwq, lwq) + 1000)
   call tauBottom(taub, ustarb, kwq, lwq)
+  call totalMass(bed_frac, kwq, lwq)
   
   do i = 1, sedNumber
     c_sed = tracerpp(kwq + 1, lwq, LSS1 + i - 1)
-    call get_sed_prop(settling_vel(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
+    call get_sed_prop(settling_local(i), Rep(i), tauCrt(i), sed_diameter(i), sed_dens(i), w_dens)
 
     hr = zlevel(kwq + 1)
     if (zlevel(kwq) == -100) then
@@ -1515,7 +1534,7 @@ SUBROUTINE MeHg_resuspension(MeHgs_resus, MeHg_wpa, MeHg_wpom, MeHg_wpn, MeHg_sp
     ! Ct = MeHg_spn(i) * (zt / 0.001) ** (-Pr) * ((hr - zt) / (hr - 0.001)) ** Pr
     Ct = MeHg_spn(i)
 
-    if ((sed_frac(i) .le. 0.0) .or. (c_sed .le. 0.0)) then
+    if ((bed_frac(i) .le. 0.0) .or. (c_sed .le. 0.0)) then
       flux_fluff(i) = 0.0
     else
       if ((l2i(lwq) .ge. 185) .and. (l2j(lwq) .ge. 65)) then
@@ -1532,19 +1551,19 @@ SUBROUTINE MeHg_resuspension(MeHgs_resus, MeHg_wpa, MeHg_wpom, MeHg_wpn, MeHg_sp
     ! Estimate resuspension flux
     if (taub .gt. tauCrt(i)) then
       if (sed_type(i) == 0) then
-        call resuspension_noncohesive(resus_wqpn(i), ustarb, Rep(i), settling_vel(i), lwq)
+        call resuspension_noncohesive(resus_wqpn(i), ustarb, Rep(i), settling_local(i), lwq)
         ! flux(i) = resus_wqpn(i) * MeHg_wpn(i)
-        flux(i) = resus_wqpn(i) * Ct
+        flux(i) = resus_wqpn(i) * bed_frac(i) * Ct
         ! flux(i) = resus_wqpn(i) * Ct + flux_fluff(i) * Ct
       else if (sed_type(i) == 1) then
         call resuspension_cohesive(resus_wqpn(i), taub, tauCrt(i), M_cohesive(i), lwq)
-        if ((sed_frac(i) .le. 0.0) .or. (c_sed .le. 0.0)) then
+        if ((bed_frac(i) .le. 0.0) .or. (c_sed .le. 0.0)) then
           flux(i) = 0.0
         else
           ! flux(i) = (resus_wqpn(i) / (sed_dens(i) * sed_frac(i))) * MeHg_wpn(i)
           ! flux(i) = (resus_wqpn(i) / (c_Sed * sed_frac(i))) * MeHg_wpn(i)
           ! flux(i) = (resus_wqpn(i) / (sed_dens(i) * sed_frac(i))) * Ct + flux_fluff(i) * Ct
-          flux(i) = (resus_wqpn(i) / (c_sed * sed_frac(i))) * Ct
+          flux(i) = ((resus_wqpn(i) * bed_frac(i)) / (c_sed)) * Ct
         end if
       end if
     else
@@ -1554,10 +1573,10 @@ SUBROUTINE MeHg_resuspension(MeHgs_resus, MeHg_wpa, MeHg_wpom, MeHg_wpn, MeHg_sp
 
   end do
 
-  taucr_poc = 0.01
-  taucr_alg1 = 0.005
-  resus_poc = R_resusp * MeHg_wpom * max(0.0, (taub / taucr_poc - 1))
-  resus_alg = R_settl  * MeHg_wpa  * max(0.0, (taub / taucr_alg1 - 1))
+  ! taucr_poc = 0.01
+  ! taucr_alg1 = 0.005
+  resus_poc = R_resusp * MeHg_wpom !* max(0.0, (taub / taucr_poc - 1))
+  resus_alg = R_settl  * MeHg_wpa  !* max(0.0, (taub / taucr_alg1 - 1))
 
   ! resus_poc =  (R_resusp) * MeHg_wpom
   ! resus_alg =  (R_settl) * MeHg_wpa

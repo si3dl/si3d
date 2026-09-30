@@ -96,7 +96,7 @@ CONTAINS
 !  tauy_stwave(:,:)  = Shield stress component in the y-direction, at the bottom bed, calculated per gridcell
 
 ! ********************************************************************
-SUBROUTINE stwave_input(n)
+SUBROUTINE stwave_input(step)
 ! ********************************************************************
 !
 ! Purpose: Estimate the mean for wind speed and direction. This is 
@@ -105,27 +105,19 @@ SUBROUTINE stwave_input(n)
 !
 ! --------------------------------------------------------------------
   ! Subroutine arguments
-  integer, intent(in) :: n
+  integer, intent(in) :: step
   integer :: i,j,l,iteration,liter
+  logical :: update_stwave
 
-  real, dimension(jm1,im1) :: u_stwave
-  real, dimension(jm1,im1) :: udir_stwave
   real, dimension(jm1,im1) :: tau_stwave1
-  real, dimension(jm1,im1) :: uair_stwave
-  real, dimension(jm1,im1) :: vair_stwave
-
-  ! Initialize the wind arrays
-  uair_stwave(:, :) = 0.0
-  vair_stwave(:, :) = 0.0
 
   select case (ifsurfbc)
     case (0)
+      !$omp single
       uair_stwave = -wa * sin(pi*phi/180)
       vair_stwave = -wa * cos(pi*phi/180)
-    case (1:3,20)
-      uair_stwave(:, :) = uair(1)
-      vair_stwave(:, :) = vair(1)
-    case (10:11)
+      !$omp end single
+    case default
       do liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
         l = id_column(liter)
         i = l2i(l)
@@ -134,48 +126,44 @@ SUBROUTINE stwave_input(n)
         vair_stwave(j, i) = vair(l)
       end do
   end select
-
+  ! Complete the wind field before calculating wave inputs
   !$omp barrier
+
+  iteration = 1 + mod(step - 1, size(uair_tmp, 3))
+  update_stwave = mod(step, size(uair_tmp, 3)) == 0
 
   do liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
     l = id_column(liter)
+    i = l2i(l)
+    j = l2j(l)
 
-    if (l == 1) then
-      if (n == 1) then
-        uair_tmp = 0.0
-        udir_tmp = 0.0
-        iteration = 1
-      elseif (mod(n,int(Ti_4_stwave*3600/dt)+1) == 0) then 
-        iteration = 1
-      elseif (mod(n,int(Ti_4_stwave*3600/dt)) == 0) then
-        iteration = mod(n,int(Ti_4_stwave*3600/dt)+1)
-      else
-        iteration = mod(n,int(Ti_4_stwave*3600/dt))
-      end if
-
-      do i = 1, im1
-        do j = 1, jm1
-          uair_tmp(j,i,iteration) = sqrt(uair_stwave(j,i)**2 + vair_stwave(j,i)**2)
-          udir_tmp(j,i,iteration) = mod(270. - atan2d(vair_stwave(j,i),uair_stwave(j,i)), 360.)
-          if (udir_tmp(j,i,iteration) .le. 270) then
-            udir_tmp(j,i,iteration) = -(90 + udir_tmp(j,i,iteration))
-          else
-            udir_tmp(j,i,iteration) = 270 - udir_tmp(j,i,iteration)
-          end if
-          if (mod(n,int(Ti_4_stwave*3600/dt)) == 0) then
-            u_stwave(j,i) = sum(uair_tmp(j,i,:)) / size(uair_tmp(j,i,:))
-            udir_stwave(j,i) = sum(udir_tmp(j,i,:)) / size(udir_tmp(j,i,:))
-          end if 
-        end do
-      end do
-
-      if (mod(n,int(Ti_4_stwave*3600/dt)) == 0) then
-        tau_stwave1 = 0.0
-        call stwave(im1,jm1,u_stwave,udir_stwave,tau_stwave1)
-        tau_stwave = transpose(tau_stwave1)
-      end if
+    uair_tmp(j,i,iteration) = sqrt(uair_stwave(j,i)**2 + vair_stwave(j,i)**2)
+    udir_tmp(j,i,iteration) = mod(270. - atan2d(vair_stwave(j,i),uair_stwave(j,i)), 360.)
+    if (udir_tmp(j,i,iteration) .le. 270) then
+      udir_tmp(j,i,iteration) = -(90 + udir_tmp(j,i,iteration))
+    else
+      udir_tmp(j,i,iteration) = 270 - udir_tmp(j,i,iteration)
     end if
   end do
+
+  !$omp barrier
+
+  if (update_stwave) then
+    do liter = lhi(omp_get_thread_num ( )+1), lhf(omp_get_thread_num ( )+1)
+      l = id_column(liter)
+      i = l2i(l)
+      j = l2j(l)
+      u_stwave(j,i) = sum(uair_tmp(j,i,:)) / size(uair_tmp(j,i,:))
+      udir_stwave(j,i) = sum(udir_tmp(j,i,:)) / size(udir_tmp(j,i,:))
+    end do
+
+    !$omp barrier
+    !$omp single
+    tau_stwave1 = 0.0
+    call stwave(im1,jm1,u_stwave,udir_stwave,tau_stwave1)
+    tau_stwave = transpose(tau_stwave1)
+    !$omp end single
+  end if
 
 END SUBROUTINE stwave_input
 
